@@ -1,0 +1,72 @@
+import Foundation
+
+enum EquinoxFormatters {
+    private static let cacheLock = NSLock()
+    private static var cachedLocaleIdentifier: String?
+    private static var formatters: [String: DateFormatter] = [:]
+
+    static var appLocale: Locale {
+        Locale.autoupdatingCurrent
+    }
+
+    static func formatter(
+        key: String,
+        configure: (DateFormatter) -> Void
+    ) -> DateFormatter {
+        let localeID = appLocale.identifier
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+
+        if cachedLocaleIdentifier != localeID {
+            formatters.removeAll()
+            cachedLocaleIdentifier = localeID
+        }
+
+        if let existing = formatters[key] {
+            return existing
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = appLocale
+        configure(formatter)
+        formatters[key] = formatter
+        return formatter
+    }
+
+    static func timeRange(from start: Date, to end: Date) -> String {
+        let formatter = formatter(key: "time.short") { $0.timeStyle = .short; $0.dateStyle = .none }
+        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
+    }
+
+    static func mediumDateTime(from start: Date, to end: Date) -> String {
+        let formatter = formatter(key: "datetime.medium") {
+            $0.dateStyle = .medium
+            $0.timeStyle = .short
+        }
+        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
+    }
+
+    static func agendaHeader(_ date: Date) -> String {
+        let formatter = formatter(key: "agenda.header") { $0.dateFormat = "EEEE, d MMMM" }
+        return formatter.string(from: date)
+    }
+
+    static func shortWeekday(_ date: Date) -> String {
+        let formatter = formatter(key: "weekday.short") { $0.dateFormat = "EEE" }
+        return formatter.string(from: date)
+    }
+
+    static func dayMonth(_ date: Date) -> String {
+        let formatter = formatter(key: "day.month") { $0.dateFormat = "d MMMM" }
+        return formatter.string(from: date)
+    }
+
+    static func weekdaySymbols() -> [String] {
+        let formatter = formatter(key: "weekday.veryShort") { _ in }
+        return formatter.veryShortWeekdaySymbols
+            ?? formatter.shortWeekdaySymbols
+            ?? ["S", "M", "T", "W", "T", "F", "S"]
+    }
+}
+
+var appLocale: Locale { EquinoxFormatters.appLocale }
