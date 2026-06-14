@@ -1,29 +1,36 @@
 import Foundation
 
 actor PlaudService {
-    private let catalog = PlaudCatalog()
     private let liveClient = PlaudLiveClient()
+    private let recordingsStore = PlaudRecordingsStore()
     private let cache = PlaudMatchCache()
 
     private var recordings: [PlaudRecording] = []
-    private var indexFingerprint = ""
-    private var lastSnapshot: PlaudCatalogSnapshot?
+    private var catalogFingerprint = ""
     private var lastRefreshAt: Date?
     private var lastError: String?
 
     private static let staleInterval: TimeInterval = 6 * 60 * 60
 
-    func setupStatus(snapshot: PlaudCatalogSnapshot? = nil) -> PlaudSetup {
-        let stats = cache.stats()
-        return PlaudConfigurator.buildSetup(
-            snapshot: snapshot ?? lastSnapshot,
-            cacheStats: stats,
+    init() {
+        if let snapshot = recordingsStore.load() {
+            recordings = snapshot.recordings
+            catalogFingerprint = snapshot.fingerprint
+            lastRefreshAt = snapshot.fetchedAt
+        }
+    }
+
+    func setupStatus() -> PlaudSetup {
+        PlaudConfigurator.buildSetup(
+            recordCount: recordings.count,
+            lastRefreshAt: lastRefreshAt,
+            cacheStats: cache.stats(),
             lastError: lastError
         )
     }
 
-    func refreshIfNeeded(force: Bool = false) async -> PlaudSetup {
-        guard PreferencesStore.shared.isPlaudEnabled else {
+    func refreshIfNeeded(force: Bool = false, isPlaudEnabled: Bool) async -> PlaudSetup {
+        guard isPlaudEnabled else {
             return setupStatus()
         }
 
@@ -36,14 +43,16 @@ actor PlaudService {
         }
 
         do {
-            try await reloadCatalog(allowLive: true)
-            lastRefreshAt = Date()
+            try await reloadCatalog()
+            if force {
+                cache.clearNegatives()
+            }
             lastError = nil
         } catch {
             lastError = error.localizedDescription
         }
 
-        return setupStatus(snapshot: lastSnapshot)
+        return setupStatus()
     }
 
     func saveManualLink(for event: DayEvent, url: URL) throws -> PlaudEventMatch {
@@ -60,67 +69,51 @@ actor PlaudService {
             fileID: fileID,
             webURLString: webURL.absoluteString,
             source: .manual,
-            hasSummary: false,
             matchedAt: Date()
         )
-        cache.storePositive(key: key, match: cached, fingerprint: indexFingerprint)
+        cache.storePositive(key: key, match: cached, fingerprint: catalogFingerprint)
 
         return PlaudEventMatch(
             fileID: fileID,
             webURL: webURL,
             confidence: .high,
-            hasSummary: false,
             source: .manual
         )
     }
 
-    func allCachedLinks() -> [String: PlaudEventMatch] {
-        cache.allPositiveMatches().compactMapValues { eventMatch(from: $0) }
+    func allCachedLinks(isPlaudEnabled: Bool) -> [String: PlaudEventMatch] {
+        guard isPlaudEnabled else { return [:] }
+        return cache.allPositiveMatches().compactMapValues { eventMatch(from: $0) }
     }
 
-    private func reloadCatalog(allowLive: Bool) async throws {
-        let prefs = PreferencesStore.shared
-        let snapshot = try await catalog.loadSnapshot(
-            indexPath: prefs.plaudSyncIndexPath,
-            bookmarkData: prefs.plaudSyncIndexBookmark
+    /// Earliest recording timestamp, used to bound the calendar range scanned for matches.
+    func recordingsStartDate() -> Date? {
+        recordings.map(\.recordedAt).min()
+    }
+
+    private func reloadCatalog() async throws {
+        let fetched = try await liveClient.fetchRecordings()
+        let fingerprint = PlaudRecordingsStore.fingerprint(for: fetched)
+
+        if fingerprint != catalogFingerprint {
+            cache.invalidateAutoMatches(keepingManual: true, newFingerprint: fingerprint)
+            catalogFingerprint = fingerprint
+        }
+
+        recordings = fetched
+        let now = Date()
+        lastRefreshAt = now
+        recordingsStore.save(
+            PlaudRecordingsSnapshot(
+                recordings: fetched,
+                fetchedAt: now,
+                fingerprint: fingerprint
+            )
         )
-
-        if snapshot.indexFingerprint != indexFingerprint {
-            cache.invalidateAutoMatches(keepingManual: true, newFingerprint: snapshot.indexFingerprint)
-            indexFingerprint = snapshot.indexFingerprint
-        }
-
-        recordings = snapshot.recordings
-        lastSnapshot = snapshot
-
-        if allowLive, shouldTryLiveRefresh(snapshot: snapshot) {
-            do {
-                let live = try await liveClient.fetchRecordings(
-                    exporterDataPath: prefs.plaudExporterDataPath
-                )
-                recordings = mergeRecordings(index: snapshot.recordings, live: live)
-            } catch {
-                // Index-only mode is acceptable when live refresh fails.
-                lastError = error.localizedDescription
-            }
-        }
     }
 
-    private func shouldTryLiveRefresh(snapshot: PlaudCatalogSnapshot) -> Bool {
-        guard let modified = snapshot.indexModifiedAt else { return true }
-        return Date().timeIntervalSince(modified) > Self.staleInterval
-    }
-
-    private func mergeRecordings(index: [PlaudRecording], live: [PlaudRecording]) -> [PlaudRecording] {
-        var byID = Dictionary(uniqueKeysWithValues: index.map { ($0.fileID, $0) })
-        for recording in live {
-            byID[recording.fileID] = recording
-        }
-        return Array(byID.values)
-    }
-
-    func matchEvent(_ event: DayEvent, now: Date = Date()) -> PlaudEventMatch? {
-        guard PreferencesStore.shared.isPlaudEnabled else { return nil }
+    func matchEvent(_ event: DayEvent, isPlaudEnabled: Bool, now: Date = Date()) -> PlaudEventMatch? {
+        guard isPlaudEnabled else { return nil }
         guard let eventID = event.eventIdentifier else { return nil }
 
         let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
@@ -129,7 +122,7 @@ actor PlaudService {
             return match
         }
 
-        if cache.isNegative(for: key, fingerprint: indexFingerprint) {
+        if cache.isNegative(for: key, fingerprint: catalogFingerprint) {
             return nil
         }
 
@@ -141,7 +134,7 @@ actor PlaudService {
         )
 
         guard let match = PlaudEventMatching.match(event: matchable, recordings: recordings, now: now) else {
-            cache.storeNegative(key: key, fingerprint: indexFingerprint)
+            cache.storeNegative(key: key, fingerprint: catalogFingerprint)
             return nil
         }
 
@@ -149,23 +142,22 @@ actor PlaudService {
             fileID: match.fileID,
             webURLString: match.webURL.absoluteString,
             source: .auto,
-            hasSummary: match.hasSummary,
             matchedAt: Date()
         )
-        cache.storePositive(key: key, match: cached, fingerprint: indexFingerprint)
+        cache.storePositive(key: key, match: cached, fingerprint: catalogFingerprint)
         return match
     }
 
-    func refreshMatches(for events: [DayEvent]) async -> [String: PlaudEventMatch] {
-        guard PreferencesStore.shared.isPlaudEnabled else { return [:] }
-        _ = await refreshIfNeeded()
+    func refreshMatches(for events: [DayEvent], isPlaudEnabled: Bool) async -> [String: PlaudEventMatch] {
+        guard isPlaudEnabled else { return [:] }
+        _ = await refreshIfNeeded(isPlaudEnabled: isPlaudEnabled)
 
         let now = Date()
         var results: [String: PlaudEventMatch] = [:]
         for event in events where event.endDate < now {
             guard let eventID = event.eventIdentifier else { continue }
             let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
-            if let match = matchEvent(event, now: now) {
+            if let match = matchEvent(event, isPlaudEnabled: isPlaudEnabled, now: now) {
                 results[key] = match
             }
         }
@@ -178,7 +170,6 @@ actor PlaudService {
             fileID: cached.fileID,
             webURL: webURL,
             confidence: .high,
-            hasSummary: cached.hasSummary,
             source: cached.source
         )
     }

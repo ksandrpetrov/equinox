@@ -37,7 +37,7 @@ struct AgendaView: View {
                                             event: event,
                                             metrics: metrics,
                                             showLocation: prefs.showLocation,
-                                            plaudMatch: appState.plaudLink(for: event),
+                                            plaudMatch: appState.plaud.link(for: event),
                                             isExpanded: expandedEventID == event.id,
                                             onToggleExpand: {
                                                 withAnimation(EquinoxDesign.expandAnimation) {
@@ -45,29 +45,29 @@ struct AgendaView: View {
                                                         expandedEventID = nil
                                                     } else {
                                                         expandedEventID = event.id
-                                                        appState.selectedEvent = event
+                                                        appState.panel.selectedEvent = event
                                                     }
                                                 }
                                             },
                                             onRespond: { status in
-                                                appState.panelFeedback = nil
+                                                appState.panel.panelFeedback = nil
                                                 if let error = await appState.respondToInvitation(event: event, status: status) {
-                                                    appState.panelFeedback = error
+                                                    appState.panel.panelFeedback = error
                                                 }
                                             }
                                         )
                                         .simultaneousGesture(
                                             TapGesture(count: 1).onEnded {
                                                 if expandedEventID == event.id {
-                                                    appState.selectedEvent = event
-                                                    appState.isEventDetailPresented = true
+                                                    appState.panel.selectedEvent = event
+                                                    appState.panel.isEventDetailPresented = true
                                                 }
                                             }
                                         )
                                         .contextMenu {
                                             Button(String(localized: "Show Details", comment: "Agenda context menu")) {
-                                                appState.selectedEvent = event
-                                                appState.isEventDetailPresented = true
+                                                appState.panel.selectedEvent = event
+                                                appState.panel.isEventDetailPresented = true
                                             }
                                             if event.allowsContentModifications, let eventIdentifier = event.eventIdentifier {
                                                 Button(String(localized: "Delete…", comment: ""), role: .destructive) {
@@ -105,9 +105,9 @@ struct AgendaView: View {
                     let eventID = pending.id
                     pendingDelete = nil
                     Task {
-                        appState.panelFeedback = nil
-                        if let error = await appState.deleteEvent(identifier: eventIdentifier) {
-                            appState.panelFeedback = error
+                        appState.panel.panelFeedback = nil
+                        if let error = await appState.events.deleteEvent(identifier: eventIdentifier) {
+                            appState.panel.panelFeedback = error
                         } else if expandedEventID == eventID {
                             expandedEventID = nil
                         }
@@ -119,11 +119,8 @@ struct AgendaView: View {
             )
             .equinoxSheetPresentation()
         }
-        .onChange(of: appState.selectedDate) { _, _ in
-            appState.extendFetchRangeForAgendaIfNeeded()
-        }
         .onChange(of: prefs.showEventDays) { _, _ in
-            appState.extendFetchRangeForAgendaIfNeeded()
+            appState.events.extendFetchRangeForAgendaIfNeeded()
         }
     }
 
@@ -148,8 +145,8 @@ struct AgendaView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Button {
-                appState.newEventInitialDate = appState.selectedDate
-                appState.isNewEventSheetPresented = true
+                appState.panel.newEventInitialDate = appState.events.selectedDate
+                appState.panel.isNewEventSheetPresented = true
             } label: {
                 Text(String(localized: "Create Event", comment: "Empty agenda CTA"))
             }
@@ -160,16 +157,11 @@ struct AgendaView: View {
     }
 
     private var agendaSections: [(date: CalendarDate, events: [DayEvent])] {
-        var result: [(CalendarDate, [DayEvent])] = []
-        var date = appState.selectedDate
-        let end = date.addingDays(prefs.showEventDays)
-        while date < end {
-            let events = appState.events(for: date)
-            if !events.isEmpty || prefs.showDaysWithNoEvents {
-                result.append((date, events))
-            }
-            date = date.addingDays(1)
-        }
-        return result
+        AgendaSections.sections(
+            from: appState.events.selectedDate,
+            days: prefs.showEventDays,
+            showEmptyDays: prefs.showDaysWithNoEvents,
+            eventsFor: appState.events.events(for:)
+        )
     }
 }

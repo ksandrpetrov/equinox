@@ -1,5 +1,13 @@
 import SwiftUI
 
+enum SettingsSearchFilter {
+    static func matches(searchText: String, keywords: String...) -> Bool {
+        guard !searchText.isEmpty else { return true }
+        let query = searchText.lowercased()
+        return keywords.contains { $0.lowercased().contains(query) || query.contains($0.lowercased()) }
+    }
+}
+
 extension View {
     /// macOS NavigationSplitView + unified toolbar can render scroll content under the title bar.
     func settingsToolbarScrollWorkaround() -> some View {

@@ -6,7 +6,7 @@ struct PanelCommandBar: View {
 
     private var monthTitle: String {
         EquinoxFormatters.formatter(key: "month.year") { $0.dateFormat = "MMMM yyyy" }
-            .string(from: appState.monthDate.date(in: appState.calendar))
+            .string(from: appState.events.monthDate.date(in: appState.calendar))
     }
 
     var body: some View {
@@ -18,23 +18,23 @@ struct PanelCommandBar: View {
                     buttonSize: metrics.toolbarButtonSize
                 ) {
                     withAnimation(EquinoxDesign.monthTransitionAnimation) {
-                        appState.goToPreviousMonth()
+                        appState.events.goToPreviousMonth()
                     }
                 }
-                .symbolEffect(.bounce, value: appState.monthDate)
+                .symbolEffect(.bounce, value: appState.events.monthDate)
                 PanelIconButton(
                     symbol: "chevron.right",
                     help: String(localized: "Next month", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
                     withAnimation(EquinoxDesign.monthTransitionAnimation) {
-                        appState.goToNextMonth()
+                        appState.events.goToNextMonth()
                     }
                 }
             }
 
             Button {
-                appState.isGoToDateSheetPresented = true
+                appState.panel.isGoToDateSheetPresented = true
             } label: {
                 Text(monthTitle)
                     .font(EquinoxDesign.panelTitleFont())
@@ -55,14 +55,14 @@ struct PanelCommandBar: View {
                     buttonSize: metrics.toolbarButtonSize
                 ) {
                     withAnimation(EquinoxDesign.monthTransitionAnimation) {
-                        appState.goToToday()
+                        appState.events.goToToday()
                     }
                 }
                 .keyboardShortcut("t")
 
                 Button {
-                    appState.newEventInitialDate = appState.selectedDate
-                    appState.isNewEventSheetPresented = true
+                    appState.panel.newEventInitialDate = appState.events.selectedDate
+                    appState.panel.isNewEventSheetPresented = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 13, weight: .semibold))
@@ -104,11 +104,11 @@ struct PanelCommandBar: View {
     private var overflowMenu: some View {
         Menu {
             Button(String(localized: "Go to Today", comment: "")) {
-                appState.goToToday()
+                appState.events.goToToday()
             }
             .keyboardShortcut("t")
             Button(String(localized: "Go to Date…", comment: "")) {
-                appState.isGoToDateSheetPresented = true
+                appState.panel.isGoToDateSheetPresented = true
             }
             Divider()
             Button(String(localized: "Preferences…", comment: "")) {

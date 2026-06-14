@@ -30,4 +30,24 @@ enum EventDraftDefaults {
         let end = calendar.date(byAdding: .minute, value: 60, to: roundedStart) ?? roundedStart
         return (roundedStart, end)
     }
+
+    static func recurrenceDraft(fromIndex index: Int, endDateIndex: Int, endDate: Date) -> RecurrenceDraft? {
+        guard index > 0 else { return nil }
+        let frequency: RecurrenceFrequency
+        switch index {
+        case 1: frequency = .daily
+        case 2: frequency = .weekly
+        case 3: frequency = .biweekly
+        case 4: frequency = .monthly
+        default: frequency = .yearly
+        }
+        let resolvedEndDate = endDateIndex == 1 ? endDate : nil
+        return RecurrenceDraft(frequency: frequency, endDate: resolvedEndDate)
+    }
+
+    static func alertOffset(forPickerIndex index: Int) -> TimeInterval? {
+        let offsets: [TimeInterval] = [.infinity, 0, -300, -600, -900, -1800, -3600, -7200, -86400, -172800]
+        guard index > 0, index < offsets.count, offsets[index] != .infinity else { return nil }
+        return offsets[index]
+    }
 }

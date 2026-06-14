@@ -28,7 +28,7 @@ enum SettingsActivationHandler {
 
     @MainActor
     static func openSettings(appState: AppState, initialTab: SettingsTab = .general) {
-        appState.settingsInitialTab = initialTab
+        appState.panel.settingsInitialTab = initialTab
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
 

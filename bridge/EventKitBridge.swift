@@ -1,4 +1,3 @@
-import AppKit
 import EventKit
 import Foundation
 
@@ -82,15 +81,14 @@ final class EventKitBridge {
     private func listCalendars() -> BridgeResponse {
         guard ensureAccess() else { return accessDenied() }
 
-        let calendars = store.calendars(for: .event)
-            .filter { $0.color != nil }
-            .sorted { lhs, rhs in
-                if lhs.source.sourceIdentifier == rhs.source.sourceIdentifier {
-                    return lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
-                }
-                return lhs.source.title.localizedStandardCompare(rhs.source.title) == .orderedAscending
-            }
-            .map(mapCalendar)
+        let calendars = CalendarListing.filterDisplayableCalendars(
+            CalendarListing.sortCalendarsForDisplay(
+                store.calendars(for: .event).map(mapCalendarListItem)
+            )
+        ).compactMap { item -> BridgeCalendar? in
+            guard let calendar = store.calendar(withIdentifier: item.id) else { return nil }
+            return mapCalendar(calendar)
+        }
 
         return .success(.calendars(CalendarsData(calendars: calendars)))
     }
@@ -113,7 +111,11 @@ final class EventKitBridge {
         if let calendarIds = command.calendarIds, !calendarIds.isEmpty {
             calendars = calendarIds.compactMap { store.calendar(withIdentifier: $0) }
         } else {
-            calendars = store.calendars(for: .event).filter { $0.color != nil }
+            calendars = CalendarListing.filterDisplayableCalendars(
+                CalendarListing.sortCalendarsForDisplay(
+                    store.calendars(for: .event).map(mapCalendarListItem)
+                )
+            ).compactMap { store.calendar(withIdentifier: $0.id) }
         }
 
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: calendars)
@@ -171,16 +173,17 @@ final class EventKitBridge {
         }
 
         let event = EKEvent(eventStore: store)
-        event.calendar = calendar
-        event.title = title
-        event.startDate = start
-        event.endDate = end
-        event.isAllDay = command.allDay ?? false
-        event.location = command.location
-        event.notes = command.notes
-        if let urlString = command.url {
-            event.url = URL(string: urlString)
-        }
+        EventKitMutation.applyBridgeCreate(
+            title: title,
+            start: start,
+            end: end,
+            calendar: calendar,
+            allDay: command.allDay ?? false,
+            location: command.location,
+            notes: command.notes,
+            url: command.url.flatMap { URL(string: $0) },
+            to: event
+        )
 
         do {
             try store.save(event, span: .thisEvent, commit: true)
@@ -203,37 +206,32 @@ final class EventKitBridge {
         guard let event = store.event(withIdentifier: identifier) else {
             return .failure(code: "not_found", message: "Event not found")
         }
+        if isDeclined(event) {
+            return .failure(code: "not_found", message: "Event not found")
+        }
         guard event.calendar.allowsContentModifications else {
             return .failure(code: "read_only_calendar", message: "Event calendar does not allow modifications")
         }
 
-        if let title = command.title {
-            event.title = title
-        }
-        if let start = parseInstant(command.startDate) {
-            event.startDate = start
-        }
-        if let end = parseInstant(command.endDate) {
-            event.endDate = end
-        }
-        if let allDay = command.allDay {
-            event.isAllDay = allDay
-        }
-        if let location = command.location {
-            event.location = location
-        }
-        if let notes = command.notes {
-            event.notes = notes
-        }
-        if let urlString = command.url {
-            event.url = URL(string: urlString)
-        }
+        var targetCalendar: EKCalendar?
         if let calendarId = command.calendarId, let calendar = store.calendar(withIdentifier: calendarId) {
             guard calendar.allowsContentModifications else {
                 return .failure(code: "read_only_calendar", message: "Target calendar does not allow modifications")
             }
-            event.calendar = calendar
+            targetCalendar = calendar
         }
+
+        EventKitMutation.applyBridgeUpdate(
+            title: command.title,
+            start: parseInstant(command.startDate),
+            end: parseInstant(command.endDate),
+            allDay: command.allDay,
+            location: command.location,
+            notes: command.notes,
+            url: command.url.flatMap { URL(string: $0) },
+            calendar: targetCalendar,
+            to: event
+        )
 
         do {
             try store.save(event, span: .thisEvent, commit: true)
@@ -254,6 +252,9 @@ final class EventKitBridge {
             return .failure(code: "invalid_request", message: "eventIdentifier is required")
         }
         guard let event = store.event(withIdentifier: identifier) else {
+            return .failure(code: "not_found", message: "Event not found")
+        }
+        if isDeclined(event) {
             return .failure(code: "not_found", message: "Event not found")
         }
         guard event.calendar.allowsContentModifications else {
@@ -307,8 +308,12 @@ final class EventKitBridge {
     private func isDeclined(_ event: EKEvent) -> Bool {
         EventParticipationMapping.isDeclinedParticipation(
             hasAttendees: event.hasAttendees,
-            eventKitRawValue: event.value(forKey: "participationStatus") as? Int
+            eventKitRawValue: event.equinoxParticipationRawValue
         )
+    }
+
+    private func mapCalendarListItem(_ calendar: EKCalendar) -> CalendarListItem {
+        EventKitCalendarMapping.calendarListItem(from: calendar)
     }
 
     private func mapCalendar(_ calendar: EKCalendar) -> BridgeCalendar {
@@ -317,35 +322,41 @@ final class EventKitBridge {
             title: calendar.title,
             sourceTitle: calendar.source.title,
             sourceIdentifier: calendar.source.sourceIdentifier,
-            colorHex: colorHex(calendar.color),
+            colorHex: EventKitCalendarMapping.colorHexOrGray(calendar.color),
             allowsContentModifications: calendar.allowsContentModifications,
             isSubscribed: calendar.isSubscribed,
-            type: calendarTypeLabel(calendar.type)
+            type: EventKitCalendarMapping.calendarTypeLabel(calendar.type)
         )
     }
 
     private func mapEvent(_ event: EKEvent) -> BridgeEvent {
+        let fields = EventKitEventFields.extract(from: event)
+        let notes = fields.hasNotes ? fields.notes : nil
         let joinURL = JoinURLDetection.detectJoinURL(
-            location: event.location,
-            url: event.url?.absoluteString,
-            notes: event.hasNotes ? event.notes : nil
+            location: fields.location,
+            url: fields.url?.absoluteString,
+            notes: notes
         )
         return BridgeEvent(
-            eventIdentifier: event.eventIdentifier,
-            calendarItemIdentifier: event.calendarItemIdentifier,
-            title: event.title ?? "",
-            location: event.location,
-            notes: event.hasNotes ? event.notes : nil,
-            url: event.url?.absoluteString,
-            startDate: formatInstant(event.startDate),
-            endDate: formatInstant(event.endDate),
-            isAllDay: event.isAllDay,
+            eventIdentifier: fields.eventIdentifier,
+            calendarItemIdentifier: fields.calendarItemIdentifier,
+            title: fields.title,
+            location: fields.location,
+            notes: notes,
+            url: fields.url?.absoluteString,
+            startDate: formatInstant(fields.startDate),
+            endDate: formatInstant(fields.endDate),
+            isAllDay: fields.isAllDay,
             joinURL: joinURL?.absoluteString,
-            calendarIdentifier: event.calendar.calendarIdentifier,
-            calendarTitle: event.calendar.title,
-            calendarColorHex: colorHex(event.calendar.color),
-            allowsContentModifications: event.calendar.allowsContentModifications,
-            hasAttendees: event.hasAttendees
+            calendarIdentifier: fields.calendarIdentifier,
+            calendarTitle: fields.calendarTitle,
+            calendarColorHex: EventKitCalendarMapping.colorHexOrGray(event.calendar.color),
+            allowsContentModifications: fields.allowsContentModifications,
+            hasAttendees: fields.hasAttendees,
+            participationStatus: EventParticipationMapping.bridgeStatusName(
+                hasAttendees: fields.hasAttendees,
+                eventKitRawValue: fields.participationRawValue
+            )
         )
     }
 
@@ -382,23 +393,4 @@ final class EventKitBridge {
         isoFormatter.string(from: date)
     }
 
-    private func colorHex(_ color: NSColor?) -> String {
-        guard let color else { return "#808080" }
-        let rgb = color.usingColorSpace(.sRGB) ?? color
-        let red = Int(round(rgb.redComponent * 255))
-        let green = Int(round(rgb.greenComponent * 255))
-        let blue = Int(round(rgb.blueComponent * 255))
-        return String(format: "#%02X%02X%02X", red, green, blue)
-    }
-
-    private func calendarTypeLabel(_ type: EKCalendarType) -> String {
-        switch type {
-        case .local: return "local"
-        case .calDAV: return "caldav"
-        case .exchange: return "exchange"
-        case .subscription: return "subscription"
-        case .birthday: return "birthday"
-        @unknown default: return "unknown"
-        }
-    }
 }

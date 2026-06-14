@@ -1,22 +1,59 @@
-# Equinox Calendar MCP
+# Calendar MCP
 
 TypeScript MCP-сервер в `mcp/`, предоставляющий доступ к календарю macOS и аналитику расписания через `equinox-bridge`.
 
-## Настройка
+## Требования
+
+- macOS с EventKit (только macOS).
+- Собранный `equinox-bridge` (Release).
+- Node.js для запуска `mcp/dist/server.js`.
+
+## Сборка
 
 ```bash
 ./scripts/build-mcp.sh
 ```
 
-Включите из [`.cursor/mcp.json`](../.cursor/mcp.json) или вкладки Настройки equinox → MCP.
+Скрипт собирает bridge, устанавливает npm-зависимости, компилирует TypeScript и запускает vitest.
 
-Переменные окружения:
+## Настройка клиентов
+
+### Через equinox (рекомендуется)
+
+1. Откройте equinox → Settings → MCP.
+2. Убедитесь, что Node.js, bridge и MCP-сервер отмечены как готовые.
+3. Включите **Auto-configure Cursor and Claude** — equinox запишет сервер `equinox-calendar` в:
+   - конфиг Cursor (`~/.cursor/mcp.json` или путь из `McpConfigurator.cursorUserConfigPath()`);
+   - конфиг Claude Desktop.
+4. Для **Codex** скопируйте TOML-сниппет на вкладке MCP в `~/.codex/config.toml`.
+
+### Вручную
+
+Пример JSON (пути подставляются на вкладке MCP):
+
+```json
+{
+  "mcpServers": {
+    "equinox-calendar": {
+      "command": "/path/to/node",
+      "args": ["/path/to/equinox/mcp/dist/server.js"],
+      "env": {
+        "EQUINOX_BRIDGE_PATH": "/path/to/equinox-bridge"
+      }
+    }
+  }
+}
+```
+
+### Переменные окружения
 
 | Переменная | Назначение |
 |------------|------------|
 | `EQUINOX_BRIDGE_PATH` | Путь к бинарю `equinox-bridge` (по умолчанию: `build/DerivedData/Build/Products/Release/equinox-bridge`) |
 
-**TCC:** у `equinox-bridge` отдельное разрешение на доступ к календарю, не связанное с `equinox.app`.
+### TCC
+
+У `equinox-bridge` **отдельное** разрешение на доступ к календарю, не связанное с `equinox.app`. Статус проверяется инструментом `get_calendar_access_status`; запрос — `request_calendar_access`.
 
 ## Разработка
 
@@ -56,9 +93,9 @@ npm test       # vitest
 | `find_conflicts` | `list_events` | Пересекающиеся события со временем |
 | `find_free_time` | `list_events` | Свободные слоты в рабочих часах |
 
-Реализация: `mcp/src/analytics/schedule.ts`
+Реализация аналитики: `mcp/src/analytics/schedule.ts`. Аналитика не дублируется в GUI.
 
-## Ресурсы
+## Ресурсы MCP
 
 | URI | Содержимое |
 |-----|------------|
@@ -71,9 +108,18 @@ MCP-инструменты валидируют вход через **Zod** на
 
 Протокол bridge: [../bridge/BRIDGE.md](../bridge/BRIDGE.md)
 
+Регистрация инструментов: `mcp/src/tools/calendars.ts`, `events.ts`, `index.ts`.
+
 ## Ограничения
 
-- Только macOS
-- Отклонённые приглашения скрыты в bridge/MCP (GUI показывает их dimmed)
-- Нет RSVP через MCP
-- Аналитика считается только по загруженному диапазону (максимум 500 событий на один `list_events`)
+- Только macOS и Apple Silicon для сборки (см. `scripts/require-arm64.sh`).
+- Отклонённые приглашения скрыты в bridge/MCP (GUI показывает их dimmed).
+- Нет RSVP через MCP.
+- Join URL в bridge — только web (`JoinURLDetection`); GUI дополнительно переписывает на нативные приложения.
+- Аналитика считается только по загруженному диапазону (максимум 500 событий на один `list_events`).
+- Редактирование событий в GUI не поддерживается; в MCP — `update_event`.
+
+## См. также
+
+- [BUILD.md](../BUILD.md) — сборка и запуск
+- [ARCHITECTURE.md](../ARCHITECTURE.md) — различия поведения app и bridge

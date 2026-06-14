@@ -58,4 +58,17 @@ enum EventParticipationMapping {
         guard hasAttendees, let rawValue = eventKitRawValue else { return false }
         return rawValue == EventParticipationStatus.declined.rawValue
     }
+
+    static func bridgeStatusName(hasAttendees: Bool, eventKitRawValue: Int?) -> String? {
+        guard let status = status(hasAttendees: hasAttendees, eventKitRawValue: eventKitRawValue) else {
+            return nil
+        }
+        switch status {
+        case .unknown: return "unknown"
+        case .pending: return "pending"
+        case .accepted: return "accepted"
+        case .declined: return "declined"
+        case .tentative: return "tentative"
+        }
+    }
 }

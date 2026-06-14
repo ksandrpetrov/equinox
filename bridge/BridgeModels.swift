@@ -101,6 +101,7 @@ struct BridgeEvent: Encodable {
     let calendarColorHex: String
     let allowsContentModifications: Bool
     let hasAttendees: Bool
+    let participationStatus: String?
 }
 
 struct BridgeCommand: Decodable {

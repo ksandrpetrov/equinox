@@ -13,10 +13,6 @@ extension View {
         modifier(SettingsControlAccessibilityModifier(title: title, subtitle: subtitle))
     }
 
-    func equinoxAnimation(_ animation: Animation?, reduceMotion: Bool) -> Animation? {
-        reduceMotion ? nil : animation
-    }
-
     func panelAccessibilityLabel(_ label: String, hint: String? = nil) -> some View {
         modifier(PanelAccessibilityModifier(label: label, hint: hint))
     }

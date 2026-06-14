@@ -190,19 +190,7 @@ enum McpConfigurator {
         """
     }
 
-    static let toolNames = [
-        "get_calendar_access_status",
-        "request_calendar_access",
-        "list_calendars",
-        "list_events",
-        "get_event",
-        "create_event",
-        "update_event",
-        "delete_event",
-        "analyze_schedule",
-        "find_conflicts",
-        "find_free_time",
-    ]
+    static let toolNames = McpToolNames.all
 
     // MARK: - Path resolution
 

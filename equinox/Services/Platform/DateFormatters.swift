@@ -67,6 +67,23 @@ enum EquinoxFormatters {
             ?? formatter.shortWeekdaySymbols
             ?? ["S", "M", "T", "W", "T", "F", "S"]
     }
+
+    static func relativeTime(until eventStart: Date, from now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> String? {
+        guard calendar.isDateInToday(eventStart) else { return nil }
+        if eventStart <= now {
+            return nil
+        }
+        let minutes = Int(eventStart.timeIntervalSince(now) / 60)
+        if minutes < 60 {
+            return String(format: String(localized: "in %lld min", comment: "Relative event time"), minutes)
+        }
+        let hours = minutes / 60
+        return String(format: String(localized: "in %lld h", comment: "Relative event time hours"), hours)
+    }
+
+    static func relativeTimeDuringEvent(from now: Date = Date()) -> String {
+        String(localized: "Now", comment: "Event happening now")
+    }
 }
 
 var appLocale: Locale { EquinoxFormatters.appLocale }

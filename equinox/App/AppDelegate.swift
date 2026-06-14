@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardShortcutMigration.migrateIfNeeded()
         statusItemController = StatusItemController(appState: appState)
         statusItemController?.setup()
-        appState.requestCalendarAccessIfNeeded()
+        appState.events.requestCalendarAccessIfNeeded()
         McpConfigurator.ensureBundledBridgeInstalled()
         McpConfigurator.ensureCursorConfigIfEnabled()
     }

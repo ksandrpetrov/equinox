@@ -102,7 +102,7 @@ struct AgendaEventCard: View {
 
                 if let url = event.joinURL {
                     Button {
-                        NSWorkspace.shared.open(url)
+                        URLOpener.open(url)
                     } label: {
                         Image(systemName: "video.fill")
                             .font(.system(size: 12))
@@ -121,7 +121,7 @@ struct AgendaEventCard: View {
 
                 if let match = plaudMatch {
                     Button {
-                        NSWorkspace.shared.open(match.webURL)
+                        URLOpener.open(match.webURL)
                     } label: {
                         Image(systemName: "waveform")
                             .font(.system(size: 12))
@@ -142,7 +142,7 @@ struct AgendaEventCard: View {
             if isExpanded, event.showsRSVPControls {
                 EventRSVPBar(
                     status: event.participationStatus,
-                    isCompact: true,
+                    layout: .compact,
                     isResponding: isResponding
                 ) { status in
                     guard let onRespond else { return }
@@ -242,7 +242,7 @@ struct AgendaEventCard: View {
                 }
             }
 
-            if isExpanded, let notes = event.notes, !notes.isEmpty {
+            if isExpanded, let notes = JoinURLDetection.notesForDisplay(notes: event.notes, excludingJoinURL: event.joinURL), !notes.isEmpty {
                 Text(notes)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -277,15 +277,10 @@ struct AgendaEventCard: View {
         let now = Date()
         guard Calendar.autoupdatingCurrent.isDateInToday(event.startDate) else { return nil }
         if event.startDate <= now && event.endDate > now {
-            return String(localized: "Now", comment: "Event happening now")
+            return EquinoxFormatters.relativeTimeDuringEvent(from: now)
         }
         if event.startDate > now {
-            let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
-            if minutes < 60 {
-                return String(format: String(localized: "in %lld min", comment: "Relative event time"), minutes)
-            }
-            let hours = minutes / 60
-            return String(format: String(localized: "in %lld h", comment: "Relative event time hours"), hours)
+            return EquinoxFormatters.relativeTime(until: event.startDate, from: now)
         }
         return nil
     }

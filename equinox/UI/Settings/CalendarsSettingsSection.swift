@@ -6,7 +6,7 @@ struct CalendarsSettingsSection: View {
     @State private var selectedCalendarIDs: Set<String> = []
 
     private var entries: [CalendarListEntry] {
-        appState?.calendarEntries ?? []
+        appState?.events.calendarEntries ?? []
     }
 
     var body: some View {
@@ -35,7 +35,7 @@ struct CalendarsSettingsSection: View {
         .onAppear {
             reloadCalendars()
         }
-        .onChange(of: appState?.calendarEntries) { _, _ in
+        .onChange(of: appState?.events.calendarEntries) { _, _ in
             reloadCalendars()
         }
     }
@@ -94,7 +94,7 @@ struct CalendarsSettingsSection: View {
                 }
                 guard let appState else { return }
                 Task {
-                    await appState.updateSelectedCalendar(
+                    await appState.events.updateSelectedCalendar(
                         identifier: calendar.id,
                         selected: newVal
                     )

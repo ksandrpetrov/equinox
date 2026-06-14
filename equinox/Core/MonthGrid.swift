@@ -26,3 +26,31 @@ func columnForWeekday(startDOW: Int, dow: Int) -> Int {
 func weekdayForColumn(startDOW: Int, col: Int) -> Int {
     (startDOW + col) % 7
 }
+
+/// Returns start/end boundary flags for in-month cells when month boundaries are shown.
+func monthGridBoundaryFlags(
+    for date: CalendarDate,
+    monthIndex: Int,
+    col: Int,
+    row: Int,
+    gridDates: [CalendarDate],
+    showMonthBoundaries: Bool
+) -> (start: Bool, end: Bool) {
+    guard showMonthBoundaries else { return (false, false) }
+    let inMonth = date.monthIndex == monthIndex
+    guard inMonth else { return (false, false) }
+
+    let index = row * 7 + col
+    let prevInMonth: Bool = {
+        if col == 0 { return false }
+        return gridDates[index - 1].monthIndex == monthIndex
+    }()
+    let nextInMonth: Bool = {
+        if col == 6 { return false }
+        return gridDates[index + 1].monthIndex == monthIndex
+    }()
+
+    let start = col == 0 || !prevInMonth
+    let end = col == 6 || !nextInMonth
+    return (start, end)
+}

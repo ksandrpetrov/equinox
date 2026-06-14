@@ -25,28 +25,16 @@ enum PlaudLiveClientError: LocalizedError {
 actor PlaudLiveClient {
     private static let apiBase = URL(string: "https://platform.plaud.ai/developer/api")!
 
-    func fetchRecordings(exporterDataPath: String?) async throws -> [PlaudRecording] {
-        let session = try await resolveSession(exporterDataPath: exporterDataPath)
+    func fetchRecordings() async throws -> [PlaudRecording] {
+        let session = try await resolveSession()
         return try await listAllRecordings(session: session)
     }
 
-    func resolveSession(exporterDataPath: String?) async throws -> PlaudLiveSession {
-        if let accessToken = try await PlaudOAuthClient.validAccessToken() {
-            return PlaudLiveSession(apiBase: Self.apiBase, accessToken: accessToken)
+    func resolveSession() async throws -> PlaudLiveSession {
+        guard let accessToken = try await PlaudOAuthClient.validAccessToken() else {
+            throw PlaudLiveClientError.credentialsMissing
         }
-        if let exporterDataPath, !exporterDataPath.isEmpty {
-            let oauthURL = URL(fileURLWithPath: exporterDataPath).appendingPathComponent("oauth-tokens.json")
-            if let data = try? Data(contentsOf: oauthURL),
-               let session = Self.session(fromOAuthJSON: data) {
-                return session
-            }
-        }
-        throw PlaudLiveClientError.credentialsMissing
-    }
-
-    static func session(fromOAuthJSON data: Data) -> PlaudLiveSession? {
-        guard let tokenSet = PlaudOAuthClient.decodeTokens(from: data) else { return nil }
-        return PlaudLiveSession(apiBase: apiBase, accessToken: tokenSet.access_token)
+        return PlaudLiveSession(apiBase: Self.apiBase, accessToken: accessToken)
     }
 
     private func listAllRecordings(session: PlaudLiveSession) async throws -> [PlaudRecording] {
@@ -141,14 +129,12 @@ actor PlaudLiveClient {
                 break
             }
         }
-        guard let recordedAt = PlaudCatalog.parseCreatedAt(createdValue) else { return nil }
+        guard let recordedAt = PlaudTimestamp.parseCreatedAt(createdValue) else { return nil }
 
         return PlaudRecording(
             fileID: fileID,
             title: title,
-            recordedAt: recordedAt,
-            folderSegment: nil,
-            hasSummary: false
+            recordedAt: recordedAt
         )
     }
 }

@@ -19,8 +19,7 @@ enum PlaudOAuthPKCE {
 
     static let webOrigin = "https://web.plaud.ai"
     // Plaud's API sits behind Cloudflare, which returns HTTP 403 (error 1010) to clients
-    // without a browser-like User-Agent. Mirror plaud-server-exporter's headers so live
-    // refresh and OAuth token calls are not blocked.
+    // without a browser-like User-Agent. Mirror browser headers so OAuth and API calls work.
     static let browserUserAgent =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 

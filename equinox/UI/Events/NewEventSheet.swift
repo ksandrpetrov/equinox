@@ -172,7 +172,7 @@ struct NewEventSheet: View {
     }
 
     private var modifiableCalendars: [SelectableCalendar] {
-        appState.calendarEntries.compactMap { entry in
+        appState.events.calendarEntries.compactMap { entry in
             guard case .calendar(let cal) = entry, cal.allowsContentModifications else { return nil }
             return cal
         }
@@ -192,23 +192,14 @@ struct NewEventSheet: View {
 
         var recurrence: RecurrenceDraft?
         if recurrenceIndex > 0 {
-            let frequency: RecurrenceFrequency
-            switch recurrenceIndex {
-            case 1: frequency = .daily
-            case 2: frequency = .weekly
-            case 3: frequency = .biweekly
-            case 4: frequency = .monthly
-            default: frequency = .yearly
-            }
-            let endDate = recurrenceEndIndex == 1 ? recurrenceEndDate : nil
-            recurrence = RecurrenceDraft(frequency: frequency, endDate: endDate)
+            recurrence = EventDraftDefaults.recurrenceDraft(
+                fromIndex: recurrenceIndex,
+                endDateIndex: recurrenceEndIndex,
+                endDate: recurrenceEndDate
+            )
         }
 
-        let offsets: [TimeInterval] = [.infinity, 0, -300, -600, -900, -1800, -3600, -7200, -86400, -172800]
-        var alertOffset: TimeInterval?
-        if alertIndex > 0 && alertIndex < offsets.count && offsets[alertIndex] != .infinity {
-            alertOffset = offsets[alertIndex]
-        }
+        let alertOffset = EventDraftDefaults.alertOffset(forPickerIndex: alertIndex)
 
         let draft = NewEventDraft(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -225,7 +216,7 @@ struct NewEventSheet: View {
 
         saveError = nil
         Task {
-            if let error = await appState.createEvent(from: draft) {
+            if let error = await appState.events.createEvent(from: draft) {
                 saveError = error
             } else {
                 close()

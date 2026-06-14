@@ -17,16 +17,16 @@ struct PrivacySettingsTab: View {
     @ViewBuilder
     private func privacyContent(appState: AppState) -> some View {
         SettingsDetailScaffold(title: String(localized: "Privacy", comment: "Privacy prefs tab label")) {
-            if matches("Calendar", "access", "privacy", "permission") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "access", "privacy", "permission") {
                 SettingsSection(
                     String(localized: "Calendar Access", comment: "Privacy section"),
                     subtitle: String(localized: "Equinox reads events from your system calendars.", comment: "")
                 ) {
                     LabeledContent {
                         HStack(spacing: EquinoxDesign.spacingXS) {
-                            Image(systemName: statusSymbol(for: appState.calendarAccessStatus))
-                                .foregroundStyle(statusColor(for: appState.calendarAccessStatus))
-                            Text(appState.calendarAccessStatus.localizedLabel)
+                            Image(systemName: statusSymbol(for: appState.events.calendarAccessStatus))
+                                .foregroundStyle(statusColor(for: appState.events.calendarAccessStatus))
+                            Text(appState.events.calendarAccessStatus.localizedLabel)
                                 .foregroundStyle(.secondary)
                         }
                     } label: {
@@ -49,7 +49,7 @@ struct PrivacySettingsTab: View {
 
                     HStack(spacing: EquinoxDesign.spacingMD) {
                         Button(String(localized: "Request Access", comment: "")) {
-                            appState.requestCalendarAccessIfNeeded()
+                            appState.events.requestCalendarAccessIfNeeded()
                         }
                         .buttonStyle(.borderedProminent)
 
@@ -65,7 +65,7 @@ struct PrivacySettingsTab: View {
             }
         }
         .onAppear {
-            Task { await appState.refreshCalendarAccessStatus() }
+            Task { await appState.events.refreshCalendarAccessStatus() }
         }
     }
 
@@ -94,11 +94,5 @@ struct PrivacySettingsTab: View {
         case .denied, .restricted: return .red
         case .notDetermined: return .orange
         }
-    }
-
-    private func matches(_ keywords: String...) -> Bool {
-        guard !searchText.isEmpty else { return true }
-        let query = searchText.lowercased()
-        return keywords.contains { $0.lowercased().contains(query) || query.contains($0.lowercased()) }
     }
 }

@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 
 @Observable
 final class PreferencesStore {
@@ -50,60 +49,66 @@ final class PreferencesStore {
     var agendaHeightRatio: Double { didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) } }
     var isMcpEnabled: Bool { didSet { persist(isMcpEnabled, forKey: kMcpEnabled) } }
     var isPlaudEnabled: Bool { didSet { persist(isPlaudEnabled, forKey: kPlaudEnabled) } }
-    var plaudSyncIndexPath: String? {
-        didSet {
-            guard !isLoading else { return }
-            if let plaudSyncIndexPath { defaults.set(plaudSyncIndexPath, forKey: kPlaudSyncIndexPath) }
-            else { defaults.removeObject(forKey: kPlaudSyncIndexPath) }
-        }
-    }
-    var plaudSyncIndexBookmark: Data? {
-        didSet {
-            guard !isLoading else { return }
-            if let plaudSyncIndexBookmark { defaults.set(plaudSyncIndexBookmark, forKey: kPlaudSyncIndexBookmark) }
-            else { defaults.removeObject(forKey: kPlaudSyncIndexBookmark) }
-        }
-    }
-    var plaudExporterDataPath: String? {
-        didSet {
-            guard !isLoading else { return }
-            if let plaudExporterDataPath { defaults.set(plaudExporterDataPath, forKey: kPlaudExporterDataPath) }
-            else { defaults.removeObject(forKey: kPlaudExporterDataPath) }
-        }
+    var hasSeenShortcutTip: Bool { didSet { persist(hasSeenShortcutTip, forKey: kHasSeenShortcutTip) } }
+
+    private struct StoredValues {
+        var isPanelPinned: Bool
+        var showEventDays: Int
+        var weekStartWeekday: Int
+        var highlightedWeekdays: Int
+        var showWeeks: Bool
+        var showEventDots: Bool
+        var showLocation: Bool
+        var showDaysWithNoEvents: Bool
+        var menuBarIconType: Int
+        var showMonthInIcon: Bool
+        var showDayOfWeekInIcon: Bool
+        var isIconHidden: Bool
+        var clockFormat: String?
+        var showMeetingIndicator: Bool
+        var themePreference: Int
+        var sizePreference: Int
+        var backgroundStyle: Int
+        var calendarRowCount: Int
+        var showMonthBoundaries: Bool
+        var showsDayHoverPreview: Bool
+        var agendaHeightRatio: Double
+        var isMcpEnabled: Bool
+        var isPlaudEnabled: Bool
+        var hasSeenShortcutTip: Bool
     }
 
     private init() {
         isLoading = true
-        isPanelPinned = defaults.bool(forKey: kPanelPinned)
-        showEventDays = Self.clampedShowEventDays(defaults.integer(forKey: kShowEventDays), hasValue: defaults.object(forKey: kShowEventDays) != nil)
-        weekStartWeekday = defaults.integer(forKey: kWeekStartDOW)
-        highlightedWeekdays = defaults.integer(forKey: kHighlightedDOWs)
-        showWeeks = defaults.bool(forKey: kShowWeeks)
-        showEventDots = defaults.bool(forKey: kShowEventDots)
-        showLocation = defaults.bool(forKey: kShowLocation)
-        showDaysWithNoEvents = defaults.bool(forKey: kShowDaysWithNoEventsInAgenda)
-        let rawMenuBarIconType = defaults.integer(forKey: kMenuBarIconType)
-        menuBarIconType = Self.clampedMenuBarIconType(rawMenuBarIconType)
-        showMonthInIcon = defaults.bool(forKey: kShowMonthInIcon)
-        showDayOfWeekInIcon = defaults.bool(forKey: kShowDayOfWeekInIcon)
-        isIconHidden = defaults.bool(forKey: kHideIcon)
-        clockFormat = defaults.string(forKey: kClockFormat)
-        showMeetingIndicator = defaults.bool(forKey: kShowMeetingIndicator)
-        themePreference = defaults.integer(forKey: kThemePreference)
-        sizePreference = defaults.integer(forKey: kSizePreference)
-        backgroundStyle = defaults.integer(forKey: kBackgroundStyle)
-        calendarRowCount = Self.clampedCalendarNumRows(defaults.integer(forKey: kCalendarNumRows))
-        showMonthBoundaries = defaults.bool(forKey: kShowMonthBoundaries)
-        showsDayHoverPreview = defaults.bool(forKey: kShowEventPopoverOnHover)
-        agendaHeightRatio = Self.clampedAgendaHeightRatio(defaults.double(forKey: kAgendaHeightRatio))
-        isMcpEnabled = defaults.bool(forKey: kMcpEnabled)
-        isPlaudEnabled = defaults.bool(forKey: kPlaudEnabled)
-        plaudSyncIndexPath = defaults.string(forKey: kPlaudSyncIndexPath)
-        plaudSyncIndexBookmark = defaults.data(forKey: kPlaudSyncIndexBookmark)
-        plaudExporterDataPath = defaults.string(forKey: kPlaudExporterDataPath)
+        isPanelPinned = false
+        showEventDays = 7
+        weekStartWeekday = 0
+        highlightedWeekdays = 0
+        showWeeks = false
+        showEventDots = true
+        showLocation = false
+        showDaysWithNoEvents = false
+        menuBarIconType = 0
+        showMonthInIcon = false
+        showDayOfWeekInIcon = false
+        isIconHidden = false
+        clockFormat = nil
+        showMeetingIndicator = false
+        themePreference = 0
+        sizePreference = SizePreference.medium.rawValue
+        backgroundStyle = BackgroundStyle.glass.rawValue
+        calendarRowCount = 6
+        showMonthBoundaries = true
+        showsDayHoverPreview = false
+        agendaHeightRatio = 0.35
+        isMcpEnabled = false
+        isPlaudEnabled = false
+        hasSeenShortcutTip = false
+        let rawMenuBarIconType = UserDefaults.standard.integer(forKey: kMenuBarIconType)
+        applyValues(Self.readValues(from: UserDefaults.standard))
         isLoading = false
         if rawMenuBarIconType != menuBarIconType {
-            defaults.set(menuBarIconType, forKey: kMenuBarIconType)
+            UserDefaults.standard.set(menuBarIconType, forKey: kMenuBarIconType)
         }
     }
 
@@ -186,33 +191,64 @@ final class PreferencesStore {
         ]
     }
 
+    private static func readValues(from defaults: UserDefaults) -> StoredValues {
+        StoredValues(
+            isPanelPinned: defaults.bool(forKey: kPanelPinned),
+            showEventDays: clampedShowEventDays(defaults.integer(forKey: kShowEventDays), hasValue: defaults.object(forKey: kShowEventDays) != nil),
+            weekStartWeekday: defaults.integer(forKey: kWeekStartDOW),
+            highlightedWeekdays: defaults.integer(forKey: kHighlightedDOWs),
+            showWeeks: defaults.bool(forKey: kShowWeeks),
+            showEventDots: defaults.bool(forKey: kShowEventDots),
+            showLocation: defaults.bool(forKey: kShowLocation),
+            showDaysWithNoEvents: defaults.bool(forKey: kShowDaysWithNoEventsInAgenda),
+            menuBarIconType: clampedMenuBarIconType(defaults.integer(forKey: kMenuBarIconType)),
+            showMonthInIcon: defaults.bool(forKey: kShowMonthInIcon),
+            showDayOfWeekInIcon: defaults.bool(forKey: kShowDayOfWeekInIcon),
+            isIconHidden: defaults.bool(forKey: kHideIcon),
+            clockFormat: defaults.string(forKey: kClockFormat),
+            showMeetingIndicator: defaults.bool(forKey: kShowMeetingIndicator),
+            themePreference: defaults.integer(forKey: kThemePreference),
+            sizePreference: defaults.integer(forKey: kSizePreference),
+            backgroundStyle: defaults.integer(forKey: kBackgroundStyle),
+            calendarRowCount: clampedCalendarNumRows(defaults.integer(forKey: kCalendarNumRows)),
+            showMonthBoundaries: defaults.bool(forKey: kShowMonthBoundaries),
+            showsDayHoverPreview: defaults.bool(forKey: kShowEventPopoverOnHover),
+            agendaHeightRatio: clampedAgendaHeightRatio(defaults.double(forKey: kAgendaHeightRatio)),
+            isMcpEnabled: defaults.bool(forKey: kMcpEnabled),
+            isPlaudEnabled: defaults.bool(forKey: kPlaudEnabled),
+            hasSeenShortcutTip: defaults.bool(forKey: kHasSeenShortcutTip)
+        )
+    }
+
+    private func applyValues(_ values: StoredValues) {
+        isPanelPinned = values.isPanelPinned
+        showEventDays = values.showEventDays
+        weekStartWeekday = values.weekStartWeekday
+        highlightedWeekdays = values.highlightedWeekdays
+        showWeeks = values.showWeeks
+        showEventDots = values.showEventDots
+        showLocation = values.showLocation
+        showDaysWithNoEvents = values.showDaysWithNoEvents
+        menuBarIconType = values.menuBarIconType
+        showMonthInIcon = values.showMonthInIcon
+        showDayOfWeekInIcon = values.showDayOfWeekInIcon
+        isIconHidden = values.isIconHidden
+        clockFormat = values.clockFormat
+        showMeetingIndicator = values.showMeetingIndicator
+        themePreference = values.themePreference
+        sizePreference = values.sizePreference
+        backgroundStyle = values.backgroundStyle
+        calendarRowCount = values.calendarRowCount
+        showMonthBoundaries = values.showMonthBoundaries
+        showsDayHoverPreview = values.showsDayHoverPreview
+        agendaHeightRatio = values.agendaHeightRatio
+        isMcpEnabled = values.isMcpEnabled
+        isPlaudEnabled = values.isPlaudEnabled
+        hasSeenShortcutTip = values.hasSeenShortcutTip
+    }
+
     private func reloadFromDefaults() {
-        isPanelPinned = defaults.bool(forKey: kPanelPinned)
-        showEventDays = Self.clampedShowEventDays(defaults.integer(forKey: kShowEventDays), hasValue: defaults.object(forKey: kShowEventDays) != nil)
-        weekStartWeekday = defaults.integer(forKey: kWeekStartDOW)
-        highlightedWeekdays = defaults.integer(forKey: kHighlightedDOWs)
-        showWeeks = defaults.bool(forKey: kShowWeeks)
-        showEventDots = defaults.bool(forKey: kShowEventDots)
-        showLocation = defaults.bool(forKey: kShowLocation)
-        showDaysWithNoEvents = defaults.bool(forKey: kShowDaysWithNoEventsInAgenda)
-        menuBarIconType = Self.clampedMenuBarIconType(defaults.integer(forKey: kMenuBarIconType))
-        showMonthInIcon = defaults.bool(forKey: kShowMonthInIcon)
-        showDayOfWeekInIcon = defaults.bool(forKey: kShowDayOfWeekInIcon)
-        isIconHidden = defaults.bool(forKey: kHideIcon)
-        clockFormat = defaults.string(forKey: kClockFormat)
-        showMeetingIndicator = defaults.bool(forKey: kShowMeetingIndicator)
-        themePreference = defaults.integer(forKey: kThemePreference)
-        sizePreference = defaults.integer(forKey: kSizePreference)
-        backgroundStyle = defaults.integer(forKey: kBackgroundStyle)
-        calendarRowCount = Self.clampedCalendarNumRows(defaults.integer(forKey: kCalendarNumRows))
-        showMonthBoundaries = defaults.bool(forKey: kShowMonthBoundaries)
-        showsDayHoverPreview = defaults.bool(forKey: kShowEventPopoverOnHover)
-        agendaHeightRatio = Self.clampedAgendaHeightRatio(defaults.double(forKey: kAgendaHeightRatio))
-        isMcpEnabled = defaults.bool(forKey: kMcpEnabled)
-        isPlaudEnabled = defaults.bool(forKey: kPlaudEnabled)
-        plaudSyncIndexPath = defaults.string(forKey: kPlaudSyncIndexPath)
-        plaudSyncIndexBookmark = defaults.data(forKey: kPlaudSyncIndexBookmark)
-        plaudExporterDataPath = defaults.string(forKey: kPlaudExporterDataPath)
+        applyValues(Self.readValues(from: defaults))
     }
 
     func isWeekdayHighlighted(_ column: Int, weekStartWeekday: Int) -> Bool {

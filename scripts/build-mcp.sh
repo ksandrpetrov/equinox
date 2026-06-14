@@ -12,6 +12,9 @@ NC="\033[0m"
 
 cd "$(dirname "$0")/.."
 
+echo "${GREEN}Generating MCP tool-name list...${NC}"
+./scripts/gen-mcp-tool-names.sh
+
 DERIVED_DATA="build/DerivedData"
 BRIDGE_PATH="${DERIVED_DATA}/Build/Products/Release/equinox-bridge"
 

@@ -1,22 +1,23 @@
-import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { analyzeSchedule, findConflicts, findFreeTime } from "../analytics/schedule.js"
 import { invokeBridge, requireBridgeData } from "../bridge.js"
+import {
+  analyzeScheduleInputSchema,
+  createEventInputSchema,
+  deleteEventInputSchema,
+  findConflictsInputSchema,
+  findFreeTimeInputSchema,
+  getEventInputSchema,
+  listEventsInputSchema,
+  updateEventInputSchema,
+} from "../schemas/toolInputs.js"
+import { jsonToolResult } from "../toolResponse.js"
 import type {
   EventData,
   EventsData,
   MutationData,
 } from "../types.js"
-
-const datePattern = /^\d{4}-\d{2}-\d{2}$/
-
-function jsonToolResult(value: unknown) {
-  return {
-    content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
-    structuredContent: value as Record<string, unknown>,
-  }
-}
 
 export function registerEventTools(server: McpServer) {
   server.registerTool(
@@ -25,12 +26,7 @@ export function registerEventTools(server: McpServer) {
       title: "Список событий",
       description:
         "Возвращает события за диапазон дат (YYYY-MM-DD). Опционально фильтрует по calendarIds. Лимит до 500 событий.",
-      inputSchema: {
-        startDate: z.string().regex(datePattern),
-        endDate: z.string().regex(datePattern),
-        calendarIds: z.array(z.string().min(1)).optional(),
-        limit: z.number().int().positive().max(500).optional(),
-      },
+      inputSchema: listEventsInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -52,9 +48,7 @@ export function registerEventTools(server: McpServer) {
     {
       title: "Получить событие",
       description: "Возвращает одно событие по eventIdentifier.",
-      inputSchema: {
-        eventIdentifier: z.string().min(1),
-      },
+      inputSchema: getEventInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -77,16 +71,7 @@ export function registerEventTools(server: McpServer) {
       title: "Создать событие",
       description:
         "Создаёт событие в выбранном или дефолтном календаре. Даты — ISO-8601 или YYYY-MM-DD.",
-      inputSchema: {
-        title: z.string().min(1),
-        startDate: z.string().min(1),
-        endDate: z.string().min(1),
-        calendarId: z.string().min(1).optional(),
-        allDay: z.boolean().optional(),
-        location: z.string().optional(),
-        notes: z.string().optional(),
-        url: z.string().optional(),
-      },
+      inputSchema: createEventInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -108,17 +93,7 @@ export function registerEventTools(server: McpServer) {
     {
       title: "Обновить событие",
       description: "Частично обновляет событие по eventIdentifier.",
-      inputSchema: {
-        eventIdentifier: z.string().min(1),
-        title: z.string().min(1).optional(),
-        startDate: z.string().min(1).optional(),
-        endDate: z.string().min(1).optional(),
-        calendarId: z.string().min(1).optional(),
-        allDay: z.boolean().optional(),
-        location: z.string().optional(),
-        notes: z.string().optional(),
-        url: z.string().optional(),
-      },
+      inputSchema: updateEventInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -140,10 +115,7 @@ export function registerEventTools(server: McpServer) {
     {
       title: "Удалить событие",
       description: "Удаляет событие по eventIdentifier. span: thisEvent или futureEvents.",
-      inputSchema: {
-        eventIdentifier: z.string().min(1),
-        span: z.enum(["thisEvent", "futureEvents"]).optional(),
-      },
+      inputSchema: deleteEventInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,
@@ -169,12 +141,7 @@ export function registerAnalyticsTools(server: McpServer) {
       title: "Анализ расписания",
       description:
         "Считает загрузку по дням и календарям: busy minutes, % занятости, встречи с join URL, all-day vs timed.",
-      inputSchema: {
-        startDate: z.string().regex(datePattern),
-        endDate: z.string().regex(datePattern),
-        calendarIds: z.array(z.string().min(1)).optional(),
-        workMinutesPerDay: z.number().int().positive().max(24 * 60).optional(),
-      },
+      inputSchema: analyzeScheduleInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -206,11 +173,7 @@ export function registerAnalyticsTools(server: McpServer) {
     {
       title: "Найти конфликты",
       description: "Находит пересекающиеся timed-события в диапазоне дат.",
-      inputSchema: {
-        startDate: z.string().regex(datePattern),
-        endDate: z.string().regex(datePattern),
-        calendarIds: z.array(z.string().min(1)).optional(),
-      },
+      inputSchema: findConflictsInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -239,14 +202,7 @@ export function registerAnalyticsTools(server: McpServer) {
       title: "Найти свободное время",
       description:
         "Возвращает свободные слоты длительностью не меньше minDurationMinutes в рабочих часах.",
-      inputSchema: {
-        startDate: z.string().regex(datePattern),
-        endDate: z.string().regex(datePattern),
-        calendarIds: z.array(z.string().min(1)).optional(),
-        workStart: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-        workEnd: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-        minDurationMinutes: z.number().int().positive().max(24 * 60).optional(),
-      },
+      inputSchema: findFreeTimeInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

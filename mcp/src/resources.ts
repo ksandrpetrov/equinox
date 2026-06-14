@@ -7,7 +7,7 @@ const calendarDocs = `# Equinox Calendar MCP
 ## Архитектура
 
 - **MCP server** (\`mcp/\`) — TypeScript, stdio transport
-- **equinox-bridge** — Swift CLI, JSON stdin/stdout, прямой доступ к \`EKEventStore\`
+- **equinox-bridge** — Swift CLI, JSON-команда в argv, JSON-ответ в stdout, прямой доступ к \`EKEventStore\`
 
 MCP работает без запущенного GUI equinox.
 

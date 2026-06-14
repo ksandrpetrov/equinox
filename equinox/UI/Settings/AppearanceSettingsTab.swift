@@ -12,7 +12,7 @@ struct AppearanceSettingsTab: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if matches("Preview", "Appearance") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Preview", "Appearance") {
                 AppearancePreview(prefs: prefs)
                     .padding(SettingsDesign.detailPadding)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -39,7 +39,7 @@ struct AppearanceSettingsTab: View {
 
     @ViewBuilder
     private var settingsSections: some View {
-            if matches("Menu Bar", "icon", "month", "meeting", "clock", "hide") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Menu Bar", "icon", "month", "meeting", "clock", "hide") {
                 SettingsSection(String(localized: "Menu Bar", comment: "")) {
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                         Text(String(localized: "Menu Bar Icon", comment: "Settings section: menu bar icon"))
@@ -92,7 +92,7 @@ struct AppearanceSettingsTab: View {
                 }
             }
 
-            if matches("Calendar", "dots", "week", "weekend", "boundary", "location", "events", "hover") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "dots", "week", "weekend", "boundary", "location", "events", "hover") {
                 SettingsSection(
                     String(localized: "Calendar Display", comment: "Settings calendar display section"),
                     subtitle: String(localized: "Customize the calendar grid and agenda", comment: "")
@@ -138,7 +138,7 @@ struct AppearanceSettingsTab: View {
                 }
             }
 
-            if matches("Theme", "Appearance", "Background", "Size", "Glass", "Light", "Dark") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Theme", "Appearance", "Background", "Size", "Glass", "Light", "Dark") {
                 SettingsSection(String(localized: "Theme", comment: "")) {
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingMD) {
                         Text(String(localized: "Appearance", comment: ""))
@@ -194,9 +194,9 @@ struct AppearanceSettingsTab: View {
     }
 
     private var hasVisibleSections: Bool {
-        matches("Menu Bar", "icon", "month", "meeting", "clock", "hide")
-            || matches("Calendar", "dots", "week", "weekend", "boundary", "location", "events", "hover")
-            || matches("Theme", "Appearance", "Background", "Size", "Glass", "Light", "Dark")
+        SettingsSearchFilter.matches(searchText: searchText, keywords: "Menu Bar", "icon", "month", "meeting", "clock", "hide")
+            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "dots", "week", "weekend", "boundary", "location", "events", "hover")
+            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Theme", "Appearance", "Background", "Size", "Glass", "Light", "Dark")
     }
 
     private var settingsSearchEmptyState: some View {
@@ -207,11 +207,5 @@ struct AppearanceSettingsTab: View {
         )
         .frame(maxWidth: .infinity)
         .padding(.vertical, EquinoxDesign.spacingXL)
-    }
-
-    private func matches(_ keywords: String...) -> Bool {
-        guard !searchText.isEmpty else { return true }
-        let query = searchText.lowercased()
-        return keywords.contains { $0.lowercased().contains(query) || query.contains($0.lowercased()) }
     }
 }

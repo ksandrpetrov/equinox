@@ -4,31 +4,31 @@ import SwiftUI
 struct McpSettingsTab: View {
     var searchText: String = ""
 
+    @Bindable private var prefs = PreferencesStore.shared
     @State private var setup = McpConfigurator.buildSetup()
-    @State private var isMcpEnabled = PreferencesStore.shared.isMcpEnabled
     @State private var toggling = false
     @State private var suppressToggleChange = false
     @State private var statusMessage: String?
 
     var body: some View {
         SettingsDetailScaffold(title: String(localized: "MCP", comment: "MCP prefs tab label")) {
-            if matches("Cursor", "Codex", "Claude", "MCP", "LLM", "AI", "connect") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Cursor", "Codex", "Claude", "MCP", "LLM", "AI", "connect") {
                 clientIntegrationSection
             }
 
-            if matches("ready", "node", "bridge", "server", "build") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "ready", "node", "bridge", "server", "build") {
                 readinessSection
             }
 
-            if matches("connect", "setup", "config", "cursor", "codex", "claude") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "connect", "setup", "config", "cursor", "codex", "claude") {
                 instructionsSection
             }
 
-            if matches("config", "json", "copy") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "config", "json", "copy") {
                 configSection
             }
 
-            if matches("tools", "calendar", "events", "analytics") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "tools", "calendar", "events", "analytics") {
                 toolsSection
             }
 
@@ -58,7 +58,7 @@ struct McpSettingsTab: View {
             ) {
                 SettingsRow(
                     title: String(localized: "Auto-configure Cursor and Claude", comment: ""),
-                    subtitle: isMcpEnabled
+                    subtitle: prefs.isMcpEnabled
                         ? String(
                             localized: "Equinox Calendar is registered in Cursor and Claude Desktop config files.",
                             comment: "MCP enabled subtitle"
@@ -68,11 +68,11 @@ struct McpSettingsTab: View {
                             comment: "MCP disabled subtitle"
                         )
                 ) {
-                    Toggle("", isOn: $isMcpEnabled)
+                    Toggle("", isOn: $prefs.isMcpEnabled)
                         .labelsHidden()
                         .toggleStyle(.switch)
                         .disabled(!setup.isReady || toggling)
-                        .onChange(of: isMcpEnabled) { oldValue, newValue in
+                        .onChange(of: prefs.isMcpEnabled) { oldValue, newValue in
                             guard !suppressToggleChange, oldValue != newValue else { return }
                             Task { @MainActor in
                                 await applyMcpToggle(newValue, revertingTo: oldValue)
@@ -278,14 +278,14 @@ struct McpSettingsTab: View {
 
     private func revertToggle(to value: Bool) {
         suppressToggleChange = true
-        isMcpEnabled = value
+        prefs.isMcpEnabled = value
         suppressToggleChange = false
     }
 
     private func syncToggleFromPreferences() {
         guard !toggling else { return }
         let persisted = PreferencesStore.shared.isMcpEnabled
-        guard isMcpEnabled != persisted else { return }
+        guard prefs.isMcpEnabled != persisted else { return }
         revertToggle(to: persisted)
     }
 
@@ -327,11 +327,5 @@ struct McpSettingsTab: View {
 
     private func refreshSetup() {
         setup = McpConfigurator.buildSetup()
-    }
-
-    private func matches(_ keywords: String...) -> Bool {
-        guard !searchText.isEmpty else { return true }
-        let query = searchText.lowercased()
-        return keywords.contains { $0.lowercased().contains(query) || query.contains($0.lowercased()) }
     }
 }

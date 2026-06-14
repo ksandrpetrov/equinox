@@ -1,38 +1,46 @@
 import XCTest
 @testable import equinox
 
-@MainActor
-final class AppStateFetchRangeTests: XCTestCase {
+final class EventFetchRangeTests: XCTestCase {
     func testFetchRangeExtendsForAgendaDays() {
-        let appState = AppState()
-        appState.preferences.showEventDays = 3
         let gridFirst = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let gridLast = CalendarDate(year: 2026, monthIndex: 5, day: 30)
-        appState.selectedDate = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let selectedDate = CalendarDate(year: 2026, monthIndex: 5, day: 10)
 
-        let range = appState.fetchRange(coveringGridFrom: gridFirst, through: gridLast)
+        let range = EventFetchRange.range(
+            coveringGridFrom: gridFirst,
+            through: gridLast,
+            selectedDate: selectedDate,
+            agendaDays: 3
+        )
         XCTAssertEqual(range.first, gridFirst)
         XCTAssertEqual(range.last, CalendarDate(year: 2026, monthIndex: 5, day: 12))
     }
 
     func testFetchRangePullsEarlierSelectedDate() {
-        let appState = AppState()
-        appState.preferences.showEventDays = 7
         let gridFirst = CalendarDate(year: 2026, monthIndex: 5, day: 5)
         let gridLast = CalendarDate(year: 2026, monthIndex: 5, day: 30)
-        appState.selectedDate = CalendarDate(year: 2026, monthIndex: 5, day: 1)
+        let selectedDate = CalendarDate(year: 2026, monthIndex: 5, day: 1)
 
-        let range = appState.fetchRange(coveringGridFrom: gridFirst, through: gridLast)
-        XCTAssertEqual(range.first, appState.selectedDate)
+        let range = EventFetchRange.range(
+            coveringGridFrom: gridFirst,
+            through: gridLast,
+            selectedDate: selectedDate,
+            agendaDays: 7
+        )
+        XCTAssertEqual(range.first, selectedDate)
     }
 
     func testFetchRangeNoAgendaDaysReturnsGridOnly() {
-        let appState = AppState()
-        appState.preferences.showEventDays = 0
         let gridFirst = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let gridLast = CalendarDate(year: 2026, monthIndex: 5, day: 30)
 
-        let range = appState.fetchRange(coveringGridFrom: gridFirst, through: gridLast)
+        let range = EventFetchRange.range(
+            coveringGridFrom: gridFirst,
+            through: gridLast,
+            selectedDate: CalendarDate(year: 2026, monthIndex: 5, day: 10),
+            agendaDays: 0
+        )
         XCTAssertEqual(range.first, gridFirst)
         XCTAssertEqual(range.last, gridLast)
     }

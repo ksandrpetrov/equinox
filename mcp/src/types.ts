@@ -1,3 +1,12 @@
+import type { z } from "zod"
+
+import {
+  bridgeCalendarSchema,
+  bridgeEventSchema,
+  calendarsDataSchema,
+  eventsDataSchema,
+} from "./schemas/events.js"
+
 export type BridgeError = {
   code: string
   message: string
@@ -9,34 +18,8 @@ export type BridgeResponse<T = unknown> = {
   error?: BridgeError
 }
 
-export type BridgeCalendar = {
-  id: string
-  title: string
-  sourceTitle: string
-  sourceIdentifier: string
-  colorHex: string
-  allowsContentModifications: boolean
-  isSubscribed: boolean
-  type: string
-}
-
-export type BridgeEvent = {
-  eventIdentifier: string | null
-  calendarItemIdentifier: string
-  title: string
-  location: string | null
-  notes: string | null
-  url: string | null
-  startDate: string
-  endDate: string
-  isAllDay: boolean
-  joinURL: string | null
-  calendarIdentifier: string
-  calendarTitle: string
-  calendarColorHex: string
-  allowsContentModifications: boolean
-  hasAttendees: boolean
-}
+export type BridgeCalendar = z.infer<typeof bridgeCalendarSchema>
+export type BridgeEvent = z.infer<typeof bridgeEventSchema>
 
 export type AccessStatusData = {
   status: string
@@ -48,14 +31,8 @@ export type AccessRequestData = {
   status: string
 }
 
-export type CalendarsData = {
-  calendars: BridgeCalendar[]
-}
-
-export type EventsData = {
-  events: BridgeEvent[]
-  truncated: boolean
-}
+export type CalendarsData = z.infer<typeof calendarsDataSchema>
+export type EventsData = z.infer<typeof eventsDataSchema>
 
 export type EventData = {
   event: BridgeEvent

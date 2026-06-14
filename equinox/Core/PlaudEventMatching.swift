@@ -1,11 +1,9 @@
 import Foundation
 
-struct PlaudRecording: Sendable, Equatable {
+struct PlaudRecording: Sendable, Equatable, Codable {
     let fileID: String
     let title: String
     let recordedAt: Date
-    let folderSegment: String?
-    let hasSummary: Bool
 }
 
 enum PlaudMatchConfidence: Sendable, Equatable {
@@ -21,7 +19,6 @@ struct PlaudEventMatch: Sendable, Equatable {
     let fileID: String
     let webURL: URL
     let confidence: PlaudMatchConfidence
-    let hasSummary: Bool
     let source: PlaudMatchSource
 }
 
@@ -80,11 +77,7 @@ enum PlaudEventMatching {
                 eventStart: event.startDate,
                 eventEnd: event.endDate
             )
-            let titleScore = titleTokenScore(
-                eventTitle: event.title,
-                recordingTitle: recording.title,
-                folderSegment: recording.folderSegment
-            )
+            let titleScore = titleTokenScore(eventTitle: event.title, recordingTitle: recording.title)
             let combined = timeScore * 0.7 + titleScore * 0.3
             return ScoredCandidate(recording: recording, combined: combined)
         }
@@ -133,7 +126,6 @@ enum PlaudEventMatching {
             fileID: recording.fileID,
             webURL: webURL,
             confidence: .high,
-            hasSummary: recording.hasSummary,
             source: source
         )
     }
@@ -150,21 +142,7 @@ enum PlaudEventMatching {
         return max(0, 1 - distance / maxDistance)
     }
 
-    private static func titleTokenScore(
-        eventTitle: String,
-        recordingTitle: String,
-        folderSegment: String?
-    ) -> Double {
-        let eventTokens = normalizeTokens(eventTitle)
-        let recordingTokens = normalizeTokens(recordingTitle)
-        var score = jaccard(eventTokens, recordingTokens)
-
-        if let folderSegment, !folderSegment.isEmpty {
-            let folderTokens = normalizeTokens(folderSegment)
-            let folderOverlap = jaccard(eventTokens, folderTokens)
-            score = max(score, folderOverlap * 0.85)
-        }
-
-        return score
+    private static func titleTokenScore(eventTitle: String, recordingTitle: String) -> Double {
+        jaccard(normalizeTokens(eventTitle), normalizeTokens(recordingTitle))
     }
 }

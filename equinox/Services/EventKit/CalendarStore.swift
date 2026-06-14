@@ -1,11 +1,12 @@
-import AppKit
 import EventKit
 import Foundation
 
 actor CalendarStore {
     private let store = EKEventStore()
     private let calendar: Calendar
-    private let onUpdated: @Sendable () -> Void
+    private let isNativeAppInstalled: NativeAppInstalledChecker
+    private let externalChangeDispatcher = ExternalChangeDispatcher()
+    private var storeObserver: NSObjectProtocol?
 
     private var eventsForDate: [Date: [DayEvent]] = [:]
     private var selectedCalendarEventsByDate: [Date: [DayEvent]] = [:]
@@ -24,13 +25,37 @@ actor CalendarStore {
         CalendarAccessStatus.from(EKEventStore.authorizationStatus(for: .event))
     }
 
-    var defaultCalendarIdentifier: String {
-        store.defaultCalendarForNewEvents?.calendarIdentifier ?? ""
+    func hasSelectedCalendars() -> Bool {
+        calendarEntriesStorage.contains { entry in
+            if case .calendar(let cal) = entry { return cal.isSelected }
+            return false
+        }
     }
 
-    init(calendar: Calendar, onUpdated: @escaping @Sendable () -> Void) {
+    init(
+        calendar: Calendar,
+        isNativeAppInstalled: @escaping NativeAppInstalledChecker = NativeJoinURLResolver.defaultInstalledChecker
+    ) {
         self.calendar = calendar
-        self.onUpdated = onUpdated
+        self.isNativeAppInstalled = isNativeAppInstalled
+
+        storeObserver = NotificationCenter.default.addObserver(
+            forName: .EKEventStoreChanged,
+            object: nil,
+            queue: .main
+        ) { [externalChangeDispatcher] _ in
+            externalChangeDispatcher.handler()
+        }
+    }
+
+    func setExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) {
+        externalChangeDispatcher.handler = handler
+    }
+
+    deinit {
+        if let storeObserver {
+            NotificationCenter.default.removeObserver(storeObserver)
+        }
     }
 
     func setVisibleRange(first: CalendarDate, last: CalendarDate) {
@@ -86,15 +111,6 @@ actor CalendarStore {
         isFetchingEvents = false
     }
 
-    func refreshEventKitStore() {
-        store.reset()
-        store.refreshSourcesIfNecessary()
-    }
-
-    func calendar(withIdentifier identifier: String) -> EKCalendar? {
-        store.calendar(withIdentifier: identifier)
-    }
-
     func createEvent(from draft: NewEventDraft) throws {
         guard let ekCalendar = store.calendar(withIdentifier: draft.calendarIdentifier) else {
             throw CalendarStoreError.calendarNotFound
@@ -104,24 +120,7 @@ actor CalendarStore {
         }
 
         let event = EKEvent(eventStore: store)
-        event.title = draft.title
-        event.location = draft.location.isEmpty ? nil : draft.location
-        event.url = draft.url
-        event.isAllDay = draft.isAllDay
-        event.startDate = draft.startDate
-        event.endDate = draft.endDate
-        event.calendar = ekCalendar
-        event.notes = draft.notes
-        event.timeZone = draft.isAllDay ? nil : TimeZone.current
-
-        if let recurrence = draft.recurrence {
-            event.recurrenceRules = [recurrenceRule(from: recurrence)]
-        }
-
-        if let offset = draft.alertOffset {
-            for alarm in event.alarms ?? [] { event.removeAlarm(alarm) }
-            event.addAlarm(EKAlarm(relativeOffset: offset))
-        }
+        EventKitMutation.applyCreate(from: draft, to: event, calendar: ekCalendar)
 
         try store.save(event, span: .thisEvent, commit: true)
     }
@@ -133,14 +132,6 @@ actor CalendarStore {
         try store.remove(event, span: .thisEvent, commit: true)
     }
 
-    func save(_ event: EKEvent) throws {
-        try store.save(event, span: .thisEvent, commit: true)
-    }
-
-    func remove(_ event: EKEvent, span: EKSpan) throws {
-        try store.remove(event, span: span, commit: true)
-    }
-
     func setParticipationStatus(_ status: EventParticipationStatus, for eventID: String) async throws {
         guard let event = store.event(withIdentifier: eventID) else {
             throw CalendarParticipationError.eventNotFound
@@ -148,7 +139,11 @@ actor CalendarStore {
         guard event.hasAttendees else {
             throw CalendarParticipationError.notAnInvitation
         }
-        event.setValue(status.rawValue, forKey: "participationStatus")
+        do {
+            try EventParticipationAccessor.apply(status, to: event)
+        } catch {
+            throw CalendarParticipationError.kvoFailed
+        }
         try store.save(event, span: .thisEvent, commit: true)
         await refetchAll()
     }
@@ -176,13 +171,19 @@ actor CalendarStore {
         await refetchAll()
     }
 
+    private func refreshEventKitStore() {
+        store.reset()
+        store.refreshSourcesIfNecessary()
+    }
+
     private func fetchSourcesAndCalendars() async {
-        let calendars = store.calendars(for: .event).sorted { cal1, cal2 in
-            if cal1.source.sourceIdentifier == cal2.source.sourceIdentifier {
-                return cal1.title.localizedStandardCompare(cal2.title) == .orderedAscending
-            }
-            return cal1.source.title.localizedStandardCompare(cal2.source.title) == .orderedAscending
+        let listItems = store.calendars(for: .event).map {
+            EventKitCalendarMapping.calendarListItem(from: $0)
         }
+
+        let calendars = CalendarListing.filterDisplayableCalendars(
+            CalendarListing.sortCalendarsForDisplay(listItems)
+        )
 
         var inMemorySelections: [String: Bool] = [:]
         for entry in calendarEntriesStorage {
@@ -194,7 +195,7 @@ actor CalendarStore {
         let storedSelection = CalendarSelectionStorage.loadSelectedIDs()
         var selectedCalendars: Set<String>
         if storedSelection.isEmpty, !calendars.isEmpty {
-            let allIDs = calendars.map(\.calendarIdentifier)
+            let allIDs = calendars.map(\.id)
             CalendarSelectionStorage.saveSelectedIDs(allIDs)
             selectedCalendars = Set(allIDs)
         } else {
@@ -204,15 +205,15 @@ actor CalendarStore {
         var result: [CalendarListEntry] = []
         var currentSourceTitle = ""
 
-        for ekCalendar in calendars {
-            let calendarSourceTitle = ekCalendar.source.title
-            guard ekCalendar.color != nil else { continue }
+        for item in calendars {
+            guard let ekCalendar = store.calendar(withIdentifier: item.id) else { continue }
+            let calendarSourceTitle = item.sourceTitle
 
             if calendarSourceTitle != currentSourceTitle {
                 result.append(.source(calendarSourceTitle))
                 currentSourceTitle = calendarSourceTitle
             }
-            let identifier = ekCalendar.calendarIdentifier
+            let identifier = item.id
             let isSelected = inMemorySelections[identifier] ?? selectedCalendars.contains(identifier)
             result.append(.calendar(SelectableCalendar.from(
                 calendar: ekCalendar,
@@ -282,6 +283,18 @@ actor CalendarStore {
         let cals = validCalendars()
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
         let events = store.events(matching: predicate)
+        let newEventsForDate = await buildDayEvents(from: events, rangeStart: rangeStart, rangeEnd: rangeEnd)
+        eventsForDate.merge(newEventsForDate) { _, new in new }
+        await filterEvents()
+    }
+
+    /// Builds display-ready `DayEvent` day slots for EventKit events. Shared by the
+    /// visible-range fetch and the Plaud history match so layout/join-URL logic stays in one place.
+    private func buildDayEvents(
+        from events: [EKEvent],
+        rangeStart: Date,
+        rangeEnd: Date
+    ) async -> [Date: [DayEvent]] {
         var newEventsForDate: [Date: [DayEvent]] = [:]
 
         for event in events {
@@ -302,11 +315,16 @@ actor CalendarStore {
                 url: event.url?.absoluteString,
                 notes: event.hasNotes ? event.notes : nil
             )
-            let joinURL = webJoinURL.map { resolveNativeJoinURL(from: $0) ?? $0 }
+            let joinURL: URL?
+            if let webJoinURL {
+                joinURL = await resolveNativeJoinURL(from: webJoinURL) ?? webJoinURL
+            } else {
+                joinURL = nil
+            }
 
             for slot in slots {
-                let dayEvent = DayEvent.from(
-                    event: event,
+                let dayEvent = DayEventMapping.dayEvent(
+                    from: event,
                     slot: slot,
                     joinURL: joinURL,
                     dayKey: slot.dayStart
@@ -337,13 +355,38 @@ actor CalendarStore {
             }
         }
 
-        eventsForDate.merge(newEventsForDate) { _, new in new }
-        await filterEvents()
+        return newEventsForDate
+    }
+
+    /// Returns selected-calendar events across an arbitrary span without mutating the display
+    /// cache. Plaud matching uses this so links resolve for meetings outside the visible range.
+    /// One `DayEvent` per underlying event (deduplicated across multi-day slots).
+    func matchableEvents(from start: Date, to end: Date) async -> [DayEvent] {
+        guard hasCalendarAccess, start < end else { return [] }
+        let cals = validCalendars()
+        guard !cals.isEmpty else { return [] }
+
+        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: cals)
+        let events = store.events(matching: predicate)
+        let byDate = await buildDayEvents(from: events, rangeStart: start, rangeEnd: end)
+
+        var seen = Set<String>()
+        var result: [DayEvent] = []
+        for dayEvents in byDate.values {
+            for event in dayEvents {
+                guard let eventID = event.eventIdentifier else { continue }
+                let key = "\(eventID)|\(event.startDate.timeIntervalSince1970)"
+                if seen.insert(key).inserted {
+                    result.append(event)
+                }
+            }
+        }
+        return result
     }
 
     private func filterEvents() async {
         var filtered: [Date: [DayEvent]] = [:]
-        let selectedCalendars = Set(CalendarSelectionStorage.loadSelectedIDs())
+        let selectedCalendars = Set(validCalendarIDs())
 
         for (date, events) in eventsForDate {
             for event in events where selectedCalendars.contains(event.calendarIdentifier) {
@@ -355,32 +398,22 @@ actor CalendarStore {
         }
 
         selectedCalendarEventsByDate = filtered
-        onUpdated()
     }
 
-    private func resolveNativeJoinURL(from url: URL) -> URL? {
-        guard let scheme = NativeJoinURL.nativeScheme(for: url),
-              let schemeURL = URL(string: scheme),
-              NSWorkspace.shared.urlForApplication(toOpen: schemeURL) != nil,
-              let native = NativeJoinURL.nativeURLString(from: url) else {
-            return nil
+    private func validCalendarIDs() -> [String] {
+        calendarEntriesStorage.compactMap { entry -> String? in
+            guard case .calendar(let cal) = entry, cal.isSelected else { return nil }
+            return cal.id
         }
-        return URL(string: native)
     }
 
-    private func recurrenceRule(from draft: RecurrenceDraft) -> EKRecurrenceRule {
-        let frequency: EKRecurrenceFrequency
-        var interval = 1
-        switch draft.frequency {
-        case .daily: frequency = .daily
-        case .weekly: frequency = .weekly
-        case .biweekly: frequency = .weekly; interval = 2
-        case .monthly: frequency = .monthly
-        case .yearly: frequency = .yearly
-        }
-        let end = draft.endDate.map { EKRecurrenceEnd(end: $0) }
-        return EKRecurrenceRule(recurrenceWith: frequency, interval: interval, end: end)
+    private func resolveNativeJoinURL(from url: URL) async -> URL? {
+        await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
     }
+}
+
+private final class ExternalChangeDispatcher: @unchecked Sendable {
+    var handler: @Sendable () -> Void = {}
 }
 
 enum CalendarStoreError: Error, LocalizedError {
@@ -403,6 +436,7 @@ enum CalendarStoreError: Error, LocalizedError {
 enum CalendarParticipationError: Error, LocalizedError {
     case eventNotFound
     case notAnInvitation
+    case kvoFailed
 
     var errorDescription: String? {
         switch self {
@@ -410,6 +444,8 @@ enum CalendarParticipationError: Error, LocalizedError {
             return String(localized: "The event could not be found.", comment: "RSVP error")
         case .notAnInvitation:
             return String(localized: "This event is not a meeting invitation.", comment: "RSVP error")
+        case .kvoFailed:
+            return String(localized: "Could not update response", comment: "RSVP failure title")
         }
     }
 }

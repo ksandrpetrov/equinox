@@ -4,6 +4,7 @@ import { dirname, isAbsolute, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import type { BridgeResponse } from "./types.js"
+import { requireBridgeData as validateBridgeData } from "./bridgeValidation.js"
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 
@@ -74,12 +75,12 @@ export function invokeBridge<T>(command: Record<string, unknown>): BridgeRespons
 }
 
 export function requireBridgeData<T>(response: BridgeResponse<T>): T {
-  if (!response.ok || response.data === undefined) {
-    const message = response.error?.message ?? "Unknown bridge error"
-    const code = response.error?.code ?? "bridge_error"
-    throw new BridgeInvocationError(`${code}: ${message}`)
+  try {
+    return validateBridgeData(response)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown bridge error"
+    throw new BridgeInvocationError(message)
   }
-  return response.data
 }
 
 export function repoRootPath(): string {

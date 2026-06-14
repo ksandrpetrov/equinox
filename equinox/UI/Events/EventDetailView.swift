@@ -1,5 +1,4 @@
 import SwiftUI
-import AppKit
 
 struct EventDetailView: View {
     @Bindable var appState: AppState
@@ -12,11 +11,15 @@ struct EventDetailView: View {
     @State private var showManualPlaudLink = false
 
     private var plaudMatch: PlaudEventMatch? {
-        appState.plaudLink(for: event)
+        appState.plaud.link(for: event)
     }
 
     private var isPastEvent: Bool {
         event.endDate < Date()
+    }
+
+    private var displayNotes: String? {
+        JoinURLDetection.notesForDisplay(notes: event.notes, excludingJoinURL: event.joinURL)
     }
 
     var body: some View {
@@ -31,70 +34,45 @@ struct EventDetailView: View {
             onDestructive: event.allowsContentModifications ? { deleteEvent() } : nil
         ) {
             ScrollView {
-                VStack(alignment: .leading, spacing: ModalDesign.sectionSpacing) {
+                VStack(alignment: .leading, spacing: EquinoxDesign.spacingLG) {
                     if let actionError {
                         ModalErrorBanner(message: actionError)
                     }
 
-                    HStack(spacing: EquinoxDesign.spacingSM) {
-                        Circle()
-                            .fill(event.swiftUIColor)
-                            .frame(width: 12, height: 12)
-                        Text(event.title)
-                            .font(.title3.weight(.semibold))
-                            .opacity(event.participationStatus == .declined ? 0.6 : 1)
-                        Spacer(minLength: 0)
-                    }
+                    EventDetailHeroHeader(event: event)
 
-                    VStack(alignment: .leading, spacing: EquinoxDesign.spacingMD) {
-                        Label(whenString, systemImage: "clock")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                    EventDetailMetadataCard(rows: metadataRows)
 
-                        if let location = event.location, !location.isEmpty {
-                            Label(location, systemImage: "mappin.and.ellipse")
-                                .font(.subheadline)
-                        }
-
-                        Label(event.calendarTitle, systemImage: "calendar")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                        if event.showsRSVPControls, let status = event.participationStatus {
-                            Label(status.detailStatusLabel, systemImage: "person.crop.circle.badge.clock")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        if let notes = event.notes, !notes.isEmpty {
-                            Text(notes)
-                                .font(.body)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                    if let displayNotes {
+                        EventDetailNotesCard(notes: displayNotes)
                     }
 
                     if event.showsRSVPControls {
-                        EventRSVPBar(
-                            status: event.participationStatus,
-                            isCompact: false,
-                            isResponding: isResponding
-                        ) { status in
-                            respond(to: status)
+                        EventDetailSection(
+                            title: String(localized: "Your response", comment: "Event detail RSVP section")
+                        ) {
+                            EventRSVPBar(
+                                status: event.participationStatus,
+                                layout: .detail,
+                                isResponding: isResponding
+                            ) { status in
+                                respond(to: status)
+                            }
                         }
                     }
 
-                    if let url = event.joinURL {
-                        Button(String(localized: "Join Meeting", comment: "")) {
-                            NSWorkspace.shared.open(url)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .frame(maxWidth: .infinity)
-                    }
+                    if hasActionSection {
+                        VStack(spacing: EquinoxDesign.spacingSM) {
+                            if let url = event.joinURL {
+                                EventDetailJoinButton(url: url) {
+                                    URLOpener.open(url)
+                                }
+                            }
 
-                    if isPastEvent, appState.preferences.isPlaudEnabled {
-                        plaudSection
+                            if isPastEvent, appState.preferences.isPlaudEnabled {
+                                plaudSection
+                            }
+                        }
                     }
                 }
                 .padding(ModalDesign.contentPadding)
@@ -102,26 +80,58 @@ struct EventDetailView: View {
             }
         }
         .onAppear {
-            appState.refreshPlaudMatchesIfNeeded()
+            appState.plaud.refreshMatchesIfNeeded()
         }
+    }
+
+    private var hasActionSection: Bool {
+        event.joinURL != nil || (isPastEvent && appState.preferences.isPlaudEnabled)
+    }
+
+    private var metadataRows: [EventDetailMetadataRowModel] {
+        var rows: [EventDetailMetadataRowModel] = [
+            EventDetailMetadataRowModel(
+                symbol: "clock",
+                title: String(localized: "When", comment: "Event detail metadata label"),
+                value: whenString,
+                tint: .secondary
+            )
+        ]
+
+        if let location = event.location, !location.isEmpty {
+            rows.append(
+                EventDetailMetadataRowModel(
+                    symbol: "mappin.and.ellipse",
+                    title: String(localized: "Location", comment: "Event detail metadata label"),
+                    value: location,
+                    tint: .secondary
+                )
+            )
+        }
+
+        if event.showsRSVPControls, let status = event.participationStatus {
+            rows.append(
+                EventDetailMetadataRowModel(
+                    symbol: "person.crop.circle.badge.clock",
+                    title: String(localized: "Attendance", comment: "Event detail metadata label"),
+                    value: status.detailStatusLabel,
+                    tint: status.chipForeground
+                )
+            )
+        }
+
+        return rows
     }
 
     @ViewBuilder
     private var plaudSection: some View {
         if let match = plaudMatch {
-            VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
-                Button(String(localized: "Open in Plaud", comment: "Plaud recording button")) {
-                    NSWorkspace.shared.open(match.webURL)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
-
-                Text(match.hasSummary
-                    ? String(localized: "Recording available", comment: "Plaud match subtitle")
-                    : String(localized: "Recording available (no summary yet)", comment: "Plaud match subtitle"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            EventDetailSecondaryActionButton(
+                title: String(localized: "Open in Plaud", comment: "Plaud recording button"),
+                symbol: "waveform",
+                subtitle: String(localized: "Recording available", comment: "Plaud match subtitle")
+            ) {
+                URLOpener.open(match.webURL)
             }
         } else if showManualPlaudLink {
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
@@ -145,13 +155,18 @@ struct EventDetailView: View {
                     .buttonStyle(.bordered)
                 }
             }
+            .padding(EquinoxDesign.spacingMD)
+            .background {
+                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
+                    .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(0.72))
+            }
         } else {
-            Button(String(localized: "Link Plaud recording…", comment: "Plaud manual link action")) {
+            EventDetailSecondaryActionButton(
+                title: String(localized: "Link Plaud recording…", comment: "Plaud manual link action"),
+                symbol: "link.badge.plus"
+            ) {
                 showManualPlaudLink = true
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .frame(maxWidth: .infinity)
         }
     }
 
@@ -166,7 +181,7 @@ struct EventDetailView: View {
         }
         actionError = nil
         Task {
-            if let error = await appState.saveManualPlaudLink(for: event, url: url) {
+            if let error = await appState.plaud.saveManualLink(for: event, url: url) {
                 actionError = error
             } else {
                 showManualPlaudLink = false
@@ -195,11 +210,22 @@ struct EventDetailView: View {
         actionError = nil
         Task {
             guard let id = event.eventIdentifier else { return }
-            if let error = await appState.deleteEvent(identifier: id) {
+            if let error = await appState.events.deleteEvent(identifier: id) {
                 actionError = error
             } else {
                 dismiss()
             }
+        }
+    }
+}
+
+private extension EventParticipationStatus {
+    var chipForeground: Color {
+        switch self {
+        case .unknown, .pending: .primary.opacity(0.85)
+        case .accepted: .green
+        case .tentative: .orange
+        case .declined: .red
         }
     }
 }

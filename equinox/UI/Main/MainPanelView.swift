@@ -6,7 +6,7 @@ struct MainPanelView: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var agendaHeightRatio: Double = PreferencesStore.shared.agendaHeightRatio
+    @State private var agendaHeightRatio: Double = 0.35
     @State private var expandedEventID: String?
 
     private var metrics: SizeMetrics {
@@ -22,7 +22,7 @@ struct MainPanelView: View {
 
     private var computedAgendaHeight: CGFloat {
         guard showAgenda else { return 0 }
-        let maxHeight = appState.panelAgendaMaxHeight
+        let maxHeight = appState.layout.panelAgendaMaxHeight
         return max(120, min(maxHeight, maxHeight * agendaHeightRatio / 0.35))
     }
 
@@ -30,16 +30,16 @@ struct MainPanelView: View {
         panelContent
             .panelBackground(style: backgroundStyle, reduceTransparency: reduceTransparency)
             .frame(width: metrics.panelWidth)
-            .sheet(isPresented: modalSheetBinding(\.isNewEventSheetPresented)) {
+            .sheet(isPresented: modalSheetBinding(\.panel.isNewEventSheetPresented)) {
                 NewEventSheet(appState: appState, metrics: metrics)
                     .equinoxSheetPresentation()
             }
-            .sheet(isPresented: modalSheetBinding(\.isGoToDateSheetPresented)) {
+            .sheet(isPresented: modalSheetBinding(\.panel.isGoToDateSheetPresented)) {
                 GoToDateSheet(appState: appState, metrics: metrics)
                     .equinoxSheetPresentation()
             }
-            .sheet(isPresented: modalSheetBinding(\.isEventDetailPresented)) {
-                if let event = appState.selectedEvent {
+            .sheet(isPresented: modalSheetBinding(\.panel.isEventDetailPresented)) {
+                if let event = appState.panel.selectedEvent {
                     EventDetailView(appState: appState, event: event, metrics: metrics)
                         .equinoxSheetPresentation()
                 }
@@ -53,15 +53,15 @@ struct MainPanelView: View {
         VStack(spacing: 0) {
             PanelCommandBar(appState: appState, metrics: metrics)
 
-            if let feedback = appState.panelFeedback {
+            if let feedback = appState.panel.panelFeedback {
                 ModalErrorBanner(message: feedback)
                     .padding(.bottom, EquinoxDesign.spacingXS)
                     .onTapGesture {
-                        appState.panelFeedback = nil
+                        appState.panel.panelFeedback = nil
                     }
             }
 
-            if appState.isFetchingEvents {
+            if appState.events.isFetchingEvents {
                 ProgressView()
                     .controlSize(.small)
                     .frame(maxWidth: .infinity)
@@ -74,7 +74,7 @@ struct MainPanelView: View {
 
             CalendarGridView(appState: appState, metrics: metrics)
                 .fixedSize(horizontal: false, vertical: true)
-                .id(appState.monthDate)
+                .id(appState.events.monthDate)
                 .transition(monthGridTransition)
 
             if showAgenda {
@@ -90,9 +90,9 @@ struct MainPanelView: View {
         .padding(EquinoxDesign.panelPadding)
         .onAppear {
             agendaHeightRatio = appState.preferences.agendaHeightRatio
-            appState.refreshPlaudMatchesIfNeeded()
+            appState.plaud.refreshMatchesIfNeeded()
         }
-        .animation(EquinoxDesign.animation(EquinoxDesign.monthTransitionAnimation, reduceMotion: reduceMotion), value: appState.monthDate)
+        .animation(EquinoxDesign.animation(EquinoxDesign.monthTransitionAnimation, reduceMotion: reduceMotion), value: appState.events.monthDate)
     }
 
     private var monthGridTransition: AnyTransition {
@@ -112,7 +112,7 @@ struct MainPanelView: View {
                 let wasPresented = appState[keyPath: keyPath]
                 appState[keyPath: keyPath] = newValue
                 if wasPresented, !newValue {
-                    appState.onModalSheetDismissed?()
+                    appState.panel.onModalSheetDismissed?()
                 }
             }
         )

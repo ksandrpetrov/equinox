@@ -33,7 +33,7 @@ struct GoToDateSheet: View {
                 .accessibilityLabel(String(localized: "Date", comment: "Go to date picker label"))
 
                 Button(String(localized: "Today", comment: "")) {
-                    pickedDate = appState.todayDate.date(in: appState.calendar)
+                    pickedDate = appState.events.todayDate.date(in: appState.calendar)
                 }
                 .buttonStyle(.link)
                 .disabled(isShowingToday)
@@ -42,14 +42,14 @@ struct GoToDateSheet: View {
             .padding(.bottom, EquinoxDesign.spacingMD)
         }
         .onAppear {
-            pickedDate = appState.selectedDate.date(in: appState.calendar)
+            pickedDate = appState.events.selectedDate.date(in: appState.calendar)
         }
     }
 
     private var isShowingToday: Bool {
         appState.calendar.isDate(
             pickedDate,
-            inSameDayAs: appState.todayDate.date(in: appState.calendar)
+            inSameDayAs: appState.events.todayDate.date(in: appState.calendar)
         )
     }
 
@@ -59,7 +59,7 @@ struct GoToDateSheet: View {
 
     private func goToPickedDate() {
         let date = CalendarDate(date: pickedDate, calendar: appState.calendar)
-        appState.selectDate(date)
+        appState.events.selectDate(date)
         close()
     }
 }

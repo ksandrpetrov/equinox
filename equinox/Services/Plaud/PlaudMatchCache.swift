@@ -4,7 +4,6 @@ struct PlaudCachedMatch: Codable, Sendable, Equatable {
     let fileID: String
     let webURLString: String
     let source: PlaudMatchSource
-    let hasSummary: Bool
     let matchedAt: Date
 
     var webURL: URL? { URL(string: webURLString) }
@@ -85,6 +84,15 @@ final class PlaudMatchCache: @unchecked Sendable {
             }
             data.negatives = [:]
             data.indexFingerprint = newFingerprint
+            persistLocked()
+        }
+    }
+
+    /// Clears cached "no match" decisions so events can be matched again after reconnect or manual refresh.
+    func clearNegatives() {
+        lock.withLock {
+            guard !data.negatives.isEmpty else { return }
+            data.negatives = [:]
             persistLocked()
         }
     }

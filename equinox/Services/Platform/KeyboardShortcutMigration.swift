@@ -2,7 +2,7 @@ import Foundation
 import KeyboardShortcuts
 
 enum KeyboardShortcutMigration {
-    private static let migrationFlagKey = "KeyboardShortcutsMigrationFromMASShortcut"
+    private static let migrationFlagKey = kKeyboardShortcutsMigrationFromMASShortcut
 
     /// Converts legacy MASShortcut `GlobalShortcut` dictionary to KeyboardShortcuts storage.
     @MainActor

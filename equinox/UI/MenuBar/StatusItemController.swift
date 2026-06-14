@@ -29,11 +29,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     func setup() {
-        appState.onPinStateChanged = { [weak self] in
+        appState.panel.onPinStateChanged = { [weak self] in
             self?.applyPinState()
         }
-        appState.onModalSheetDismissed = { [weak self] in
+        appState.panel.onModalSheetDismissed = { [weak self] in
             self?.retainPanelFocusAfterModalDismiss()
+        }
+        appState.events.onMeetingIndicatorChanged = { [weak self] in
+            self?.updateMenuBarIcon()
         }
         NotificationCenter.default.addObserver(
             forName: kEquinoxSizePreferenceChanged,
@@ -109,13 +112,13 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     private func createNewEvent() {
-        appState.newEventInitialDate = appState.selectedDate
-        appState.isNewEventSheetPresented = true
+        appState.panel.newEventInitialDate = appState.events.selectedDate
+        appState.panel.isNewEventSheetPresented = true
         showPanelIfHidden()
     }
 
     private func goToToday() {
-        appState.goToToday()
+        appState.events.goToToday()
         showPanelIfHidden()
     }
 
@@ -136,7 +139,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     private func syncPanelVisibleState() {
-        appState.isPanelVisible = isPanelActuallyVisible
+        appState.panel.isPanelVisible = isPanelActuallyVisible
     }
 
     func applyPinState() {
@@ -150,7 +153,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func togglePanel() {
         syncPanelVisibleState()
-        if appState.isPanelVisible {
+        if appState.panel.isPanelVisible {
             hidePanel()
         } else {
             showPanel()
@@ -164,7 +167,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func showPanelIfHidden() {
         syncPanelVisibleState()
-        if !appState.isPanelVisible { showPanel() }
+        if !appState.panel.isPanelVisible { showPanel() }
     }
 
     private func hidePanel() {
@@ -196,7 +199,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         guard let button = statusItem.button else { return }
 
         if prefs.isIconHidden {
-            if prefs.showMeetingIndicator && appState.shouldShowMeetingIndicator {
+            if prefs.showMeetingIndicator && appState.events.shouldShowMeetingIndicator {
                 button.image = NSImage(named: "meetSolid")
                 button.image?.isTemplate = true
                 button.imagePosition = .imageLeading
@@ -205,9 +208,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
                 button.imagePosition = .noImage
             }
         } else {
-            let text = MenuBarIconRenderer.iconText(prefs: prefs, calendar: appState.calendar, today: appState.todayDate)
+            let text = MenuBarIconRenderer.iconText(prefs: prefs, calendar: appState.calendar, today: appState.events.todayDate)
             let scale = button.window?.screen?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
-            button.image = MenuBarIconRenderer.iconImage(text: text, prefs: prefs, shouldShowMeetingIndicator: appState.shouldShowMeetingIndicator, scale: scale)
+            button.image = MenuBarIconRenderer.iconImage(text: text, prefs: prefs, shouldShowMeetingIndicator: appState.events.shouldShowMeetingIndicator, scale: scale)
             button.imagePosition = prefs.clockFormat != nil ? .imageLeading : .imageOnly
         }
 
@@ -233,10 +236,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func handlePeriodicRefresh() {
         let today = CalendarDate.today(calendar: appState.calendar)
-        if today != appState.todayDate {
-            appState.todayDate = today
+        if today != appState.events.todayDate {
+            appState.events.todayDate = today
         }
-        appState.updateMeetingIndicator()
+        appState.events.updateMeetingIndicator()
         updateMenuBarIcon()
     }
 
@@ -248,7 +251,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     func handleDateURL(_ date: Date) {
         let calDate = CalendarDate(date: date, calendar: appState.calendar)
-        appState.selectDate(calDate)
+        appState.events.selectDate(calDate)
         showPanelIfHidden()
     }
 
@@ -262,7 +265,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         dismissMonitor.updateMonitoring(
             isPinned: appState.isPinned,
             isPanelVisible: isPanelActuallyVisible,
-            isModalSheetPresented: { [weak self] in self?.appState.isModalSheetPresented ?? false },
+            isModalSheetPresented: { [weak self] in self?.appState.panel.isModalSheetPresented ?? false },
             isEquinoxWindow: { [weak self] window in
                 guard let self else { return false }
                 return self.panelController.isEquinoxCalendarWindow(window, statusItem: self.statusItem)
@@ -285,7 +288,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             guard let self else { return }
             guard !self.appState.isPinned, self.isPanelActuallyVisible else { return }
             if self.panelController.window?.attachedSheet != nil { return }
-            if self.appState.isModalSheetPresented { return }
+            if self.appState.panel.isModalSheetPresented { return }
             guard !NSApp.isActive else { return }
             self.hidePanel()
         }

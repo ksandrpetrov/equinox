@@ -13,6 +13,10 @@ enum EquinoxDesign {
 
     static let panelCornerRadius: CGFloat = 14
     static let panelPadding: CGFloat = 16
+    static let panelAgendaMaxHeight: CGFloat = 400
+    static let panelDefaultHeight: CGFloat = 520
+    static let panelPopoverOffset: CGFloat = 6
+    static let panelScreenMargin: CGFloat = 10
     static let sectionSpacing: CGFloat = 8
 
     static let cellRadius: CGFloat = 8
@@ -43,6 +47,7 @@ enum EquinoxDesign {
         static let weekendTint = Color("WeekendTint")
         static let highlightedDOWBackground = Color("HighlightedDOWBackgroundColor")
         static let monthBoundary = Color("MonthBoundary")
+        static let pendingBackground = Color("PendingBackgroundColor")
     }
 
     static func panelTitleFont() -> Font { .title2.weight(.semibold) }
@@ -66,6 +71,9 @@ enum SettingsDesign {
     static var sectionHeaderBottomPadding: CGFloat { EquinoxDesign.spacingSM - 2 }
     static var detailPadding: CGFloat { EquinoxDesign.settingsDetailPadding }
     static var rowVerticalPadding: CGFloat { EquinoxDesign.settingsRowVerticalPadding }
+
+    static let windowMinWidth: CGFloat = 720
+    static let windowMinHeight: CGFloat = 560
 
     typealias ColorToken = EquinoxDesign.ColorToken
 }

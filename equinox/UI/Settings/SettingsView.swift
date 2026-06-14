@@ -1,16 +1,5 @@
 import SwiftUI
 
-enum SettingsTab: Hashable {
-    case general
-    case calendars
-    case appearance
-    case privacy
-    case shortcuts
-    case mcp
-    case plaud
-    case about
-}
-
 private struct AppStateEnvironmentKey: EnvironmentKey {
     static let defaultValue: AppState? = nil
 }
@@ -96,14 +85,14 @@ struct SettingsView: View {
         .navigationSplitViewStyle(.balanced)
         .searchable(text: $searchText, prompt: String(localized: "Search settings", comment: "Settings search placeholder"))
         .toolbarBackground(.visible, for: .windowToolbar)
-        .frame(minWidth: 720, minHeight: 560)
+        .frame(minWidth: SettingsDesign.windowMinWidth, minHeight: SettingsDesign.windowMinHeight)
         .environment(\.appState, appState)
         .onAppear {
             if let appState {
-                selectedTab = appState.settingsInitialTab
+                selectedTab = appState.panel.settingsInitialTab
             }
         }
-        .onChange(of: appState?.settingsInitialTab) { _, newTab in
+        .onChange(of: appState?.panel.settingsInitialTab) { _, newTab in
             if let newTab { selectedTab = newTab }
         }
     }

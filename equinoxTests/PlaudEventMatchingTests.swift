@@ -13,7 +13,7 @@ final class PlaudEventMatchingTests: XCTestCase {
         calendar = cal
     }
 
-    func testSocServDevHeadsMatchesWeeklyRecordingDespiteTitleMismatch() {
+    func testWeeklyMeetingMatchesSingleRecordingDespiteTitleMismatch() {
         let eventStart = makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 0)
         let eventEnd = makeDate(year: 2025, month: 6, day: 11, hour: 11, minute: 0)
         let recordedAt = makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 8)
@@ -28,9 +28,7 @@ final class PlaudEventMatchingTests: XCTestCase {
             PlaudRecording(
                 fileID: "383169344ae0d5bd925daddb7b5a713e",
                 title: "06-11 Еженедельная встреча по ключевым инициативам и операционным вопросам",
-                recordedAt: recordedAt,
-                folderSegment: "SocServ Dev",
-                hasSummary: true
+                recordedAt: recordedAt
             ),
         ]
 
@@ -60,16 +58,12 @@ final class PlaudEventMatchingTests: XCTestCase {
             PlaudRecording(
                 fileID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 title: "Recording A",
-                recordedAt: makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 5),
-                folderSegment: nil,
-                hasSummary: true
+                recordedAt: makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 5)
             ),
             PlaudRecording(
                 fileID: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                 title: "Recording B",
-                recordedAt: makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 15),
-                folderSegment: nil,
-                hasSummary: false
+                recordedAt: makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 15)
             ),
         ]
 
@@ -83,7 +77,7 @@ final class PlaudEventMatchingTests: XCTestCase {
         XCTAssertNil(match)
     }
 
-    func testRecordingWithoutSummaryStillMatchesWhenTimeAligns() {
+    func testSingleRecordingMatchesWhenTimeAligns() {
         let eventStart = makeDate(year: 2025, month: 6, day: 11, hour: 14, minute: 0)
         let eventEnd = makeDate(year: 2025, month: 6, day: 11, hour: 15, minute: 0)
 
@@ -97,9 +91,7 @@ final class PlaudEventMatchingTests: XCTestCase {
             PlaudRecording(
                 fileID: "cccccccccccccccccccccccccccccccc",
                 title: "06-11 Team Sync",
-                recordedAt: makeDate(year: 2025, month: 6, day: 11, hour: 14, minute: 2),
-                folderSegment: nil,
-                hasSummary: false
+                recordedAt: makeDate(year: 2025, month: 6, day: 11, hour: 14, minute: 2)
             ),
         ]
 
@@ -111,7 +103,6 @@ final class PlaudEventMatchingTests: XCTestCase {
         )
 
         XCTAssertNotNil(match)
-        XCTAssertFalse(match?.hasSummary ?? true)
     }
 
     func testFutureEventDoesNotMatch() {
@@ -128,9 +119,7 @@ final class PlaudEventMatchingTests: XCTestCase {
             PlaudRecording(
                 fileID: "dddddddddddddddddddddddddddddddd",
                 title: "Future",
-                recordedAt: eventStart,
-                folderSegment: nil,
-                hasSummary: true
+                recordedAt: eventStart
             ),
         ]
 
@@ -164,34 +153,29 @@ final class PlaudEventMatchingTests: XCTestCase {
     }
 
     func testParseCreatedAtTreatsNaiveTimestampAsUTC() {
-        // No-timezone timestamps must parse to a fixed UTC instant regardless of the device zone.
-        let parsed = PlaudCatalog.parseCreatedAt("2026-05-18T13:19:52")
+        let parsed = PlaudTimestamp.parseCreatedAt("2026-05-18T13:19:52")
         XCTAssertEqual(parsed, utcDate(year: 2026, month: 5, day: 18, hour: 13, minute: 19, second: 52))
 
-        let spaced = PlaudCatalog.parseCreatedAt("2026-05-18 13:19:52")
+        let spaced = PlaudTimestamp.parseCreatedAt("2026-05-18 13:19:52")
         XCTAssertEqual(spaced, utcDate(year: 2026, month: 5, day: 18, hour: 13, minute: 19, second: 52))
     }
 
     func testParseCreatedAtAcceptsEpochSecondsAndMillis() {
         let epochSeconds = 1_747_574_392.0
-        XCTAssertEqual(PlaudCatalog.parseCreatedAt("\(Int(epochSeconds))"), Date(timeIntervalSince1970: epochSeconds))
+        XCTAssertEqual(PlaudTimestamp.parseCreatedAt("\(Int(epochSeconds))"), Date(timeIntervalSince1970: epochSeconds))
         XCTAssertEqual(
-            PlaudCatalog.parseCreatedAt("\(Int(epochSeconds * 1000))"),
+            PlaudTimestamp.parseCreatedAt("\(Int(epochSeconds * 1000))"),
             Date(timeIntervalSince1970: epochSeconds)
         )
         XCTAssertEqual(
-            PlaudCatalog.parseCreatedAt(NSNumber(value: epochSeconds)),
+            PlaudTimestamp.parseCreatedAt(NSNumber(value: epochSeconds)),
             Date(timeIntervalSince1970: epochSeconds)
         )
-        // A bare year is not a plausible epoch and is not a valid date format.
-        XCTAssertNil(PlaudCatalog.parseCreatedAt("2026"))
+        XCTAssertNil(PlaudTimestamp.parseCreatedAt("2026"))
     }
 
     func testNaiveTimestampParsedAsUTCMatchesUTCEvent() throws {
-        // End-to-end guard for the timezone fix: Plaud's naive `created_at` (which is UTC)
-        // must align to the calendar's absolute UTC instant. Mirrors the real Jun-11 example
-        // (recording 2026-06-11T12:00:26 ↔ a 12:00–13:00 UTC meeting).
-        let recordedAt = PlaudCatalog.parseCreatedAt("2026-06-11T12:00:26")
+        let recordedAt = PlaudTimestamp.parseCreatedAt("2026-06-11T12:00:26")
         let event = PlaudMatchableEvent(
             eventIdentifier: "EK-UTC",
             title: "SocServ | Weekly",
@@ -201,9 +185,7 @@ final class PlaudEventMatchingTests: XCTestCase {
         let recording = PlaudRecording(
             fileID: "383169344ae0d5bd925daddb7b5a713e",
             title: "06-11 Еженедельная встреча по ключевым инициативам и операционным вопросам",
-            recordedAt: try XCTUnwrap(recordedAt),
-            folderSegment: "Unfiled",
-            hasSummary: true
+            recordedAt: try XCTUnwrap(recordedAt)
         )
 
         let match = PlaudEventMatching.match(

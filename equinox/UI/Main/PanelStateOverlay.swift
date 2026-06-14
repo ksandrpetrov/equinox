@@ -5,14 +5,14 @@ struct PanelStateOverlay: View {
 
     var body: some View {
         VStack(spacing: EquinoxDesign.spacingSM) {
-            if !appState.hasSeenShortcutTip {
+            if !appState.preferences.hasSeenShortcutTip {
                 shortcutTipBanner
             }
-            if !appState.calendarAccessStatus.isAuthorized {
+            if !appState.events.calendarAccessStatus.isAuthorized {
                 permissionBanner
-            } else if let error = appState.lastFetchError {
+            } else if let error = appState.events.lastFetchError {
                 errorBanner(error)
-            } else if !appState.hasSelectedCalendars {
+            } else if !appState.events.hasSelectedCalendars {
                 noCalendarsBanner
             }
         }
@@ -25,7 +25,7 @@ struct PanelStateOverlay: View {
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
             Button {
-                appState.hasSeenShortcutTip = true
+                appState.preferences.hasSeenShortcutTip = true
             } label: {
                 Image(systemName: "xmark")
                     .font(.caption2.weight(.semibold))
@@ -57,7 +57,7 @@ struct PanelStateOverlay: View {
 
             HStack(spacing: EquinoxDesign.spacingSM) {
                 Button(String(localized: "Request Access", comment: "")) {
-                    appState.requestCalendarAccessIfNeeded()
+                    appState.events.requestCalendarAccessIfNeeded()
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
@@ -88,7 +88,7 @@ struct PanelStateOverlay: View {
                 .lineLimit(2)
             Spacer(minLength: 0)
             Button(String(localized: "Retry", comment: "")) {
-                appState.retryFetchEvents()
+                appState.events.retryFetchEvents()
             }
             .buttonStyle(.bordered)
             .controlSize(.mini)

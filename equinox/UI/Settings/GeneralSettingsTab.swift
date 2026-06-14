@@ -8,7 +8,7 @@ struct GeneralSettingsTab: View {
 
     var body: some View {
         SettingsDetailScaffold(title: String(localized: "General", comment: "General prefs tab label")) {
-            if matches("Startup", "Launch") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Startup", "Launch") {
                 SettingsSection(String(localized: "Startup", comment: "Settings section: startup")) {
                     SettingsLabeledToggle(
                         title: String(localized: "Launch at login", comment: ""),
@@ -19,7 +19,7 @@ struct GeneralSettingsTab: View {
                 }
             }
 
-            if matches("Calendar", "week", "event", "list") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "week", "event", "list") {
                 SettingsSection(String(localized: "Calendar", comment: "Settings section: calendar")) {
                     SettingsRow(title: String(localized: "First day of week:", comment: "")) {
                         Picker(String(localized: "First day of week", comment: ""), selection: Binding(
@@ -59,7 +59,7 @@ struct GeneralSettingsTab: View {
                 }
             }
 
-            if matches("Panel", "pin", "agenda") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "pin", "agenda") {
                 SettingsSection(String(localized: "Panel", comment: "Panel settings section")) {
                     SettingsLabeledToggle(
                         title: String(localized: "Pin panel by default", comment: ""),
@@ -79,7 +79,7 @@ struct GeneralSettingsTab: View {
                 }
             }
 
-            if matches("Reset", "defaults", "factory") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Reset", "defaults", "factory") {
                 SettingsSection(String(localized: "Advanced", comment: "")) {
                     Button(String(localized: "Reset All Settings to Defaults", comment: ""), role: .destructive) {
                         showResetConfirmation = true
@@ -111,10 +111,10 @@ struct GeneralSettingsTab: View {
     }
 
     private var hasVisibleSections: Bool {
-        matches("Startup", "Launch")
-            || matches("Calendar", "week", "event", "list")
-            || matches("Panel", "pin", "agenda")
-            || matches("Reset", "defaults", "factory")
+        SettingsSearchFilter.matches(searchText: searchText, keywords: "Startup", "Launch")
+            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "week", "event", "list")
+            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "pin", "agenda")
+            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Reset", "defaults", "factory")
     }
 
     private var settingsSearchEmptyState: some View {
@@ -125,11 +125,5 @@ struct GeneralSettingsTab: View {
         )
         .frame(maxWidth: .infinity)
         .padding(.vertical, EquinoxDesign.spacingXL)
-    }
-
-    private func matches(_ keywords: String...) -> Bool {
-        guard !searchText.isEmpty else { return true }
-        let query = searchText.lowercased()
-        return keywords.contains { $0.lowercased().contains(query) || query.contains($0.lowercased()) }
     }
 }

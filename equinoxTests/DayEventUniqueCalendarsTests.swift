@@ -2,7 +2,7 @@ import AppKit
 import XCTest
 @testable import equinox
 
-final class DayEventDotColorsTests: XCTestCase {
+final class DayEventUniqueCalendarsTests: XCTestCase {
     private func makeEvent(calendarID: String, red: CGFloat) -> DayEvent {
         DayEvent(
             id: "\(calendarID)-1",

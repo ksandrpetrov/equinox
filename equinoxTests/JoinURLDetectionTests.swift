@@ -57,4 +57,29 @@ final class JoinURLDetectionTests: XCTestCase {
         )
         XCTAssertTrue(url?.absoluteString.contains("zoom.us") == true)
     }
+
+    func testMeetingDisplayNameZoom() {
+        let url = URL(string: "https://zoom.us/j/123")!
+        XCTAssertEqual(JoinURLDetection.meetingDisplayName(for: url), "Zoom")
+    }
+
+    func testMeetingDisplayNameVK() {
+        let url = URL(string: "https://vk.com/call/join/abc")!
+        XCTAssertEqual(JoinURLDetection.meetingDisplayName(for: url), "VK Calls")
+    }
+
+    func testNotesForDisplayStripsJoinURL() {
+        let joinURL = URL(string: "https://vk.com/call/join/abc")!
+        let notes = "Organizer: Alex\nhttps://vk.com/call/join/abc\nRoom 401"
+        let display = JoinURLDetection.notesForDisplay(notes: notes, excludingJoinURL: joinURL)
+        XCTAssertEqual(display, "Organizer: Alex\nRoom 401")
+    }
+
+    func testNotesForDisplayKeepsNotesWithoutJoinURL() {
+        let notes = "Bring laptop"
+        XCTAssertEqual(
+            JoinURLDetection.notesForDisplay(notes: notes, excludingJoinURL: nil),
+            "Bring laptop"
+        )
+    }
 }

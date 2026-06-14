@@ -2,18 +2,12 @@ import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { invokeBridge, requireBridgeData } from "../bridge.js"
+import { jsonToolResult } from "../toolResponse.js"
 import type {
   AccessRequestData,
   AccessStatusData,
   CalendarsData,
 } from "../types.js"
-
-function jsonToolResult(value: unknown) {
-  return {
-    content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
-    structuredContent: value as Record<string, unknown>,
-  }
-}
 
 export function registerCalendarTools(server: McpServer) {
   server.registerTool(

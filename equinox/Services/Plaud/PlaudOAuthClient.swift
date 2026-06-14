@@ -40,7 +40,7 @@ enum PlaudOAuthError: LocalizedError {
         switch self {
         case .callbackPortInUse:
             return String(
-                localized: "OAuth callback port 8199 is already in use. Stop plaud-server-exporter or another OAuth client and try again.",
+                localized: "OAuth callback port 8199 is already in use. Stop the other OAuth client and try again.",
                 comment: "Plaud OAuth port error"
             )
         case .callbackListenFailed(let detail):
@@ -118,22 +118,25 @@ enum PlaudOAuthClient {
     }
 
     static func signIn() async throws {
-        if let existing = try await validAccessToken() {
-            let isValid = try await validateAccessToken(existing)
-            if isValid {
+        if loadTokens() != nil {
+            if let existing = try? await validAccessToken(),
+               (try? await validateAccessToken(existing)) == true {
                 throw PlaudOAuthError.alreadySignedIn
             }
             clearTokens()
         }
 
         let request = PlaudOAuthPKCE.createAuthorizationRequest()
+        let authorizationURL = request.url
         let result = await PlaudOAuthCallbackServer.run(
             expectedState: request.state,
             timeout: loginTimeout
         ) { code in
             _ = try await exchangeCode(code, codeVerifier: request.codeVerifier, state: request.state)
         } onListening: {
-            NSWorkspace.shared.open(request.url)
+            DispatchQueue.main.async {
+                NSWorkspace.shared.open(authorizationURL)
+            }
         }
 
         switch result {
@@ -329,6 +332,11 @@ private final class CallbackHandler: @unchecked Sendable {
     private var exchangeStarted = false
     private var exchangeSucceeded = false
     private let lock = NSLock()
+    // PlaudOAuthCallbackServer.run() does not retain the handler, and every callback below holds
+    // only [weak self]. Without this self-retain the handler deallocates as soon as start() returns,
+    // so the listener's .ready never fires onListening() (browser never opens) and the timeout can
+    // never resume the continuation (sign-in spins forever). Cleared in complete().
+    private var keepAlive: CallbackHandler?
 
     init(
         expectedState: String,
@@ -345,13 +353,19 @@ private final class CallbackHandler: @unchecked Sendable {
     }
 
     func start() {
+        keepAlive = self
         do {
             let parameters = NWParameters.tcp
+            parameters.allowLocalEndpointReuse = true
+            // requiredLocalEndpoint already pins the loopback host+port. Passing the same
+            // port again via `on:` makes Network framework reject the duplicate with
+            // NWError.posix(.EINVAL) ("Invalid argument", code 22), so the listener never
+            // starts and the browser never opens.
             parameters.requiredLocalEndpoint = NWEndpoint.hostPort(
                 host: .ipv4(.loopback),
                 port: .init(rawValue: UInt16(PlaudOAuthPKCE.callbackPort))!
             )
-            listener = try NWListener(using: parameters, on: .init(rawValue: UInt16(PlaudOAuthPKCE.callbackPort))!)
+            listener = try NWListener(using: parameters)
         } catch {
             complete(.listenFailed(error.localizedDescription))
             return
@@ -382,21 +396,56 @@ private final class CallbackHandler: @unchecked Sendable {
     }
 
     private func handle(connection: NWConnection) {
+        connection.stateUpdateHandler = { [weak self] state in
+            guard let self else {
+                connection.cancel()
+                return
+            }
+            switch state {
+            case .ready:
+                self.receiveRequest(on: connection, buffer: Data())
+            case .failed:
+                connection.cancel()
+            default:
+                break
+            }
+        }
         connection.start(queue: .global(qos: .userInitiated))
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { [weak self] data, _, _, error in
+    }
+
+    private func receiveRequest(on connection: NWConnection, buffer: Data) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { [weak self] data, _, isComplete, error in
             guard let self else {
                 connection.cancel()
                 return
             }
 
-            if let error {
-                self.sendResponse(on: connection, statusCode: 500, html: Self.errorHTML(error.localizedDescription))
+            if error != nil {
                 connection.cancel()
                 return
             }
 
-            guard let data, let request = String(data: data, encoding: .utf8) else {
+            var accumulated = buffer
+            if let data {
+                accumulated.append(data)
+            }
+
+            guard !accumulated.isEmpty else {
+                if isComplete {
+                    connection.cancel()
+                } else {
+                    self.receiveRequest(on: connection, buffer: accumulated)
+                }
+                return
+            }
+
+            guard let request = String(data: accumulated, encoding: .utf8) else {
                 connection.cancel()
+                return
+            }
+
+            if !request.contains("\r\n\r\n"), !isComplete {
+                self.receiveRequest(on: connection, buffer: accumulated)
                 return
             }
 
@@ -412,6 +461,12 @@ private final class CallbackHandler: @unchecked Sendable {
 
         let parts = requestLine.split(separator: " ")
         guard parts.count >= 2 else {
+            connection.cancel()
+            return
+        }
+
+        if parts[0] == "OPTIONS" {
+            sendOptionsResponse(on: connection)
             connection.cancel()
             return
         }
@@ -486,6 +541,18 @@ private final class CallbackHandler: @unchecked Sendable {
         lock.unlock()
     }
 
+    private func sendOptionsResponse(on connection: NWConnection) {
+        let header = """
+        HTTP/1.1 204 No Content\r
+        Access-Control-Allow-Origin: *\r
+        Access-Control-Allow-Methods: GET, OPTIONS\r
+        Access-Control-Allow-Headers: *\r
+        Connection: close\r
+        \r
+        """
+        connection.send(content: Data(header.utf8), completion: .contentProcessed { _ in })
+    }
+
     private func sendResponse(on connection: NWConnection, statusCode: Int, html: String) {
         let statusText = statusCode == 200 ? "OK" : statusCode == 400 ? "Bad Request" : statusCode == 404 ? "Not Found" : "Error"
         let body = Data(html.utf8)
@@ -502,13 +569,17 @@ private final class CallbackHandler: @unchecked Sendable {
 
     private func complete(_ result: PlaudOAuthCallbackServer.Result) {
         lock.lock()
-        defer { lock.unlock() }
-        guard !finished else { return }
+        if finished {
+            lock.unlock()
+            return
+        }
         finished = true
         timeoutTask?.cancel()
         listener?.cancel()
         listener = nil
+        lock.unlock()
         finish(result)
+        keepAlive = nil
     }
 
     private static let successHTML =

@@ -29,7 +29,7 @@ final class PanelWindowController {
             NSApp.activate()
         }
         panel.makeKeyAndOrderFront(nil)
-        appState.isPanelVisible = true
+        appState.panel.isPanelVisible = true
 
         if needsPositioning {
             scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: true)
@@ -39,18 +39,18 @@ final class PanelWindowController {
     func hide() {
         panel?.orderOut(nil)
         detachHostingControllerFromContainers()
-        appState.isPanelVisible = false
+        appState.panel.isPanelVisible = false
     }
 
     func refreshIfVisible(statusItem: NSStatusItem) {
-        guard appState.isPanelVisible else { return }
+        guard appState.panel.isPanelVisible else { return }
         updatePanelAgendaMaxHeight(statusItem: statusItem)
         scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: true)
     }
 
     func handleSizePreferenceChanged(statusItem: NSStatusItem) {
         updatePanelAgendaMaxHeight(statusItem: statusItem)
-        scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: appState.isPanelVisible)
+        scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: appState.panel.isPanelVisible)
     }
 
     func repositionUnderStatusItem(_ statusItem: NSStatusItem) {
@@ -79,10 +79,16 @@ final class PanelWindowController {
         return false
     }
 
+    private var sizeMetrics: SizeMetrics {
+        SizeMetrics.metrics(
+            for: SizePreference(rawValue: appState.preferences.sizePreference) ?? .medium
+        )
+    }
+
     private func makePanel() -> NSPanel {
-        let width = SizeMetrics.current.panelWidth
+        let width = sizeMetrics.panelWidth
         let panel = KeyablePanel(
-            contentRect: NSRect(x: 0, y: 0, width: width, height: 520),
+            contentRect: NSRect(x: 0, y: 0, width: width, height: EquinoxDesign.panelDefaultHeight),
             styleMask: [.nonactivatingPanel, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -137,7 +143,7 @@ final class PanelWindowController {
 
     private func resizePanel(_ panel: NSPanel) {
         var frame = panel.frame
-        frame.size.width = SizeMetrics.current.panelWidth
+        frame.size.width = sizeMetrics.panelWidth
         panel.setFrame(frame, display: true)
     }
 
@@ -153,8 +159,8 @@ final class PanelWindowController {
 
         guard let button = statusItem.button, let window = button.window else { return }
         let frame = window.convertToScreen(button.frame)
-        let panelWidth = SizeMetrics.current.panelWidth
-        let origin = NSPoint(x: frame.midX - panelWidth / 2, y: frame.minY - panel.frame.height - 6)
+        let panelWidth = sizeMetrics.panelWidth
+        let origin = NSPoint(x: frame.midX - panelWidth / 2, y: frame.minY - panel.frame.height - EquinoxDesign.panelPopoverOffset)
         var panelFrame = panel.frame
         panelFrame.size.width = panelWidth
         panelFrame.origin = origin
@@ -165,7 +171,7 @@ final class PanelWindowController {
     private func clampPanelFrame(_ frame: inout NSRect, statusItem: NSStatusItem) {
         guard let screen = screenForStatusItem(statusItem) else { return }
         let visible = screen.visibleFrame
-        let margin: CGFloat = 10
+        let margin = EquinoxDesign.panelScreenMargin
         frame.origin.x = min(max(frame.origin.x, visible.minX + margin), visible.maxX - frame.width - margin)
         frame.origin.y = min(max(frame.origin.y, visible.minY + margin), visible.maxY - frame.height - margin)
     }
@@ -181,14 +187,14 @@ final class PanelWindowController {
     }
 
     private func updatePanelAgendaMaxHeight(statusItem: NSStatusItem) {
-        appState.panelAgendaMaxHeight = agendaMaxHeight(statusItem: statusItem)
+        appState.layout.panelAgendaMaxHeight = agendaMaxHeight(statusItem: statusItem)
     }
 
     private func agendaMaxHeight(statusItem: NSStatusItem) -> CGFloat {
         guard let screen = screenForStatusItem(statusItem) else { return 220 }
         let maxPanel = screen.visibleFrame.height * 0.85
         let prefs = appState.preferences
-        let metrics = SizeMetrics.current
+        let metrics = sizeMetrics
         let commandBarHeight: CGFloat = EquinoxDesign.commandBarHeight + 8
         let dowRow: CGFloat = 20
         let gridHeight = dowRow + CGFloat(prefs.calendarRowCount) * (metrics.cellSize + 4)

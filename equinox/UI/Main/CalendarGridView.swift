@@ -9,7 +9,7 @@ struct CalendarGridView: View {
 
     private var gridDates: [CalendarDate] {
         monthGridDates(
-            monthDate: appState.monthDate,
+            monthDate: appState.events.monthDate,
             weekStartWeekday: prefs.weekStartWeekday,
             numRows: numRows
         )
@@ -51,27 +51,27 @@ struct CalendarGridView: View {
                         let index = row * 7 + col
                         let date = gridDates[index]
                         let dots: [Color]? = prefs.showEventDots
-                            ? DayEvent.makeSwiftUIDotColors(for: appState.events(for: date))
+                            ? DayEvent.makeSwiftUIDotColors(for: appState.events.events(for: date))
                             : nil
                         let (boundaryStart, boundaryEnd) = monthBoundaryFlags(for: date, col: col, row: row)
                         DayCellView(
                             date: date,
-                            isToday: date.isSameCalendarDay(as: appState.todayDate),
-                            isSelected: date.isSameCalendarDay(as: appState.selectedDate),
-                            isInCurrentMonth: date.monthIndex == appState.monthDate.monthIndex
-                                && date.year == appState.monthDate.year,
+                            isToday: date.isSameCalendarDay(as: appState.events.todayDate),
+                            isSelected: date.isSameCalendarDay(as: appState.events.selectedDate),
+                            isInCurrentMonth: date.monthIndex == appState.events.monthDate.monthIndex
+                                && date.year == appState.events.monthDate.year,
                             isHighlighted: prefs.isWeekdayHighlighted(col, weekStartWeekday: prefs.weekStartWeekday),
                             isMonthBoundaryStart: boundaryStart,
                             isMonthBoundaryEnd: boundaryEnd,
                             dotColors: dots,
-                            hoverEvents: appState.events(for: date),
+                            hoverEvents: appState.events.events(for: date),
                             showHoverPreview: prefs.showsDayHoverPreview,
                             metrics: metrics,
                             calendar: appState.calendar,
-                            onSelect: { appState.selectDate(date) },
+                            onSelect: { appState.events.selectDate(date) },
                             onDoubleClick: {
-                                appState.newEventInitialDate = date
-                                appState.isNewEventSheetPresented = true
+                                appState.panel.newEventInitialDate = date
+                                appState.panel.isNewEventSheetPresented = true
                             }
                         )
                         .id(date.julian)
@@ -90,23 +90,17 @@ struct CalendarGridView: View {
             handleKeyPress(press)
         }
         .onAppear {
-            Task { @MainActor in updateVisibleRange() }
-        }
-        .onChange(of: appState.monthDate) { _, _ in
-            Task { @MainActor in updateVisibleRange() }
+            appState.events.refreshVisibleGridRange()
         }
         .onChange(of: numRows) { _, _ in
-            Task { @MainActor in updateVisibleRange() }
-        }
-        .onChange(of: appState.selectedDate) { _, _ in
-            Task { @MainActor in appState.extendFetchRangeForAgendaIfNeeded() }
+            appState.events.refreshVisibleGridRange()
         }
         .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
         .accessibilityHint(String(localized: "Use arrow keys to move between days", comment: ""))
     }
 
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
-        let current = appState.selectedDate
+        let current = appState.events.selectedDate
         let next: CalendarDate?
         switch press.key {
         case .leftArrow:
@@ -123,34 +117,21 @@ struct CalendarGridView: View {
             return .ignored
         }
         if let next {
-            appState.selectDate(next)
+            appState.events.selectDate(next)
             return .handled
         }
         return .ignored
     }
 
     private func monthBoundaryFlags(for date: CalendarDate, col: Int, row: Int) -> (Bool, Bool) {
-        guard prefs.showMonthBoundaries else { return (false, false) }
-        let inMonth = date.monthIndex == appState.monthDate.monthIndex
-        guard inMonth else { return (false, false) }
-
-        let index = row * 7 + col
-        let prevInMonth: Bool = {
-            if col == 0 { return false }
-            return gridDates[index - 1].monthIndex == appState.monthDate.monthIndex
-        }()
-        let nextInMonth: Bool = {
-            if col == 6 { return false }
-            return gridDates[index + 1].monthIndex == appState.monthDate.monthIndex
-        }()
-
-        let start = col == 0 || !prevInMonth
-        let end = col == 6 || !nextInMonth
-        return (start, end)
-    }
-
-    private func updateVisibleRange() {
-        guard let first = gridDates.first, let last = gridDates.last else { return }
-        appState.updateVisibleRange(first: first, last: last)
+        let flags = monthGridBoundaryFlags(
+            for: date,
+            monthIndex: appState.events.monthDate.monthIndex,
+            col: col,
+            row: row,
+            gridDates: gridDates,
+            showMonthBoundaries: prefs.showMonthBoundaries
+        )
+        return (flags.start, flags.end)
     }
 }
