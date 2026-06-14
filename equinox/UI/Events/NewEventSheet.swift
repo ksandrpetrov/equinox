@@ -26,6 +26,7 @@ struct NewEventSheet: View {
     @State private var showRepeatSection = false
     @State private var showAlertSection = false
     @State private var showNotesSection = false
+    @State private var isSaving = false
     @State private var saveError: String?
 
     private let recurrenceOptions = [
@@ -60,7 +61,8 @@ struct NewEventSheet: View {
             title: String(localized: "New Event", comment: ""),
             metrics: metrics,
             confirmTitle: String(localized: "Add", comment: ""),
-            confirmDisabled: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !hasModifiableCalendars,
+            confirmDisabled: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !hasModifiableCalendars || isSaving,
+            isConfirming: isSaving,
             onCancel: { close() },
             onConfirm: { save() }
         ) {
@@ -185,6 +187,7 @@ struct NewEventSheet: View {
     }
 
     private func save() {
+        guard !isSaving else { return }
         guard selectedCalendarIndex < modifiableCalendars.count else { return }
         let calendar = modifiableCalendars[selectedCalendarIndex]
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -215,10 +218,13 @@ struct NewEventSheet: View {
         )
 
         saveError = nil
+        isSaving = true
         Task {
             if let error = await appState.events.createEvent(from: draft) {
                 saveError = error
+                isSaving = false
             } else {
+                isSaving = false
                 close()
             }
         }

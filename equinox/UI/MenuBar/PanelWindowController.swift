@@ -25,6 +25,7 @@ final class PanelWindowController {
         updatePanelAgendaMaxHeight(statusItem: statusItem)
 
         let needsPositioning = !panel.isVisible
+        applyGeometry(statusItem: statusItem, resize: true, reposition: needsPositioning)
         if !isPinned {
             NSApp.activate()
         }
@@ -33,7 +34,6 @@ final class PanelWindowController {
 
         if needsPositioning {
             appState.panel.agendaScrollGeneration &+= 1
-            scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: true)
         }
     }
 
@@ -46,12 +46,12 @@ final class PanelWindowController {
     func refreshIfVisible(statusItem: NSStatusItem) {
         guard appState.panel.isPanelVisible else { return }
         updatePanelAgendaMaxHeight(statusItem: statusItem)
-        scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: true)
+        applyGeometry(statusItem: statusItem, resize: true, reposition: true)
     }
 
     func handleSizePreferenceChanged(statusItem: NSStatusItem) {
         updatePanelAgendaMaxHeight(statusItem: statusItem)
-        scheduleGeometryUpdate(statusItem: statusItem, resize: true, reposition: appState.panel.isPanelVisible)
+        applyGeometry(statusItem: statusItem, resize: true, reposition: appState.panel.isPanelVisible)
     }
 
     func repositionUnderStatusItem(_ statusItem: NSStatusItem) {
@@ -125,27 +125,39 @@ final class PanelWindowController {
         }
     }
 
-    private func scheduleGeometryUpdate(
+    private func applyGeometry(
         statusItem: NSStatusItem,
         resize: Bool = false,
         reposition: Bool = false,
         preferredFrame: NSRect? = nil
     ) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self, let panel = self.panel else { return }
-            if resize {
-                self.resizePanel(panel)
-            }
-            if reposition, panel.isVisible {
-                self.positionPanel(panel, statusItem: statusItem, preferredFrame: preferredFrame)
-            }
+        guard let panel else { return }
+        if resize {
+            resizePanel(panel)
+        }
+        if reposition {
+            positionPanel(panel, statusItem: statusItem, preferredFrame: preferredFrame)
         }
     }
 
     private func resizePanel(_ panel: NSPanel) {
         var frame = panel.frame
-        frame.size.width = sizeMetrics.panelWidth
-        panel.setFrame(frame, display: true)
+        frame.size = panelContentSize()
+        panel.setFrame(frame, display: panel.isVisible)
+    }
+
+    private func panelContentSize() -> NSSize {
+        let width = sizeMetrics.panelWidth
+        guard let view = hostingController?.view else {
+            return NSSize(width: width, height: EquinoxDesign.panelDefaultHeight)
+        }
+        view.frame.size.width = width
+        view.layoutSubtreeIfNeeded()
+        let height = ceil(view.fittingSize.height)
+        return NSSize(
+            width: width,
+            height: height > 0 ? height : EquinoxDesign.panelDefaultHeight
+        )
     }
 
     private func positionPanel(_ panel: NSPanel, statusItem: NSStatusItem, preferredFrame: NSRect? = nil) {
@@ -166,7 +178,7 @@ final class PanelWindowController {
         panelFrame.size.width = panelWidth
         panelFrame.origin = origin
         clampPanelFrame(&panelFrame, statusItem: statusItem)
-        panel.setFrameOrigin(panelFrame.origin)
+        panel.setFrame(panelFrame, display: panel.isVisible)
     }
 
     private func clampPanelFrame(_ frame: inout NSRect, statusItem: NSStatusItem) {

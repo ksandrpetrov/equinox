@@ -32,9 +32,7 @@ enum EquinoxDesign {
     static let settingsRowVerticalPadding: CGFloat = 8
 
     static let hoverAnimation = Animation.snappy(duration: 0.2)
-    static let monthTransitionAnimation = Animation.smooth(duration: 0.28)
     static let expandAnimation = Animation.smooth(duration: 0.22)
-    static let todayPulseAnimation = Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true)
 
     static func animation(_ animation: Animation, reduceMotion: Bool) -> Animation? {
         reduceMotion ? nil : animation

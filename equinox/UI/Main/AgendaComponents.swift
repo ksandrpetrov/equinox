@@ -56,8 +56,6 @@ struct AgendaEventCard: View {
     var onTap: (() -> Void)? = nil
 
     @State private var isHovered = false
-    @State private var joinHovered = false
-    @State private var plaudHovered = false
 
     private var calendarColor: Color {
         event.swiftUIColor
@@ -102,7 +100,6 @@ struct AgendaEventCard: View {
                         Image(systemName: "video.fill")
                             .font(.system(size: 12))
                             .symbolRenderingMode(.hierarchical)
-                            .symbolEffect(.bounce, value: joinHovered)
                             .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
                     }
                     .buttonStyle(.borderedProminent)
@@ -111,7 +108,6 @@ struct AgendaEventCard: View {
                     .accessibilityLabel(String(localized: "Join meeting", comment: ""))
                     .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : 0)
                     .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
-                    .onHover { joinHovered = $0 }
                 }
 
                 if let match = plaudMatch {
@@ -121,7 +117,6 @@ struct AgendaEventCard: View {
                         Image(systemName: "waveform")
                             .font(.system(size: 12))
                             .symbolRenderingMode(.hierarchical)
-                            .symbolEffect(.bounce, value: plaudHovered)
                             .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
                     }
                     .buttonStyle(.bordered)
@@ -130,7 +125,6 @@ struct AgendaEventCard: View {
                     .accessibilityLabel(String(localized: "Open in Plaud", comment: ""))
                     .padding(.trailing, EquinoxDesign.spacingSM)
                     .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
-                    .onHover { plaudHovered = $0 }
                 }
             }
         }

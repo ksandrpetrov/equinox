@@ -16,6 +16,7 @@ struct AgendaView: View {
     @State private var rangeFirst: CalendarDate?
     @State private var rangeLast: CalendarDate?
     @State private var isProgrammaticScroll = false
+    @State private var programmaticScrollGeneration = 0
 
     private var prefs: PreferencesStore { appState.preferences }
     private var backgroundStyle: BackgroundStyle {
@@ -233,16 +234,23 @@ struct AgendaView: View {
         ensureDateInRange(appState.events.selectedDate)
         commitAgendaToCoordinator()
         isProgrammaticScroll = true
+        programmaticScrollGeneration &+= 1
+        let generation = programmaticScrollGeneration
         scrollAgenda(to: appState.events.selectedDate.julian)
-        DispatchQueue.main.async {
-            isProgrammaticScroll = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            if programmaticScrollGeneration == generation {
+                isProgrammaticScroll = false
+            }
         }
     }
 
-    /// Forces `scrollPosition` to re-scroll even when the target id equals the current value
-    /// (e.g. when `onAppear` set the id before sections existed). Resetting to `nil` first makes
-    /// the binding change, so a stale value no longer suppresses the scroll-to-selected-date.
+    /// Forces `scrollPosition` to re-scroll when the target id is already current, such as when
+    /// `onAppear` set the id before sections existed.
     private func scrollAgenda(to julian: Int) {
+        guard scrolledSectionID == julian else {
+            scrolledSectionID = julian
+            return
+        }
         scrolledSectionID = nil
         DispatchQueue.main.async {
             scrolledSectionID = julian
@@ -256,7 +264,10 @@ struct AgendaView: View {
     }
 
     private func commitScrollSettle() {
-        guard !isProgrammaticScroll else { return }
+        if isProgrammaticScroll {
+            isProgrammaticScroll = false
+            return
+        }
         guard let julian = scrolledSectionID else { return }
         let visibleDate = CalendarDate(julian: julian)
         appState.events.syncSelectionFromAgendaScroll(visibleDate)

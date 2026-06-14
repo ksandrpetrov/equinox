@@ -6,6 +6,8 @@ struct EventDetailView: View {
     let metrics: SizeMetrics
     @Environment(\.dismiss) private var dismiss
     @State private var isResponding = false
+    @State private var isDeleting = false
+    @State private var isSavingPlaudLink = false
     @State private var actionError: String?
     @State private var manualPlaudURL = ""
     @State private var showManualPlaudLink = false
@@ -29,6 +31,7 @@ struct EventDetailView: View {
             destructiveTitle: event.allowsContentModifications
                 ? String(localized: "Delete", comment: "")
                 : nil,
+            isDestructiveInProgress: isDeleting,
             minHeight: nil,
             onCancel: { dismiss() },
             onDestructive: event.allowsContentModifications ? { deleteEvent() } : nil
@@ -142,17 +145,25 @@ struct EventDetailView: View {
                 .textFieldStyle(.roundedBorder)
 
                 HStack {
-                    Button(String(localized: "Save Link", comment: "Plaud manual link save")) {
+                    Button {
                         saveManualPlaudLink()
+                    } label: {
+                        if isSavingPlaudLink {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Text(String(localized: "Save Link", comment: "Plaud manual link save"))
+                        }
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSavingPlaudLink)
 
                     Button(String(localized: "Cancel", comment: "")) {
                         showManualPlaudLink = false
                         manualPlaudURL = ""
                     }
                     .buttonStyle(.bordered)
+                    .disabled(isSavingPlaudLink)
                 }
             }
             .padding(EquinoxDesign.spacingMD)
@@ -171,6 +182,7 @@ struct EventDetailView: View {
     }
 
     private func saveManualPlaudLink() {
+        guard !isSavingPlaudLink else { return }
         let trimmed = manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: trimmed) else {
             actionError = String(
@@ -180,12 +192,15 @@ struct EventDetailView: View {
             return
         }
         actionError = nil
+        isSavingPlaudLink = true
         Task {
             if let error = await appState.plaud.saveManualLink(for: event, url: url) {
                 actionError = error
+                isSavingPlaudLink = false
             } else {
                 showManualPlaudLink = false
                 manualPlaudURL = ""
+                isSavingPlaudLink = false
             }
         }
     }
@@ -196,6 +211,7 @@ struct EventDetailView: View {
     }
 
     private func respond(to status: EventParticipationStatus) {
+        guard !isResponding else { return }
         isResponding = true
         actionError = nil
         Task {
@@ -207,12 +223,19 @@ struct EventDetailView: View {
     }
 
     private func deleteEvent() {
+        guard !isDeleting else { return }
         actionError = nil
+        guard let id = event.eventIdentifier else {
+            actionError = String(localized: "Could not delete event", comment: "Delete event failure")
+            return
+        }
+        isDeleting = true
         Task {
-            guard let id = event.eventIdentifier else { return }
             if let error = await appState.events.deleteEvent(identifier: id) {
                 actionError = error
+                isDeleting = false
             } else {
+                isDeleting = false
                 dismiss()
             }
         }

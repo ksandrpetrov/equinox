@@ -17,19 +17,14 @@ struct PanelCommandBar: View {
                     help: String(localized: "Previous month", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    withAnimation(EquinoxDesign.monthTransitionAnimation) {
-                        appState.events.goToPreviousMonth()
-                    }
+                    appState.events.goToPreviousMonth()
                 }
-                .symbolEffect(.bounce, value: appState.events.monthDate)
                 PanelIconButton(
                     symbol: "chevron.right",
                     help: String(localized: "Next month", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    withAnimation(EquinoxDesign.monthTransitionAnimation) {
-                        appState.events.goToNextMonth()
-                    }
+                    appState.events.goToNextMonth()
                 }
             }
 
@@ -47,9 +42,7 @@ struct PanelCommandBar: View {
                     accessibilityLabel: String(localized: "Go to Today", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    withAnimation(EquinoxDesign.monthTransitionAnimation) {
-                        appState.events.goToToday()
-                    }
+                    appState.events.goToToday()
                 }
                 .keyboardShortcut("t")
 

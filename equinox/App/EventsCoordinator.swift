@@ -21,12 +21,17 @@ final class EventsCoordinator {
 
     var shouldShowMeetingIndicator = false
     var isFetchingEvents = false
+    var shouldShowLoadingIndicator = false
     var hasSelectedCalendars = false
     var calendarAccessStatus: CalendarAccessStatus = .notDetermined
     var lastFetchError: String?
 
     private var agendaVisibleFirst: CalendarDate?
     private var agendaVisibleLast: CalendarDate?
+    private var activeFetchCount = 0
+    private var loadingIndicatorTask: Task<Void, Never>?
+    private var loadingIndicatorGeneration = 0
+    private var loadingIndicatorVisibleSince: Date?
 
     /// Bumped after navigation that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
@@ -76,7 +81,6 @@ final class EventsCoordinator {
         calendarAccessStatus = await calendarStore.accessStatus()
         hasSelectedCalendars = await calendarStore.hasSelectedCalendars()
         lastFetchError = await calendarStore.lastFetchError
-        isFetchingEvents = await calendarStore.isFetchingEvents
         updateMeetingIndicator()
         onPlaudDataChanged()
     }
@@ -259,16 +263,58 @@ final class EventsCoordinator {
     }
 
     private func performFetch(_ operation: () async -> Void) async {
-        let selectionBeforeFetch = selectedDate
+        beginFetchPresentation()
+        defer {
+            endFetchPresentation()
+        }
         lastFetchError = nil
         await operation()
-        isFetchingEvents = await calendarStore.isFetchingEvents
         lastFetchError = await calendarStore.lastFetchError
         await syncFromCalendarStore()
-        // After events load, re-scroll the agenda to the selection. At launch the first scroll
-        // runs before events arrive (agenda still shows the earliest day), so this realigns it.
-        if selectedDate == selectionBeforeFetch {
-            requestAgendaScroll()
+    }
+
+    private func beginFetchPresentation() {
+        activeFetchCount += 1
+        isFetchingEvents = true
+        loadingIndicatorGeneration &+= 1
+        loadingIndicatorTask?.cancel()
+
+        guard !shouldShowLoadingIndicator else { return }
+        let generation = loadingIndicatorGeneration
+        loadingIndicatorTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            guard !Task.isCancelled,
+                  let self,
+                  self.loadingIndicatorGeneration == generation,
+                  self.isFetchingEvents else { return }
+            self.shouldShowLoadingIndicator = true
+            self.loadingIndicatorVisibleSince = Date()
+        }
+    }
+
+    private func endFetchPresentation() {
+        activeFetchCount = max(0, activeFetchCount - 1)
+        guard activeFetchCount == 0 else { return }
+
+        isFetchingEvents = false
+        loadingIndicatorGeneration &+= 1
+        loadingIndicatorTask?.cancel()
+
+        guard shouldShowLoadingIndicator else { return }
+        let visibleDuration = Date().timeIntervalSince(loadingIndicatorVisibleSince ?? Date())
+        let remaining = max(0, 0.2 - visibleDuration)
+        let generation = loadingIndicatorGeneration
+
+        loadingIndicatorTask = Task { @MainActor [weak self] in
+            if remaining > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
+            }
+            guard !Task.isCancelled,
+                  let self,
+                  self.loadingIndicatorGeneration == generation,
+                  !self.isFetchingEvents else { return }
+            self.shouldShowLoadingIndicator = false
+            self.loadingIndicatorVisibleSince = nil
         }
     }
 }

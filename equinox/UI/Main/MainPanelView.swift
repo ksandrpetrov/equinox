@@ -1,10 +1,8 @@
 import SwiftUI
-import Pow
 
 struct MainPanelView: View {
     @Bindable var appState: AppState
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var metrics: SizeMetrics {
         SizeMetrics.metrics(for: SizePreference(rawValue: appState.preferences.sizePreference) ?? .medium)
@@ -51,21 +49,13 @@ struct MainPanelView: View {
                     }
             }
 
-            if appState.events.isFetchingEvents {
-                ProgressView()
-                    .controlSize(.small)
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, EquinoxDesign.spacingXS)
-                    .accessibilityLabel(String(localized: "Loading events", comment: ""))
-            }
+            loadingSlot
 
             PanelStateOverlay(appState: appState)
                 .padding(.bottom, EquinoxDesign.spacingXS)
 
             CalendarGridView(appState: appState, metrics: metrics)
                 .fixedSize(horizontal: false, vertical: true)
-                .id(appState.events.monthDate)
-                .transition(monthGridTransition)
 
             if showAgenda {
                 AgendaView(
@@ -80,17 +70,20 @@ struct MainPanelView: View {
         .onAppear {
             appState.plaud.refreshMatchesIfNeeded()
         }
-        .animation(EquinoxDesign.animation(EquinoxDesign.monthTransitionAnimation, reduceMotion: reduceMotion), value: appState.events.monthDate)
     }
 
-    private var monthGridTransition: AnyTransition {
-        if reduceMotion {
-            return .opacity
+    private var loadingSlot: some View {
+        HStack {
+            Spacer(minLength: 0)
+            ProgressView()
+                .controlSize(.small)
+                .opacity(appState.events.shouldShowLoadingIndicator ? 1 : 0)
+                .accessibilityHidden(!appState.events.shouldShowLoadingIndicator)
+                .accessibilityLabel(String(localized: "Loading events", comment: ""))
+            Spacer(minLength: 0)
         }
-        return .asymmetric(
-            insertion: .movingParts.blur.combined(with: .opacity),
-            removal: .movingParts.blur.combined(with: .opacity)
-        )
+        .frame(height: 14)
+        .padding(.bottom, EquinoxDesign.spacingXS)
     }
 
     private func modalSheetBinding(_ keyPath: ReferenceWritableKeyPath<AppState, Bool>) -> Binding<Bool> {

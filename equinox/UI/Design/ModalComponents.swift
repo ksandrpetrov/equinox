@@ -60,7 +60,9 @@ struct ModalSheetScaffold<Content: View>: View {
     var cancelTitle: String = String(localized: "Cancel", comment: "Modal cancel button")
     var confirmTitle: String?
     var confirmDisabled: Bool = false
+    var isConfirming: Bool = false
     var destructiveTitle: String?
+    var isDestructiveInProgress: Bool = false
     var minHeight: CGFloat? = ModalDesign.minHeight
     let onCancel: () -> Void
     var onConfirm: (() -> Void)?
@@ -74,23 +76,40 @@ struct ModalSheetScaffold<Content: View>: View {
                 .toolbar {
                     if let destructiveTitle, let onDestructive {
                         ToolbarItem(placement: .destructiveAction) {
-                            Button(destructiveTitle, role: .destructive, action: onDestructive)
+                            Button(role: .destructive, action: onDestructive) {
+                                if isDestructiveInProgress {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Text(destructiveTitle)
+                                }
+                            }
+                            .disabled(isDestructiveInProgress)
                         }
                     }
 
                     if let confirmTitle, let onConfirm {
                         ToolbarItem(placement: .cancellationAction) {
                             Button(cancelTitle, action: onCancel)
+                                .disabled(isConfirming)
                                 .keyboardShortcut(.cancelAction)
                         }
                         ToolbarItem(placement: .confirmationAction) {
-                            Button(confirmTitle, action: onConfirm)
-                                .disabled(confirmDisabled)
+                            Button(action: onConfirm) {
+                                if isConfirming {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Text(confirmTitle)
+                                }
+                            }
+                                .disabled(confirmDisabled || isConfirming)
                                 .keyboardShortcut(.defaultAction)
                         }
                     } else {
                         ToolbarItem(placement: .confirmationAction) {
                             Button(String(localized: "Done", comment: "Modal dismiss button"), action: onCancel)
+                                .disabled(isDestructiveInProgress)
                                 .keyboardShortcut(.defaultAction)
                         }
                     }

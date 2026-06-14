@@ -1,4 +1,3 @@
-import Pow
 import SwiftUI
 
 struct DayCellView: View {
@@ -17,7 +16,6 @@ struct DayCellView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
-    @State private var todayPulse = false
     @State private var selectionTrigger = false
 
     private var circleSize: CGFloat {
@@ -59,7 +57,6 @@ struct DayCellView: View {
                     Circle()
                         .fill(EquinoxDesign.ColorToken.todayAccent)
                         .frame(width: circleSize, height: circleSize)
-                        .scaleEffect(todayPulse && !reduceMotion ? 1.03 : 1)
                 } else if isSelected {
                     Circle()
                         .fill(EquinoxDesign.ColorToken.todayAccent.opacity(0.15))
@@ -99,21 +96,15 @@ struct DayCellView: View {
             }
             .contentShape(Rectangle())
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-            .animation(EquinoxDesign.animation(EquinoxDesign.todayPulseAnimation, reduceMotion: reduceMotion), value: todayPulse)
         }
         .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: selectionTrigger)
-        .changeEffect(.shine, value: isSelected, isEnabled: isSelected && !reduceMotion)
         .onHover { isHovered = $0 }
         .simultaneousGesture(TapGesture(count: 2).onEnded { onDoubleClick() })
         .accessibilityLabel(accessibilityDateLabel)
         .accessibilityValue(accessibilityValue)
         .accessibilityHint(String(localized: "Double-click to create an event", comment: "Day cell hint"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .onAppear {
-            guard isToday, !reduceMotion else { return }
-            todayPulse = true
-        }
     }
 
     private var textColor: Color {

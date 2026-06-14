@@ -62,7 +62,6 @@
 		PWC001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = PWC001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelWindowController.swift */; };
 		PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */; };		PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */; };
 		KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */; };
-		POWBLD001A1B2C3D4E5F601234 /* Pow in Frameworks */ = {isa = PBXBuildFile; productRef = POWPROD001A1B2C3D4E5F601234 /* Pow */; };
 		9242A5671A82A136005AA4B3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9242A5661A82A136005AA4B3 /* Images.xcassets */; };
 		96A0A7ECBC124CD696E33EA2 /* UI/Settings/AppearanceSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A62397CD381406ABD6477C5 /* UI/Settings/AppearanceSettingsTab.swift */; };
 		97986F0E0B454042872C3572 /* UI/Events/EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */; };
@@ -316,7 +315,7 @@
 		AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaSectionsTests.swift; sourceTree = "<group>"; };
 		ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaDisplayRangeTests.swift; sourceTree = "<group>"; };
 		T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJoinURLTests.swift; sourceTree = "<group>"; };
-		T0E005A1B2C3D4E5F6012346 /* equinoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = equinoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = equinoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -325,7 +324,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */,
-				POWBLD001A1B2C3D4E5F601234 /* Pow in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,7 +458,7 @@
 			children = (
 				9242A55C1A82A136005AA4B3 /* equinox.app */,
 				BRG050A1B2C3D4E5F6012346 /* equinox-bridge */,
-				T0E005A1B2C3D4E5F6012346 /* equinoxTests.xctest */,
+				T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -544,7 +542,6 @@
 			name = equinox;
 			packageProductDependencies = (
 				KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */,
-				POWPROD001A1B2C3D4E5F601234 /* Pow */,
 			);
 			productName = Moon;
 			productReference = 9242A55C1A82A136005AA4B3 /* equinox.app */;
@@ -580,7 +577,7 @@
 			);
 			name = equinoxTests;
 			productName = equinoxTests;
-			productReference = T0E005A1B2C3D4E5F6012346 /* equinoxTests.xctest */;
+			productReference = T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -622,7 +619,6 @@
 			mainGroup = 9242A5531A82A136005AA4B3;
 			packageReferences = (
 				KSPKG001A1B2C3D4E5F601234 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
-				POWPKG001A1B2C3D4E5F601234 /* XCRemoteSwiftPackageReference "Pow" */,
 			);
 			productRefGroup = 9242A55D1A82A136005AA4B3 /* Products */;
 			projectDirPath = "";
@@ -955,7 +951,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = GRP4HM9M63;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
 				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
 				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
@@ -1164,14 +1160,6 @@
 				minimumVersion = 2.4.0;
 			};
 		};
-		POWPKG001A1B2C3D4E5F601234 /* XCRemoteSwiftPackageReference "Pow" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/EmergeTools/Pow";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.6;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1179,11 +1167,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = KSPKG001A1B2C3D4E5F601234 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
 			productName = KeyboardShortcuts;
-		};
-		POWPROD001A1B2C3D4E5F601234 /* Pow */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = POWPKG001A1B2C3D4E5F601234 /* XCRemoteSwiftPackageReference "Pow" */;
-			productName = Pow;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

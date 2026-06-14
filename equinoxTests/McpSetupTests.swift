@@ -2,18 +2,21 @@ import XCTest
 @testable import equinox
 
 final class McpSetupTests: XCTestCase {
-    func testBuildClientConfigJSONUsesResolvedPaths() {
+    func testBuildClientConfigJSONUsesResolvedPaths() throws {
         let json = McpConfigurator.buildClientConfigJSON(
             nodePath: "/opt/homebrew/bin/node",
             serverPath: "/tmp/equinox/mcp/dist/server.js",
             bridgePath: "/tmp/equinox/build/equinox-bridge"
         )
 
-        XCTAssertTrue(json.contains("/opt/homebrew/bin/node"))
-        XCTAssertTrue(json.contains("/tmp/equinox/mcp/dist/server.js"))
-        XCTAssertTrue(json.contains("/tmp/equinox/build/equinox-bridge"))
-        XCTAssertTrue(json.contains("equinox-calendar"))
-        XCTAssertTrue(json.contains("EQUINOX_BRIDGE_PATH"))
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any])
+        let servers = try XCTUnwrap(object["mcpServers"] as? [String: Any])
+        let equinox = try XCTUnwrap(servers["equinox-calendar"] as? [String: Any])
+        let env = try XCTUnwrap(equinox["env"] as? [String: String])
+
+        XCTAssertEqual(equinox["command"] as? String, "/opt/homebrew/bin/node")
+        XCTAssertEqual(equinox["args"] as? [String], ["/tmp/equinox/mcp/dist/server.js"])
+        XCTAssertEqual(env["EQUINOX_BRIDGE_PATH"], "/tmp/equinox/build/equinox-bridge")
     }
 
     func testBuildCodexConfigSnippetUsesResolvedPaths() {
