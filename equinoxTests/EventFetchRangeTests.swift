@@ -28,7 +28,7 @@ final class EventFetchRangeTests: XCTestCase {
             selectedDate: selectedDate,
             agendaDays: 7
         )
-        XCTAssertEqual(range.first, selectedDate)
+        XCTAssertEqual(range.first, CalendarDate(year: 2026, monthIndex: 4, day: 26))
     }
 
     func testFetchRangeNoAgendaDaysReturnsGridOnly() {

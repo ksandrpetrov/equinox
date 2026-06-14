@@ -32,19 +32,20 @@ final class PlaudEventMatchingTests: XCTestCase {
             ),
         ]
 
-        let match = PlaudEventMatching.match(
-            event: event,
+        let matches = PlaudEventMatching.assignMatches(
+            events: [event],
             recordings: recordings,
             now: makeDate(year: 2025, month: 6, day: 12, hour: 9, minute: 0),
             calendar: calendar
         )
 
-        XCTAssertEqual(match?.fileID, "383169344ae0d5bd925daddb7b5a713e")
-        XCTAssertEqual(match?.source, .auto)
-        XCTAssertEqual(match?.webURL.absoluteString, "https://web.plaud.ai/file/383169344ae0d5bd925daddb7b5a713e")
+        let key = PlaudEventMatching.matchKey(eventIdentifier: "EK-1", startDate: eventStart)
+        XCTAssertEqual(matches[key]?.fileID, "383169344ae0d5bd925daddb7b5a713e")
+        XCTAssertEqual(matches[key]?.source, .auto)
+        XCTAssertEqual(matches[key]?.webURL.absoluteString, "https://web.plaud.ai/file/383169344ae0d5bd925daddb7b5a713e")
     }
 
-    func testTwoRecordingsInSameWindowReturnsNoMatch() {
+    func testTwoRecordingsInSameWindowKeepsCloserRecording() {
         let eventStart = makeDate(year: 2025, month: 6, day: 11, hour: 10, minute: 0)
         let eventEnd = makeDate(year: 2025, month: 6, day: 11, hour: 11, minute: 0)
 
@@ -67,14 +68,16 @@ final class PlaudEventMatchingTests: XCTestCase {
             ),
         ]
 
-        let match = PlaudEventMatching.match(
-            event: event,
+        let matches = PlaudEventMatching.assignMatches(
+            events: [event],
             recordings: recordings,
             now: makeDate(year: 2025, month: 6, day: 12, hour: 9, minute: 0),
             calendar: calendar
         )
 
-        XCTAssertNil(match)
+        let key = PlaudEventMatching.matchKey(eventIdentifier: "EK-2", startDate: eventStart)
+        XCTAssertEqual(matches.count, 1)
+        XCTAssertEqual(matches[key]?.fileID, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     }
 
     func testSingleRecordingMatchesWhenTimeAligns() {
@@ -95,14 +98,15 @@ final class PlaudEventMatchingTests: XCTestCase {
             ),
         ]
 
-        let match = PlaudEventMatching.match(
-            event: event,
+        let matches = PlaudEventMatching.assignMatches(
+            events: [event],
             recordings: recordings,
             now: makeDate(year: 2025, month: 6, day: 12, hour: 9, minute: 0),
             calendar: calendar
         )
 
-        XCTAssertNotNil(match)
+        let key = PlaudEventMatching.matchKey(eventIdentifier: "EK-3", startDate: eventStart)
+        XCTAssertNotNil(matches[key])
     }
 
     func testFutureEventDoesNotMatch() {
@@ -123,14 +127,96 @@ final class PlaudEventMatchingTests: XCTestCase {
             ),
         ]
 
-        let match = PlaudEventMatching.match(
-            event: event,
+        let matches = PlaudEventMatching.assignMatches(
+            events: [event],
             recordings: recordings,
             now: makeDate(year: 2025, month: 6, day: 12, hour: 9, minute: 0),
             calendar: calendar
         )
 
-        XCTAssertNil(match)
+        XCTAssertTrue(matches.isEmpty)
+    }
+
+    func testMaxOverlapAssignsRecordingToDominantEvent() {
+        let eventAStart = makeDate(year: 2025, month: 6, day: 14, hour: 12, minute: 0)
+        let eventAEnd = makeDate(year: 2025, month: 6, day: 14, hour: 13, minute: 0)
+        let eventBStart = makeDate(year: 2025, month: 6, day: 14, hour: 13, minute: 0)
+        let eventBEnd = makeDate(year: 2025, month: 6, day: 14, hour: 14, minute: 0)
+
+        let eventA = PlaudMatchableEvent(
+            eventIdentifier: "EK-A",
+            title: "Meeting A",
+            startDate: eventAStart,
+            endDate: eventAEnd
+        )
+        let eventB = PlaudMatchableEvent(
+            eventIdentifier: "EK-B",
+            title: "Meeting B",
+            startDate: eventBStart,
+            endDate: eventBEnd
+        )
+
+        let recordingStart = makeDate(year: 2025, month: 6, day: 14, hour: 12, minute: 10)
+        let recording = PlaudRecording(
+            fileID: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            title: "Long recording",
+            recordedAt: recordingStart,
+            durationSeconds: 65 * 60
+        )
+
+        let matches = PlaudEventMatching.assignMatches(
+            events: [eventA, eventB],
+            recordings: [recording],
+            now: makeDate(year: 2025, month: 6, day: 15, hour: 9, minute: 0),
+            calendar: calendar
+        )
+
+        let keyA = PlaudEventMatching.matchKey(eventIdentifier: "EK-A", startDate: eventAStart)
+        let keyB = PlaudEventMatching.matchKey(eventIdentifier: "EK-B", startDate: eventBStart)
+        XCTAssertEqual(matches[keyA]?.fileID, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        XCTAssertNil(matches[keyB])
+    }
+
+    func testRecordingFullyInsideSingleEventMatchesIt() {
+        let eventStart = makeDate(year: 2025, month: 6, day: 14, hour: 9, minute: 0)
+        let eventEnd = makeDate(year: 2025, month: 6, day: 14, hour: 10, minute: 0)
+        let event = PlaudMatchableEvent(
+            eventIdentifier: "EK-INSIDE",
+            title: "Standup",
+            startDate: eventStart,
+            endDate: eventEnd
+        )
+        let recording = PlaudRecording(
+            fileID: "ffffffffffffffffffffffffffffffff",
+            title: "Standup notes",
+            recordedAt: makeDate(year: 2025, month: 6, day: 14, hour: 9, minute: 5),
+            durationSeconds: 30 * 60
+        )
+
+        let matches = PlaudEventMatching.assignMatches(
+            events: [event],
+            recordings: [recording],
+            now: makeDate(year: 2025, month: 6, day: 15, hour: 9, minute: 0),
+            calendar: calendar
+        )
+
+        let key = PlaudEventMatching.matchKey(eventIdentifier: "EK-INSIDE", startDate: eventStart)
+        XCTAssertEqual(matches[key]?.fileID, "ffffffffffffffffffffffffffffffff")
+    }
+
+    func testOverlapSecondsComputesIntersection() {
+        let start = makeDate(year: 2025, month: 6, day: 14, hour: 12, minute: 10)
+        let end = makeDate(year: 2025, month: 6, day: 14, hour: 13, minute: 15)
+        let eventStart = makeDate(year: 2025, month: 6, day: 14, hour: 12, minute: 0)
+        let eventEnd = makeDate(year: 2025, month: 6, day: 14, hour: 13, minute: 0)
+
+        let overlap = PlaudEventMatching.overlapSeconds(
+            recStart: start,
+            recEnd: end,
+            eventStart: eventStart,
+            eventEnd: eventEnd
+        )
+        XCTAssertEqual(overlap, 50 * 60, accuracy: 1)
     }
 
     func testFileIDFromPlaudURL() {
@@ -174,6 +260,12 @@ final class PlaudEventMatchingTests: XCTestCase {
         XCTAssertNil(PlaudTimestamp.parseCreatedAt("2026"))
     }
 
+    func testDurationSecondsParsesMilliseconds() throws {
+        XCTAssertEqual(try XCTUnwrap(PlaudTimestamp.durationSeconds(from: 3_900_000)), 3900, accuracy: 0.001)
+        XCTAssertEqual(try XCTUnwrap(PlaudTimestamp.durationSeconds(from: "1800000")), 1800, accuracy: 0.001)
+        XCTAssertNil(PlaudTimestamp.durationSeconds(from: nil))
+    }
+
     func testNaiveTimestampParsedAsUTCMatchesUTCEvent() throws {
         let recordedAt = PlaudTimestamp.parseCreatedAt("2026-06-11T12:00:26")
         let event = PlaudMatchableEvent(
@@ -188,15 +280,59 @@ final class PlaudEventMatchingTests: XCTestCase {
             recordedAt: try XCTUnwrap(recordedAt)
         )
 
-        let match = PlaudEventMatching.match(
-            event: event,
+        let matches = PlaudEventMatching.assignMatches(
+            events: [event],
             recordings: [recording],
             now: utcDate(year: 2026, month: 6, day: 14, hour: 9, minute: 0),
             calendar: utcCalendar
         )
 
-        XCTAssertEqual(match?.fileID, "383169344ae0d5bd925daddb7b5a713e")
-        XCTAssertEqual(match?.webURL.absoluteString, "https://web.plaud.ai/file/383169344ae0d5bd925daddb7b5a713e")
+        let key = PlaudEventMatching.matchKey(
+            eventIdentifier: "EK-UTC",
+            startDate: utcDate(year: 2026, month: 6, day: 11, hour: 12, minute: 0)
+        )
+        XCTAssertEqual(matches[key]?.fileID, "383169344ae0d5bd925daddb7b5a713e")
+        XCTAssertEqual(matches[key]?.webURL.absoluteString, "https://web.plaud.ai/file/383169344ae0d5bd925daddb7b5a713e")
+    }
+
+    func testRecordingMatchesMeetingDayNotSummarizationDay() {
+        let eventStart = makeDate(year: 2025, month: 5, day: 18, hour: 14, minute: 0)
+        let eventEnd = makeDate(year: 2025, month: 5, day: 18, hour: 15, minute: 0)
+        let nextDayEventStart = makeDate(year: 2025, month: 5, day: 19, hour: 14, minute: 0)
+        let nextDayEventEnd = makeDate(year: 2025, month: 5, day: 19, hour: 15, minute: 0)
+
+        let meetingDayEvent = PlaudMatchableEvent(
+            eventIdentifier: "EK-MEETING",
+            title: "Weekly Sync",
+            startDate: eventStart,
+            endDate: eventEnd
+        )
+        let nextDayEvent = PlaudMatchableEvent(
+            eventIdentifier: "EK-NEXT",
+            title: "Other Sync",
+            startDate: nextDayEventStart,
+            endDate: nextDayEventEnd
+        )
+
+        // recordedAt reflects actual meeting start; summarization may happen the next day in API metadata.
+        let recording = PlaudRecording(
+            fileID: "11111111111111111111111111111111",
+            title: "05-18 Weekly Sync",
+            recordedAt: makeDate(year: 2025, month: 5, day: 18, hour: 14, minute: 5),
+            durationSeconds: 45 * 60
+        )
+
+        let matches = PlaudEventMatching.assignMatches(
+            events: [meetingDayEvent, nextDayEvent],
+            recordings: [recording],
+            now: makeDate(year: 2025, month: 5, day: 20, hour: 9, minute: 0),
+            calendar: calendar
+        )
+
+        let meetingKey = PlaudEventMatching.matchKey(eventIdentifier: "EK-MEETING", startDate: eventStart)
+        let nextDayKey = PlaudEventMatching.matchKey(eventIdentifier: "EK-NEXT", startDate: nextDayEventStart)
+        XCTAssertEqual(matches[meetingKey]?.fileID, "11111111111111111111111111111111")
+        XCTAssertNil(matches[nextDayKey])
     }
 
     func testMatchKeyUsesEventIdentifierAndStartDate() {

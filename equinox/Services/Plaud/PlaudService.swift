@@ -112,55 +112,66 @@ actor PlaudService {
         )
     }
 
-    func matchEvent(_ event: DayEvent, isPlaudEnabled: Bool, now: Date = Date()) -> PlaudEventMatch? {
-        guard isPlaudEnabled else { return nil }
-        guard let eventID = event.eventIdentifier else { return nil }
-
-        let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
-
-        if let cached = cache.positiveMatch(for: key), let match = eventMatch(from: cached) {
-            return match
-        }
-
-        if cache.isNegative(for: key, fingerprint: catalogFingerprint) {
-            return nil
-        }
-
-        let matchable = PlaudMatchableEvent(
-            eventIdentifier: eventID,
-            title: event.title,
-            startDate: event.startDate,
-            endDate: event.endDate
-        )
-
-        guard let match = PlaudEventMatching.match(event: matchable, recordings: recordings, now: now) else {
-            cache.storeNegative(key: key, fingerprint: catalogFingerprint)
-            return nil
-        }
-
-        let cached = PlaudCachedMatch(
-            fileID: match.fileID,
-            webURLString: match.webURL.absoluteString,
-            source: .auto,
-            matchedAt: Date()
-        )
-        cache.storePositive(key: key, match: cached, fingerprint: catalogFingerprint)
-        return match
-    }
-
     func refreshMatches(for events: [DayEvent], isPlaudEnabled: Bool) async -> [String: PlaudEventMatch] {
         guard isPlaudEnabled else { return [:] }
         _ = await refreshIfNeeded(isPlaudEnabled: isPlaudEnabled)
 
         let now = Date()
         var results: [String: PlaudEventMatch] = [:]
+        var manualKeys: Set<String> = []
+
         for event in events where event.endDate < now {
             guard let eventID = event.eventIdentifier else { continue }
             let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
-            if let match = matchEvent(event, isPlaudEnabled: isPlaudEnabled, now: now) {
+            if let cached = cache.positiveMatch(for: key), cached.source == .manual,
+               let match = eventMatch(from: cached) {
                 results[key] = match
+                manualKeys.insert(key)
             }
         }
+
+        let manualFileIDs = Set(
+            cache.allPositiveMatches().values.filter { $0.source == .manual }.map(\.fileID)
+        )
+        let autoRecordings = recordings.filter { !manualFileIDs.contains($0.fileID) }
+
+        let matchableEvents: [PlaudMatchableEvent] = events.compactMap { event in
+            guard event.endDate < now, let eventID = event.eventIdentifier else { return nil }
+            let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
+            guard !manualKeys.contains(key) else { return nil }
+            return PlaudMatchableEvent(
+                eventIdentifier: eventID,
+                title: event.title,
+                startDate: event.startDate,
+                endDate: event.endDate
+            )
+        }
+
+        let assigned = PlaudEventMatching.assignMatches(
+            events: matchableEvents,
+            recordings: autoRecordings,
+            now: now
+        )
+
+        for event in matchableEvents {
+            let key = PlaudEventMatching.matchKey(
+                eventIdentifier: event.eventIdentifier,
+                startDate: event.startDate
+            )
+            if let match = assigned[key] {
+                let cached = PlaudCachedMatch(
+                    fileID: match.fileID,
+                    webURLString: match.webURL.absoluteString,
+                    source: .auto,
+                    matchedAt: Date()
+                )
+                cache.storePositive(key: key, match: cached, fingerprint: catalogFingerprint)
+                results[key] = match
+            } else {
+                cache.storeNegative(key: key, fingerprint: catalogFingerprint)
+            }
+        }
+
         return results
     }
 

@@ -56,4 +56,32 @@ final class AgendaSectionsTests: XCTestCase {
         XCTAssertEqual(sections.count, 2)
         XCTAssertEqual(sections.map(\.0), [start, start.addingDays(1)])
     }
+
+    func testRangeIncludesPinnedDateWhenEmptyDaysDisabled() {
+        let first = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let selected = first.addingDays(2)
+        let last = first.addingDays(4)
+        let sections = AgendaSections.sections(
+            from: first,
+            through: last,
+            pinnedDate: selected,
+            showEmptyDays: false,
+            eventsFor: { _ in [] }
+        )
+        XCTAssertEqual(sections.map(\.0), [selected])
+    }
+
+    func testRangeCoversPastAndFutureDays() {
+        let selected = CalendarDate(year: 2026, monthIndex: 5, day: 14)
+        let sections = AgendaSections.sections(
+            from: selected.addingDays(-2),
+            through: selected.addingDays(2),
+            pinnedDate: selected,
+            showEmptyDays: true,
+            eventsFor: { _ in [] }
+        )
+        XCTAssertEqual(sections.count, 5)
+        XCTAssertEqual(sections.map(\.0).first, selected.addingDays(-2))
+        XCTAssertEqual(sections.map(\.0).last, selected.addingDays(2))
+    }
 }

@@ -13,6 +13,7 @@ struct AgendaView: View {
     @Binding var expandedEventID: String?
 
     @State private var pendingDelete: PendingDeleteEvent?
+    @State private var scrolledSectionID: Int?
 
     private var prefs: PreferencesStore { appState.preferences }
     private var backgroundStyle: BackgroundStyle {
@@ -29,69 +30,82 @@ struct AgendaView: View {
                     LazyVStack(alignment: .leading, spacing: EquinoxDesign.spacingXS, pinnedViews: [.sectionHeaders]) {
                         ForEach(sections, id: \.date) { section in
                             Section {
-                                if section.events.isEmpty && prefs.showDaysWithNoEvents {
-                                    emptyDayRow
-                                } else {
-                                    ForEach(section.events) { event in
-                                        AgendaEventCard(
-                                            event: event,
-                                            metrics: metrics,
-                                            showLocation: prefs.showLocation,
-                                            plaudMatch: appState.plaud.link(for: event),
-                                            isExpanded: expandedEventID == event.id,
-                                            onToggleExpand: {
-                                                withAnimation(EquinoxDesign.expandAnimation) {
-                                                    if expandedEventID == event.id {
-                                                        expandedEventID = nil
-                                                    } else {
-                                                        expandedEventID = event.id
-                                                        appState.panel.selectedEvent = event
-                                                    }
-                                                }
-                                            },
-                                            onRespond: { status in
-                                                appState.panel.panelFeedback = nil
-                                                if let error = await appState.respondToInvitation(event: event, status: status) {
-                                                    appState.panel.panelFeedback = error
-                                                }
-                                            }
-                                        )
-                                        .simultaneousGesture(
-                                            TapGesture(count: 1).onEnded {
+                            if section.events.isEmpty
+                                && (prefs.showDaysWithNoEvents || section.date == appState.events.selectedDate) {
+                                emptyDayRow
+                            } else {
+                                ForEach(section.events) { event in
+                                    AgendaEventCard(
+                                        event: event,
+                                        metrics: metrics,
+                                        showLocation: prefs.showLocation,
+                                        plaudMatch: appState.plaud.link(for: event),
+                                        isExpanded: expandedEventID == event.id,
+                                        onToggleExpand: {
+                                            withAnimation(EquinoxDesign.expandAnimation) {
                                                 if expandedEventID == event.id {
+                                                    expandedEventID = nil
+                                                } else {
+                                                    expandedEventID = event.id
                                                     appState.panel.selectedEvent = event
-                                                    appState.panel.isEventDetailPresented = true
                                                 }
                                             }
-                                        )
-                                        .contextMenu {
-                                            Button(String(localized: "Show Details", comment: "Agenda context menu")) {
+                                        },
+                                        onRespond: { status in
+                                            appState.panel.panelFeedback = nil
+                                            if let error = await appState.respondToInvitation(event: event, status: status) {
+                                                appState.panel.panelFeedback = error
+                                            }
+                                        }
+                                    )
+                                    .simultaneousGesture(
+                                        TapGesture(count: 1).onEnded {
+                                            if expandedEventID == event.id {
                                                 appState.panel.selectedEvent = event
                                                 appState.panel.isEventDetailPresented = true
                                             }
-                                            if event.allowsContentModifications, let eventIdentifier = event.eventIdentifier {
-                                                Button(String(localized: "Delete…", comment: ""), role: .destructive) {
-                                                    pendingDelete = PendingDeleteEvent(
-                                                        id: event.id,
-                                                        eventIdentifier: eventIdentifier,
-                                                        title: event.title
-                                                    )
-                                                }
+                                        }
+                                    )
+                                    .contextMenu {
+                                        Button(String(localized: "Show Details", comment: "Agenda context menu")) {
+                                            appState.panel.selectedEvent = event
+                                            appState.panel.isEventDetailPresented = true
+                                        }
+                                        if event.allowsContentModifications, let eventIdentifier = event.eventIdentifier {
+                                            Button(String(localized: "Delete…", comment: ""), role: .destructive) {
+                                                pendingDelete = PendingDeleteEvent(
+                                                    id: event.id,
+                                                    eventIdentifier: eventIdentifier,
+                                                    title: event.title
+                                                )
                                             }
                                         }
                                     }
                                 }
+                            }
                             } header: {
                                 AgendaSectionHeader(
                                     date: section.date,
                                     calendar: appState.calendar,
                                     backgroundStyle: backgroundStyle
                                 )
+                                .id(section.date.julian)
                             }
                         }
                     }
+                    .scrollTargetLayout()
                 }
                 .scrollIndicators(.hidden)
+                .scrollPosition(id: $scrolledSectionID, anchor: .top)
+                .onAppear {
+                    scrollAgendaToSelectedDate()
+                }
+                .onChange(of: appState.panel.agendaScrollGeneration) { _, _ in
+                    scrollAgendaToSelectedDate()
+                }
+                .onChange(of: appState.events.agendaScrollToken) { _, _ in
+                    scrollAgendaToSelectedDate()
+                }
             }
         }
         .frame(height: height)
@@ -121,6 +135,7 @@ struct AgendaView: View {
         }
         .onChange(of: prefs.showEventDays) { _, _ in
             appState.events.extendFetchRangeForAgendaIfNeeded()
+            scrollAgendaToSelectedDate()
         }
     }
 
@@ -157,11 +172,26 @@ struct AgendaView: View {
     }
 
     private var agendaSections: [(date: CalendarDate, events: [DayEvent])] {
-        AgendaSections.sections(
-            from: appState.events.selectedDate,
-            days: prefs.showEventDays,
+        let anchor = appState.events.selectedDate
+        let range = AgendaDisplayRange.range(anchor: anchor, showEventDays: prefs.showEventDays)
+        return AgendaSections.sections(
+            from: range.first,
+            through: range.last,
+            pinnedDate: anchor,
             showEmptyDays: prefs.showDaysWithNoEvents,
             eventsFor: appState.events.events(for:)
         )
+    }
+
+    private func scrollAgendaToSelectedDate() {
+        scrollAgenda(to: appState.events.selectedDate.julian)
+    }
+
+    private func scrollAgenda(to julian: Int) {
+        scrolledSectionID = julian
+        // LazyVStack may not have laid out the target section yet after range changes.
+        DispatchQueue.main.async {
+            scrolledSectionID = julian
+        }
     }
 }

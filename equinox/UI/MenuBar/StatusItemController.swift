@@ -160,14 +160,17 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
     }
 
-    private func showPanel() {
+    private func showPanel(resetToToday: Bool = true) {
+        if resetToToday {
+            appState.events.goToToday()
+        }
         panelController.show(statusItem: statusItem, isPinned: appState.isPinned)
         updateDismissMonitoring()
     }
 
-    private func showPanelIfHidden() {
+    private func showPanelIfHidden(resetToToday: Bool = true) {
         syncPanelVisibleState()
-        if !appState.panel.isPanelVisible { showPanel() }
+        if !appState.panel.isPanelVisible { showPanel(resetToToday: resetToToday) }
     }
 
     private func hidePanel() {
@@ -252,7 +255,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     func handleDateURL(_ date: Date) {
         let calDate = CalendarDate(date: date, calendar: appState.calendar)
         appState.events.selectDate(calDate)
-        showPanelIfHidden()
+        showPanelIfHidden(resetToToday: false)
     }
 
     private func setupDismissMonitoring() {

@@ -4,6 +4,31 @@ struct PlaudRecording: Sendable, Equatable, Codable {
     let fileID: String
     let title: String
     let recordedAt: Date
+    let durationSeconds: TimeInterval
+
+    var endDate: Date {
+        recordedAt.addingTimeInterval(max(0, durationSeconds))
+    }
+
+    init(
+        fileID: String,
+        title: String,
+        recordedAt: Date,
+        durationSeconds: TimeInterval = 0
+    ) {
+        self.fileID = fileID
+        self.title = title
+        self.recordedAt = recordedAt
+        self.durationSeconds = max(0, durationSeconds)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        fileID = try container.decode(String.self, forKey: .fileID)
+        title = try container.decode(String.self, forKey: .title)
+        recordedAt = try container.decode(Date.self, forKey: .recordedAt)
+        durationSeconds = max(0, try container.decodeIfPresent(TimeInterval.self, forKey: .durationSeconds) ?? 0)
+    }
 }
 
 enum PlaudMatchConfidence: Sendable, Equatable {
@@ -57,44 +82,52 @@ enum PlaudEventMatching {
         return normalized
     }
 
-    static func match(
-        event: PlaudMatchableEvent,
+    static func overlapSeconds(
+        recStart: Date,
+        recEnd: Date,
+        eventStart: Date,
+        eventEnd: Date
+    ) -> TimeInterval {
+        let start = max(recStart, eventStart)
+        let end = min(recEnd, eventEnd)
+        return max(0, end.timeIntervalSince(start))
+    }
+
+    static func assignMatches(
+        events: [PlaudMatchableEvent],
         recordings: [PlaudRecording],
         now: Date = Date(),
         calendar: Calendar = .autoupdatingCurrent
-    ) -> PlaudEventMatch? {
-        guard event.endDate < now else { return nil }
+    ) -> [String: PlaudEventMatch] {
+        let pastEvents = events.filter { $0.endDate < now }
+        guard !pastEvents.isEmpty, !recordings.isEmpty else { return [:] }
 
-        let windowStart = event.startDate.addingTimeInterval(-timeWindowBefore)
-        let windowEnd = event.endDate.addingTimeInterval(timeWindowAfter)
-
-        let candidates = recordings.compactMap { recording -> ScoredCandidate? in
-            let recordedAt = recording.recordedAt
-            guard calendar.isDate(recordedAt, inSameDayAs: event.startDate) else { return nil }
-            guard recordedAt >= windowStart, recordedAt <= windowEnd else { return nil }
-            let timeScore = timeProximityScore(
-                recordedAt: recordedAt,
-                eventStart: event.startDate,
-                eventEnd: event.endDate
-            )
-            let titleScore = titleTokenScore(eventTitle: event.title, recordingTitle: recording.title)
-            let combined = timeScore * 0.7 + titleScore * 0.3
-            return ScoredCandidate(recording: recording, combined: combined)
+        var recordingClaims: [RecordingClaim] = []
+        for recording in recordings {
+            guard let claim = bestClaim(for: recording, among: pastEvents, calendar: calendar) else { continue }
+            recordingClaims.append(claim)
         }
 
-        guard !candidates.isEmpty else { return nil }
-
-        let sorted = candidates.sorted { $0.combined > $1.combined }
-        let best = sorted[0]
-
-        if sorted.count == 1 {
-            return makeMatch(from: best.recording, source: .auto)
+        var winnerByEventKey: [String: RecordingClaim] = [:]
+        for claim in recordingClaims {
+            let key = matchKey(eventIdentifier: claim.event.eventIdentifier, startDate: claim.event.startDate)
+            if let existing = winnerByEventKey[key] {
+                if claim.rankValue > existing.rankValue
+                    || (claim.rankValue == existing.rankValue && claim.tieBreak < existing.tieBreak) {
+                    winnerByEventKey[key] = claim
+                }
+            } else {
+                winnerByEventKey[key] = claim
+            }
         }
 
-        let second = sorted[1]
-        guard best.combined - second.combined >= scoreMarginForHighConfidence else { return nil }
-
-        return makeMatch(from: best.recording, source: .auto)
+        var results: [String: PlaudEventMatch] = [:]
+        for (key, claim) in winnerByEventKey {
+            if let match = makeMatch(from: claim.recording, source: .auto) {
+                results[key] = match
+            }
+        }
+        return results
     }
 
     static func normalizeTokens(_ text: String) -> Set<String> {
@@ -115,9 +148,112 @@ enum PlaudEventMatching {
         return Double(intersection) / Double(union)
     }
 
-    private struct ScoredCandidate {
+    private struct RecordingClaim {
         let recording: PlaudRecording
-        let combined: Double
+        let event: PlaudMatchableEvent
+        let rankValue: Double
+        let tieBreak: TimeInterval
+    }
+
+    private struct ScoredEventCandidate {
+        let event: PlaudMatchableEvent
+        let rankValue: Double
+        let tieBreak: TimeInterval
+        let titleScore: Double
+    }
+
+    private static func bestClaim(
+        for recording: PlaudRecording,
+        among events: [PlaudMatchableEvent],
+        calendar: Calendar
+    ) -> RecordingClaim? {
+        let candidates: [ScoredEventCandidate]
+        if recording.durationSeconds > 0 {
+            candidates = overlapCandidates(for: recording, among: events, calendar: calendar)
+        } else {
+            candidates = proximityCandidates(for: recording, among: events, calendar: calendar)
+        }
+
+        guard !candidates.isEmpty else { return nil }
+
+        let sorted = candidates.sorted {
+            if $0.rankValue != $1.rankValue { return $0.rankValue > $1.rankValue }
+            if $0.titleScore != $1.titleScore { return $0.titleScore > $1.titleScore }
+            return $0.tieBreak < $1.tieBreak
+        }
+
+        let best = sorted[0]
+        if sorted.count >= 2 {
+            let second = sorted[1]
+            let margin = best.rankValue - second.rankValue
+            let relativeClose = second.rankValue >= best.rankValue * (1 - scoreMarginForHighConfidence)
+            let titleDisambiguates = abs(best.titleScore - second.titleScore) >= scoreMarginForHighConfidence
+            if relativeClose && !titleDisambiguates && margin < 60 {
+                return nil
+            }
+        }
+
+        return RecordingClaim(
+            recording: recording,
+            event: best.event,
+            rankValue: best.rankValue,
+            tieBreak: best.tieBreak
+        )
+    }
+
+    private static func overlapCandidates(
+        for recording: PlaudRecording,
+        among events: [PlaudMatchableEvent],
+        calendar: Calendar
+    ) -> [ScoredEventCandidate] {
+        events.compactMap { event in
+            guard calendar.isDate(recording.recordedAt, inSameDayAs: event.startDate) else { return nil }
+            let overlap = overlapSeconds(
+                recStart: recording.recordedAt,
+                recEnd: recording.endDate,
+                eventStart: event.startDate,
+                eventEnd: event.endDate
+            )
+            guard overlap > 0 else { return nil }
+            let titleScore = titleTokenScore(eventTitle: event.title, recordingTitle: recording.title)
+            let tieBreak = abs(recording.recordedAt.timeIntervalSince(event.startDate))
+            return ScoredEventCandidate(
+                event: event,
+                rankValue: overlap,
+                tieBreak: tieBreak,
+                titleScore: titleScore
+            )
+        }
+    }
+
+    private static func proximityCandidates(
+        for recording: PlaudRecording,
+        among events: [PlaudMatchableEvent],
+        calendar: Calendar
+    ) -> [ScoredEventCandidate] {
+        events.compactMap { event in
+            let recordedAt = recording.recordedAt
+            guard calendar.isDate(recordedAt, inSameDayAs: event.startDate) else { return nil }
+
+            let windowStart = event.startDate.addingTimeInterval(-timeWindowBefore)
+            let windowEnd = event.endDate.addingTimeInterval(timeWindowAfter)
+            guard recordedAt >= windowStart, recordedAt <= windowEnd else { return nil }
+
+            let timeScore = timeProximityScore(
+                recordedAt: recordedAt,
+                eventStart: event.startDate,
+                eventEnd: event.endDate
+            )
+            let titleScore = titleTokenScore(eventTitle: event.title, recordingTitle: recording.title)
+            let combined = timeScore * 0.7 + titleScore * 0.3
+            let tieBreak = abs(recordedAt.timeIntervalSince(event.startDate))
+            return ScoredEventCandidate(
+                event: event,
+                rankValue: combined,
+                tieBreak: tieBreak,
+                titleScore: titleScore
+            )
+        }
     }
 
     private static func makeMatch(from recording: PlaudRecording, source: PlaudMatchSource) -> PlaudEventMatch? {

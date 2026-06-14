@@ -121,20 +121,33 @@ actor PlaudLiveClient {
             }
         }
 
-        let createdKeys = ["created_at", "createdAt", "create_time", "createTime", "start_time", "startTime"]
-        var createdValue: Any?
-        for key in createdKeys {
-            if let value = raw[key] {
-                createdValue = value
-                break
-            }
-        }
-        guard let recordedAt = PlaudTimestamp.parseCreatedAt(createdValue) else { return nil }
+        guard let recordedAt = PlaudTimestamp.parseRecordingStartedAt(from: raw) else { return nil }
+
+        let durationSeconds = parseDurationSeconds(raw: raw, recordedAt: recordedAt)
 
         return PlaudRecording(
             fileID: fileID,
             title: title,
-            recordedAt: recordedAt
+            recordedAt: recordedAt,
+            durationSeconds: durationSeconds
         )
+    }
+
+    private func parseDurationSeconds(raw: [String: Any], recordedAt: Date) -> TimeInterval {
+        let endKeys = ["end_at", "endAt", "end_time", "endTime"]
+        for key in endKeys {
+            if let value = raw[key], let endDate = PlaudTimestamp.parseCreatedAt(value) {
+                return max(0, endDate.timeIntervalSince(recordedAt))
+            }
+        }
+
+        let durationKeys = ["duration", "duration_ms", "durationMs"]
+        for key in durationKeys {
+            if let value = raw[key], let seconds = PlaudTimestamp.durationSeconds(from: value) {
+                return seconds
+            }
+        }
+
+        return 0
     }
 }

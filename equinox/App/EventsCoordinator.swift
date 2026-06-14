@@ -25,6 +25,9 @@ final class EventsCoordinator {
     var calendarAccessStatus: CalendarAccessStatus = .notDetermined
     var lastFetchError: String?
 
+    /// Bumped after navigation that should scroll the agenda to `selectedDate`.
+    private(set) var agendaScrollToken = 0
+
     init(
         calendar: Calendar,
         calendarStore: CalendarStore,
@@ -115,9 +118,11 @@ final class EventsCoordinator {
     }
 
     func goToToday() {
+        todayDate = CalendarDate.today(calendar: calendar)
         monthDate = todayDate
         selectedDate = todayDate
         refreshVisibleGridRange()
+        requestAgendaScroll()
     }
 
     func goToPreviousMonth() {
@@ -138,6 +143,7 @@ final class EventsCoordinator {
         } else {
             extendFetchRangeForAgendaIfNeeded()
         }
+        requestAgendaScroll()
     }
 
     func events(for date: CalendarDate) -> [DayEvent] {
@@ -216,6 +222,10 @@ final class EventsCoordinator {
                 await calendarStore.fetchEvents()
             }
         }
+    }
+
+    private func requestAgendaScroll() {
+        agendaScrollToken &+= 1
     }
 
     private func performFetch(_ operation: () async -> Void) async {

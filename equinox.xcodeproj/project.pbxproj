@@ -29,6 +29,7 @@
 		DDC001A1B2C3D4E5F6012345 /* Core/DayEventUniqueCalendars.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */; };
 		DE001A1B2C3D4E5F6012345 /* Core/DayEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */; };
 		DE002A1B2C3D4E5F6012345 /* Core/AgendaSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */; };
+		ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */; };
 		D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */; };
 		CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */; };
 		SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar.swift */; };
@@ -130,6 +131,7 @@
 		T0E005A1B2C3D4E5F6012345 /* EventParticipationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E005A1B2C3D4E5F6012346 /* EventParticipationTests.swift */; };
 		T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */; };
 		AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */; };
+		ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */; };
 		T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */; };
 		RSVP001A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */; };
 		RSVP002A1B2C3D4E5F6012345 /* UI/Events/EventRSVPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP002A1B2C3D4E5F6012346 /* UI/Events/EventRSVPBar.swift */; };
@@ -215,6 +217,7 @@
 		DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/DayEventUniqueCalendars.swift; sourceTree = "<group>"; };
 		DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/DayEvent.swift; sourceTree = "<group>"; };
 		DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AgendaSections.swift; sourceTree = "<group>"; };
+		ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AgendaDisplayRange.swift; sourceTree = "<group>"; };
 		EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/EventFetchRange.swift; sourceTree = "<group>"; };
 		MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingIndicator.swift; sourceTree = "<group>"; };
 		CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/CalendarListing.swift; sourceTree = "<group>"; };
@@ -317,6 +320,7 @@
 		T0E005A1B2C3D4E5F6012346 /* EventParticipationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventParticipationTests.swift; sourceTree = "<group>"; };
 		T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayEventUniqueCalendarsTests.swift; sourceTree = "<group>"; };
 		AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaSectionsTests.swift; sourceTree = "<group>"; };
+		ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaDisplayRangeTests.swift; sourceTree = "<group>"; };
 		T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJoinURLTests.swift; sourceTree = "<group>"; };
 		T0E005A1B2C3D4E5F6012346 /* equinoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = equinoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -366,6 +370,7 @@
 				DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */,
 				DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */,
 				DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */,
+				ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */,
 				EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */,
 				MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */,
 				CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */,
@@ -516,6 +521,7 @@
 				CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */,
 				EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */,
 				AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */,
+				ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */,
 				T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */,
 				T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */,
 				MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */,
@@ -668,6 +674,7 @@
 				DE001A1B2C3D4E5F6012345 /* Core/DayEvent.swift in Sources */,
 				DDC001A1B2C3D4E5F6012345 /* Core/DayEventUniqueCalendars.swift in Sources */,
 				DE002A1B2C3D4E5F6012345 /* Core/AgendaSections.swift in Sources */,
+				ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */,
 				EFR001A1B2C3D4E5F6012345 /* Core/EventFetchRange.swift in Sources */,
 				MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */,
 				CLI001A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */,
@@ -785,6 +792,7 @@
 				CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */,
 				EKMT001A1B2C3D4E5F6012345 /* EventKitCalendarMappingTests.swift in Sources */,
 				AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */,
+				ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */,
 				T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */,
 				T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */,
 				MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */,

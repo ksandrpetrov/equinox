@@ -10,8 +10,9 @@ enum EventFetchRange {
         var fetchFirst = gridFirst
         var fetchLast = gridLast
         guard agendaDays > 0 else { return (fetchFirst, fetchLast) }
-        if selectedDate < fetchFirst {
-            fetchFirst = selectedDate
+        let agendaFirst = selectedDate.addingDays(-(agendaDays - 1))
+        if agendaFirst < fetchFirst {
+            fetchFirst = agendaFirst
         }
         let agendaLast = selectedDate.addingDays(agendaDays - 1)
         if agendaLast > fetchLast {
