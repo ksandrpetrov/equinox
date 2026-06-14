@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct EventDetailView: View {
     @Bindable var appState: AppState
@@ -7,6 +8,16 @@ struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var isResponding = false
     @State private var actionError: String?
+    @State private var manualPlaudURL = ""
+    @State private var showManualPlaudLink = false
+
+    private var plaudMatch: PlaudEventMatch? {
+        appState.plaudLink(for: event)
+    }
+
+    private var isPastEvent: Bool {
+        event.endDate < Date()
+    }
 
     var body: some View {
         ModalSheetScaffold(
@@ -81,9 +92,85 @@ struct EventDetailView: View {
                         .controlSize(.large)
                         .frame(maxWidth: .infinity)
                     }
+
+                    if isPastEvent, appState.preferences.isPlaudEnabled {
+                        plaudSection
+                    }
                 }
                 .padding(ModalDesign.contentPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .onAppear {
+            appState.refreshPlaudMatchesIfNeeded()
+        }
+    }
+
+    @ViewBuilder
+    private var plaudSection: some View {
+        if let match = plaudMatch {
+            VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
+                Button(String(localized: "Open in Plaud", comment: "Plaud recording button")) {
+                    NSWorkspace.shared.open(match.webURL)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
+
+                Text(match.hasSummary
+                    ? String(localized: "Recording available", comment: "Plaud match subtitle")
+                    : String(localized: "Recording available (no summary yet)", comment: "Plaud match subtitle"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } else if showManualPlaudLink {
+            VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
+                TextField(
+                    String(localized: "https://web.plaud.ai/file/…", comment: "Plaud manual link placeholder"),
+                    text: $manualPlaudURL
+                )
+                .textFieldStyle(.roundedBorder)
+
+                HStack {
+                    Button(String(localized: "Save Link", comment: "Plaud manual link save")) {
+                        saveManualPlaudLink()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    Button(String(localized: "Cancel", comment: "")) {
+                        showManualPlaudLink = false
+                        manualPlaudURL = ""
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+        } else {
+            Button(String(localized: "Link Plaud recording…", comment: "Plaud manual link action")) {
+                showManualPlaudLink = true
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func saveManualPlaudLink() {
+        let trimmed = manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed) else {
+            actionError = String(
+                localized: "Paste a Plaud URL like https://web.plaud.ai/file/…",
+                comment: "Plaud manual link error"
+            )
+            return
+        }
+        actionError = nil
+        Task {
+            if let error = await appState.saveManualPlaudLink(for: event, url: url) {
+                actionError = error
+            } else {
+                showManualPlaudLink = false
+                manualPlaudURL = ""
             }
         }
     }

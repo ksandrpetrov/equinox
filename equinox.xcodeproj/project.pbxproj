@@ -74,6 +74,18 @@
 		PRV001A1B2C3D4E5F6012345 /* UI/Settings/PrivacySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */; };
 		MCP002A1B2C3D4E5F6012345 /* UI/Settings/McpSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */; };
 		MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */; };
+		PLD001A1B2C3D4E5F6012345 /* Core/PlaudEventMatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD011A1B2C3D4E5F6012346 /* Core/PlaudEventMatching.swift */; };
+		PLD002A1B2C3D4E5F6012345 /* Services/PlaudMatchCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD012A1B2C3D4E5F6012346 /* Services/PlaudMatchCache.swift */; };
+		PLD003A1B2C3D4E5F6012345 /* Services/PlaudCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD013A1B2C3D4E5F6012346 /* Services/PlaudCatalog.swift */; };
+		PLD004A1B2C3D4E5F6012345 /* Services/PlaudLiveClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD014A1B2C3D4E5F6012346 /* Services/PlaudLiveClient.swift */; };
+		PLD005A1B2C3D4E5F6012345 /* Services/KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD015A1B2C3D4E5F6012346 /* Services/KeychainStore.swift */; };
+		PLD006A1B2C3D4E5F6012345 /* Services/PlaudSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD016A1B2C3D4E5F6012346 /* Services/PlaudSetup.swift */; };
+		PLD007A1B2C3D4E5F6012345 /* Services/PlaudService.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD017A1B2C3D4E5F6012346 /* Services/PlaudService.swift */; };
+		PLD008A1B2C3D4E5F6012345 /* UI/Settings/PlaudSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD018A1B2C3D4E5F6012346 /* UI/Settings/PlaudSettingsTab.swift */; };
+		PLD009A1B2C3D4E5F6012345 /* PlaudEventMatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */; };
+		PLD010A1B2C3D4E5F6012345 /* Core/PlaudOAuthPKCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD020A1B2C3D4E5F6012346 /* Core/PlaudOAuthPKCE.swift */; };
+		PLD011A1B2C3D4E5F6012345 /* Services/PlaudOAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD021A1B2C3D4E5F6012346 /* Services/PlaudOAuthClient.swift */; };
+		PLD012A1B2C3D4E5F6012345 /* PlaudOAuthPKCETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */; };
 		T0E001A1B2C3D4E5F6012345 /* CalendarDateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E001A1B2C3D4E5F6012346 /* CalendarDateTests.swift */; };
 		T0E002A1B2C3D4E5F6012345 /* JoinURLDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E002A1B2C3D4E5F6012346 /* JoinURLDetectionTests.swift */; };
 		T0E003A1B2C3D4E5F6012345 /* EventLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E003A1B2C3D4E5F6012346 /* EventLayoutTests.swift */; };
@@ -217,6 +229,18 @@
 		PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/PrivacySettingsTab.swift; sourceTree = "<group>"; };
 		MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/McpSettingsTab.swift; sourceTree = "<group>"; };
 		MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McpSetupTests.swift; sourceTree = "<group>"; };
+		PLD011A1B2C3D4E5F6012346 /* Core/PlaudEventMatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/PlaudEventMatching.swift; sourceTree = "<group>"; };
+		PLD012A1B2C3D4E5F6012346 /* Services/PlaudMatchCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlaudMatchCache.swift; sourceTree = "<group>"; };
+		PLD013A1B2C3D4E5F6012346 /* Services/PlaudCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlaudCatalog.swift; sourceTree = "<group>"; };
+		PLD014A1B2C3D4E5F6012346 /* Services/PlaudLiveClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlaudLiveClient.swift; sourceTree = "<group>"; };
+		PLD015A1B2C3D4E5F6012346 /* Services/KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/KeychainStore.swift; sourceTree = "<group>"; };
+		PLD016A1B2C3D4E5F6012346 /* Services/PlaudSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlaudSetup.swift; sourceTree = "<group>"; };
+		PLD017A1B2C3D4E5F6012346 /* Services/PlaudService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlaudService.swift; sourceTree = "<group>"; };
+		PLD018A1B2C3D4E5F6012346 /* UI/Settings/PlaudSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/PlaudSettingsTab.swift; sourceTree = "<group>"; };
+		PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaudEventMatchingTests.swift; sourceTree = "<group>"; };
+		PLD020A1B2C3D4E5F6012346 /* Core/PlaudOAuthPKCE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/PlaudOAuthPKCE.swift; sourceTree = "<group>"; };
+		PLD021A1B2C3D4E5F6012346 /* Services/PlaudOAuthClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PlaudOAuthClient.swift; sourceTree = "<group>"; };
+		PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaudOAuthPKCETests.swift; sourceTree = "<group>"; };
 		T0E001A1B2C3D4E5F6012346 /* CalendarDateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDateTests.swift; sourceTree = "<group>"; };
 		T0E002A1B2C3D4E5F6012346 /* JoinURLDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinURLDetectionTests.swift; sourceTree = "<group>"; };
 		T0E003A1B2C3D4E5F6012346 /* EventLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventLayoutTests.swift; sourceTree = "<group>"; };
@@ -273,10 +297,19 @@
 				D0E006A1B2C3D4E5F6012346 /* Core/MonthGrid.swift */,
 				D0E007A1B2C3D4E5F6012346 /* Core/EventLayout.swift */,
 				RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */,
+				PLD011A1B2C3D4E5F6012346 /* Core/PlaudEventMatching.swift */,
+				PLD020A1B2C3D4E5F6012346 /* Core/PlaudOAuthPKCE.swift */,
 				A1B2C3D401234567890ABCD8 /* Services/LaunchAtLogin.swift */,
 				149A534F80EB4E32B3D6FEA6 /* Services/SizeMetrics.swift */,
 				328F6CA845EE41999E852970 /* Services/PreferencesStore.swift */,
 				MCP003A1B2C3D4E5F6012346 /* Services/McpSetup.swift */,
+				PLD012A1B2C3D4E5F6012346 /* Services/PlaudMatchCache.swift */,
+				PLD013A1B2C3D4E5F6012346 /* Services/PlaudCatalog.swift */,
+				PLD014A1B2C3D4E5F6012346 /* Services/PlaudLiveClient.swift */,
+				PLD021A1B2C3D4E5F6012346 /* Services/PlaudOAuthClient.swift */,
+				PLD015A1B2C3D4E5F6012346 /* Services/KeychainStore.swift */,
+				PLD016A1B2C3D4E5F6012346 /* Services/PlaudSetup.swift */,
+				PLD017A1B2C3D4E5F6012346 /* Services/PlaudService.swift */,
 				KSM001A1B2C3D4E5F6012346 /* Services/KeyboardShortcutMigration.swift */,
 				A11Y001A1B2C3D4E5F6012346 /* UI/Design/AccessibilityHelpers.swift */,
 				D0E008A1B2C3D4E5F6012346 /* UI/Design/DesignTokens.swift */,
@@ -302,6 +335,7 @@
 				C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */,
 				PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */,
 				MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */,
+				PLD018A1B2C3D4E5F6012346 /* UI/Settings/PlaudSettingsTab.swift */,
 				A8BA8E6CEB1F48A18F12291C /* UI/Settings/AboutSettingsTab.swift */,
 				B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */,
 				C3D4E5F601234567890ABD0C /* UI/Settings/WeekendHighlightPicker.swift */,
@@ -385,6 +419,8 @@
 				T0E007A1B2C3D4E5F6012346 /* DayEventDotColorsTests.swift */,
 				T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */,
 				MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */,
+				PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */,
+				PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */,
 			);
 			path = equinoxTests;
 			sourceTree = "<group>";
@@ -540,6 +576,16 @@
 				26345BB4077546858ED91E33 /* Services/SizeMetrics.swift in Sources */,
 				6572A0BA3F5D47239DEFBD5D /* Services/PreferencesStore.swift in Sources */,
 				MCP001A1B2C3D4E5F6012345 /* Services/McpSetup.swift in Sources */,
+				PLD001A1B2C3D4E5F6012345 /* Core/PlaudEventMatching.swift in Sources */,
+				PLD010A1B2C3D4E5F6012345 /* Core/PlaudOAuthPKCE.swift in Sources */,
+				PLD002A1B2C3D4E5F6012345 /* Services/PlaudMatchCache.swift in Sources */,
+				PLD003A1B2C3D4E5F6012345 /* Services/PlaudCatalog.swift in Sources */,
+				PLD004A1B2C3D4E5F6012345 /* Services/PlaudLiveClient.swift in Sources */,
+				PLD011A1B2C3D4E5F6012345 /* Services/PlaudOAuthClient.swift in Sources */,
+				PLD005A1B2C3D4E5F6012345 /* Services/KeychainStore.swift in Sources */,
+				PLD006A1B2C3D4E5F6012345 /* Services/PlaudSetup.swift in Sources */,
+				PLD007A1B2C3D4E5F6012345 /* Services/PlaudService.swift in Sources */,
+				PLD008A1B2C3D4E5F6012345 /* UI/Settings/PlaudSettingsTab.swift in Sources */,
 				KSM001A1B2C3D4E5F6012345 /* Services/KeyboardShortcutMigration.swift in Sources */,
 				A11Y001A1B2C3D4E5F6012345 /* UI/Design/AccessibilityHelpers.swift in Sources */,
 				D0E008A1B2C3D4E5F6012345 /* UI/Design/DesignTokens.swift in Sources */,
@@ -605,6 +651,8 @@
 				T0E007A1B2C3D4E5F6012345 /* DayEventDotColorsTests.swift in Sources */,
 				T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */,
 				MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */,
+				PLD009A1B2C3D4E5F6012345 /* PlaudEventMatchingTests.swift in Sources */,
+				PLD012A1B2C3D4E5F6012345 /* PlaudOAuthPKCETests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

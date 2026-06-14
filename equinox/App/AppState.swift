@@ -59,6 +59,11 @@ final class AppState {
     var panelAgendaMaxHeight: CGFloat = 400
     var settingsInitialTab: SettingsTab = .general
 
+    private let plaudService = PlaudService()
+    private var plaudLinks: [String: PlaudEventMatch] = [:]
+    var plaudSetup = PlaudConfigurator.buildSetup()
+    private var plaudRefreshTask: Task<Void, Never>?
+
     private var storeObserver: NSObjectProtocol?
 
     init() {
@@ -129,6 +134,7 @@ final class AppState {
         calendarAccessStatus = await calendarStore.accessStatus()
         lastFetchError = await calendarStore.lastFetchError
         updateMeetingIndicator()
+        refreshPlaudMatchesIfNeeded()
     }
 
     func updateVisibleRange(first: CalendarDate, last: CalendarDate) {
@@ -278,6 +284,60 @@ final class AppState {
                 selectedEvent = updated
                 return
             }
+        }
+    }
+
+    func plaudLink(for event: DayEvent) -> PlaudEventMatch? {
+        guard preferences.isPlaudEnabled else { return nil }
+        guard let eventID = event.eventIdentifier else { return nil }
+        let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
+        return plaudLinks[key]
+    }
+
+    func refreshPlaudMatchesIfNeeded(force: Bool = false) {
+        guard preferences.isPlaudEnabled else {
+            plaudLinks = [:]
+            plaudSetup = PlaudConfigurator.buildSetup(enabled: false)
+            return
+        }
+
+        plaudRefreshTask?.cancel()
+        let pastEvents = eventsByDate.values.flatMap { $0 }.filter { $0.endDate < Date() }
+        plaudRefreshTask = Task { @MainActor in
+            let cached = await plaudService.allCachedLinks()
+            guard !Task.isCancelled else { return }
+            plaudLinks = cached
+
+            let fresh = await plaudService.refreshMatches(for: pastEvents)
+            guard !Task.isCancelled else { return }
+            plaudLinks.merge(fresh) { _, new in new }
+            plaudSetup = await plaudService.setupStatus()
+        }
+    }
+
+    func refreshPlaudSetup() async {
+        plaudSetup = await plaudService.setupStatus()
+    }
+
+    func forceRefreshPlaud() async {
+        let pastEvents = eventsByDate.values.flatMap { $0 }.filter { $0.endDate < Date() }
+        _ = await plaudService.refreshIfNeeded(force: true)
+        plaudLinks = await plaudService.allCachedLinks()
+        let fresh = await plaudService.refreshMatches(for: pastEvents)
+        plaudLinks.merge(fresh) { _, new in new }
+        plaudSetup = await plaudService.setupStatus()
+    }
+
+    func saveManualPlaudLink(for event: DayEvent, url: URL) async -> String? {
+        do {
+            let match = try await plaudService.saveManualLink(for: event, url: url)
+            guard let eventID = event.eventIdentifier else { return nil }
+            let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
+            plaudLinks[key] = match
+            plaudSetup = await plaudService.setupStatus()
+            return nil
+        } catch {
+            return error.localizedDescription
         }
     }
 }

@@ -49,6 +49,28 @@ final class PreferencesStore {
     var showsDayHoverPreview: Bool { didSet { persist(showsDayHoverPreview, forKey: kShowEventPopoverOnHover) } }
     var agendaHeightRatio: Double { didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) } }
     var isMcpEnabled: Bool { didSet { persist(isMcpEnabled, forKey: kMcpEnabled) } }
+    var isPlaudEnabled: Bool { didSet { persist(isPlaudEnabled, forKey: kPlaudEnabled) } }
+    var plaudSyncIndexPath: String? {
+        didSet {
+            guard !isLoading else { return }
+            if let plaudSyncIndexPath { defaults.set(plaudSyncIndexPath, forKey: kPlaudSyncIndexPath) }
+            else { defaults.removeObject(forKey: kPlaudSyncIndexPath) }
+        }
+    }
+    var plaudSyncIndexBookmark: Data? {
+        didSet {
+            guard !isLoading else { return }
+            if let plaudSyncIndexBookmark { defaults.set(plaudSyncIndexBookmark, forKey: kPlaudSyncIndexBookmark) }
+            else { defaults.removeObject(forKey: kPlaudSyncIndexBookmark) }
+        }
+    }
+    var plaudExporterDataPath: String? {
+        didSet {
+            guard !isLoading else { return }
+            if let plaudExporterDataPath { defaults.set(plaudExporterDataPath, forKey: kPlaudExporterDataPath) }
+            else { defaults.removeObject(forKey: kPlaudExporterDataPath) }
+        }
+    }
 
     private init() {
         isLoading = true
@@ -75,6 +97,10 @@ final class PreferencesStore {
         showsDayHoverPreview = defaults.bool(forKey: kShowEventPopoverOnHover)
         agendaHeightRatio = Self.clampedAgendaHeightRatio(defaults.double(forKey: kAgendaHeightRatio))
         isMcpEnabled = defaults.bool(forKey: kMcpEnabled)
+        isPlaudEnabled = defaults.bool(forKey: kPlaudEnabled)
+        plaudSyncIndexPath = defaults.string(forKey: kPlaudSyncIndexPath)
+        plaudSyncIndexBookmark = defaults.data(forKey: kPlaudSyncIndexBookmark)
+        plaudExporterDataPath = defaults.string(forKey: kPlaudExporterDataPath)
         isLoading = false
         if rawMenuBarIconType != menuBarIconType {
             defaults.set(menuBarIconType, forKey: kMenuBarIconType)
@@ -155,6 +181,7 @@ final class PreferencesStore {
             kShowDaysWithNoEventsInAgenda: false,
             kShowEventPopoverOnHover: false,
             kMcpEnabled: false,
+            kPlaudEnabled: false,
             kCalendarNumRows: 6,
         ]
     }
@@ -182,6 +209,10 @@ final class PreferencesStore {
         showsDayHoverPreview = defaults.bool(forKey: kShowEventPopoverOnHover)
         agendaHeightRatio = Self.clampedAgendaHeightRatio(defaults.double(forKey: kAgendaHeightRatio))
         isMcpEnabled = defaults.bool(forKey: kMcpEnabled)
+        isPlaudEnabled = defaults.bool(forKey: kPlaudEnabled)
+        plaudSyncIndexPath = defaults.string(forKey: kPlaudSyncIndexPath)
+        plaudSyncIndexBookmark = defaults.data(forKey: kPlaudSyncIndexBookmark)
+        plaudExporterDataPath = defaults.string(forKey: kPlaudExporterDataPath)
     }
 
     func isWeekdayHighlighted(_ column: Int, weekStartWeekday: Int) -> Bool {

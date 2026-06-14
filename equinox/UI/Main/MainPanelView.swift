@@ -90,6 +90,7 @@ struct MainPanelView: View {
         .padding(EquinoxDesign.panelPadding)
         .onAppear {
             agendaHeightRatio = appState.preferences.agendaHeightRatio
+            appState.refreshPlaudMatchesIfNeeded()
         }
         .animation(EquinoxDesign.animation(EquinoxDesign.monthTransitionAnimation, reduceMotion: reduceMotion), value: appState.monthDate)
     }

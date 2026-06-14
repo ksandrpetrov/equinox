@@ -7,6 +7,7 @@ enum SettingsTab: Hashable {
     case privacy
     case shortcuts
     case mcp
+    case plaud
     case about
 }
 
@@ -70,6 +71,12 @@ struct SettingsView: View {
                 .tag(SettingsTab.mcp)
 
                 SettingsSidebarLabel(
+                    title: String(localized: "Plaud", comment: "Plaud prefs tab label"),
+                    symbol: "waveform"
+                )
+                .tag(SettingsTab.plaud)
+
+                SettingsSidebarLabel(
                     title: String(localized: "About", comment: "About prefs tab label"),
                     symbol: "info.circle"
                 )
@@ -116,6 +123,8 @@ struct SettingsView: View {
             ShortcutsSettingsTab()
         case .mcp:
             McpSettingsTab(searchText: searchText)
+        case .plaud:
+            PlaudSettingsTab(searchText: searchText)
         case .about:
             AboutSettingsTab()
         }

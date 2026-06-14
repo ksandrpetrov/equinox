@@ -53,6 +53,7 @@ struct AgendaEventCard: View {
     let event: DayEvent
     let metrics: SizeMetrics
     let showLocation: Bool
+    var plaudMatch: PlaudEventMatch? = nil
     var isExpanded: Bool = false
     var onToggleExpand: (() -> Void)? = nil
     var onRespond: ((EventParticipationStatus) async -> Void)? = nil
@@ -60,6 +61,7 @@ struct AgendaEventCard: View {
     @State private var isHovered = false
     @State private var isResponding = false
     @State private var joinHovered = false
+    @State private var plaudHovered = false
 
     private var calendarColor: Color {
         event.swiftUIColor
@@ -91,7 +93,7 @@ struct AgendaEventCard: View {
                     }
                 }
                 .padding(.leading, metrics.agendaEventLeadingMargin - 3)
-                .padding(.trailing, event.joinURL == nil ? EquinoxDesign.panelPadding : EquinoxDesign.spacingSM)
+                .padding(.trailing, trailingPadding)
                 .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -112,9 +114,28 @@ struct AgendaEventCard: View {
                     .controlSize(.small)
                     .help(String(localized: "Join meeting", comment: ""))
                     .accessibilityLabel(String(localized: "Join meeting", comment: ""))
-                    .padding(.trailing, EquinoxDesign.spacingSM)
+                    .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : 0)
                     .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
                     .onHover { joinHovered = $0 }
+                }
+
+                if let match = plaudMatch {
+                    Button {
+                        NSWorkspace.shared.open(match.webURL)
+                    } label: {
+                        Image(systemName: "waveform")
+                            .font(.system(size: 12))
+                            .symbolRenderingMode(.hierarchical)
+                            .symbolEffect(.bounce, value: plaudHovered)
+                            .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .help(String(localized: "Open in Plaud", comment: "Plaud agenda button help"))
+                    .accessibilityLabel(String(localized: "Open in Plaud", comment: ""))
+                    .padding(.trailing, EquinoxDesign.spacingSM)
+                    .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
+                    .onHover { plaudHovered = $0 }
                 }
             }
 
@@ -229,6 +250,13 @@ struct AgendaEventCard: View {
                     .transition(.movingParts.blur.combined(with: .opacity))
             }
         }
+    }
+
+    private var trailingPadding: CGFloat {
+        if event.joinURL != nil || plaudMatch != nil {
+            return EquinoxDesign.spacingSM
+        }
+        return EquinoxDesign.panelPadding
     }
 
     private var eventAccessibilityLabel: String {

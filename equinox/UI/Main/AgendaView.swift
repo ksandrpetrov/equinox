@@ -37,6 +37,7 @@ struct AgendaView: View {
                                             event: event,
                                             metrics: metrics,
                                             showLocation: prefs.showLocation,
+                                            plaudMatch: appState.plaudLink(for: event),
                                             isExpanded: expandedEventID == event.id,
                                             onToggleExpand: {
                                                 withAnimation(EquinoxDesign.expandAnimation) {
