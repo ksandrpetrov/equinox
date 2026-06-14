@@ -138,4 +138,9 @@ final class McpSetupTests: XCTestCase {
         XCTAssertEqual(preferences?["sidebarMode"] as? String, "chat")
         XCTAssertNotNil(servers?["equinox-calendar"])
     }
+
+    func testMcpToolCatalogMatchesGeneratedToolNames() {
+        XCTAssertEqual(Set(McpToolCatalog.allToolIDs), Set(McpToolNames.all))
+        XCTAssertEqual(McpToolCatalog.allToolIDs.count, McpToolNames.all.count)
+    }
 }

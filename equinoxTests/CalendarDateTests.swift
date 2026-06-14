@@ -29,6 +29,20 @@ final class CalendarDateTests: XCTestCase {
         XCTAssertEqual(next.day, 1)
     }
 
+    func testAddMonthsPreservingDay() {
+        let jan31 = CalendarDate(year: 2024, monthIndex: 0, day: 31)
+        let feb = jan31.addingMonthsPreservingDay(1, calendar: Calendar(identifier: .gregorian))
+        XCTAssertEqual(feb.year, 2024)
+        XCTAssertEqual(feb.monthIndex, 1)
+        XCTAssertEqual(feb.day, 29)
+
+        let jun14 = CalendarDate(year: 2026, monthIndex: 5, day: 14)
+        let may14 = jun14.addingMonthsPreservingDay(-1, calendar: Calendar(identifier: .gregorian))
+        XCTAssertEqual(may14.year, 2026)
+        XCTAssertEqual(may14.monthIndex, 4)
+        XCTAssertEqual(may14.day, 14)
+    }
+
     func testWeekOfYear() {
         XCTAssertEqual(CalendarDate.weekOfYear(year: 2024, monthIndex: 0, day: 1), 1)
     }

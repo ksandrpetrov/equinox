@@ -1,5 +1,8 @@
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
+import { readFile } from "node:fs/promises"
+import { request } from "node:http"
+import { homedir } from "node:os"
 import { dirname, isAbsolute, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -12,6 +15,16 @@ const defaultBridgePath = resolve(
   repoRoot,
   "build/DerivedData/Build/Products/Release/equinox-bridge",
 )
+const defaultAppBridgeStatePath = resolve(
+  homedir(),
+  "Library/Application Support/com.equinox.equinoxApp/mcp-app-bridge.json",
+)
+
+type AppBridgeState = {
+  url: string
+  token: string
+  pid?: number
+}
 
 export class BridgeNotFoundError extends Error {
   constructor(path: string) {
@@ -42,7 +55,15 @@ export function resolveBridgePath(): string {
   return candidate
 }
 
-export function invokeBridge<T>(command: Record<string, unknown>): BridgeResponse<T> {
+export async function invokeBridge<T>(command: Record<string, unknown>): Promise<BridgeResponse<T>> {
+  const appBridgeResponse = await invokeAppBridge<T>(command)
+  if (appBridgeResponse) {
+    return appBridgeResponse
+  }
+  return invokeBridgeProcess(command)
+}
+
+function invokeBridgeProcess<T>(command: Record<string, unknown>): BridgeResponse<T> {
   const bridgePath = resolveBridgePath()
   const payload = JSON.stringify(command)
   const result = spawnSync(bridgePath, [payload], {
@@ -72,6 +93,87 @@ export function invokeBridge<T>(command: Record<string, unknown>): BridgeRespons
   }
 
   return parsed
+}
+
+async function invokeAppBridge<T>(
+  command: Record<string, unknown>,
+): Promise<BridgeResponse<T> | undefined> {
+  const state = await readAppBridgeState()
+  if (!state) {
+    return undefined
+  }
+
+  try {
+    return await postAppBridge<T>(state, command)
+  } catch {
+    return undefined
+  }
+}
+
+async function readAppBridgeState(): Promise<AppBridgeState | undefined> {
+  const statePath = process.env.EQUINOX_APP_BRIDGE_STATE_PATH ?? defaultAppBridgeStatePath
+  try {
+    const raw = await readFile(statePath, "utf8")
+    const parsed = JSON.parse(raw) as Partial<AppBridgeState>
+    if (typeof parsed.url !== "string" || typeof parsed.token !== "string") {
+      return undefined
+    }
+    return { url: parsed.url, token: parsed.token, pid: parsed.pid }
+  } catch {
+    return undefined
+  }
+}
+
+function postAppBridge<T>(
+  state: AppBridgeState,
+  command: Record<string, unknown>,
+): Promise<BridgeResponse<T>> {
+  return new Promise((resolvePromise, reject) => {
+    const url = new URL(state.url)
+    if (!["127.0.0.1", "localhost"].includes(url.hostname)) {
+      reject(new BridgeInvocationError("Equinox app bridge must use localhost."))
+      return
+    }
+
+    const payload = JSON.stringify(command)
+    const appRequest = request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname,
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${state.token}`,
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+        },
+        timeout: 2_000,
+      },
+      (response) => {
+        const chunks: Buffer[] = []
+        response.on("data", (chunk: Buffer) => chunks.push(chunk))
+        response.on("end", () => {
+          const body = Buffer.concat(chunks).toString("utf8").trim()
+          if (!body) {
+            reject(new BridgeInvocationError("Equinox app bridge returned empty output"))
+            return
+          }
+          try {
+            resolvePromise(JSON.parse(body) as BridgeResponse<T>)
+          } catch {
+            reject(new BridgeInvocationError(`Equinox app bridge returned invalid JSON: ${body}`))
+          }
+        })
+      },
+    )
+
+    appRequest.on("timeout", () => {
+      appRequest.destroy(new BridgeInvocationError("Equinox app bridge timed out"))
+    })
+    appRequest.on("error", reject)
+    appRequest.write(payload)
+    appRequest.end()
+  })
 }
 
 export function requireBridgeData<T>(response: BridgeResponse<T>): T {

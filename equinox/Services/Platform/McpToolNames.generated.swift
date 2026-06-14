@@ -14,5 +14,7 @@ enum McpToolNames {
         "analyze_schedule",
         "find_conflicts",
         "find_free_time",
+        "get_plaud_status",
+        "list_plaud_recordings",
     ]
 }

@@ -21,7 +21,7 @@ export function createEquinoxMcpServer(): McpServer {
         prompts: {},
       },
       instructions:
-        "Локальный MCP для управления и анализа системных календарей macOS через EventKit (equinox-bridge). Используйте инструменты для CRUD событий и on-demand аналитики расписания. Перед работой проверьте доступ к календарю. Сервер работает только на macOS и требует собранный equinox-bridge.",
+        "Локальный MCP для управления и анализа системных календарей macOS через EventKit. Основной путь использует запущенный equinox.app как локальный proxy к equinox-bridge; без приложения доступ может быть заблокирован TCC клиента. Используйте инструменты для CRUD событий, on-demand аналитики расписания и read-only Plaud-кэша. Перед работой проверьте доступ к календарю; для обзоров доступны prompts daily_agenda и weekly_calendar_review.",
     },
   )
 

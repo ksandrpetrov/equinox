@@ -67,7 +67,7 @@ struct AppearancePreview: View {
                 .frame(width: 3, height: 12)
 
             HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
-                Text("09:00 – 10:00")
+                Text(String(localized: "09:00 – 10:00", comment: "Appearance preview sample time"))
                     .font(EquinoxDesign.monoTimeFont(size: 11))
                     .foregroundStyle(.secondary)
                 Text(String(localized: "Team standup", comment: "Appearance preview sample event"))
@@ -98,8 +98,6 @@ struct AppearancePreview: View {
             isMonthBoundaryStart: false,
             isMonthBoundaryEnd: false,
             dotColors: prefs.showEventDots ? [Color.accentColor] : nil,
-            hoverEvents: [],
-            showHoverPreview: false,
             metrics: previewMetrics,
             calendar: previewCalendar,
             onSelect: {},

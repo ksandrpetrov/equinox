@@ -8,6 +8,7 @@ export const listEventsInputSchema = z.object({
   endDate: z.string().regex(datePattern),
   calendarIds: z.array(z.string().min(1)).optional(),
   limit: z.number().int().positive().max(500).optional(),
+  includePlaud: z.boolean().optional(),
 })
 
 export const getEventInputSchema = z.object({
@@ -62,4 +63,13 @@ export const findFreeTimeInputSchema = z.object({
   workStart: z.string().regex(timePattern).optional(),
   workEnd: z.string().regex(timePattern).optional(),
   minDurationMinutes: z.number().int().positive().max(24 * 60).optional(),
+})
+
+export const listPlaudRecordingsInputSchema = z.object({
+  date: z.string().regex(datePattern).optional(),
+  startDate: z.string().regex(datePattern).optional(),
+  endDate: z.string().regex(datePattern).optional(),
+  limit: z.number().int().positive().max(500).optional(),
+}).refine((input) => input.date || input.startDate, {
+  message: "Provide either date or startDate.",
 })

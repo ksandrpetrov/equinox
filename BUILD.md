@@ -1,6 +1,18 @@
 # Сборка и запуск
 
-Руководство по локальной разработке, настройке MCP и release-сборке equinox.
+Руководство по локальной разработке, запуску приложения, настройке Calendar MCP и release-сборке equinox.
+
+## Что собирается
+
+В репозитории три рабочих части:
+
+| Часть | Что даёт пользователю |
+|-------|------------------------|
+| `equinox.app` | menu bar календарь: месячная сетка, agenda, создание/удаление событий, RSVP, join meeting, настройки, Plaud-интеграция |
+| `equinox-bridge` | headless EventKit CLI для MCP: JSON-команды чтения/создания/обновления/удаления событий |
+| `mcp/dist/server.js` | Calendar MCP для AI-клиентов: 13 инструментов, prompts, resources, аналитика расписания и read-only Plaud-кэш |
+
+Обычный локальный запуск через `./run.sh` поднимает именно приложение. MCP нужен только если вы подключаете Cursor, Codex, Claude Desktop или другой MCP-клиент к календарю.
 
 ## Требования
 
@@ -27,7 +39,7 @@ cp Local.xcconfig.example Local.xcconfig
 
 ## Сборка и запуск GUI
 
-Локально собирается и запускается **только Release** (production). Схема `equinox` закреплена за Release, поэтому Cmd+R в Xcode и `./run.sh` дают одинаковый билд.
+Локально приложение собирается и запускается **только Release** (production). Схема `equinox` закреплена за Release, поэтому Cmd+R в Xcode и `./run.sh` дают одинаковый билд.
 
 ```bash
 ./run.sh
@@ -35,11 +47,11 @@ cp Local.xcconfig.example Local.xcconfig
 
 Скрипт:
 1. Собирает `equinox` (Release) в `build/DerivedData`.
-2. При отсутствии бинаря — собирает `equinox-bridge`.
+2. При отсутствии bridge-бинаря — собирает `equinox-bridge`.
 3. При отсутствии `mcp/dist/server.js` — запускает `./scripts/build-mcp.sh`.
 4. Перезапускает equinox (`pkill` + `open`).
 
-equinox — menu bar приложение; после запуска ищите иконку в строке меню.
+После запуска ищите иконку в строке меню. Приложение покажет календарную панель с месячной сеткой и agenda; настройки открываются из меню панели или системного окна Settings.
 
 ### Ручная сборка через xcodebuild
 
@@ -79,7 +91,16 @@ cd mcp && npm test        # vitest run
 
 ## Calendar MCP
 
-MCP даёт AI-клиентам доступ к календарю macOS через `equinox-bridge`.
+MCP даёт AI-клиентам доступ к календарю macOS через Equinox. Основной путь использует запущенное `equinox.app` как локальный proxy к `equinox-bridge`, чтобы macOS применяла Calendar permission самого приложения. Если приложение не запущено, MCP пробует прямой fallback на bridge.
+
+MCP-сервер предоставляет:
+
+- доступ: `get_calendar_access_status`, `request_calendar_access`;
+- календарь и события: `list_calendars`, `list_events`, `get_event`, `create_event`, `update_event`, `delete_event`;
+- аналитику: `analyze_schedule`, `find_conflicts`, `find_free_time`;
+- Plaud read-only: `get_plaud_status`, `list_plaud_recordings`;
+- prompts: `daily_agenda`, `weekly_calendar_review`;
+- resources: `equinox://docs/calendar`, `equinox://schema/event`.
 
 ### Полная сборка bridge + MCP
 
@@ -104,6 +125,7 @@ MCP даёт AI-клиентам доступ к календарю macOS чер
 2. Проверьте готовность Node.js, bridge и MCP-сервера.
 3. Включите «Auto-configure Cursor and Claude» — equinox запишет сервер `equinox-calendar` в конфиги Cursor и Claude Desktop.
 4. Для Codex скопируйте TOML-сниппет в `~/.codex/config.toml`.
+5. Перезапустите клиент или перезагрузите MCP-серверы и оставьте `equinox.app` запущенным для основного TCC-safe пути.
 
 **Вручную** — JSON-конфиг с `command`, `args` и `env.EQUINOX_BRIDGE_PATH`; пример генерируется на вкладке MCP.
 
@@ -115,7 +137,7 @@ cd mcp && npm run dev   # tsx src/server.ts
 
 ### TCC
 
-У `equinox-bridge` **отдельное** разрешение на доступ к календарю, не связанное с `equinox.app`. При первом вызове MCP-инструмента macOS может показать системный диалог.
+У `equinox.app` и прямого запуска `equinox-bridge` **раздельные** Calendar-разрешения TCC. Когда MCP идёт через app bridge proxy, используется разрешение приложения. При прямом fallback на bridge macOS может показать отдельный системный диалог или заблокировать доступ, если клиент не имеет нужного entitlement.
 
 Подробности — в [mcp/MCP.md](mcp/MCP.md) и [bridge/BRIDGE.md](bridge/BRIDGE.md).
 

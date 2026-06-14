@@ -47,7 +47,6 @@
 		PTT001A1B2C3D4E5F6012345 /* PlaudTimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PTT001A1B2C3D4E5F6012346 /* PlaudTimestampTests.swift */; };
 		CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */; };
 		34FD3198C5E746908583E04A /* App/AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63827DE05C3E4C1A9137EA18 /* App/AppDelegate.swift */; };
-		39D246C8B6DC44D7AF00F9E0 /* UI/Events/GoToDateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D01CD63834875A0A2726A /* UI/Events/GoToDateSheet.swift */; };
 		49F62D457C024006AE76EFC2 /* UI/Main/CalendarGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFB06C5DCD64C92A417DA16 /* UI/Main/CalendarGridView.swift */; };
 		6572A0BA3F5D47239DEFBD5D /* Services/PreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328F6CA845EE41999E852970 /* Services/PreferencesStore.swift */; };
 		69438ABDD27442EABE893584 /* UI/Settings/AboutSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BA8E6CEB1F48A18F12291C /* UI/Settings/AboutSettingsTab.swift */; };
@@ -80,7 +79,6 @@
 		BRG005A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */; };
 		C029101F32D74115BDE35C1D /* App/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C1DCC2A9FE4B8B804C4770 /* App/AppState.swift */; };
 		C3D4E5F601234567890ABD01 /* UI/Main/PanelCommandBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */; };
-		C3D4E5F601234567890ABD05 /* UI/Main/DayHoverPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD06 /* UI/Main/DayHoverPreview.swift */; };
 		C3D4E5F601234567890ABD07 /* UI/Settings/CalendarsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */; };
 		C3D4E5F601234567890ABD09 /* UI/Settings/ShortcutsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */; };
 		C3D4E5F601234567890ABD0B /* UI/Settings/WeekendHighlightPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD0C /* UI/Settings/WeekendHighlightPicker.swift */; };
@@ -105,6 +103,7 @@
 		E21BE351F94E4C22BC7FF0C0 /* UI/Events/NewEventSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD76B61B3D540A2A2F4D695 /* UI/Events/NewEventSheet.swift */; };
 		FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */; };
 		MCP001A1B2C3D4E5F6012345 /* Services/Platform/McpSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP003A1B2C3D4E5F6012346 /* Services/Platform/McpSetup.swift */; };
+		MCP013A1B2C3D4E5F6012345 /* Services/Platform/McpAppBridgeServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */; };
 		MTN001A1B2C3D4E5F6012345 /* Services/Platform/McpToolNames.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */; };
 		PRV001A1B2C3D4E5F6012345 /* UI/Settings/PrivacySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */; };
 		MCP002A1B2C3D4E5F6012345 /* UI/Settings/McpSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */; };
@@ -260,7 +259,6 @@
 		BRG005A1B2C3D4E5F6012346 /* equinox-bridge.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "equinox-bridge.entitlements"; sourceTree = "<group>"; };
 		BRG050A1B2C3D4E5F6012346 /* equinox-bridge */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "equinox-bridge"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/PanelCommandBar.swift; sourceTree = "<group>"; };
-		C3D4E5F601234567890ABD06 /* UI/Main/DayHoverPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/DayHoverPreview.swift; sourceTree = "<group>"; };
 		C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/CalendarsSettingsTab.swift; sourceTree = "<group>"; };
 		C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/ShortcutsSettingsTab.swift; sourceTree = "<group>"; };
 		C3D4E5F601234567890ABD0C /* UI/Settings/WeekendHighlightPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/WeekendHighlightPicker.swift; sourceTree = "<group>"; };
@@ -289,9 +287,9 @@
 		D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/SettingsComponents.swift; sourceTree = "<group>"; };
 		D0E011A1B2C3D4E5F6012346 /* UI/Main/AgendaComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/AgendaComponents.swift; sourceTree = "<group>"; };
 		EDFB06C5DCD64C92A417DA16 /* UI/Main/CalendarGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/CalendarGridView.swift; sourceTree = "<group>"; };
-		FB7D01CD63834875A0A2726A /* UI/Events/GoToDateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Events/GoToDateSheet.swift; sourceTree = "<group>"; };
 		FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/SettingsView.swift; sourceTree = "<group>"; };
 		MCP003A1B2C3D4E5F6012346 /* Services/Platform/McpSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpSetup.swift; sourceTree = "<group>"; };
+		MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpAppBridgeServer.swift; sourceTree = "<group>"; };
 		MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpToolNames.generated.swift; sourceTree = "<group>"; };
 		PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/PrivacySettingsTab.swift; sourceTree = "<group>"; };
 		MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/McpSettingsTab.swift; sourceTree = "<group>"; };
@@ -395,6 +393,7 @@
 				SMU002A1B2C3D4E5F6012346 /* UI/Design/SizeMetrics.swift */,
 				328F6CA845EE41999E852970 /* Services/PreferencesStore.swift */,
 				MCP003A1B2C3D4E5F6012346 /* Services/Platform/McpSetup.swift */,
+				MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */,
 				MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */,
 				PLD012A1B2C3D4E5F6012346 /* Services/Plaud/PlaudMatchCache.swift */,
 				PLD025A1B2C3D4E5F6012346 /* Services/Plaud/PlaudRecordingsStore.swift */,
@@ -413,7 +412,6 @@
 				D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */,
 				C44FCB3CA1B3432E91849D32 /* UI/Main/DayCellView.swift */,
 				C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */,
-				C3D4E5F601234567890ABD06 /* UI/Main/DayHoverPreview.swift */,
 				EDFB06C5DCD64C92A417DA16 /* UI/Main/CalendarGridView.swift */,
 				0C5EE2ACAC644A99A18E671E /* UI/Main/AgendaView.swift */,
 				D0E011A1B2C3D4E5F6012346 /* UI/Main/AgendaComponents.swift */,
@@ -423,7 +421,6 @@
 				1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */,
 				EDC001A1B2C3D4E5F6012346 /* UI/Events/EventDetailComponents.swift */,
 				RSVP002A1B2C3D4E5F6012346 /* UI/Events/EventRSVPBar.swift */,
-				FB7D01CD63834875A0A2726A /* UI/Events/GoToDateSheet.swift */,
 				FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */,
 				6482D455E0F542C98215FB22 /* UI/Settings/GeneralSettingsTab.swift */,
 				C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */,
@@ -698,6 +695,7 @@
 				26345BB4077546858ED91E33 /* UI/Design/SizeMetrics.swift in Sources */,
 				6572A0BA3F5D47239DEFBD5D /* Services/PreferencesStore.swift in Sources */,
 				MCP001A1B2C3D4E5F6012345 /* Services/Platform/McpSetup.swift in Sources */,
+				MCP013A1B2C3D4E5F6012345 /* Services/Platform/McpAppBridgeServer.swift in Sources */,
 				MTN001A1B2C3D4E5F6012345 /* Services/Platform/McpToolNames.generated.swift in Sources */,
 				PLD001A1B2C3D4E5F6012345 /* Core/PlaudEventMatching.swift in Sources */,
 				PLD010A1B2C3D4E5F6012345 /* Core/PlaudOAuthPKCE.swift in Sources */,
@@ -720,7 +718,6 @@
 				D0E010A1B2C3D4E5F6012345 /* UI/Design/SettingsComponents.swift in Sources */,
 				A2BAAADA0CCA4971A1201CDE /* UI/Main/DayCellView.swift in Sources */,
 				C3D4E5F601234567890ABD01 /* UI/Main/PanelCommandBar.swift in Sources */,
-				C3D4E5F601234567890ABD05 /* UI/Main/DayHoverPreview.swift in Sources */,
 				49F62D457C024006AE76EFC2 /* UI/Main/CalendarGridView.swift in Sources */,
 				743B1D7790894D11ACE66BBC /* UI/Main/AgendaView.swift in Sources */,
 				D0E011A1B2C3D4E5F6012345 /* UI/Main/AgendaComponents.swift in Sources */,
@@ -730,7 +727,6 @@
 				97986F0E0B454042872C3572 /* UI/Events/EventDetailView.swift in Sources */,
 				EDC001A1B2C3D4E5F6012345 /* UI/Events/EventDetailComponents.swift in Sources */,
 				RSVP002A1B2C3D4E5F6012345 /* UI/Events/EventRSVPBar.swift in Sources */,
-				39D246C8B6DC44D7AF00F9E0 /* UI/Events/GoToDateSheet.swift in Sources */,
 				1F343D1442E04D48AF79E26E /* UI/Settings/SettingsView.swift in Sources */,
 				1F31FF23BECD487AB547FC3D /* UI/Settings/GeneralSettingsTab.swift in Sources */,
 				C3D4E5F601234567890ABD07 /* UI/Settings/CalendarsSettingsTab.swift in Sources */,
@@ -1043,9 +1039,12 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "bridge/equinox-bridge.entitlements";
 				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.equinox-bridge";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1060,9 +1059,12 @@
 				CODE_SIGN_ENTITLEMENTS = "bridge/equinox-bridge.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.equinox-bridge";
 				PRODUCT_NAME = "$(TARGET_NAME)";

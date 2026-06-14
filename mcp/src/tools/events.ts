@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { analyzeSchedule, findConflicts, findFreeTime } from "../analytics/schedule.js"
 import { invokeBridge, requireBridgeData } from "../bridge.js"
+import { attachPlaudRecordingsToEvents } from "../plaud.js"
 import {
   analyzeScheduleInputSchema,
   createEventInputSchema,
@@ -35,11 +36,19 @@ export function registerEventTools(server: McpServer) {
       },
     },
     async (input) => {
-      const response = invokeBridge<EventsData>({
+      const { includePlaud, ...bridgeInput } = input
+      const response = await invokeBridge<EventsData>({
         command: "list_events",
-        ...input,
+        ...bridgeInput,
       })
-      return jsonToolResult(requireBridgeData(response))
+      const data = requireBridgeData(response)
+      if (includePlaud === false) {
+        return jsonToolResult(data)
+      }
+      return jsonToolResult({
+        ...data,
+        events: await attachPlaudRecordingsToEvents(data.events),
+      })
     },
   )
 
@@ -57,11 +66,13 @@ export function registerEventTools(server: McpServer) {
       },
     },
     async ({ eventIdentifier }) => {
-      const response = invokeBridge<EventData>({
+      const response = await invokeBridge<EventData>({
         command: "get_event",
         eventIdentifier,
       })
-      return jsonToolResult(requireBridgeData(response))
+      const data = requireBridgeData(response)
+      const [event] = await attachPlaudRecordingsToEvents([data.event])
+      return jsonToolResult({ event })
     },
   )
 
@@ -80,7 +91,7 @@ export function registerEventTools(server: McpServer) {
       },
     },
     async (input) => {
-      const response = invokeBridge<MutationData>({
+      const response = await invokeBridge<MutationData>({
         command: "create_event",
         ...input,
       })
@@ -102,7 +113,7 @@ export function registerEventTools(server: McpServer) {
       },
     },
     async (input) => {
-      const response = invokeBridge<MutationData>({
+      const response = await invokeBridge<MutationData>({
         command: "update_event",
         ...input,
       })
@@ -124,7 +135,7 @@ export function registerEventTools(server: McpServer) {
       },
     },
     async ({ eventIdentifier, span }) => {
-      const response = invokeBridge<MutationData>({
+      const response = await invokeBridge<MutationData>({
         command: "delete_event",
         eventIdentifier,
         span,
@@ -150,7 +161,7 @@ export function registerAnalyticsTools(server: McpServer) {
       },
     },
     async (input) => {
-      const response = invokeBridge<EventsData>({
+      const response = await invokeBridge<EventsData>({
         command: "list_events",
         startDate: input.startDate,
         endDate: input.endDate,
@@ -182,7 +193,7 @@ export function registerAnalyticsTools(server: McpServer) {
       },
     },
     async (input) => {
-      const response = invokeBridge<EventsData>({
+      const response = await invokeBridge<EventsData>({
         command: "list_events",
         ...input,
       })
@@ -211,7 +222,7 @@ export function registerAnalyticsTools(server: McpServer) {
       },
     },
     async (input) => {
-      const response = invokeBridge<EventsData>({
+      const response = await invokeBridge<EventsData>({
         command: "list_events",
         startDate: input.startDate,
         endDate: input.endDate,

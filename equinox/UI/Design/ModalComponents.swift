@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Shared modal primitives for panel sheets, settings confirms, and hover popovers.
+// Shared modal primitives for panel sheets and settings confirms.
 // Settings window uses SettingsDetailScaffold; panel modals use ModalSheetScaffold.
 
 enum ModalBannerStyle {
@@ -130,20 +130,6 @@ struct ModalConfirmDialog: View {
         .frame(width: ModalDesign.confirmWidth)
         .presentationSizing(.fitted)
         .presentationBackground(.regularMaterial)
-    }
-}
-
-struct ModalPopoverCard<Content: View>: View {
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        content()
-            .padding(EquinoxDesign.spacingMD)
-            .background {
-                RoundedRectangle(cornerRadius: ModalDesign.cornerRadius, style: .continuous)
-                    .fill(.regularMaterial)
-            }
-            .frame(minWidth: 180)
     }
 }
 

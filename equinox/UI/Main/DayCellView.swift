@@ -10,8 +10,6 @@ struct DayCellView: View {
     let isMonthBoundaryStart: Bool
     let isMonthBoundaryEnd: Bool
     let dotColors: [Color]?
-    let hoverEvents: [DayEvent]
-    let showHoverPreview: Bool
     let metrics: SizeMetrics
     let calendar: Calendar
     let onSelect: () -> Void
@@ -108,7 +106,6 @@ struct DayCellView: View {
         .changeEffect(.shine, value: isSelected, isEnabled: isSelected && !reduceMotion)
         .onHover { isHovered = $0 }
         .simultaneousGesture(TapGesture(count: 2).onEnded { onDoubleClick() })
-        .dayHoverPreview(date: date, events: hoverEvents, calendar: calendar, isEnabled: showHoverPreview)
         .accessibilityLabel(accessibilityDateLabel)
         .accessibilityValue(accessibilityValue)
         .accessibilityHint(String(localized: "Double-click to create an event", comment: "Day cell hint"))

@@ -473,7 +473,7 @@ private final class CallbackHandler: @unchecked Sendable {
 
         let target = String(parts[1])
         guard target.hasPrefix("/auth/callback") else {
-            sendResponse(on: connection, statusCode: 404, html: Self.errorHTML("Not found"))
+            sendResponse(on: connection, statusCode: 404, html: Self.errorHTML(String(localized: "Not found", comment: "Plaud OAuth HTTP 404")))
             connection.cancel()
             return
         }
@@ -503,7 +503,7 @@ private final class CallbackHandler: @unchecked Sendable {
         }
 
         guard params["state"] == expectedState else {
-            sendResponse(on: connection, statusCode: 400, html: Self.errorHTML("State mismatch."))
+            sendResponse(on: connection, statusCode: 400, html: Self.errorHTML(String(localized: "State mismatch.", comment: "Plaud OAuth state mismatch")))
             connection.cancel()
             complete(.denied("OAuth state mismatch."))
             return
@@ -582,25 +582,31 @@ private final class CallbackHandler: @unchecked Sendable {
         keepAlive = nil
     }
 
-    private static let successHTML =
-        "<!doctype html><html><head><meta charset=\"utf-8\"><title>Plaud</title></head>" +
-        "<body style=\"font-family:system-ui;padding:2rem;text-align:center;\">" +
-        "<h1>Authorization successful!</h1><p>You can close this tab.</p></body></html>"
+    private static var successHTML: String {
+        let title = String(localized: "Authorization successful!", comment: "Plaud OAuth success page")
+        let message = String(localized: "You can close this tab.", comment: "Plaud OAuth success page")
+        return "<!doctype html><html><head><meta charset=\"utf-8\"><title>Plaud</title></head>" +
+            "<body style=\"font-family:system-ui;padding:2rem;text-align:center;\">" +
+            "<h1>\(title)</h1><p>\(message)</p></body></html>"
+    }
 
-    private static let neutralHTML =
-        "<!doctype html><html><head><meta charset=\"utf-8\"><title>Plaud</title></head>" +
-        "<body style=\"font-family:system-ui;padding:2rem;text-align:center;\">" +
-        "<h1>Continue authorization in the original window.</h1>" +
-        "<p>This page can be closed.</p></body></html>"
+    private static var neutralHTML: String {
+        let title = String(localized: "Continue authorization in the original window.", comment: "Plaud OAuth neutral page")
+        let message = String(localized: "This page can be closed.", comment: "Plaud OAuth neutral page")
+        return "<!doctype html><html><head><meta charset=\"utf-8\"><title>Plaud</title></head>" +
+            "<body style=\"font-family:system-ui;padding:2rem;text-align:center;\">" +
+            "<h1>\(title)</h1><p>\(message)</p></body></html>"
+    }
 
     private static func errorHTML(_ message: String) -> String {
+        let title = String(localized: "Authorization failed", comment: "Plaud OAuth error page")
         let escaped = message
             .replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
         return "<!doctype html><html><head><meta charset=\"utf-8\"><title>Plaud</title></head>" +
             "<body style=\"font-family:system-ui;padding:2rem;text-align:center;\">" +
-            "<h1>Authorization failed</h1><pre style=\"white-space:pre-wrap;\">\(escaped)</pre>" +
+            "<h1>\(title)</h1><pre style=\"white-space:pre-wrap;\">\(escaped)</pre>" +
             "</body></html>"
     }
 }

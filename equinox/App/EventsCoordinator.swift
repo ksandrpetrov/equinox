@@ -135,25 +135,23 @@ final class EventsCoordinator {
     }
 
     func goToPreviousMonth() {
-        monthDate = monthDate.addingMonths(-1)
-        refreshVisibleGridRange()
+        selectDate(selectedDate.addingMonthsPreservingDay(-1, calendar: calendar))
     }
 
     func goToNextMonth() {
-        monthDate = monthDate.addingMonths(1)
-        refreshVisibleGridRange()
+        selectDate(selectedDate.addingMonthsPreservingDay(1, calendar: calendar))
     }
 
     func selectDate(_ date: CalendarDate) {
-        applySelection(date, scrollAgenda: true, refreshGrid: true)
+        applySelection(date, scrollAgenda: true)
     }
 
     /// Updates calendar selection from agenda scroll without re-scrolling the agenda.
     func syncSelectionFromAgendaScroll(_ date: CalendarDate) {
-        applySelection(date, scrollAgenda: false, refreshGrid: false)
+        applySelection(date, scrollAgenda: false)
     }
 
-    private func applySelection(_ date: CalendarDate, scrollAgenda: Bool, refreshGrid: Bool) {
+    private func applySelection(_ date: CalendarDate, scrollAgenda: Bool) {
         let newMonthDate = CalendarDate(year: date.year, monthIndex: date.monthIndex, day: 1)
         let monthChanged = date.monthIndex != monthDate.monthIndex || date.year != monthDate.year
         let selectionChanged = selectedDate != date
@@ -171,9 +169,7 @@ final class EventsCoordinator {
         }
         if monthDateChanged {
             monthDate = newMonthDate
-            if refreshGrid {
-                refreshVisibleGridRange()
-            }
+            refreshVisibleGridRange()
         }
         if scrollAgenda {
             requestAgendaScroll()
@@ -263,11 +259,17 @@ final class EventsCoordinator {
     }
 
     private func performFetch(_ operation: () async -> Void) async {
+        let selectionBeforeFetch = selectedDate
         lastFetchError = nil
         await operation()
         isFetchingEvents = await calendarStore.isFetchingEvents
         lastFetchError = await calendarStore.lastFetchError
         await syncFromCalendarStore()
+        // After events load, re-scroll the agenda to the selection. At launch the first scroll
+        // runs before events arrive (agenda still shows the earliest day), so this realigns it.
+        if selectedDate == selectionBeforeFetch {
+            requestAgendaScroll()
+        }
     }
 }
 

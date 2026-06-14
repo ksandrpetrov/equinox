@@ -70,6 +70,19 @@ struct CalendarDate: Equatable, Hashable, Sendable {
         return CalendarDate(year: newYear, monthIndex: newMonth, day: 1)
     }
 
+    /// Shifts by calendar months while keeping the day-of-month, clamping to the target month's length.
+    func addingMonthsPreservingDay(_ months: Int, calendar: Calendar) -> CalendarDate {
+        var components = DateComponents()
+        components.year = year
+        components.month = monthIndex + 1
+        components.day = day
+        guard let baseDate = calendar.date(from: components),
+              let shifted = calendar.date(byAdding: .month, value: months, to: baseDate) else {
+            return addingMonths(months)
+        }
+        return CalendarDate(date: shifted, calendar: calendar)
+    }
+
     func compare(_ other: CalendarDate) -> Int {
         let j1 = julian == Self.noJulian ? Self.makeJulian(year: year, monthIndex: monthIndex, day: day) : julian
         let j2 = other.julian == Self.noJulian

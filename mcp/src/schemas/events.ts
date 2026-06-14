@@ -11,23 +11,36 @@ export const bridgeCalendarSchema = z.object({
   type: z.string(),
 })
 
+export const plaudEventRecordingSchema = z.object({
+  fileID: z.string(),
+  webURL: z.string(),
+  source: z.string(),
+  matchedAt: z.string().optional(),
+  title: z.string().optional(),
+  recordedAt: z.string().optional(),
+  endDate: z.string().optional(),
+  durationSeconds: z.number().optional(),
+})
+
 export const bridgeEventSchema = z.object({
-  eventIdentifier: z.string().nullable(),
+  eventIdentifier: z.string().nullable().optional(),
   calendarItemIdentifier: z.string(),
   title: z.string(),
-  location: z.string().nullable(),
-  notes: z.string().nullable(),
-  url: z.string().nullable(),
+  location: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
   startDate: z.string(),
   endDate: z.string(),
   isAllDay: z.boolean(),
-  joinURL: z.string().nullable(),
+  joinURL: z.string().nullable().optional(),
   calendarIdentifier: z.string(),
   calendarTitle: z.string(),
   calendarColorHex: z.string(),
   allowsContentModifications: z.boolean(),
   hasAttendees: z.boolean(),
   participationStatus: z.string().nullable().optional(),
+  hasPlaudRecording: z.boolean().optional(),
+  plaudRecording: plaudEventRecordingSchema.nullable().optional(),
 })
 
 export const calendarsDataSchema = z.object({

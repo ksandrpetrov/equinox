@@ -64,8 +64,6 @@ struct CalendarGridView: View {
                             isMonthBoundaryStart: boundaryStart,
                             isMonthBoundaryEnd: boundaryEnd,
                             dotColors: dots,
-                            hoverEvents: appState.events.events(for: date),
-                            showHoverPreview: prefs.showsDayHoverPreview,
                             metrics: metrics,
                             calendar: appState.calendar,
                             onSelect: { appState.events.selectDate(date) },

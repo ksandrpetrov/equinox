@@ -9,7 +9,6 @@ final class PanelPresentationState {
     var agendaScrollGeneration = 0
     var isNewEventSheetPresented = false
     var newEventInitialDate: CalendarDate?
-    var isGoToDateSheetPresented = false
     var selectedEvent: DayEvent?
     var isEventDetailPresented = false
     var panelFeedback: String?
@@ -19,6 +18,6 @@ final class PanelPresentationState {
     var onModalSheetDismissed: (() -> Void)?
 
     var isModalSheetPresented: Bool {
-        isNewEventSheetPresented || isGoToDateSheetPresented || isEventDetailPresented
+        isNewEventSheetPresented || isEventDetailPresented
     }
 }

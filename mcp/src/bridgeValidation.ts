@@ -23,8 +23,8 @@ const eventDataSchema = z.object({
 })
 
 const mutationDataSchema = z.object({
-  eventIdentifier: z.string().nullable(),
-  calendarItemIdentifier: z.string().nullable(),
+  eventIdentifier: z.string().nullable().optional(),
+  calendarItemIdentifier: z.string().nullable().optional(),
 })
 
 const bridgeDataSchema = z.union([

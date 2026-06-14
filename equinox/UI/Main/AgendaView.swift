@@ -10,7 +10,6 @@ struct AgendaView: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
     let height: CGFloat
-    @Binding var expandedEventID: String?
 
     @State private var pendingDelete: PendingDeleteEvent?
     @State private var scrolledSectionID: Int?
@@ -43,30 +42,9 @@ struct AgendaView: View {
                                         metrics: metrics,
                                         showLocation: prefs.showLocation,
                                         plaudMatch: appState.plaud.link(for: event),
-                                        isExpanded: expandedEventID == event.id,
-                                        onToggleExpand: {
-                                            withAnimation(EquinoxDesign.expandAnimation) {
-                                                if expandedEventID == event.id {
-                                                    expandedEventID = nil
-                                                } else {
-                                                    expandedEventID = event.id
-                                                    appState.panel.selectedEvent = event
-                                                }
-                                            }
-                                        },
-                                        onRespond: { status in
-                                            appState.panel.panelFeedback = nil
-                                            if let error = await appState.respondToInvitation(event: event, status: status) {
-                                                appState.panel.panelFeedback = error
-                                            }
-                                        }
-                                    )
-                                    .simultaneousGesture(
-                                        TapGesture(count: 1).onEnded {
-                                            if expandedEventID == event.id {
-                                                appState.panel.selectedEvent = event
-                                                appState.panel.isEventDetailPresented = true
-                                            }
+                                        onTap: {
+                                            appState.panel.selectedEvent = event
+                                            appState.panel.isEventDetailPresented = true
                                         }
                                     )
                                     .contextMenu {
@@ -134,8 +112,8 @@ struct AgendaView: View {
                         appState.panel.panelFeedback = nil
                         if let error = await appState.events.deleteEvent(identifier: eventIdentifier) {
                             appState.panel.panelFeedback = error
-                        } else if expandedEventID == eventID {
-                            expandedEventID = nil
+                        } else if appState.panel.selectedEvent?.id == eventID {
+                            appState.panel.selectedEvent = nil
                         }
                     }
                 },
@@ -261,8 +239,11 @@ struct AgendaView: View {
         }
     }
 
+    /// Forces `scrollPosition` to re-scroll even when the target id equals the current value
+    /// (e.g. when `onAppear` set the id before sections existed). Resetting to `nil` first makes
+    /// the binding change, so a stale value no longer suppresses the scroll-to-selected-date.
     private func scrollAgenda(to julian: Int) {
-        scrolledSectionID = julian
+        scrolledSectionID = nil
         DispatchQueue.main.async {
             scrolledSectionID = julian
         }
@@ -279,6 +260,10 @@ struct AgendaView: View {
         guard let julian = scrolledSectionID else { return }
         let visibleDate = CalendarDate(julian: julian)
         appState.events.syncSelectionFromAgendaScroll(visibleDate)
+        let range = displayRange
+        if visibleDate == range.first {
+            extendRangeIfNeeded(for: visibleDate)
+        }
         commitAgendaToCoordinator()
     }
 }

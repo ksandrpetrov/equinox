@@ -5,6 +5,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var appState: AppState!
     private var statusItemController: StatusItemController?
+    private var mcpAppBridgeServer: McpAppBridgeServer?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         registerDefaults()
@@ -21,10 +22,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItemController?.setup()
         appState.events.requestCalendarAccessIfNeeded()
         McpConfigurator.ensureBundledBridgeInstalled()
+        if let bridgePath = McpConfigurator.resolveBridgePath() {
+            mcpAppBridgeServer = McpAppBridgeServer(bridgePath: bridgePath)
+            mcpAppBridgeServer?.start()
+        }
         McpConfigurator.ensureCursorConfigIfEnabled()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        mcpAppBridgeServer?.stop()
         statusItemController?.teardown()
     }
 

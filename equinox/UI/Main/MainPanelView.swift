@@ -6,9 +6,6 @@ struct MainPanelView: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    @State private var agendaHeightRatio: Double = 0.35
-    @State private var expandedEventID: String?
-
     private var metrics: SizeMetrics {
         SizeMetrics.metrics(for: SizePreference(rawValue: appState.preferences.sizePreference) ?? .medium)
     }
@@ -23,7 +20,7 @@ struct MainPanelView: View {
     private var computedAgendaHeight: CGFloat {
         guard showAgenda else { return 0 }
         let maxHeight = appState.layout.panelAgendaMaxHeight
-        return max(120, min(maxHeight, maxHeight * agendaHeightRatio / 0.35))
+        return max(120, min(maxHeight, maxHeight * appState.preferences.agendaHeightRatio / 0.35))
     }
 
     var body: some View {
@@ -34,18 +31,11 @@ struct MainPanelView: View {
                 NewEventSheet(appState: appState, metrics: metrics)
                     .equinoxSheetPresentation()
             }
-            .sheet(isPresented: modalSheetBinding(\.panel.isGoToDateSheetPresented)) {
-                GoToDateSheet(appState: appState, metrics: metrics)
-                    .equinoxSheetPresentation()
-            }
             .sheet(isPresented: modalSheetBinding(\.panel.isEventDetailPresented)) {
                 if let event = appState.panel.selectedEvent {
                     EventDetailView(appState: appState, event: event, metrics: metrics)
                         .equinoxSheetPresentation()
                 }
-            }
-            .onChange(of: agendaHeightRatio) { _, newValue in
-                appState.preferences.agendaHeightRatio = newValue
             }
     }
 
@@ -78,18 +68,16 @@ struct MainPanelView: View {
                 .transition(monthGridTransition)
 
             if showAgenda {
-                PanelSplitDivider(agendaHeightRatio: $agendaHeightRatio)
                 AgendaView(
                     appState: appState,
                     metrics: metrics,
-                    height: computedAgendaHeight,
-                    expandedEventID: $expandedEventID
+                    height: computedAgendaHeight
                 )
+                .padding(.top, EquinoxDesign.spacingSM)
             }
         }
         .padding(EquinoxDesign.panelPadding)
         .onAppear {
-            agendaHeightRatio = appState.preferences.agendaHeightRatio
             appState.plaud.refreshMatchesIfNeeded()
         }
         .animation(EquinoxDesign.animation(EquinoxDesign.monthTransitionAnimation, reduceMotion: reduceMotion), value: appState.events.monthDate)

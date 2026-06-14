@@ -28,7 +28,10 @@ struct McpSettingsTab: View {
                 configSection
             }
 
-            if SettingsSearchFilter.matches(searchText: searchText, keywords: "tools", "calendar", "events", "analytics") {
+            if SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "tools", "calendar", "events", "analytics", "access", "conflicts", "free time", "schedule", "create", "delete"
+            ) {
                 toolsSection
             }
 
@@ -143,7 +146,7 @@ struct McpSettingsTab: View {
                         comment: "MCP setup step"
                     ))
                     instructionStep(String(
-                        localized: "6. Restart the client or reload MCP servers. macOS will ask Equinox Bridge for calendar access separately from Equinox.",
+                        localized: "6. Restart the client or reload MCP servers, then keep Equinox running while using calendar tools.",
                         comment: "MCP setup step"
                     ))
                 }
@@ -238,19 +241,51 @@ struct McpSettingsTab: View {
     }
 
     private var toolsSection: some View {
-        SettingsSection(String(localized: "Available Tools", comment: "MCP tools section")) {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: EquinoxDesign.spacingSM)], spacing: EquinoxDesign.spacingSM) {
-                ForEach(McpConfigurator.toolNames, id: \.self) { tool in
-                    Text(tool)
-                        .font(.system(.caption, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, EquinoxDesign.spacingSM)
-                        .padding(.vertical, EquinoxDesign.spacingXS)
-                        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM))
+        SettingsSection(
+            String(localized: "Available Tools", comment: "MCP tools section"),
+            subtitle: String(
+                localized: "Commands your AI assistant can use to view and manage your macOS calendars through Equinox. Nothing changes in your calendar until you ask the assistant to create, update, or delete an event.",
+                comment: "MCP tools section subtitle"
+            )
+        ) {
+            VStack(alignment: .leading, spacing: EquinoxDesign.spacingMD) {
+                ForEach(McpToolCatalog.groups, id: \.category) { group in
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(group.category.title)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, EquinoxDesign.spacingXS)
+
+                        ForEach(Array(group.tools.enumerated()), id: \.element.id) { index, tool in
+                            mcpToolRow(tool)
+                            if index < group.tools.count - 1 {
+                                SettingsDivider()
+                            }
+                        }
+                    }
                 }
             }
             .padding(.vertical, SettingsDesign.rowVerticalPadding)
         }
+    }
+
+    private func mcpToolRow(_ tool: McpToolCatalogEntry) -> some View {
+        VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
+            HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
+                Text(tool.title)
+                    .font(.subheadline.weight(.medium))
+                Spacer(minLength: EquinoxDesign.spacingSM)
+                Text(tool.id)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+            }
+            Text(tool.description)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, SettingsDesign.rowVerticalPadding)
     }
 
     @MainActor

@@ -24,7 +24,7 @@ export function registerCalendarTools(server: McpServer) {
       },
     },
     async () => {
-      const response = invokeBridge<AccessStatusData>({ command: "access_status" })
+      const response = await invokeBridge<AccessStatusData>({ command: "access_status" })
       return jsonToolResult(requireBridgeData(response))
     },
   )
@@ -43,7 +43,7 @@ export function registerCalendarTools(server: McpServer) {
       },
     },
     async () => {
-      const response = invokeBridge<AccessRequestData>({ command: "request_access" })
+      const response = await invokeBridge<AccessRequestData>({ command: "request_access" })
       return jsonToolResult(requireBridgeData(response))
     },
   )
@@ -62,7 +62,7 @@ export function registerCalendarTools(server: McpServer) {
       },
     },
     async () => {
-      const response = invokeBridge<CalendarsData>({ command: "list_calendars" })
+      const response = await invokeBridge<CalendarsData>({ command: "list_calendars" })
       return jsonToolResult(requireBridgeData(response))
     },
   )

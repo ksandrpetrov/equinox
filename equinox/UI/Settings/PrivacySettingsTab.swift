@@ -39,7 +39,7 @@ struct PrivacySettingsTab: View {
 
                     SettingsFooter(
                         text: String(
-                            localized: "The MCP bridge (equinox-bridge) requires a separate Calendar permission when used from Cursor or other AI clients.",
+                            localized: "MCP calendar tools use Equinox while it is running, so macOS applies the Equinox Calendar permission.",
                             comment: "Bridge TCC note"
                         )
                     )

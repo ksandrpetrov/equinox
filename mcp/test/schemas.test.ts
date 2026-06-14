@@ -42,4 +42,20 @@ describe("bridge schemas", () => {
     })
     expect(parsed.participationStatus).toBe("accepted")
   })
+
+  it("accepts omitted optional event fields from Swift JSONEncoder", () => {
+    const parsed = bridgeEventSchema.parse({
+      calendarItemIdentifier: "item-1",
+      title: "Focus time",
+      startDate: "2026-06-14T10:00:00.000Z",
+      endDate: "2026-06-14T11:00:00.000Z",
+      isAllDay: false,
+      calendarIdentifier: "cal-1",
+      calendarTitle: "Work",
+      calendarColorHex: "#FF0000",
+      allowsContentModifications: true,
+      hasAttendees: false,
+    })
+    expect(parsed.title).toBe("Focus time")
+  })
 })

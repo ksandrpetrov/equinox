@@ -122,12 +122,6 @@ struct AppearanceSettingsTab: View {
                         isOn: $prefs.showMonthBoundaries
                     )
                     SettingsDivider()
-                    SettingsLabeledToggle(
-                        title: String(localized: "Preview events on hover", comment: "Day hover preview setting"),
-                        isOn: $prefs.showsDayHoverPreview
-                    )
-
-                    SettingsDivider()
 
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                         Text(String(localized: "Highlight days", comment: "Weekend highlight picker label"))

@@ -65,7 +65,7 @@ enum EquinoxFormatters {
         let formatter = formatter(key: "weekday.veryShort") { _ in }
         return formatter.veryShortWeekdaySymbols
             ?? formatter.shortWeekdaySymbols
-            ?? ["S", "M", "T", "W", "T", "F", "S"]
+            ?? ["В", "П", "В", "С", "Ч", "П", "С"]
     }
 
     static func relativeTime(until eventStart: Date, from now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> String? {

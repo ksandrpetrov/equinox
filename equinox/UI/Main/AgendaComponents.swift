@@ -1,4 +1,3 @@
-import Pow
 import SwiftUI
 
 struct AgendaSectionHeader: View {
@@ -54,12 +53,9 @@ struct AgendaEventCard: View {
     let metrics: SizeMetrics
     let showLocation: Bool
     var plaudMatch: PlaudEventMatch? = nil
-    var isExpanded: Bool = false
-    var onToggleExpand: (() -> Void)? = nil
-    var onRespond: ((EventParticipationStatus) async -> Void)? = nil
+    var onTap: (() -> Void)? = nil
 
     @State private var isHovered = false
-    @State private var isResponding = false
     @State private var joinHovered = false
     @State private var plaudHovered = false
 
@@ -72,8 +68,7 @@ struct AgendaEventCard: View {
     }
 
     private var showsSecondaryDetails: Bool {
-        isExpanded
-            || (showLocation && !(event.location?.isEmpty ?? true))
+        (showLocation && !(event.location?.isEmpty ?? true))
             || !event.calendarTitle.isEmpty
     }
 
@@ -97,7 +92,7 @@ struct AgendaEventCard: View {
                 .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    onToggleExpand?()
+                    onTap?()
                 }
 
                 if let url = event.joinURL {
@@ -138,27 +133,10 @@ struct AgendaEventCard: View {
                     .onHover { plaudHovered = $0 }
                 }
             }
-
-            if isExpanded, event.showsRSVPControls {
-                EventRSVPBar(
-                    status: event.participationStatus,
-                    layout: .compact,
-                    isResponding: isResponding
-                ) { status in
-                    guard let onRespond else { return }
-                    isResponding = true
-                    Task {
-                        await onRespond(status)
-                        isResponding = false
-                    }
-                }
-                .padding(.horizontal, EquinoxDesign.spacingXS + 3)
-                .padding(.bottom, EquinoxDesign.spacingXS)
-            }
         }
         .background(
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(calendarColor.opacity(isHovered || isExpanded ? 0.08 : 0.04))
+                .fill(calendarColor.opacity(isHovered ? 0.08 : 0.04))
         )
         .overlay {
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
@@ -168,11 +146,10 @@ struct AgendaEventCard: View {
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.hoverAnimation, value: isHovered)
-        .animation(EquinoxDesign.expandAnimation, value: isExpanded)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(eventAccessibilityLabel)
-        .accessibilityHint(String(localized: "Tap to expand. Tap again to show details.", comment: "Agenda event hint"))
-        .accessibilityAddTraits(isExpanded ? .isSelected : [])
+        .accessibilityHint(String(localized: "Tap to show details.", comment: "Agenda event hint"))
+        .accessibilityAddTraits(.isButton)
     }
 
     @ViewBuilder
@@ -207,7 +184,6 @@ struct AgendaEventCard: View {
                     .foregroundStyle(.secondary)
                 Spacer(minLength: EquinoxDesign.spacingXS)
                 if event.showsRSVPControls,
-                   !isExpanded,
                    event.participationStatus?.needsResponse == true {
                     EventRSVPRespondBadge()
                 }
@@ -220,7 +196,7 @@ struct AgendaEventCard: View {
 
             Text(event.title)
                 .font(.body.weight(.medium))
-                .lineLimit(isExpanded ? nil : 2)
+                .lineLimit(2)
                 .opacity(isDeclined ? 0.55 : 1)
 
             if showLocation || !event.calendarTitle.isEmpty {
@@ -240,14 +216,6 @@ struct AgendaEventCard: View {
                             .lineLimit(1)
                     }
                 }
-            }
-
-            if isExpanded, let notes = JoinURLDetection.notesForDisplay(notes: event.notes, excludingJoinURL: event.joinURL), !notes.isEmpty {
-                Text(notes)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 2)
-                    .transition(.movingParts.blur.combined(with: .opacity))
             }
         }
     }

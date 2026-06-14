@@ -52,9 +52,6 @@
 "General" = "Основные";
 "Glass" = "Стекло";
 "Going" = "Пойду";
-"Go" = "Перейти";
-"Go to Date" = "Перейти к дате";
-"Go to Date…" = "Перейти к дате…";
 "Icon style" = "Стиль значка";
 "Join Meeting" = "Присоединиться к встрече";
 "Join meeting" = "Присоединиться к встрече";
@@ -107,7 +104,7 @@
 "Solid" = "Сплошной";
 "Startup" = "Запуск";
 "Starts" = "Начало";
-/* Calendar source/account name from EventKit */"Sunday" = "Воскресенье";
+"Sunday" = "Воскресенье";
 /* System theme name */
 "System" = "Системная";
 "The event could not be found." = "Событие не найдено.";
@@ -134,7 +131,6 @@
 "Create Event" = "Создать событие";
 "Show Details" = "Подробности";
 "Show month boundaries" = "Показывать границы месяца";
-"Preview events on hover" = "Предпросмотр событий при наведении";
 "Highlight days" = "Выделять дни";
 "Calendar Display" = "Отображение календаря";
 "Customize the calendar grid and agenda" = "Настройка сетки календаря и списка событий";
@@ -150,7 +146,6 @@
 "Open Equinox when you sign in" = "Открывать Equinox при входе в систему";
 "Location & URL" = "Место и URL";
 "Unpin Equinox" = "Открепить Equinox";
-"Resize agenda" = "Изменить размер списка событий";
 "Selected" = "Выбрано";
 "MIT License" = "Лицензия MIT";
 /* Privacy */
@@ -164,7 +159,7 @@
 "Restricted" = "Ограничено";
 "Request Access" = "Запросить доступ";
 "Open System Settings" = "Открыть системные настройки";
-"The MCP bridge (equinox-bridge) requires a separate Calendar permission when used from Cursor or other AI clients." = "MCP-мост (equinox-bridge) требует отдельного разрешения на календарь при использовании из Cursor или других AI-клиентов.";
+"MCP calendar tools use Equinox while it is running, so macOS applies the Equinox Calendar permission." = "Инструменты календаря MCP используют запущенный Equinox, поэтому macOS применяет разрешение календаря для Equinox.";
 /* Panel states */
 "Calendar access required" = "Требуется доступ к календарю";
 "Equinox needs access to your calendars to show events." = "Equinox нужен доступ к календарям для отображения событий.";
@@ -211,8 +206,7 @@
 "Go to Today   T" = "Перейти к сегодня   T";
 "Calendar grid" = "Сетка календаря";
 "Use arrow keys to move between days" = "Стрелки для перемещения между днями";
-"Tap to expand. Tap again to show details." = "Нажмите для раскрытия. Нажмите снова для подробностей.";
-"Drag to change agenda height" = "Перетащите для изменения высоты списка";
+"Tap to show details." = "Нажмите для просмотра подробностей.";
 "No writable calendars available. Check Calendar access in Privacy settings." = "Нет доступных календарей для записи. Проверьте доступ в настройках конфиденциальности.";
 "Could not delete the event." = "Не удалось удалить событие.";
 "View on GitHub" = "Открыть на GitHub";
@@ -262,3 +256,115 @@
 "Waiting for Plaud sign-in in your browser…" = "Ожидание входа в Plaud в браузере…";
 "Plaud account disconnected." = "Аккаунт Plaud отключён.";
 "Plaud catalog refreshed." = "Каталог Plaud обновлён.";
+/* MCP integration */
+"MCP" = "MCP";
+"Check Again" = "Проверить снова";
+"AI Client Integration" = "Интеграция с AI-клиентами";
+"Connect Cursor, Codex, or Claude to your macOS calendars through Equinox Bridge." = "Подключите Cursor, Codex или Claude к календарям macOS через Equinox Bridge.";
+"Auto-configure Cursor and Claude" = "Автонастройка Cursor и Claude";
+"Equinox Calendar is registered in Cursor and Claude Desktop config files." = "Equinox Calendar добавлен в конфигурации Cursor и Claude Desktop.";
+"Writes the Equinox Calendar server into Cursor and Claude Desktop configs." = "Записывает сервер Equinox Calendar в конфигурации Cursor и Claude Desktop.";
+"Readiness" = "Готовность";
+"Node.js" = "Node.js";
+"found" = "найден";
+"not found" = "не найден";
+"MCP server" = "MCP-сервер";
+"Equinox Bridge" = "Equinox Bridge";
+"How to Connect" = "Как подключить";
+"1. Build the MCP stack once with ./scripts/build-mcp.sh in the Equinox project." = "1. Соберите MCP один раз: ./scripts/build-mcp.sh в проекте Equinox.";
+"2. Enable the toggle above for Cursor and Claude Desktop, or copy the configs below." = "2. Включите переключатель выше для Cursor и Claude Desktop или скопируйте конфигурации ниже.";
+"3. Cursor: Settings → MCP, or edit %@." = "3. Cursor: Настройки → MCP или отредактируйте %@.";
+"4. Claude Desktop: edit %@." = "4. Claude Desktop: отредактируйте %@.";
+"5. Codex: add the TOML snippet below to %@." = "5. Codex: добавьте TOML-фрагмент ниже в %@.";
+"6. Restart the client or reload MCP servers, then keep Equinox running while using calendar tools." = "6. Перезапустите клиент или перезагрузите MCP-серверы, затем держите Equinox запущенным при использовании инструментов календаря.";
+"Install Node.js first, for example: brew install node" = "Сначала установите Node.js, например: brew install node";
+"Run ./scripts/build-mcp.sh from the Equinox repository to build Equinox Bridge and the MCP server." = "Запустите ./scripts/build-mcp.sh из репозитория Equinox, чтобы собрать Equinox Bridge и MCP-сервер.";
+"Cursor and Claude Config" = "Конфигурация Cursor и Claude";
+"JSON for Cursor (~/.cursor/mcp.json) and Claude Desktop." = "JSON для Cursor (~/.cursor/mcp.json) и Claude Desktop.";
+"Copy JSON" = "Копировать JSON";
+"Server" = "Сервер";
+"Bridge" = "Мост";
+"Node" = "Node";
+"Codex Config" = "Конфигурация Codex";
+"TOML snippet for ~/.codex/config.toml." = "TOML-фрагмент для ~/.codex/config.toml.";
+"Copy TOML" = "Копировать TOML";
+"Config paths — Cursor: %@, Claude: %@, Codex: %@" = "Пути к конфигурации — Cursor: %@, Claude: %@, Codex: %@";
+"Available Tools" = "Доступные инструменты";
+"Commands your AI assistant can use to view and manage your macOS calendars through Equinox. Nothing changes in your calendar until you ask the assistant to create, update, or delete an event." = "Команды, которые ИИ-ассистент может использовать для просмотра и управления календарями macOS через Equinox. Календарь не меняется, пока вы явно не попросите ассистента создать, изменить или удалить событие.";
+"Calendar access" = "Доступ к календарю";
+"Events" = "События";
+"Schedule analysis" = "Анализ расписания";
+"Plaud recordings" = "Записи Plaud";
+"Check calendar access" = "Проверить доступ к календарю";
+"Checks whether the AI assistant is allowed to read your calendars, without showing a permission dialog. Use this first to see if setup worked." = "Проверяет, разрешён ли ИИ-ассистенту доступ к календарям, без показа системного окна. Используйте первым, чтобы убедиться, что всё настроено.";
+"Request calendar access" = "Запросить доступ к календарю";
+"Asks macOS for permission to access calendars through Equinox. May show a system dialog." = "Запрашивает у macOS доступ к календарям через Equinox. Может показать системное окно.";
+"List calendars" = "Список календарей";
+"Shows all calendars on your Mac — work, personal, shared, and so on — with name, color, and whether new events can be added." = "Показывает все календари на Mac — рабочие, личные, общие и т. д. — с названием, цветом и пометкой, можно ли добавлять события.";
+"List events" = "Список событий";
+"Shows meetings and appointments for a date range you choose (for example, a day or a week). Can be limited to specific calendars. Up to 500 events per request." = "Показывает встречи и события за выбранный период (например, день или неделю). Можно ограничить конкретными календарями. До 500 событий за один запрос.";
+"Event details" = "Детали события";
+"Opens full details of one meeting: time, location, notes, participants, and video call link if present." = "Открывает полные детали одной встречи: время, место, заметки, участников и ссылку на видеозвонок, если есть.";
+"Create event" = "Создать событие";
+"Adds a new meeting or appointment to your calendar when you ask the assistant to schedule something." = "Добавляет новую встречу или событие в календарь, когда вы просите ассистента что-то запланировать.";
+"Update event" = "Изменить событие";
+"Changes an existing meeting — for example, moves it to another time or updates the title, location, or notes." = "Меняет существующую встречу — например, переносит на другое время или обновляет название, место или заметки.";
+"Delete event" = "Удалить событие";
+"Removes a meeting from the calendar. For repeating events, you can delete only one occurrence or all future ones." = "Удаляет встречу из календаря. Для повторяющихся событий можно удалить одно повторение или все будущие.";
+"Analyze schedule" = "Анализ расписания";
+"Calculates how busy you are: minutes in meetings, share of the day filled, how many calls have a video link, and all-day events versus timed meetings." = "Считает, насколько вы заняты: минуты во встречах, долю заполненного дня, сколько звонков со ссылкой и события на весь день против обычных встреч.";
+"Find conflicts" = "Найти конфликты";
+"Finds meetings that overlap in time — double bookings you may want to resolve." = "Находит встречи, которые накладываются по времени — двойные брони, которые стоит разрешить.";
+"Find free time" = "Найти свободное время";
+"Finds open time windows during work hours (by default 9:00–18:00) that are long enough for a new meeting." = "Находит свободные окна в рабочие часы (по умолчанию 9:00–18:00), достаточные для новой встречи.";
+"Check Plaud cache" = "Проверить кэш Plaud";
+"Checks whether Equinox has a local Plaud recording catalog and cached links between recordings and calendar events." = "Проверяет, есть ли у Equinox локальный каталог записей Plaud и кэшированные связи между записями и событиями календаря.";
+"List Plaud recordings" = "Список записей Plaud";
+"Shows Plaud recordings from the local Equinox cache for a day or date range, including cached calendar event matches when available." = "Показывает записи Plaud из локального кэша Equinox за день или диапазон дат, включая кэшированные привязки к событиям календаря, если они есть.";
+"MCP enabled — Cursor and Claude Desktop configs updated." = "MCP включён — конфигурации Cursor и Claude Desktop обновлены.";
+"MCP disabled — Equinox Calendar removed from Cursor and Claude Desktop configs." = "MCP отключён — Equinox Calendar удалён из конфигураций Cursor и Claude Desktop.";
+"Config copied to clipboard." = "Конфигурация скопирована в буфер обмена.";
+"MCP is not ready yet. Install Node.js and run ./scripts/build-mcp.sh." = "MCP ещё не готов. Установите Node.js и запустите ./scripts/build-mcp.sh.";
+"Invalid MCP client config format." = "Неверный формат конфигурации MCP-клиента.";
+"MCP enabled for Cursor, but Claude Desktop config could not be updated: %@" = "MCP включён для Cursor, но конфигурацию Claude Desktop не удалось обновить: %@";
+/* Event detail & modals */
+"Your response" = "Ваш ответ";
+"When" = "Когда";
+"Attendance" = "Участники";
+"Confirm" = "Подтвердить";
+"https://web.plaud.ai/file/…" = "https://web.plaud.ai/file/…";
+/* Create event errors */
+"The calendar could not be found." = "Календарь не найден.";
+"This calendar is read-only." = "Этот календарь доступен только для чтения.";
+/* General settings pickers */
+"First day of week" = "Первый день недели";
+"Event list shows" = "Список событий показывает";
+/* Panel */
+"Unpin Equinox   P" = "Открепить Equinox   P";
+/* Meeting providers */
+"Video call" = "Видеозвонок";
+"Zoom" = "Zoom";
+"Microsoft Teams" = "Microsoft Teams";
+"Amazon Chime" = "Amazon Chime";
+"Google Meet" = "Google Meet";
+"Webex" = "Webex";
+"VK Calls" = "VK Calls";
+"FaceTime" = "FaceTime";
+/* Privacy */
+"App state unavailable." = "Состояние приложения недоступно.";
+/* Plaud OAuth */
+"OAuth callback port 8199 is already in use. Stop the other OAuth client and try again." = "Порт OAuth-callback 8199 уже занят. Остановите другой OAuth-клиент и повторите попытку.";
+"Could not start OAuth callback server: %@" = "Не удалось запустить OAuth-callback сервер: %@";
+"Could not save Plaud credentials (Keychain error %@)." = "Не удалось сохранить учётные данные Plaud (ошибка Keychain %@).";
+"Authorization successful!" = "Авторизация успешна!";
+"You can close this tab." = "Можно закрыть эту вкладку.";
+"Continue authorization in the original window." = "Продолжите авторизацию в исходном окне.";
+"This page can be closed." = "Эту страницу можно закрыть.";
+"Authorization failed" = "Ошибка авторизации";
+"Not found" = "Не найдено";
+"State mismatch." = "Несовпадение state.";
+/* App & settings tabs */
+"Equinox" = "Equinox";
+"Plaud" = "Plaud";
+/* Appearance preview */
+"09:00 – 10:00" = "09:00 – 10:00";

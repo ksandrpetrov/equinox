@@ -66,11 +66,7 @@ struct PanelIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
-                .frame(width: buttonSize, height: buttonSize)
+            panelIconLabel(symbol: symbol, isSelected: isSelected, buttonSize: buttonSize)
         }
         .buttonStyle(PanelButtonStyle(isSelected: isSelected))
         .help(help)
@@ -81,6 +77,42 @@ struct PanelIconButton: View {
     }
 }
 
+struct PanelIconMenuButton<MenuContent: View>: View {
+    let symbol: String
+    var help: String = ""
+    var accessibilityLabel: String = ""
+    var buttonSize: CGFloat = EquinoxDesign.toolbarButtonSize
+    @ViewBuilder let menuContent: () -> MenuContent
+
+    var body: some View {
+        Menu {
+            menuContent()
+        } label: {
+            panelIconLabel(symbol: symbol, buttonSize: buttonSize)
+        }
+        .menuIndicator(.hidden)
+        .buttonStyle(PanelButtonStyle())
+        .help(help)
+        .panelAccessibilityLabel(
+            accessibilityLabel.isEmpty ? help : accessibilityLabel,
+            hint: help
+        )
+    }
+}
+
+private func panelIconLabel(
+    symbol: String,
+    isSelected: Bool = false,
+    buttonSize: CGFloat
+) -> some View {
+    Image(systemName: symbol)
+        .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+        .symbolRenderingMode(.hierarchical)
+        .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
+        .frame(width: buttonSize, height: buttonSize)
+        .contentShape(Rectangle())
+}
+
 struct PanelButtonGroup<Content: View>: View {
     var spacing: CGFloat = EquinoxDesign.spacingXS
     @ViewBuilder let content: () -> Content
@@ -89,41 +121,5 @@ struct PanelButtonGroup<Content: View>: View {
         HStack(spacing: spacing) {
             content()
         }
-    }
-}
-
-struct PanelSplitDivider: View {
-    @Binding var agendaHeightRatio: Double
-    @State private var dragStartRatio: Double = 0.35
-
-    var body: some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.primary.opacity(0.08))
-                .frame(height: 1)
-            Capsule()
-                .fill(Color.secondary.opacity(0.4))
-                .frame(width: 40, height: 4)
-        }
-        .frame(height: 10)
-        .contentShape(Rectangle())
-        .onHover { inside in
-            if inside { NSCursor.resizeUpDown.push() } else { NSCursor.pop() }
-        }
-        .gesture(
-            DragGesture(minimumDistance: 2)
-                .onChanged { value in
-                    let delta = -value.translation.height / 300
-                    agendaHeightRatio = min(max(dragStartRatio + delta, 0.15), 0.65)
-                }
-                .onEnded { _ in
-                    dragStartRatio = agendaHeightRatio
-                }
-        )
-        .onAppear {
-            dragStartRatio = agendaHeightRatio
-        }
-        .accessibilityLabel(String(localized: "Resize agenda", comment: "Split divider accessibility"))
-        .accessibilityHint(String(localized: "Drag to change agenda height", comment: "Split divider hint"))
     }
 }

@@ -45,7 +45,6 @@ final class PreferencesStore {
     var backgroundStyle: Int { didSet { persist(backgroundStyle, forKey: kBackgroundStyle) } }
     var calendarRowCount: Int { didSet { persist(calendarRowCount, forKey: kCalendarNumRows) } }
     var showMonthBoundaries: Bool { didSet { persist(showMonthBoundaries, forKey: kShowMonthBoundaries) } }
-    var showsDayHoverPreview: Bool { didSet { persist(showsDayHoverPreview, forKey: kShowEventPopoverOnHover) } }
     var agendaHeightRatio: Double { didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) } }
     var isMcpEnabled: Bool { didSet { persist(isMcpEnabled, forKey: kMcpEnabled) } }
     var isPlaudEnabled: Bool { didSet { persist(isPlaudEnabled, forKey: kPlaudEnabled) } }
@@ -71,7 +70,6 @@ final class PreferencesStore {
         var backgroundStyle: Int
         var calendarRowCount: Int
         var showMonthBoundaries: Bool
-        var showsDayHoverPreview: Bool
         var agendaHeightRatio: Double
         var isMcpEnabled: Bool
         var isPlaudEnabled: Bool
@@ -99,7 +97,6 @@ final class PreferencesStore {
         backgroundStyle = BackgroundStyle.glass.rawValue
         calendarRowCount = 6
         showMonthBoundaries = true
-        showsDayHoverPreview = false
         agendaHeightRatio = 0.35
         isMcpEnabled = false
         isPlaudEnabled = false
@@ -184,7 +181,6 @@ final class PreferencesStore {
             kShowMeetingIndicator: false,
             kMenuBarIconType: 0,
             kShowDaysWithNoEventsInAgenda: false,
-            kShowEventPopoverOnHover: false,
             kMcpEnabled: false,
             kPlaudEnabled: false,
             kCalendarNumRows: 6,
@@ -212,7 +208,6 @@ final class PreferencesStore {
             backgroundStyle: defaults.integer(forKey: kBackgroundStyle),
             calendarRowCount: clampedCalendarNumRows(defaults.integer(forKey: kCalendarNumRows)),
             showMonthBoundaries: defaults.bool(forKey: kShowMonthBoundaries),
-            showsDayHoverPreview: defaults.bool(forKey: kShowEventPopoverOnHover),
             agendaHeightRatio: clampedAgendaHeightRatio(defaults.double(forKey: kAgendaHeightRatio)),
             isMcpEnabled: defaults.bool(forKey: kMcpEnabled),
             isPlaudEnabled: defaults.bool(forKey: kPlaudEnabled),
@@ -240,7 +235,6 @@ final class PreferencesStore {
         backgroundStyle = values.backgroundStyle
         calendarRowCount = values.calendarRowCount
         showMonthBoundaries = values.showMonthBoundaries
-        showsDayHoverPreview = values.showsDayHoverPreview
         agendaHeightRatio = values.agendaHeightRatio
         isMcpEnabled = values.isMcpEnabled
         isPlaudEnabled = values.isPlaudEnabled

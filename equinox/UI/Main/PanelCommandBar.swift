@@ -33,19 +33,12 @@ struct PanelCommandBar: View {
                 }
             }
 
-            Button {
-                appState.panel.isGoToDateSheetPresented = true
-            } label: {
-                Text(monthTitle)
-                    .font(EquinoxDesign.panelTitleFont())
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .help(String(localized: "Go to Date…", comment: ""))
-            .accessibilityLabel(monthTitle)
-            .accessibilityHint(String(localized: "Go to Date…", comment: ""))
+            Text(monthTitle)
+                .font(EquinoxDesign.panelTitleFont())
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
 
             PanelButtonGroup(spacing: EquinoxDesign.spacingXS) {
                 PanelIconButton(
@@ -91,7 +84,27 @@ struct PanelCommandBar: View {
                 .sensoryFeedback(.selection, trigger: appState.isPinned)
                 .keyboardShortcut("p")
 
-                overflowMenu
+                PanelIconMenuButton(
+                    symbol: "ellipsis",
+                    help: String(localized: "More actions", comment: ""),
+                    accessibilityLabel: String(localized: "More actions", comment: ""),
+                    buttonSize: metrics.toolbarButtonSize
+                ) {
+                    Button(String(localized: "Go to Today", comment: "")) {
+                        appState.events.goToToday()
+                    }
+                    .keyboardShortcut("t")
+                    Divider()
+                    Button(String(localized: "Preferences…", comment: "")) {
+                        SettingsActivationHandler.openSettings(appState: appState)
+                    }
+                    .keyboardShortcut(",", modifiers: .command)
+                    Divider()
+                    Button(String(localized: "Quit Equinox", comment: "")) {
+                        NSApp.terminate(nil)
+                    }
+                    .keyboardShortcut("q", modifiers: .command)
+                }
             }
         }
         .padding(.horizontal, EquinoxDesign.spacingSM)
@@ -99,36 +112,5 @@ struct PanelCommandBar: View {
         .panelCommandBarBackground()
         .frame(height: EquinoxDesign.commandBarHeight)
         .padding(.bottom, EquinoxDesign.spacingXS)
-    }
-
-    private var overflowMenu: some View {
-        Menu {
-            Button(String(localized: "Go to Today", comment: "")) {
-                appState.events.goToToday()
-            }
-            .keyboardShortcut("t")
-            Button(String(localized: "Go to Date…", comment: "")) {
-                appState.panel.isGoToDateSheetPresented = true
-            }
-            Divider()
-            Button(String(localized: "Preferences…", comment: "")) {
-                SettingsActivationHandler.openSettings(appState: appState)
-            }
-            .keyboardShortcut(",", modifiers: .command)
-            Divider()
-            Button(String(localized: "Quit Equinox", comment: "")) {
-                NSApp.terminate(nil)
-            }
-            .keyboardShortcut("q", modifiers: .command)
-        } label: {
-            Image(systemName: "ellipsis")
-                .symbolRenderingMode(.hierarchical)
-                .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
-        }
-        .menuIndicator(.hidden)
-        .menuStyle(.borderlessButton)
-        .buttonStyle(PanelButtonStyle())
-        .help(String(localized: "More actions", comment: ""))
-        .accessibilityLabel(String(localized: "More actions", comment: ""))
     }
 }

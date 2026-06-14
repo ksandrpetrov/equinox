@@ -361,10 +361,17 @@ final class EventKitBridge {
     }
 
     private func parseDateBoundary(_ value: String, endOfDay: Bool) -> Date? {
+        if value.count == 10, let day = dayFormatter.date(from: value) {
+            return boundaryDate(for: day, endOfDay: endOfDay)
+        }
         if let instant = parseInstant(value) {
             return instant
         }
         guard let day = dayFormatter.date(from: value) else { return nil }
+        return boundaryDate(for: day, endOfDay: endOfDay)
+    }
+
+    private func boundaryDate(for day: Date, endOfDay: Bool) -> Date? {
         var components = Calendar.current.dateComponents([.year, .month, .day], from: day)
         if endOfDay {
             components.hour = 23
