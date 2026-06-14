@@ -4,18 +4,15 @@ enum EventFetchRange {
     static func range(
         coveringGridFrom gridFirst: CalendarDate,
         through gridLast: CalendarDate,
-        selectedDate: CalendarDate,
-        agendaDays: Int
+        agendaFirst: CalendarDate?,
+        agendaLast: CalendarDate?
     ) -> (first: CalendarDate, last: CalendarDate) {
         var fetchFirst = gridFirst
         var fetchLast = gridLast
-        guard agendaDays > 0 else { return (fetchFirst, fetchLast) }
-        let agendaFirst = selectedDate.addingDays(-(agendaDays - 1))
-        if agendaFirst < fetchFirst {
+        if let agendaFirst, agendaFirst < fetchFirst {
             fetchFirst = agendaFirst
         }
-        let agendaLast = selectedDate.addingDays(agendaDays - 1)
-        if agendaLast > fetchLast {
+        if let agendaLast, agendaLast > fetchLast {
             fetchLast = agendaLast
         }
         return (fetchFirst, fetchLast)

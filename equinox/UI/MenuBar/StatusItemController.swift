@@ -3,21 +3,13 @@ import KeyboardShortcuts
 import SwiftUI
 
 @MainActor
-final class StatusItemController: NSObject, NSMenuDelegate {
+final class StatusItemController: NSObject {
     private let appState: AppState
     private var statusItem: NSStatusItem!
     private let panelController: PanelWindowController
     private let dismissMonitor = PanelDismissMonitor()
     private var refreshScheduler: PeriodicRefreshScheduler?
-    private lazy var contextMenuAdapter = PanelContextMenuTargetAdapter(
-        appState: appState,
-        onCreateNewEvent: { [weak self] in self?.createNewEvent() },
-        onGoToToday: { [weak self] in self?.goToToday() },
-        onTogglePin: { [weak self] in self?.togglePin() },
-        onShowSettings: { [weak self] in self?.showSettings() }
-    )
 
-    private var rightClickMonitor: Any?
     private var statusItemMoveWorkItem: DispatchWorkItem?
     private var iconDateFormatter = DateFormatter()
 
@@ -60,7 +52,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     func teardown() {
-        if let rightClickMonitor { NSEvent.removeMonitor(rightClickMonitor) }
         dismissMonitor.teardown()
         refreshScheduler?.stop()
         statusItemMoveWorkItem?.cancel()
@@ -99,35 +90,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             name: NSWindow.didResizeNotification,
             object: statusItem.button?.window
         )
-
-        rightClickMonitor = NSEvent.addLocalMonitorForEvents(matching: .rightMouseDown) { [weak self] event in
-            guard let self, event.window == self.statusItem.button?.window else { return event }
-            self.statusItem.menu = PanelContextMenuActions.makeMenu(adapter: self.contextMenuAdapter)
-            return event
-        }
-    }
-
-    func menuDidClose(_ menu: NSMenu) {
-        if statusItem.menu == menu { statusItem.menu = nil }
-    }
-
-    private func createNewEvent() {
-        appState.panel.newEventInitialDate = appState.events.selectedDate
-        appState.panel.isNewEventSheetPresented = true
-        showPanelIfHidden()
-    }
-
-    private func goToToday() {
-        appState.events.goToToday()
-        showPanelIfHidden()
-    }
-
-    private func togglePin() {
-        appState.togglePinnedState()
-    }
-
-    private func showSettings() {
-        SettingsActivationHandler.openSettings(appState: appState)
     }
 
     @objc private func statusItemClicked() {

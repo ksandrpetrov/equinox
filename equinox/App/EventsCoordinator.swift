@@ -25,6 +25,9 @@ final class EventsCoordinator {
     var calendarAccessStatus: CalendarAccessStatus = .notDetermined
     var lastFetchError: String?
 
+    private var agendaVisibleFirst: CalendarDate?
+    private var agendaVisibleLast: CalendarDate?
+
     /// Bumped after navigation that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
 
@@ -82,7 +85,7 @@ final class EventsCoordinator {
         switch reason {
         case .visibleGrid(let first, let last):
             applyFetchRange(coveringGridFrom: first, through: last)
-        case .agendaExtension:
+        case .agendaBounds:
             applyAgendaFetchExtensionIfNeeded()
         }
     }
@@ -91,16 +94,22 @@ final class EventsCoordinator {
         refreshFetchRange(reason: .visibleGrid(first: first, last: last))
     }
 
-    func extendFetchRangeForAgendaIfNeeded() {
-        refreshFetchRange(reason: .agendaExtension)
+    func updateAgendaVisibleRange(first: CalendarDate, last: CalendarDate) {
+        guard first <= last else { return }
+        let changed = agendaVisibleFirst != first || agendaVisibleLast != last
+        agendaVisibleFirst = first
+        agendaVisibleLast = last
+        if changed {
+            refreshFetchRange(reason: .agendaBounds)
+        }
     }
 
     func fetchRange(coveringGridFrom gridFirst: CalendarDate, through gridLast: CalendarDate) -> (first: CalendarDate, last: CalendarDate) {
         EventFetchRange.range(
             coveringGridFrom: gridFirst,
             through: gridLast,
-            selectedDate: selectedDate,
-            agendaDays: preferences.showEventDays
+            agendaFirst: agendaVisibleFirst,
+            agendaLast: agendaVisibleLast
         )
     }
 
@@ -136,14 +145,39 @@ final class EventsCoordinator {
     }
 
     func selectDate(_ date: CalendarDate) {
-        selectedDate = date
-        if date.monthIndex != monthDate.monthIndex || date.year != monthDate.year {
-            monthDate = CalendarDate(year: date.year, monthIndex: date.monthIndex, day: 1)
-            refreshVisibleGridRange()
-        } else {
-            extendFetchRangeForAgendaIfNeeded()
+        applySelection(date, scrollAgenda: true, refreshGrid: true)
+    }
+
+    /// Updates calendar selection from agenda scroll without re-scrolling the agenda.
+    func syncSelectionFromAgendaScroll(_ date: CalendarDate) {
+        applySelection(date, scrollAgenda: false, refreshGrid: false)
+    }
+
+    private func applySelection(_ date: CalendarDate, scrollAgenda: Bool, refreshGrid: Bool) {
+        let newMonthDate = CalendarDate(year: date.year, monthIndex: date.monthIndex, day: 1)
+        let monthChanged = date.monthIndex != monthDate.monthIndex || date.year != monthDate.year
+        let selectionChanged = selectedDate != date
+        let monthDateChanged = monthChanged && monthDate != newMonthDate
+
+        guard selectionChanged || monthDateChanged else {
+            if scrollAgenda {
+                requestAgendaScroll()
+            }
+            return
         }
-        requestAgendaScroll()
+
+        if selectionChanged {
+            selectedDate = date
+        }
+        if monthDateChanged {
+            monthDate = newMonthDate
+            if refreshGrid {
+                refreshVisibleGridRange()
+            }
+        }
+        if scrollAgenda {
+            requestAgendaScroll()
+        }
     }
 
     func events(for date: CalendarDate) -> [DayEvent] {
@@ -239,5 +273,5 @@ final class EventsCoordinator {
 
 enum FetchRangeRefreshReason {
     case visibleGrid(first: CalendarDate, last: CalendarDate)
-    case agendaExtension
+    case agendaBounds
 }

@@ -14,6 +14,9 @@ struct AgendaView: View {
 
     @State private var pendingDelete: PendingDeleteEvent?
     @State private var scrolledSectionID: Int?
+    @State private var rangeFirst: CalendarDate?
+    @State private var rangeLast: CalendarDate?
+    @State private var isProgrammaticScroll = false
 
     private var prefs: PreferencesStore { appState.preferences }
     private var backgroundStyle: BackgroundStyle {
@@ -98,6 +101,7 @@ struct AgendaView: View {
                 .scrollIndicators(.hidden)
                 .scrollPosition(id: $scrolledSectionID, anchor: .top)
                 .onAppear {
+                    bootstrapAgendaRangeIfNeeded()
                     scrollAgendaToSelectedDate()
                 }
                 .onChange(of: appState.panel.agendaScrollGeneration) { _, _ in
@@ -105,6 +109,14 @@ struct AgendaView: View {
                 }
                 .onChange(of: appState.events.agendaScrollToken) { _, _ in
                     scrollAgendaToSelectedDate()
+                }
+                .onChange(of: scrolledSectionID) { _, julian in
+                    handleAgendaScroll(to: julian)
+                }
+                .onScrollPhaseChange { _, newPhase in
+                    if newPhase == .idle {
+                        commitScrollSettle()
+                    }
                 }
             }
         }
@@ -134,7 +146,7 @@ struct AgendaView: View {
             .equinoxSheetPresentation()
         }
         .onChange(of: prefs.showEventDays) { _, _ in
-            appState.events.extendFetchRangeForAgendaIfNeeded()
+            bootstrapAgendaRangeIfNeeded(force: true)
             scrollAgendaToSelectedDate()
         }
     }
@@ -171,27 +183,102 @@ struct AgendaView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var displayRange: (first: CalendarDate, last: CalendarDate) {
+        if let rangeFirst, let rangeLast {
+            return (rangeFirst, rangeLast)
+        }
+        return AgendaDisplayRange.initialRange(anchor: appState.events.todayDate)
+    }
+
     private var agendaSections: [(date: CalendarDate, events: [DayEvent])] {
-        let anchor = appState.events.selectedDate
-        let range = AgendaDisplayRange.range(anchor: anchor, showEventDays: prefs.showEventDays)
+        let range = displayRange
         return AgendaSections.sections(
             from: range.first,
             through: range.last,
-            pinnedDate: anchor,
+            pinnedDate: appState.events.selectedDate,
             showEmptyDays: prefs.showDaysWithNoEvents,
             eventsFor: appState.events.events(for:)
         )
     }
 
+    private func bootstrapAgendaRangeIfNeeded(force: Bool = false) {
+        if !force, rangeFirst != nil, rangeLast != nil { return }
+        let range = AgendaDisplayRange.initialRange(anchor: appState.events.todayDate)
+        applyAgendaRange(first: range.first, last: range.last)
+        commitAgendaToCoordinator()
+    }
+
+    private func ensureDateInRange(_ date: CalendarDate) {
+        let current = displayRange
+        let expanded = AgendaDisplayRange.rangeCovering(
+            date: date,
+            first: current.first,
+            last: current.last
+        )
+        if expanded.first != current.first || expanded.last != current.last {
+            applyAgendaRange(first: expanded.first, last: expanded.last)
+        }
+    }
+
+    private func applyAgendaRange(first: CalendarDate, last: CalendarDate) {
+        rangeFirst = first
+        rangeLast = last
+    }
+
+    private func commitAgendaToCoordinator() {
+        let range = displayRange
+        appState.events.updateAgendaVisibleRange(first: range.first, last: range.last)
+    }
+
+    private func extendRangeIfNeeded(for visibleDate: CalendarDate) {
+        let current = displayRange
+        var first = current.first
+        var last = current.last
+        var changed = false
+
+        if AgendaDisplayRange.shouldExtendPast(visible: visibleDate, rangeFirst: first) {
+            first = AgendaDisplayRange.extendedPast(from: first)
+            changed = true
+        }
+        if AgendaDisplayRange.shouldExtendFuture(visible: visibleDate, rangeLast: last) {
+            last = AgendaDisplayRange.extendedFuture(from: last)
+            changed = true
+        }
+
+        if changed {
+            applyAgendaRange(first: first, last: last)
+        }
+    }
+
     private func scrollAgendaToSelectedDate() {
+        bootstrapAgendaRangeIfNeeded()
+        ensureDateInRange(appState.events.selectedDate)
+        commitAgendaToCoordinator()
+        isProgrammaticScroll = true
         scrollAgenda(to: appState.events.selectedDate.julian)
+        DispatchQueue.main.async {
+            isProgrammaticScroll = false
+        }
     }
 
     private func scrollAgenda(to julian: Int) {
         scrolledSectionID = julian
-        // LazyVStack may not have laid out the target section yet after range changes.
         DispatchQueue.main.async {
             scrolledSectionID = julian
         }
+    }
+
+    private func handleAgendaScroll(to julian: Int?) {
+        guard let julian else { return }
+        let visibleDate = CalendarDate(julian: julian)
+        extendRangeIfNeeded(for: visibleDate)
+    }
+
+    private func commitScrollSettle() {
+        guard !isProgrammaticScroll else { return }
+        guard let julian = scrolledSectionID else { return }
+        let visibleDate = CalendarDate(julian: julian)
+        appState.events.syncSelectionFromAgendaScroll(visibleDate)
+        commitAgendaToCoordinator()
     }
 }

@@ -61,9 +61,7 @@
 		KSM001A1B2C3D4E5F6012345 /* Services/Platform/KeyboardShortcutMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */; };
 		KYP001A1B2C3D4E5F6012345 /* UI/MenuBar/KeyablePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */; };
 		PWC001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = PWC001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelWindowController.swift */; };
-		PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */; };
-		PCM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelContextMenuActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = PCM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelContextMenuActions.swift */; };
-		PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */; };
+		PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */; };		PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */; };
 		KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */; };
 		POWBLD001A1B2C3D4E5F601234 /* Pow in Frameworks */ = {isa = PBXBuildFile; productRef = POWPROD001A1B2C3D4E5F601234 /* Pow */; };
 		9242A5671A82A136005AA4B3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9242A5661A82A136005AA4B3 /* Images.xcassets */; };
@@ -236,9 +234,7 @@
 		KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/KeyboardShortcutMigration.swift; sourceTree = "<group>"; };
 		KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/KeyablePanel.swift; sourceTree = "<group>"; };
 		PWC001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/PanelWindowController.swift; sourceTree = "<group>"; };
-		PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/PanelDismissMonitor.swift; sourceTree = "<group>"; };
-		PCM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelContextMenuActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/PanelContextMenuActions.swift; sourceTree = "<group>"; };
-		PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/PeriodicRefreshScheduler.swift; sourceTree = "<group>"; };
+		PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/PanelDismissMonitor.swift; sourceTree = "<group>"; };		PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/PeriodicRefreshScheduler.swift; sourceTree = "<group>"; };
 		59E0896503BF4EDBB707C1D2 /* UI/MenuBar/MenuBarIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/MenuBarIconRenderer.swift; sourceTree = "<group>"; };
 		63827DE05C3E4C1A9137EA18 /* App/AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppDelegate.swift; sourceTree = "<group>"; };
 		6482D455E0F542C98215FB22 /* UI/Settings/GeneralSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/GeneralSettingsTab.swift; sourceTree = "<group>"; };
@@ -444,9 +440,7 @@
 				59E0896503BF4EDBB707C1D2 /* UI/MenuBar/MenuBarIconRenderer.swift */,
 				KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */,
 				PWC001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelWindowController.swift */,
-				PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */,
-				PCM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelContextMenuActions.swift */,
-				PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */,
+				PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */,				PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */,
 				2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */,
 			);
 			name = Swift;
@@ -752,9 +746,7 @@
 				C7EE699EF6FB4CA399A0263D /* UI/MenuBar/MenuBarIconRenderer.swift in Sources */,
 				KYP001A1B2C3D4E5F6012345 /* UI/MenuBar/KeyablePanel.swift in Sources */,
 				PWC001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelWindowController.swift in Sources */,
-				PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */,
-				PCM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelContextMenuActions.swift in Sources */,
-				PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */,
+				PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */,				PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */,
 				FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
