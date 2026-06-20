@@ -32,6 +32,7 @@ final class EventsCoordinator {
     private var loadingIndicatorTask: Task<Void, Never>?
     private var loadingIndicatorGeneration = 0
     private var loadingIndicatorVisibleSince: Date?
+    private var fetchGeneration = 0
 
     /// Bumped after navigation that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
@@ -68,11 +69,7 @@ final class EventsCoordinator {
     }
 
     func retryFetchEvents() {
-        Task {
-            await performFetch {
-                await calendarStore.refetchAll()
-            }
-        }
+        scheduleFetch(range: (first: firstVisibleDate, last: lastVisibleDate), refetch: true)
     }
 
     func syncFromCalendarStore() async {
@@ -193,6 +190,14 @@ final class EventsCoordinator {
         onMeetingIndicatorChanged()
     }
 
+    func refreshTodayAndMeetingIndicator() {
+        let today = CalendarDate.today(calendar: calendar)
+        if today != todayDate {
+            todayDate = today
+        }
+        updateMeetingIndicator()
+    }
+
     func createEvent(from draft: NewEventDraft) async -> String? {
         do {
             try await calendarStore.createEvent(from: draft)
@@ -237,12 +242,7 @@ final class EventsCoordinator {
         let range = fetchRange(coveringGridFrom: gridFirst, through: gridLast)
         firstVisibleDate = range.first
         lastVisibleDate = range.last
-        Task {
-            await performFetch {
-                await calendarStore.setVisibleRange(first: range.first, last: range.last)
-                await calendarStore.fetchEvents()
-            }
-        }
+        scheduleFetch(range: range)
     }
 
     private func applyAgendaFetchExtensionIfNeeded() {
@@ -250,10 +250,19 @@ final class EventsCoordinator {
         guard range.first != firstVisibleDate || range.last != lastVisibleDate else { return }
         firstVisibleDate = range.first
         lastVisibleDate = range.last
+        scheduleFetch(range: range)
+    }
+
+    private func scheduleFetch(range: (first: CalendarDate, last: CalendarDate), refetch: Bool = false) {
+        fetchGeneration &+= 1
+        let generation = fetchGeneration
         Task {
-            await performFetch {
-                await calendarStore.setVisibleRange(first: range.first, last: range.last)
-                await calendarStore.fetchEvents()
+            await performFetch(generation: generation) {
+                if refetch {
+                    await calendarStore.refetchAll(first: range.first, last: range.last)
+                } else {
+                    await calendarStore.fetchEvents(first: range.first, last: range.last)
+                }
             }
         }
     }
@@ -262,13 +271,14 @@ final class EventsCoordinator {
         agendaScrollToken &+= 1
     }
 
-    private func performFetch(_ operation: () async -> Void) async {
+    private func performFetch(generation: Int, operation: () async -> Void) async {
         beginFetchPresentation()
         defer {
             endFetchPresentation()
         }
         lastFetchError = nil
         await operation()
+        guard generation == fetchGeneration else { return }
         lastFetchError = await calendarStore.lastFetchError
         await syncFromCalendarStore()
     }

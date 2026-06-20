@@ -16,11 +16,4 @@ extension EKEvent {
     var equinoxParticipationRawValue: Int? {
         EventParticipationAccessor.rawValue(for: self)
     }
-
-    var equinoxParticipationStatus: EventParticipationStatus? {
-        EventParticipationMapping.status(
-            hasAttendees: hasAttendees,
-            eventKitRawValue: equinoxParticipationRawValue
-        )
-    }
 }

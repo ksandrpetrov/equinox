@@ -100,14 +100,29 @@ async function invokeAppBridge<T>(
 ): Promise<BridgeResponse<T> | undefined> {
   const state = await readAppBridgeState()
   if (!state) {
+    logAppBridgeFallback("app bridge state file missing or invalid")
     return undefined
   }
 
   try {
     return await postAppBridge<T>(state, command)
-  } catch {
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    logAppBridgeFallback(reason)
     return undefined
   }
+}
+
+function logAppBridgeFallback(reason: string): void {
+  if (!isBridgeDebugEnabled()) {
+    return
+  }
+  console.error(`[equinox-mcp] falling back to equinox-bridge CLI: ${reason}`)
+}
+
+function isBridgeDebugEnabled(): boolean {
+  const flag = process.env.EQUINOX_BRIDGE_DEBUG
+  return flag === "1" || flag === "true"
 }
 
 async function readAppBridgeState(): Promise<AppBridgeState | undefined> {

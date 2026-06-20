@@ -210,7 +210,11 @@ struct PlaudSettingsTab: View {
     }
 
     private func refreshSetup() {
-        setup = PlaudConfigurator.buildSetup()
+        guard let appState else { return }
+        Task {
+            await appState.plaud.refreshSetupForSettings()
+            setup = appState.plaud.setup
+        }
     }
 
     @MainActor

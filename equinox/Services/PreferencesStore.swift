@@ -31,7 +31,9 @@ final class PreferencesStore {
     var themePreference: Int {
         didSet {
             persist(themePreference, forKey: kThemePreference)
-            if !isLoading { applyTheme() }
+            if !isLoading {
+                Task { @MainActor in applyTheme() }
+            }
         }
     }
     var sizePreference: Int {
@@ -136,6 +138,7 @@ final class PreferencesStore {
         ratio == 0 ? 0.35 : min(max(ratio, 0.15), 0.65)
     }
 
+    @MainActor
     func applyTheme() {
         switch themePreference {
         case 1: NSApp.appearance = NSAppearance(named: .aqua)
@@ -153,7 +156,7 @@ final class PreferencesStore {
         CalendarSelectionStorage.clearSelection()
         reloadFromDefaults()
         isLoading = false
-        applyTheme()
+        Task { @MainActor in applyTheme() }
         NotificationCenter.default.post(name: kEquinoxSizePreferenceChanged, object: nil)
         notifyMenuBarAppearanceChanged()
     }

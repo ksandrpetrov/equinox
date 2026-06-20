@@ -2,6 +2,12 @@ import { z } from "zod"
 
 export const datePattern = /^\d{4}-\d{2}-\d{2}$/
 export const timePattern = /^\d{2}:\d{2}$/
+const isoInstantPrefixPattern = /^\d{4}-\d{2}-\d{2}T/
+
+export const eventDateInputSchema = z.string().min(1).refine(
+  (value) => datePattern.test(value) || isoInstantPrefixPattern.test(value),
+  { message: "Expected YYYY-MM-DD or ISO-8601 datetime" },
+)
 
 export const listEventsInputSchema = z.object({
   startDate: z.string().regex(datePattern),
@@ -17,8 +23,8 @@ export const getEventInputSchema = z.object({
 
 export const createEventInputSchema = z.object({
   title: z.string().min(1),
-  startDate: z.string().min(1),
-  endDate: z.string().min(1),
+  startDate: eventDateInputSchema,
+  endDate: eventDateInputSchema,
   calendarId: z.string().min(1).optional(),
   allDay: z.boolean().optional(),
   location: z.string().optional(),
@@ -29,8 +35,8 @@ export const createEventInputSchema = z.object({
 export const updateEventInputSchema = z.object({
   eventIdentifier: z.string().min(1),
   title: z.string().min(1).optional(),
-  startDate: z.string().min(1).optional(),
-  endDate: z.string().min(1).optional(),
+  startDate: eventDateInputSchema.optional(),
+  endDate: eventDateInputSchema.optional(),
   calendarId: z.string().min(1).optional(),
   allDay: z.boolean().optional(),
   location: z.string().optional(),

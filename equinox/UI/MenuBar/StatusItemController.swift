@@ -200,11 +200,7 @@ final class StatusItemController: NSObject {
     }
 
     private func handlePeriodicRefresh() {
-        let today = CalendarDate.today(calendar: appState.calendar)
-        if today != appState.events.todayDate {
-            appState.events.todayDate = today
-        }
-        appState.events.updateMeetingIndicator()
+        appState.events.refreshTodayAndMeetingIndicator()
         updateMenuBarIcon()
     }
 

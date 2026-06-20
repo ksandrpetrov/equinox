@@ -9,6 +9,7 @@ final class AppState {
     let layout = PanelLayoutMetrics()
     let events: EventsCoordinator
     let plaud: PlaudCoordinator
+    let mcp: McpCoordinator
 
     var calendar: Calendar { events.calendar }
 
@@ -42,6 +43,8 @@ final class AppState {
             calendarAccessStatus: { [events] in events.calendarAccessStatus },
             isPlaudEnabled: { [preferences] in preferences.isPlaudEnabled }
         )
+
+        mcp = McpCoordinator(preferences: preferences)
 
         events.registerExternalChangeHandler { [weak self] in
             Task { @MainActor in

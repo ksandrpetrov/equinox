@@ -12,8 +12,9 @@ actor CalendarStore {
     private var selectedCalendarEventsByDate: [Date: [DayEvent]] = [:]
     private var calendarEntriesStorage: [CalendarListEntry] = []
     private var previouslyFetchedJulians = IndexSet()
-    private var visibleStart = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-    private var visibleEnd = CalendarDate(year: 1583, monthIndex: 0, day: 1)
+    private var lastFetchedFirst = CalendarDate(year: 1583, monthIndex: 0, day: 1)
+    private var lastFetchedLast = CalendarDate(year: 1583, monthIndex: 0, day: 1)
+    private var hasFetchedRange = false
     private(set) var isFetchingEvents = false
     private(set) var lastFetchError: String?
 
@@ -44,23 +45,18 @@ actor CalendarStore {
             object: nil,
             queue: .main
         ) { [externalChangeDispatcher] _ in
-            externalChangeDispatcher.handler()
+            externalChangeDispatcher.notify()
         }
     }
 
     func setExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) {
-        externalChangeDispatcher.handler = handler
+        externalChangeDispatcher.setHandler(handler)
     }
 
     deinit {
         if let storeObserver {
             NotificationCenter.default.removeObserver(storeObserver)
         }
-    }
-
-    func setVisibleRange(first: CalendarDate, last: CalendarDate) {
-        visibleStart = first
-        visibleEnd = last
     }
 
     func selectedCalendarEvents() -> [CalendarDate: [DayEvent]] {
@@ -96,19 +92,29 @@ actor CalendarStore {
         }
     }
 
-    func fetchEvents() async {
+    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async {
         isFetchingEvents = true
         lastFetchError = nil
-        await fetchEventsWithStartDate(visibleStart, endDate: visibleEnd, refetch: false)
+        lastFetchedFirst = first
+        lastFetchedLast = last
+        hasFetchedRange = true
+        if refetch {
+            await fetchSourcesAndCalendars()
+        }
+        await fetchEventsWithStartDate(first, endDate: last, refetch: refetch)
         isFetchingEvents = false
     }
 
-    func refetchAll() async {
-        isFetchingEvents = true
-        lastFetchError = nil
-        await fetchSourcesAndCalendars()
-        await fetchEventsWithStartDate(visibleStart, endDate: visibleEnd, refetch: true)
-        isFetchingEvents = false
+    func refetchAll(first: CalendarDate? = nil, last: CalendarDate? = nil) async {
+        if let first, let last {
+            await fetchEvents(first: first, last: last, refetch: true)
+            return
+        }
+        guard hasFetchedRange else {
+            await fetchSourcesAndCalendars()
+            return
+        }
+        await fetchEvents(first: lastFetchedFirst, last: lastFetchedLast, refetch: true)
     }
 
     func createEvent(from draft: NewEventDraft) throws {
@@ -128,6 +134,15 @@ actor CalendarStore {
     func deleteEvent(identifier: String) throws {
         guard let event = store.event(withIdentifier: identifier) else {
             throw CalendarStoreError.eventNotFound
+        }
+        if EventParticipationMapping.isDeclinedParticipation(
+            hasAttendees: event.hasAttendees,
+            eventKitRawValue: event.equinoxParticipationRawValue
+        ) {
+            throw CalendarStoreError.eventNotFound
+        }
+        guard event.calendar.allowsContentModifications else {
+            throw CalendarStoreError.readOnlyCalendar
         }
         try store.remove(event, span: .thisEvent, commit: true)
     }
@@ -413,7 +428,24 @@ actor CalendarStore {
 }
 
 private final class ExternalChangeDispatcher: @unchecked Sendable {
-    var handler: @Sendable () -> Void = {}
+    private var handler: (@Sendable () -> Void)?
+    private var pendingChange = false
+
+    func setHandler(_ handler: @escaping @Sendable () -> Void) {
+        self.handler = handler
+        if pendingChange {
+            pendingChange = false
+            handler()
+        }
+    }
+
+    func notify() {
+        if let handler {
+            handler()
+        } else {
+            pendingChange = true
+        }
+    }
 }
 
 enum CalendarStoreError: Error, LocalizedError {

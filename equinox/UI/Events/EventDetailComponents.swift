@@ -2,6 +2,8 @@ import SwiftUI
 
 struct EventDetailHeroHeader: View {
     let event: DayEvent
+    var isCloseDisabled = false
+    var onClose: (() -> Void)?
 
     private var isDeclined: Bool {
         event.participationStatus == .declined
@@ -33,9 +35,44 @@ struct EventDetailHeroHeader: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let onClose {
+                EventDetailCloseButton(
+                    isDisabled: isCloseDisabled,
+                    action: onClose
+                )
+            }
         }
         .padding(EquinoxDesign.spacingMD)
         .background { EventDetailCardBackground() }
+    }
+}
+
+private struct EventDetailCloseButton: View {
+    let isDisabled: Bool
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.secondary)
+                .frame(width: EquinoxDesign.toolbarButtonSize, height: EquinoxDesign.toolbarButtonSize)
+                .background {
+                    Circle()
+                        .fill(Color.primary.opacity(isHovered ? 0.1 : 0.06))
+                }
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.45 : 1)
+        .keyboardShortcut(.cancelAction)
+        .help(String(localized: "Close", comment: "Event detail close button help"))
+        .accessibilityLabel(String(localized: "Close", comment: "Event detail close button"))
+        .onHover { isHovered = $0 }
+        .animation(EquinoxDesign.hoverAnimation, value: isHovered)
     }
 }
 
@@ -306,18 +343,5 @@ private extension EventParticipationStatus {
         case .tentative: "questionmark.circle.fill"
         case .declined: "xmark.circle.fill"
         }
-    }
-
-    var chipForeground: Color {
-        switch self {
-        case .unknown, .pending: .primary.opacity(0.85)
-        case .accepted: .green
-        case .tentative: .orange
-        case .declined: .red
-        }
-    }
-
-    var chipBackground: Color {
-        chipForeground.opacity(0.14)
     }
 }

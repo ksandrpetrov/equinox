@@ -289,20 +289,7 @@ final class EventKitBridge {
     }
 
     private static func authorizationStatus() -> (label: String, granted: Bool) {
-        switch EKEventStore.authorizationStatus(for: .event) {
-        case .fullAccess:
-            return ("full_access", true)
-        case .writeOnly:
-            return ("write_only", false)
-        case .notDetermined:
-            return ("not_determined", false)
-        case .restricted:
-            return ("restricted", false)
-        case .denied:
-            return ("denied", false)
-        @unknown default:
-            return ("unknown", false)
-        }
+        CalendarAccessMapping.bridgeAuthorizationStatus()
     }
 
     private func isDeclined(_ event: EKEvent) -> Bool {
@@ -317,11 +304,12 @@ final class EventKitBridge {
     }
 
     private func mapCalendar(_ calendar: EKCalendar) -> BridgeCalendar {
-        BridgeCalendar(
-            id: calendar.calendarIdentifier,
-            title: calendar.title,
-            sourceTitle: calendar.source.title,
-            sourceIdentifier: calendar.source.sourceIdentifier,
+        let item = EventKitCalendarMapping.calendarListItem(from: calendar)
+        return BridgeCalendar(
+            id: item.id,
+            title: item.title,
+            sourceTitle: item.sourceTitle,
+            sourceIdentifier: item.sourceIdentifier,
             colorHex: EventKitCalendarMapping.colorHexOrGray(calendar.color),
             allowsContentModifications: calendar.allowsContentModifications,
             isSubscribed: calendar.isSubscribed,

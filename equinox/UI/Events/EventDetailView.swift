@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct EventDetailView: View {
@@ -42,7 +43,11 @@ struct EventDetailView: View {
                         ModalErrorBanner(message: actionError)
                     }
 
-                    EventDetailHeroHeader(event: event)
+                    EventDetailHeroHeader(
+                        event: event,
+                        isCloseDisabled: isDeleting,
+                        onClose: { dismiss() }
+                    )
 
                     EventDetailMetadataCard(rows: metadataRows)
 
@@ -81,6 +86,7 @@ struct EventDetailView: View {
                 .padding(ModalDesign.contentPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .frame(maxHeight: EventDetailLayout.maxScrollableHeight)
         }
         .onAppear {
             appState.plaud.refreshMatchesIfNeeded()
@@ -242,13 +248,10 @@ struct EventDetailView: View {
     }
 }
 
-private extension EventParticipationStatus {
-    var chipForeground: Color {
-        switch self {
-        case .unknown, .pending: .primary.opacity(0.85)
-        case .accepted: .green
-        case .tentative: .orange
-        case .declined: .red
-        }
+private enum EventDetailLayout {
+    static var maxScrollableHeight: CGFloat {
+        let fallbackHeight: CGFloat = 720
+        let visibleHeight = NSScreen.main?.visibleFrame.height ?? fallbackHeight
+        return max(360, min(fallbackHeight, visibleHeight - 96))
     }
 }

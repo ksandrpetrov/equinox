@@ -12,11 +12,7 @@ struct AgendaView: View {
     let height: CGFloat
 
     @State private var pendingDelete: PendingDeleteEvent?
-    @State private var scrolledSectionID: Int?
-    @State private var rangeFirst: CalendarDate?
-    @State private var rangeLast: CalendarDate?
-    @State private var isProgrammaticScroll = false
-    @State private var programmaticScrollGeneration = 0
+    @State private var scrollCoordinator = AgendaScrollCoordinator()
 
     private var prefs: PreferencesStore { appState.preferences }
     private var backgroundStyle: BackgroundStyle {
@@ -78,23 +74,24 @@ struct AgendaView: View {
                     .scrollTargetLayout()
                 }
                 .scrollIndicators(.hidden)
-                .scrollPosition(id: $scrolledSectionID, anchor: .top)
+                .scrollPosition(id: $scrollCoordinator.scrolledSectionID, anchor: .top)
                 .onAppear {
-                    bootstrapAgendaRangeIfNeeded()
-                    scrollAgendaToSelectedDate()
+                    scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
+                    scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
+                    scrollCoordinator.scrollToSelectedDate(appState: appState)
                 }
                 .onChange(of: appState.panel.agendaScrollGeneration) { _, _ in
-                    scrollAgendaToSelectedDate()
+                    scrollCoordinator.scrollToSelectedDate(appState: appState)
                 }
                 .onChange(of: appState.events.agendaScrollToken) { _, _ in
-                    scrollAgendaToSelectedDate()
+                    scrollCoordinator.scrollToSelectedDate(appState: appState)
                 }
-                .onChange(of: scrolledSectionID) { _, julian in
-                    handleAgendaScroll(to: julian)
+                .onChange(of: scrollCoordinator.scrolledSectionID) { _, julian in
+                    scrollCoordinator.handleAgendaScroll(to: julian, anchor: appState.events.todayDate)
                 }
                 .onScrollPhaseChange { _, newPhase in
                     if newPhase == .idle {
-                        commitScrollSettle()
+                        scrollCoordinator.commitScrollSettle(appState: appState)
                     }
                 }
             }
@@ -125,8 +122,8 @@ struct AgendaView: View {
             .equinoxSheetPresentation()
         }
         .onChange(of: prefs.showEventDays) { _, _ in
-            bootstrapAgendaRangeIfNeeded(force: true)
-            scrollAgendaToSelectedDate()
+            scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate, force: true)
+            scrollCoordinator.scrollToSelectedDate(appState: appState)
         }
     }
 
@@ -162,15 +159,8 @@ struct AgendaView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var displayRange: (first: CalendarDate, last: CalendarDate) {
-        if let rangeFirst, let rangeLast {
-            return (rangeFirst, rangeLast)
-        }
-        return AgendaDisplayRange.initialRange(anchor: appState.events.todayDate)
-    }
-
     private var agendaSections: [(date: CalendarDate, events: [DayEvent])] {
-        let range = displayRange
+        let range = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
         return AgendaSections.sections(
             from: range.first,
             through: range.last,
@@ -178,103 +168,5 @@ struct AgendaView: View {
             showEmptyDays: prefs.showDaysWithNoEvents,
             eventsFor: appState.events.events(for:)
         )
-    }
-
-    private func bootstrapAgendaRangeIfNeeded(force: Bool = false) {
-        if !force, rangeFirst != nil, rangeLast != nil { return }
-        let range = AgendaDisplayRange.initialRange(anchor: appState.events.todayDate)
-        applyAgendaRange(first: range.first, last: range.last)
-        commitAgendaToCoordinator()
-    }
-
-    private func ensureDateInRange(_ date: CalendarDate) {
-        let current = displayRange
-        let expanded = AgendaDisplayRange.rangeCovering(
-            date: date,
-            first: current.first,
-            last: current.last
-        )
-        if expanded.first != current.first || expanded.last != current.last {
-            applyAgendaRange(first: expanded.first, last: expanded.last)
-        }
-    }
-
-    private func applyAgendaRange(first: CalendarDate, last: CalendarDate) {
-        rangeFirst = first
-        rangeLast = last
-    }
-
-    private func commitAgendaToCoordinator() {
-        let range = displayRange
-        appState.events.updateAgendaVisibleRange(first: range.first, last: range.last)
-    }
-
-    private func extendRangeIfNeeded(for visibleDate: CalendarDate) {
-        let current = displayRange
-        var first = current.first
-        var last = current.last
-        var changed = false
-
-        if AgendaDisplayRange.shouldExtendPast(visible: visibleDate, rangeFirst: first) {
-            first = AgendaDisplayRange.extendedPast(from: first)
-            changed = true
-        }
-        if AgendaDisplayRange.shouldExtendFuture(visible: visibleDate, rangeLast: last) {
-            last = AgendaDisplayRange.extendedFuture(from: last)
-            changed = true
-        }
-
-        if changed {
-            applyAgendaRange(first: first, last: last)
-        }
-    }
-
-    private func scrollAgendaToSelectedDate() {
-        bootstrapAgendaRangeIfNeeded()
-        ensureDateInRange(appState.events.selectedDate)
-        commitAgendaToCoordinator()
-        isProgrammaticScroll = true
-        programmaticScrollGeneration &+= 1
-        let generation = programmaticScrollGeneration
-        scrollAgenda(to: appState.events.selectedDate.julian)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            if programmaticScrollGeneration == generation {
-                isProgrammaticScroll = false
-            }
-        }
-    }
-
-    /// Forces `scrollPosition` to re-scroll when the target id is already current, such as when
-    /// `onAppear` set the id before sections existed.
-    private func scrollAgenda(to julian: Int) {
-        guard scrolledSectionID == julian else {
-            scrolledSectionID = julian
-            return
-        }
-        scrolledSectionID = nil
-        DispatchQueue.main.async {
-            scrolledSectionID = julian
-        }
-    }
-
-    private func handleAgendaScroll(to julian: Int?) {
-        guard let julian else { return }
-        let visibleDate = CalendarDate(julian: julian)
-        extendRangeIfNeeded(for: visibleDate)
-    }
-
-    private func commitScrollSettle() {
-        if isProgrammaticScroll {
-            isProgrammaticScroll = false
-            return
-        }
-        guard let julian = scrolledSectionID else { return }
-        let visibleDate = CalendarDate(julian: julian)
-        appState.events.syncSelectionFromAgendaScroll(visibleDate)
-        let range = displayRange
-        if visibleDate == range.first {
-            extendRangeIfNeeded(for: visibleDate)
-        }
-        commitAgendaToCoordinator()
     }
 }
