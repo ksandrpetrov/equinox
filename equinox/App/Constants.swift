@@ -18,6 +18,7 @@ let kShowMeetingIndicator = "ShowMeetingIndicator"
 let kClockFormat = "ClockFormat"
 let kHideIcon = "HideIcon"
 let kShowLocation = "ShowLocation"
+/// Legacy UserDefaults key — literal `"kShowEventDots"` (with prefix) must not change; existing installs rely on it.
 let kShowEventDots = "kShowEventDots"
 let kShowDaysWithNoEventsInAgenda = "ShowDaysWithNoEventsInAgenda"
 let kAgendaHeightRatio = "AgendaHeightRatio"
@@ -38,4 +39,18 @@ let kEquinoxMenuBarAppearanceChanged = Notification.Name("EquinoxMenuBarAppearan
 enum BackgroundStyle: Int {
     case glass = 0
     case solid = 1
+}
+
+enum ThemePreference: Int, CaseIterable {
+    case system = 0
+    case light = 1
+    case dark = 2
+}
+
+enum MenuBarIconStyle: Int, CaseIterable {
+    case minimal = 0
+    case classic = 1
+    case compact = 2
+
+    static let clampedRange = 0...2
 }

@@ -4,8 +4,7 @@ import SwiftUI
 struct PlaudSettingsTab: View {
     var searchText: String = ""
     @Environment(\.appState) private var appState
-
-    @Bindable private var prefs = PreferencesStore.shared
+    @Bindable var prefs: PreferencesStore
     @State private var setup = PlaudConfigurator.buildSetup()
     @State private var statusMessage: String?
     @State private var oauthStatusMessage: String?

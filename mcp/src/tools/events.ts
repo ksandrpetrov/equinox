@@ -166,6 +166,7 @@ export function registerAnalyticsTools(server: McpServer) {
         startDate: input.startDate,
         endDate: input.endDate,
         calendarIds: input.calendarIds,
+        limit: 500,
       })
       const data = requireBridgeData(response)
       const analysis = analyzeSchedule(
@@ -196,6 +197,7 @@ export function registerAnalyticsTools(server: McpServer) {
       const response = await invokeBridge<EventsData>({
         command: "list_events",
         ...input,
+        limit: 500,
       })
       const data = requireBridgeData(response)
       return jsonToolResult({
@@ -227,6 +229,7 @@ export function registerAnalyticsTools(server: McpServer) {
         startDate: input.startDate,
         endDate: input.endDate,
         calendarIds: input.calendarIds,
+        limit: 500,
       })
       const data = requireBridgeData(response)
       const slots = findFreeTime(

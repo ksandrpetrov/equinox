@@ -22,7 +22,7 @@ struct EventDetailView: View {
     }
 
     private var displayNotes: String? {
-        JoinURLDetection.notesForDisplay(notes: event.notes, excludingJoinURL: event.joinURL)
+        JoinURLPresentation.notesForDisplay(notes: event.notes, excludingJoinURL: event.joinURL)
     }
 
     var body: some View {

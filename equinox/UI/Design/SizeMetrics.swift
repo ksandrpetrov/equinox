@@ -12,6 +12,7 @@ struct SizeMetrics {
     let sheetWidth: CGFloat
     let toolbarButtonSize: CGFloat
 
+    /// Legacy accessor; prefer `SizeMetrics.metrics(for:)` with `AppState.preferences.sizePreference`.
     static var current: SizeMetrics {
         metrics(for: SizePreference.current)
     }
@@ -42,6 +43,7 @@ enum SizePreference: Int, CaseIterable {
     case medium = 1
     case large = 2
 
+    /// Legacy accessor; prefer reading size from `AppState.preferences.sizePreference`.
     static var current: SizePreference {
         SizePreference(rawValue: PreferencesStore.shared.sizePreference) ?? .medium
     }

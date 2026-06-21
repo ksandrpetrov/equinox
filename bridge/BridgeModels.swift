@@ -1,3 +1,4 @@
+import EventKit
 import Foundation
 
 struct BridgeResponse: Encodable {
@@ -83,6 +84,17 @@ struct BridgeCalendar: Encodable {
     let allowsContentModifications: Bool
     let isSubscribed: Bool
     let type: String
+
+    init(from item: CalendarListItem, calendar: EKCalendar) {
+        id = item.id
+        title = item.title
+        sourceTitle = item.sourceTitle
+        sourceIdentifier = item.sourceIdentifier
+        colorHex = EventKitCalendarMapping.colorHexOrGray(calendar.color)
+        allowsContentModifications = item.allowsContentModifications
+        isSubscribed = item.isSubscribed
+        type = item.type
+    }
 }
 
 struct BridgeEvent: Encodable {

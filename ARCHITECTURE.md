@@ -151,3 +151,7 @@ General, Calendars, Appearance, **Privacy**, Shortcuts, About, MCP, **Plaud** �
 - Интеграционные/ручные — TCC, create/delete, выбор календарей
 
 См. [AGENTS.md](AGENTS.md) §9 для матрицы «изменение → тест».
+
+## Bridge schema codegen (deferred)
+
+Bridge command/response shapes are maintained manually in four places today: `bridge/BridgeModels.swift`, `mcp/src/schemas/events.ts`, `mcp/src/schemas/toolInputs.ts`, and inline schemas in `mcp/src/resources.ts`. A single OpenAPI/JSON Schema source with codegen for Swift `BridgeCommand` and TypeScript Zod remains **deferred** — high setup cost, low ROI until the bridge protocol stabilizes or new commands are added frequently. Until then, contract tests in `AppBridgeEventContract` and `equinoxTests/AppBridgeEventContractTests.swift` guard intentional app vs bridge behavior; MCP registry tests guard tool-name sync.

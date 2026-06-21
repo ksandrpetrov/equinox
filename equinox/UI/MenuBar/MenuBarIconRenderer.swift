@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MenuBarIconView: View {
     let text: String
-    let iconType: Int
+    let iconStyle: MenuBarIconStyle
     let showMeetingIndicator: Bool
     let shouldShowMeetingIndicator: Bool
     var forPreview = false
@@ -19,14 +19,14 @@ struct MenuBarIconView: View {
         return Self.templateInk
     }
 
-    private var outline: Bool { iconType == 1 }
-    private var plain: Bool { iconType == 2 }
+    private var outline: Bool { iconStyle == .classic }
+    private var plain: Bool { iconStyle == .compact }
     private var meeting: Bool { showMeetingIndicator && shouldShowMeetingIndicator }
 
     var body: some View {
         HStack(spacing: 0) {
             if meeting {
-                Image(iconType == 0 ? "meetOutline" : "meetSolid")
+                Image(iconStyle == .minimal ? "meetOutline" : "meetSolid")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 14, height: 14)
@@ -41,7 +41,7 @@ struct MenuBarIconView: View {
     @ViewBuilder
     private var dateBadge: some View {
         let textView = Text(text)
-            .font(.system(size: 11.5, weight: iconType == 0 ? .bold : .semibold))
+            .font(.system(size: 11.5, weight: iconStyle == .minimal ? .bold : .semibold))
             .padding(.horizontal, 4)
 
         if plain {
@@ -68,7 +68,7 @@ enum MenuBarIconRenderer {
     static func iconImage(text: String, prefs: PreferencesStore, shouldShowMeetingIndicator: Bool, scale: CGFloat) -> NSImage? {
         let view = MenuBarIconView(
             text: text,
-            iconType: prefs.menuBarIconType,
+            iconStyle: MenuBarIconStyle(rawValue: prefs.menuBarIconType) ?? .minimal,
             showMeetingIndicator: prefs.showMeetingIndicator,
             shouldShowMeetingIndicator: shouldShowMeetingIndicator
         )
@@ -95,7 +95,7 @@ enum MenuBarIconRenderer {
     static func previewImage(text: String, prefs: PreferencesStore, colorScheme: ColorScheme) -> NSImage? {
         let view = MenuBarIconView(
             text: text,
-            iconType: prefs.menuBarIconType,
+            iconStyle: MenuBarIconStyle(rawValue: prefs.menuBarIconType) ?? .minimal,
             showMeetingIndicator: prefs.showMeetingIndicator,
             shouldShowMeetingIndicator: false,
             forPreview: true

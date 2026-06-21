@@ -14,17 +14,25 @@ struct SelectableCalendar: Identifiable, Sendable, Equatable {
     let allowsContentModifications: Bool
 
     static func from(calendar: EKCalendar, sourceTitle: String, isSelected: Bool) -> SelectableCalendar {
+        from(
+            EventKitCalendarMapping.calendarListItem(from: calendar),
+            calendar: calendar,
+            isSelected: isSelected
+        )
+    }
+
+    static func from(_ item: CalendarListItem, calendar: EKCalendar, isSelected: Bool) -> SelectableCalendar {
         let components = EventKitCalendarMapping.rgbComponents(from: calendar.color ?? .gray)
         return SelectableCalendar(
-            id: calendar.calendarIdentifier,
-            title: calendar.title,
-            sourceTitle: sourceTitle,
+            id: item.id,
+            title: item.title,
+            sourceTitle: item.sourceTitle,
             isSelected: isSelected,
             colorRed: components.red,
             colorGreen: components.green,
             colorBlue: components.blue,
             colorAlpha: components.alpha,
-            allowsContentModifications: calendar.allowsContentModifications
+            allowsContentModifications: item.allowsContentModifications
         )
     }
 }

@@ -8,29 +8,22 @@ actor CalendarStore {
     private let externalChangeDispatcher = ExternalChangeDispatcher()
     private var storeObserver: NSObjectProtocol?
 
-    private var eventsForDate: [Date: [DayEvent]] = [:]
-    private var selectedCalendarEventsByDate: [Date: [DayEvent]] = [:]
-    private var calendarEntriesStorage: [CalendarListEntry] = []
-    private var previouslyFetchedJulians = IndexSet()
-    private var lastFetchedFirst = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-    private var lastFetchedLast = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-    private var hasFetchedRange = false
-    private(set) var isFetchingEvents = false
-    private(set) var lastFetchError: String?
+    private var fetchCache = EventFetchCache()
+    private var calendarSelection = CalendarSelectionService()
+
+    var isFetchingEvents: Bool { fetchCache.isFetchingEvents }
+    var lastFetchError: String? { fetchCache.lastFetchError }
 
     var hasCalendarAccess: Bool {
         accessStatus() == .authorized
     }
 
     func accessStatus() -> CalendarAccessStatus {
-        CalendarAccessStatus.from(EKEventStore.authorizationStatus(for: .event))
+        CalendarAccessMapping.guiAccessStatus()
     }
 
     func hasSelectedCalendars() -> Bool {
-        calendarEntriesStorage.contains { entry in
-            if case .calendar(let cal) = entry { return cal.isSelected }
-            return false
-        }
+        calendarSelection.hasSelectedCalendars()
     }
 
     init(
@@ -60,19 +53,15 @@ actor CalendarStore {
     }
 
     func selectedCalendarEvents() -> [CalendarDate: [DayEvent]] {
-        var result: [CalendarDate: [DayEvent]] = [:]
-        for (date, events) in selectedCalendarEventsByDate {
-            result[CalendarDate(date: date, calendar: calendar)] = events
-        }
-        return result
+        fetchCache.selectedCalendarEvents(calendar: calendar)
     }
 
     func events(for date: CalendarDate) -> [DayEvent] {
-        selectedCalendarEventsByDate[date.date(in: calendar)] ?? []
+        fetchCache.events(on: date, calendar: calendar)
     }
 
     func calendarEntries() -> [CalendarListEntry] {
-        calendarEntriesStorage
+        calendarSelection.calendarEntries
     }
 
     func requestCalendarAccessIfNeeded() async {
@@ -93,16 +82,16 @@ actor CalendarStore {
     }
 
     func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async {
-        isFetchingEvents = true
-        lastFetchError = nil
-        lastFetchedFirst = first
-        lastFetchedLast = last
-        hasFetchedRange = true
+        fetchCache.isFetchingEvents = true
+        fetchCache.lastFetchError = nil
+        fetchCache.lastFetchedFirst = first
+        fetchCache.lastFetchedLast = last
+        fetchCache.hasFetchedRange = true
         if refetch {
-            await fetchSourcesAndCalendars()
+            calendarSelection.refresh(from: store)
         }
         await fetchEventsWithStartDate(first, endDate: last, refetch: refetch)
-        isFetchingEvents = false
+        fetchCache.isFetchingEvents = false
     }
 
     func refetchAll(first: CalendarDate? = nil, last: CalendarDate? = nil) async {
@@ -110,11 +99,11 @@ actor CalendarStore {
             await fetchEvents(first: first, last: last, refetch: true)
             return
         }
-        guard hasFetchedRange else {
-            await fetchSourcesAndCalendars()
+        guard fetchCache.hasFetchedRange else {
+            calendarSelection.refresh(from: store)
             return
         }
-        await fetchEvents(first: lastFetchedFirst, last: lastFetchedLast, refetch: true)
+        await fetchEvents(first: fetchCache.lastFetchedFirst, last: fetchCache.lastFetchedLast, refetch: true)
     }
 
     func createEvent(from draft: NewEventDraft) throws {
@@ -164,19 +153,8 @@ actor CalendarStore {
     }
 
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
-        calendarEntriesStorage = calendarEntriesStorage.map { entry in
-            switch entry {
-            case .source:
-                return entry
-            case .calendar(var cal):
-                if cal.id == identifier {
-                    cal.isSelected = selected
-                }
-                return .calendar(cal)
-            }
-        }
-        persistSelectedCalendars()
-        await filterEvents()
+        calendarSelection.updateSelectedCalendar(identifier: identifier, selected: selected)
+        applyCalendarFilter()
     }
 
     // MARK: - Private
@@ -191,116 +169,28 @@ actor CalendarStore {
         store.refreshSourcesIfNecessary()
     }
 
-    private func fetchSourcesAndCalendars() async {
-        let listItems = store.calendars(for: .event).map {
-            EventKitCalendarMapping.calendarListItem(from: $0)
-        }
-
-        let calendars = CalendarListing.filterDisplayableCalendars(
-            CalendarListing.sortCalendarsForDisplay(listItems)
-        )
-
-        var inMemorySelections: [String: Bool] = [:]
-        for entry in calendarEntriesStorage {
-            if case .calendar(let cal) = entry {
-                inMemorySelections[cal.id] = cal.isSelected
-            }
-        }
-
-        let storedSelection = CalendarSelectionStorage.loadSelectedIDs()
-        var selectedCalendars: Set<String>
-        if storedSelection.isEmpty, !calendars.isEmpty {
-            let allIDs = calendars.map(\.id)
-            CalendarSelectionStorage.saveSelectedIDs(allIDs)
-            selectedCalendars = Set(allIDs)
-        } else {
-            selectedCalendars = Set(storedSelection)
-        }
-
-        var result: [CalendarListEntry] = []
-        var currentSourceTitle = ""
-
-        for item in calendars {
-            guard let ekCalendar = store.calendar(withIdentifier: item.id) else { continue }
-            let calendarSourceTitle = item.sourceTitle
-
-            if calendarSourceTitle != currentSourceTitle {
-                result.append(.source(calendarSourceTitle))
-                currentSourceTitle = calendarSourceTitle
-            }
-            let identifier = item.id
-            let isSelected = inMemorySelections[identifier] ?? selectedCalendars.contains(identifier)
-            result.append(.calendar(SelectableCalendar.from(
-                calendar: ekCalendar,
-                sourceTitle: calendarSourceTitle,
-                isSelected: isSelected
-            )))
-        }
-
-        persistSelectedCalendars(from: result)
-        calendarEntriesStorage = result
-    }
-
-    private func persistSelectedCalendars(from entries: [CalendarListEntry]? = nil) {
-        let source = entries ?? calendarEntriesStorage
-        let ids = source.compactMap { entry -> String? in
-            guard case .calendar(let cal) = entry, cal.isSelected else { return nil }
-            return cal.id
-        }
-        CalendarSelectionStorage.saveSelectedIDs(ids)
-    }
-
-    private func validCalendars() -> [EKCalendar] {
-        calendarEntriesStorage.compactMap { entry -> EKCalendar? in
-            guard case .calendar(let cal) = entry, cal.isSelected else { return nil }
-            return store.calendar(withIdentifier: cal.id)
-        }
-    }
-
     private func fetchEventsWithStartDate(
         _ startDate: CalendarDate,
         endDate: CalendarDate,
         refetch: Bool
     ) async {
         guard hasCalendarAccess else {
-            lastFetchError = String(localized: "Calendar access is required to load events.", comment: "Fetch error")
+            fetchCache.lastFetchError = String(localized: "Calendar access is required to load events.", comment: "Fetch error")
             return
         }
 
-        if refetch {
-            previouslyFetchedJulians = IndexSet()
-            eventsForDate = [:]
-        }
-
-        let dateRange = startDate.julian..<(endDate.julian + 1)
-        if previouslyFetchedJulians.contains(integersIn: dateRange) {
+        guard let fetchRange = fetchCache.prepareFetchRange(first: startDate, last: endDate, refetch: refetch) else {
             return
         }
 
-        var notYetFetchedDates = IndexSet()
-        for julian in startDate.julian...endDate.julian {
-            if !previouslyFetchedJulians.contains(julian) {
-                notYetFetchedDates.insert(julian)
-            }
-        }
-
-        var fetchStart = startDate
-        var fetchEnd = endDate
-        if let first = notYetFetchedDates.first, let last = notYetFetchedDates.last {
-            fetchStart = CalendarDate(julian: first)
-            fetchEnd = CalendarDate(julian: last)
-        }
-
-        previouslyFetchedJulians.insert(integersIn: dateRange)
-
-        let rangeStart = fetchStart.date(in: calendar)
-        let rangeEnd = fetchEnd.date(in: calendar)
-        let cals = validCalendars()
+        let rangeStart = fetchRange.fetchStart.date(in: calendar)
+        let rangeEnd = fetchRange.fetchEnd.date(in: calendar)
+        let cals = calendarSelection.validCalendars(from: store)
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
         let events = store.events(matching: predicate)
         let newEventsForDate = await buildDayEvents(from: events, rangeStart: rangeStart, rangeEnd: rangeEnd)
-        eventsForDate.merge(newEventsForDate) { _, new in new }
-        await filterEvents()
+        fetchCache.mergeEvents(newEventsForDate)
+        applyCalendarFilter()
     }
 
     /// Builds display-ready `DayEvent` day slots for EventKit events. Shared by the
@@ -378,7 +268,7 @@ actor CalendarStore {
     /// One `DayEvent` per underlying event (deduplicated across multi-day slots).
     func matchableEvents(from start: Date, to end: Date) async -> [DayEvent] {
         guard hasCalendarAccess, start < end else { return [] }
-        let cals = validCalendars()
+        let cals = calendarSelection.validCalendars(from: store)
         guard !cals.isEmpty else { return [] }
 
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: cals)
@@ -399,27 +289,8 @@ actor CalendarStore {
         return result
     }
 
-    private func filterEvents() async {
-        var filtered: [Date: [DayEvent]] = [:]
-        let selectedCalendars = Set(validCalendarIDs())
-
-        for (date, events) in eventsForDate {
-            for event in events where selectedCalendars.contains(event.calendarIdentifier) {
-                if filtered[date] == nil {
-                    filtered[date] = []
-                }
-                filtered[date]?.append(event)
-            }
-        }
-
-        selectedCalendarEventsByDate = filtered
-    }
-
-    private func validCalendarIDs() -> [String] {
-        calendarEntriesStorage.compactMap { entry -> String? in
-            guard case .calendar(let cal) = entry, cal.isSelected else { return nil }
-            return cal.id
-        }
+    private func applyCalendarFilter() {
+        fetchCache.applyCalendarFilter(selectedCalendarIDs: calendarSelection.selectedCalendarIDs())
     }
 
     private func resolveNativeJoinURL(from url: URL) async -> URL? {

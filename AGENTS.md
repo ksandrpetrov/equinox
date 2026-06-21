@@ -268,7 +268,6 @@ cp Local.xcconfig.example Local.xcconfig
 | Pin vs popover | `StatusItemController`, `kPanelPinned` |
 | Иконка menu bar | `MenuBarIconRenderer`, настройки icon type |
 | Meeting indicator | `kShowMeetingIndicator`, `shouldShowMeetingIndicator` |
-| Превью событий при hover | `kShowEventPopoverOnHover`, `DayHoverPreview`, `AppearanceSettingsTab` |
 | Global shortcut | MASShortcut, `kKeyboardShortcut` |
 | Join meeting (Zoom/Teams/Chime) | `JoinURLDetection`, `NativeJoinURL`, `CalendarStore` URL rewriting |
 | Plaud auto-match прошлых встреч | `PlaudCoordinator`, `PlaudService`, `PlaudMatchCache`, `Core/PlaudEventMatching` |
@@ -348,7 +347,6 @@ cp Local.xcconfig.example Local.xcconfig
 - [ ] Размеры экрана — панель S/M/L (`SizePreference`, `SizeMetrics`)
 - [ ] Переполнение в agenda и grid
 - [ ] Кликабельные зоны кнопок panel command bar
-- [ ] Hover preview (`kShowEventPopoverOnHover`)
 
 ### Panel modes
 

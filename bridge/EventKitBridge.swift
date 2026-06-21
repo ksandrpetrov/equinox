@@ -3,24 +3,6 @@ import Foundation
 
 final class EventKitBridge {
     private let store = EKEventStore()
-    private let isoFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-    private let isoFormatterNoFraction: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter
-    }()
-    private let dayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = .current
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
 
     private let maxEvents = 500
 
@@ -81,14 +63,11 @@ final class EventKitBridge {
     private func listCalendars() -> BridgeResponse {
         guard ensureAccess() else { return accessDenied() }
 
-        let calendars = CalendarListing.filterDisplayableCalendars(
-            CalendarListing.sortCalendarsForDisplay(
-                store.calendars(for: .event).map(mapCalendarListItem)
-            )
-        ).compactMap { item -> BridgeCalendar? in
-            guard let calendar = store.calendar(withIdentifier: item.id) else { return nil }
-            return mapCalendar(calendar)
-        }
+        let calendars = EventKitCalendarMapping.displayableCalendarItems(from: store)
+            .compactMap { item -> BridgeCalendar? in
+                guard let calendar = store.calendar(withIdentifier: item.id) else { return nil }
+                return BridgeCalendar(from: item, calendar: calendar)
+            }
 
         return .success(.calendars(CalendarsData(calendars: calendars)))
     }
@@ -99,8 +78,8 @@ final class EventKitBridge {
         guard let startDateString = command.startDate, let endDateString = command.endDate else {
             return .failure(code: "invalid_request", message: "startDate and endDate are required")
         }
-        guard let rangeStart = parseDateBoundary(startDateString, endOfDay: false),
-              let rangeEnd = parseDateBoundary(endDateString, endOfDay: true) else {
+        guard let rangeStart = BridgeDateParsing.parseDateBoundary(startDateString, endOfDay: false),
+              let rangeEnd = BridgeDateParsing.parseDateBoundary(endDateString, endOfDay: true) else {
             return .failure(code: "invalid_request", message: "Invalid date range")
         }
         if rangeEnd < rangeStart {
@@ -111,11 +90,7 @@ final class EventKitBridge {
         if let calendarIds = command.calendarIds, !calendarIds.isEmpty {
             calendars = calendarIds.compactMap { store.calendar(withIdentifier: $0) }
         } else {
-            calendars = CalendarListing.filterDisplayableCalendars(
-                CalendarListing.sortCalendarsForDisplay(
-                    store.calendars(for: .event).map(mapCalendarListItem)
-                )
-            ).compactMap { store.calendar(withIdentifier: $0.id) }
+            calendars = EventKitCalendarMapping.displayableCalendars(from: store)
         }
 
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: calendars)
@@ -153,10 +128,10 @@ final class EventKitBridge {
         guard let title = command.title, !title.isEmpty else {
             return .failure(code: "invalid_request", message: "title is required")
         }
-        guard let start = parseInstant(command.startDate) else {
+        guard let start = BridgeDateParsing.parseInstant(command.startDate) else {
             return .failure(code: "invalid_request", message: "startDate is required")
         }
-        guard let end = parseInstant(command.endDate) else {
+        guard let end = BridgeDateParsing.parseInstant(command.endDate) else {
             return .failure(code: "invalid_request", message: "endDate is required")
         }
 
@@ -223,8 +198,8 @@ final class EventKitBridge {
 
         EventKitMutation.applyBridgeUpdate(
             title: command.title,
-            start: parseInstant(command.startDate),
-            end: parseInstant(command.endDate),
+            start: BridgeDateParsing.parseInstant(command.startDate),
+            end: BridgeDateParsing.parseInstant(command.endDate),
             allDay: command.allDay,
             location: command.location,
             notes: command.notes,
@@ -299,24 +274,6 @@ final class EventKitBridge {
         )
     }
 
-    private func mapCalendarListItem(_ calendar: EKCalendar) -> CalendarListItem {
-        EventKitCalendarMapping.calendarListItem(from: calendar)
-    }
-
-    private func mapCalendar(_ calendar: EKCalendar) -> BridgeCalendar {
-        let item = EventKitCalendarMapping.calendarListItem(from: calendar)
-        return BridgeCalendar(
-            id: item.id,
-            title: item.title,
-            sourceTitle: item.sourceTitle,
-            sourceIdentifier: item.sourceIdentifier,
-            colorHex: EventKitCalendarMapping.colorHexOrGray(calendar.color),
-            allowsContentModifications: calendar.allowsContentModifications,
-            isSubscribed: calendar.isSubscribed,
-            type: EventKitCalendarMapping.calendarTypeLabel(calendar.type)
-        )
-    }
-
     private func mapEvent(_ event: EKEvent) -> BridgeEvent {
         let fields = EventKitEventFields.extract(from: event)
         let notes = fields.hasNotes ? fields.notes : nil
@@ -332,8 +289,8 @@ final class EventKitBridge {
             location: fields.location,
             notes: notes,
             url: fields.url?.absoluteString,
-            startDate: formatInstant(fields.startDate),
-            endDate: formatInstant(fields.endDate),
+            startDate: BridgeDateParsing.formatInstant(fields.startDate),
+            endDate: BridgeDateParsing.formatInstant(fields.endDate),
             isAllDay: fields.isAllDay,
             joinURL: joinURL?.absoluteString,
             calendarIdentifier: fields.calendarIdentifier,
@@ -346,46 +303,6 @@ final class EventKitBridge {
                 eventKitRawValue: fields.participationRawValue
             )
         )
-    }
-
-    private func parseDateBoundary(_ value: String, endOfDay: Bool) -> Date? {
-        if value.count == 10, let day = dayFormatter.date(from: value) {
-            return boundaryDate(for: day, endOfDay: endOfDay)
-        }
-        if let instant = parseInstant(value) {
-            return instant
-        }
-        guard let day = dayFormatter.date(from: value) else { return nil }
-        return boundaryDate(for: day, endOfDay: endOfDay)
-    }
-
-    private func boundaryDate(for day: Date, endOfDay: Bool) -> Date? {
-        var components = Calendar.current.dateComponents([.year, .month, .day], from: day)
-        if endOfDay {
-            components.hour = 23
-            components.minute = 59
-            components.second = 59
-        } else {
-            components.hour = 0
-            components.minute = 0
-            components.second = 0
-        }
-        return Calendar.current.date(from: components)
-    }
-
-    private func parseInstant(_ value: String?) -> Date? {
-        guard let value, !value.isEmpty else { return nil }
-        if let date = isoFormatter.date(from: value) {
-            return date
-        }
-        if let date = isoFormatterNoFraction.date(from: value) {
-            return date
-        }
-        return dayFormatter.date(from: value)
-    }
-
-    private func formatInstant(_ date: Date) -> String {
-        isoFormatter.string(from: date)
     }
 
 }

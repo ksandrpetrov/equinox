@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppearanceSettingsTab: View {
     var searchText: String = ""
-    @Bindable private var prefs = PreferencesStore.shared
+    @Bindable var prefs: PreferencesStore
 
     private let clockFormatOptions = [
         (nil as String?, String(localized: "None", comment: "Clock format option")),
@@ -126,7 +126,7 @@ struct AppearanceSettingsTab: View {
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                         Text(String(localized: "Highlight days", comment: "Weekend highlight picker label"))
                             .font(.body)
-                        WeekendHighlightPicker()
+                        WeekendHighlightPicker(preferences: prefs)
                     }
                     .padding(.vertical, SettingsDesign.rowVerticalPadding)
                 }

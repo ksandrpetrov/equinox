@@ -101,11 +101,11 @@ struct SettingsView: View {
     private var detailTab: some View {
         switch selectedTab ?? .general {
         case .general:
-            GeneralSettingsTab(searchText: searchText)
+            GeneralSettingsTab(searchText: searchText, prefs: preferencesStore)
         case .calendars:
             CalendarsSettingsTab(searchText: searchText)
         case .appearance:
-            AppearanceSettingsTab(searchText: searchText)
+            AppearanceSettingsTab(searchText: searchText, prefs: preferencesStore)
         case .privacy:
             PrivacySettingsTab(searchText: searchText)
         case .shortcuts:
@@ -113,9 +113,13 @@ struct SettingsView: View {
         case .mcp:
             McpSettingsTab(searchText: searchText)
         case .plaud:
-            PlaudSettingsTab(searchText: searchText)
+            PlaudSettingsTab(searchText: searchText, prefs: preferencesStore)
         case .about:
             AboutSettingsTab()
         }
+    }
+
+    private var preferencesStore: PreferencesStore {
+        appState?.preferences ?? PreferencesStore.shared
     }
 }

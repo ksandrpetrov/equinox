@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WeekendHighlightPicker: View {
-    @Bindable private var prefs = PreferencesStore.shared
+    @Bindable var preferences: PreferencesStore
 
     private var dowLabels: [String] {
         let formatter = DateFormatter()
@@ -13,13 +13,13 @@ struct WeekendHighlightPicker: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(0..<7, id: \.self) { col in
-                let dow = weekdayForColumn(startDOW: prefs.weekStartWeekday, col: col)
-                let isOn = (prefs.highlightedWeekdays & (1 << dow)) != 0
+                let dow = weekdayForColumn(startDOW: preferences.weekStartWeekday, col: col)
+                let isOn = (preferences.highlightedWeekdays & (1 << dow)) != 0
                 Button {
                     if isOn {
-                        prefs.highlightedWeekdays = prefs.highlightedWeekdays & ~(1 << dow)
+                        preferences.highlightedWeekdays = preferences.highlightedWeekdays & ~(1 << dow)
                     } else {
-                        prefs.highlightedWeekdays = prefs.highlightedWeekdays | (1 << dow)
+                        preferences.highlightedWeekdays = preferences.highlightedWeekdays | (1 << dow)
                     }
                 } label: {
                     Text(String(dowLabels[dow].prefix(2)))

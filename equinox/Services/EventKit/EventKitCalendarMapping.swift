@@ -46,4 +46,16 @@ enum EventKitCalendarMapping {
             type: calendarTypeLabel(calendar.type)
         )
     }
+
+    static func displayableCalendarItems(from store: EKEventStore) -> [CalendarListItem] {
+        CalendarListing.filterDisplayableCalendars(
+            CalendarListing.sortCalendarsForDisplay(
+                store.calendars(for: .event).map { calendarListItem(from: $0) }
+            )
+        )
+    }
+
+    static func displayableCalendars(from store: EKEventStore) -> [EKCalendar] {
+        displayableCalendarItems(from: store).compactMap { store.calendar(withIdentifier: $0.id) }
+    }
 }

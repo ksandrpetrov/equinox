@@ -122,7 +122,7 @@ final class PreferencesStore {
     }
 
     private static func clampedMenuBarIconType(_ value: Int) -> Int {
-        min(max(value, 0), 2)
+        min(max(value, MenuBarIconStyle.clampedRange.lowerBound), MenuBarIconStyle.clampedRange.upperBound)
     }
 
     private static func clampedShowEventDays(_ value: Int, hasValue: Bool) -> Int {
@@ -140,10 +140,10 @@ final class PreferencesStore {
 
     @MainActor
     func applyTheme() {
-        switch themePreference {
-        case 1: NSApp.appearance = NSAppearance(named: .aqua)
-        case 2: NSApp.appearance = NSAppearance(named: .darkAqua)
-        default: NSApp.appearance = nil
+        switch ThemePreference(rawValue: themePreference) ?? .system {
+        case .light: NSApp.appearance = NSAppearance(named: .aqua)
+        case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
+        case .system: NSApp.appearance = nil
         }
     }
 

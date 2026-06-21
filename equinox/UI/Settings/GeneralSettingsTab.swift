@@ -2,7 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsTab: View {
     var searchText: String = ""
-    @Bindable private var prefs = PreferencesStore.shared
+    @Bindable var prefs: PreferencesStore
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var showResetConfirmation = false
 

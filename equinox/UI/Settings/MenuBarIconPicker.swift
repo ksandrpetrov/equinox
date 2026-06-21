@@ -17,13 +17,15 @@ struct MenuBarIconPicker: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: EquinoxDesign.spacingMD) {
-            ForEach(0..<3, id: \.self) { index in
-                iconButton(for: index)
+            ForEach(MenuBarIconStyle.allCases, id: \.rawValue) { style in
+                iconButton(for: style)
             }
         }
     }
 
-    private func iconButton(for index: Int) -> some View {
+    @ViewBuilder
+    private func iconButton(for style: MenuBarIconStyle) -> some View {
+        let index = style.rawValue
         Button {
             selection = index
         } label: {

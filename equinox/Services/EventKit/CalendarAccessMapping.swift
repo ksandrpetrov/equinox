@@ -2,14 +2,55 @@ import EventKit
 import Foundation
 
 enum CalendarAccessMapping {
-    static func bridgeAuthorizationStatus() -> (label: String, granted: Bool) {
-        let status = EKEventStore.authorizationStatus(for: .event)
-        return (bridgeLabel(for: status), bridgeGranted(for: status))
+    enum AccessKind: Equatable {
+        case fullAccess
+        case writeOnly
+        case notDetermined
+        case restricted
+        case denied
+        case unknown
     }
 
-    static func bridgeLabel(for status: EKAuthorizationStatus) -> String {
+    static func accessKind(for status: EKAuthorizationStatus) -> AccessKind {
         switch status {
         case .fullAccess, .authorized:
+            return .fullAccess
+        case .writeOnly:
+            return .writeOnly
+        case .notDetermined:
+            return .notDetermined
+        case .restricted:
+            return .restricted
+        case .denied:
+            return .denied
+        @unknown default:
+            return .unknown
+        }
+    }
+
+    static func bridgeAuthorizationStatus() -> (label: String, granted: Bool) {
+        let kind = accessKind(for: EKEventStore.authorizationStatus(for: .event))
+        return (bridgeLabel(for: kind), kind == .fullAccess)
+    }
+
+    static func guiAccessStatus() -> CalendarAccessStatus {
+        switch accessKind(for: EKEventStore.authorizationStatus(for: .event)) {
+        case .fullAccess:
+            return .authorized
+        case .denied, .writeOnly:
+            return .denied
+        case .notDetermined:
+            return .notDetermined
+        case .restricted:
+            return .restricted
+        case .unknown:
+            return .notDetermined
+        }
+    }
+
+    static func bridgeLabel(for kind: AccessKind) -> String {
+        switch kind {
+        case .fullAccess:
             return "full_access"
         case .writeOnly:
             return "write_only"
@@ -19,35 +60,28 @@ enum CalendarAccessMapping {
             return "restricted"
         case .denied:
             return "denied"
-        @unknown default:
+        case .unknown:
             return "unknown"
         }
     }
 
-    static func bridgeGranted(for status: EKAuthorizationStatus) -> Bool {
-        switch status {
-        case .fullAccess, .authorized:
-            return true
-        default:
-            return false
-        }
+    static func bridgeLabel(for status: EKAuthorizationStatus) -> String {
+        bridgeLabel(for: accessKind(for: status))
     }
 }
 
 extension CalendarAccessStatus {
     static func from(_ status: EKAuthorizationStatus) -> CalendarAccessStatus {
-        switch status {
-        case .fullAccess, .authorized:
+        switch CalendarAccessMapping.accessKind(for: status) {
+        case .fullAccess:
             return .authorized
-        case .denied:
+        case .denied, .writeOnly:
             return .denied
         case .notDetermined:
             return .notDetermined
         case .restricted:
             return .restricted
-        case .writeOnly:
-            return .denied
-        @unknown default:
+        case .unknown:
             return .notDetermined
         }
     }

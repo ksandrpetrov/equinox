@@ -223,7 +223,7 @@ struct EventDetailJoinButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: EquinoxDesign.spacingMD) {
-                Image(systemName: JoinURLDetection.meetingSystemImage(for: url))
+                Image(systemName: JoinURLPresentation.meetingSystemImage(for: url))
                     .font(.title3.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
                     .frame(width: 36, height: 36)
@@ -235,7 +235,7 @@ struct EventDetailJoinButton: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(String(localized: "Join Meeting", comment: ""))
                         .font(.headline)
-                    Text(JoinURLDetection.meetingDisplayName(for: url))
+                    Text(JoinURLPresentation.meetingDisplayName(for: url))
                         .font(.caption)
                         .opacity(0.85)
                 }
@@ -269,7 +269,7 @@ struct EventDetailJoinButton: View {
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
         .accessibilityLabel(String(localized: "Join Meeting", comment: ""))
-        .accessibilityHint(JoinURLDetection.meetingDisplayName(for: url))
+        .accessibilityHint(JoinURLPresentation.meetingDisplayName(for: url))
     }
 }
 
