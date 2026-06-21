@@ -43,4 +43,37 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 2), -300)
         XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 5), -1800)
     }
+
+    func testDefaultStartRoundsToHourBoundary() {
+        let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
+        let (start, _) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: initial)
+        XCTAssertEqual(calendar.component(.minute, from: start), 0)
+        XCTAssertEqual(calendar.component(.second, from: start), 0)
+    }
+
+    func testRecurrenceDraftMapsMonthlyPickerIndex() {
+        let endDate = Date(timeIntervalSince1970: 0)
+        XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 4, endDateIndex: 0, endDate: endDate)?.frequency, .monthly)
+    }
+
+    func testRecurrenceDraftOmitsEndDateWhenNotSelected() {
+        let endDate = Date(timeIntervalSince1970: 100)
+        let draft = EventDraftDefaults.recurrenceDraft(fromIndex: 2, endDateIndex: 0, endDate: endDate)
+        XCTAssertNil(draft?.endDate)
+    }
+
+    func testAlertOffsetReturnsNilForOutOfRangeIndex() {
+        XCTAssertNil(EventDraftDefaults.alertOffset(forPickerIndex: -1))
+        XCTAssertNil(EventDraftDefaults.alertOffset(forPickerIndex: 99))
+    }
+
+    func testDefaultStartAndEndWithoutInitialDateSpansOneHour() {
+        let (start, end) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: nil)
+        XCTAssertEqual(calendar.dateComponents([.minute], from: start, to: end).minute, 60)
+        XCTAssertEqual(calendar.component(.minute, from: start), 0)
+    }
+
+    func testAlertOffsetTwoDaysBefore() {
+        XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 9), -172_800)
+    }
 }

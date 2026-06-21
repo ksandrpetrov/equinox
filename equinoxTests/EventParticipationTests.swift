@@ -50,4 +50,14 @@ final class EventParticipationTests: XCTestCase {
         XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(hasAttendees: false, eventKitRawValue: 3))
         XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(hasAttendees: true, eventKitRawValue: nil))
     }
+
+    func testBridgeStatusNameMapsAllStatuses() {
+        XCTAssertNil(EventParticipationMapping.bridgeStatusName(hasAttendees: false, eventKitRawValue: 2))
+        XCTAssertEqual(EventParticipationMapping.bridgeStatusName(hasAttendees: true, eventKitRawValue: nil), "unknown")
+        XCTAssertEqual(EventParticipationMapping.bridgeStatusName(hasAttendees: true, eventKitRawValue: 1), "pending")
+        XCTAssertEqual(EventParticipationMapping.bridgeStatusName(hasAttendees: true, eventKitRawValue: 2), "accepted")
+        XCTAssertEqual(EventParticipationMapping.bridgeStatusName(hasAttendees: true, eventKitRawValue: 3), "declined")
+        XCTAssertEqual(EventParticipationMapping.bridgeStatusName(hasAttendees: true, eventKitRawValue: 4), "tentative")
+        XCTAssertEqual(EventParticipationMapping.bridgeStatusName(hasAttendees: true, eventKitRawValue: 99), "unknown")
+    }
 }

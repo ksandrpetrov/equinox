@@ -188,79 +188,21 @@ actor CalendarStore {
         let cals = calendarSelection.validCalendars(from: store)
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
         let events = store.events(matching: predicate)
-        let newEventsForDate = await buildDayEvents(from: events, rangeStart: rangeStart, rangeEnd: rangeEnd)
+        let newEventsForDate = await DayEventBuilder.buildDayEvents(
+            from: events,
+            rangeStart: rangeStart,
+            rangeEnd: rangeEnd,
+            calendar: calendar,
+            resolveNativeJoinURL: { [isNativeAppInstalled] url in
+                await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
+            }
+        )
         fetchCache.mergeEvents(newEventsForDate)
         applyCalendarFilter()
     }
 
-    /// Builds display-ready `DayEvent` day slots for EventKit events. Shared by the
-    /// visible-range fetch and the Plaud history match so layout/join-URL logic stays in one place.
-    private func buildDayEvents(
-        from events: [EKEvent],
-        rangeStart: Date,
-        rangeEnd: Date
-    ) async -> [Date: [DayEvent]] {
-        var newEventsForDate: [Date: [DayEvent]] = [:]
-
-        for event in events {
-            let layoutInput = EventLayoutInput(
-                startDate: event.startDate,
-                endDate: event.endDate,
-                isAllDay: event.isAllDay,
-                calendarTitle: event.calendar.title
-            )
-            let slots = layoutEventDaySlots(
-                event: layoutInput,
-                rangeStart: rangeStart,
-                rangeEnd: rangeEnd,
-                calendar: calendar
-            )
-            let webJoinURL = JoinURLDetection.detectJoinURL(
-                location: event.location,
-                url: event.url?.absoluteString,
-                notes: event.hasNotes ? event.notes : nil
-            )
-            let joinURL: URL?
-            if let webJoinURL {
-                joinURL = await resolveNativeJoinURL(from: webJoinURL) ?? webJoinURL
-            } else {
-                joinURL = nil
-            }
-
-            for slot in slots {
-                let dayEvent = DayEventMapping.dayEvent(
-                    from: event,
-                    slot: slot,
-                    joinURL: joinURL,
-                    dayKey: slot.dayStart
-                )
-                if newEventsForDate[slot.dayStart] == nil {
-                    newEventsForDate[slot.dayStart] = []
-                }
-                newEventsForDate[slot.dayStart]?.append(dayEvent)
-            }
-        }
-
-        for date in newEventsForDate.keys {
-            newEventsForDate[date]?.sort { lhs, rhs in
-                precedesInDisplayOrder(
-                    EventSortKey(
-                        isEventAllDay: lhs.isEventAllDay,
-                        isSlotAllDay: lhs.isSlotAllDay,
-                        calendarTitle: lhs.calendarTitle,
-                        startDate: lhs.startDate
-                    ),
-                    EventSortKey(
-                        isEventAllDay: rhs.isEventAllDay,
-                        isSlotAllDay: rhs.isSlotAllDay,
-                        calendarTitle: rhs.calendarTitle,
-                        startDate: rhs.startDate
-                    )
-                )
-            }
-        }
-
-        return newEventsForDate
+    private func applyCalendarFilter() {
+        fetchCache.applyCalendarFilter(selectedCalendarIDs: calendarSelection.selectedCalendarIDs())
     }
 
     /// Returns selected-calendar events across an arbitrary span without mutating the display
@@ -273,7 +215,15 @@ actor CalendarStore {
 
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: cals)
         let events = store.events(matching: predicate)
-        let byDate = await buildDayEvents(from: events, rangeStart: start, rangeEnd: end)
+        let byDate = await DayEventBuilder.buildDayEvents(
+            from: events,
+            rangeStart: start,
+            rangeEnd: end,
+            calendar: calendar,
+            resolveNativeJoinURL: { [isNativeAppInstalled] url in
+                await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
+            }
+        )
 
         var seen = Set<String>()
         var result: [DayEvent] = []
@@ -287,14 +237,6 @@ actor CalendarStore {
             }
         }
         return result
-    }
-
-    private func applyCalendarFilter() {
-        fetchCache.applyCalendarFilter(selectedCalendarIDs: calendarSelection.selectedCalendarIDs())
-    }
-
-    private func resolveNativeJoinURL(from url: URL) async -> URL? {
-        await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
     }
 }
 

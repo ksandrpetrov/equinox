@@ -1,0 +1,46 @@
+[
+  {
+    "eventIdentifier": "evt-full-1",
+    "calendarItemIdentifier": "item-full-1",
+    "title": "Team Sync",
+    "location": "Room A",
+    "notes": "Agenda in doc",
+    "url": "https://example.com/doc",
+    "startDate": "2026-06-14T10:00:00.000Z",
+    "endDate": "2026-06-14T11:00:00.000Z",
+    "isAllDay": false,
+    "joinURL": "https://zoom.us/j/123456789",
+    "calendarIdentifier": "cal-1",
+    "calendarTitle": "Work",
+    "calendarColorHex": "#FF0000",
+    "allowsContentModifications": true,
+    "hasAttendees": true,
+    "participationStatus": "accepted"
+  },
+  {
+    "calendarItemIdentifier": "item-minimal-1",
+    "title": "Focus time",
+    "startDate": "2026-06-14T10:00:00.000Z",
+    "endDate": "2026-06-14T11:00:00.000Z",
+    "isAllDay": false,
+    "calendarIdentifier": "cal-1",
+    "calendarTitle": "Work",
+    "calendarColorHex": "#FF0000",
+    "allowsContentModifications": true,
+    "hasAttendees": false
+  },
+  {
+    "eventIdentifier": "evt-declined-1",
+    "calendarItemIdentifier": "item-declined-1",
+    "title": "Optional standup",
+    "startDate": "2026-06-15T09:00:00.000Z",
+    "endDate": "2026-06-15T09:15:00.000Z",
+    "isAllDay": false,
+    "calendarIdentifier": "cal-1",
+    "calendarTitle": "Work",
+    "calendarColorHex": "#FF0000",
+    "allowsContentModifications": false,
+    "hasAttendees": true,
+    "participationStatus": "declined"
+  }
+]

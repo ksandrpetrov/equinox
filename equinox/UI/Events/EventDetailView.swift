@@ -72,9 +72,7 @@ struct EventDetailView: View {
                     if hasActionSection {
                         VStack(spacing: EquinoxDesign.spacingSM) {
                             if let url = event.joinURL {
-                                EventDetailJoinButton(url: url) {
-                                    URLOpener.open(url)
-                                }
+                                EventDetailJoinButton(url: url, action: { URLOpener.open(url) })
                             }
 
                             if isPastEvent, appState.preferences.isPlaudEnabled {

@@ -46,6 +46,9 @@ enum EquinoxDesign {
         static let highlightedDOWBackground = Color("HighlightedDOWBackgroundColor")
         static let monthBoundary = Color("MonthBoundary")
         static let pendingBackground = Color("PendingBackgroundColor")
+        static let warning = Color.orange
+        static let success = Color.green
+        static let error = Color.red
     }
 
     static func panelTitleFont() -> Font { .title2.weight(.semibold) }

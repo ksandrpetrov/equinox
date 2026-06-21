@@ -34,7 +34,11 @@ enum CalendarAccessMapping {
     }
 
     static func guiAccessStatus() -> CalendarAccessStatus {
-        switch accessKind(for: EKEventStore.authorizationStatus(for: .event)) {
+        guiStatus(for: accessKind(for: EKEventStore.authorizationStatus(for: .event)))
+    }
+
+    static func guiStatus(for kind: AccessKind) -> CalendarAccessStatus {
+        switch kind {
         case .fullAccess:
             return .authorized
         case .denied, .writeOnly:
@@ -72,17 +76,6 @@ enum CalendarAccessMapping {
 
 extension CalendarAccessStatus {
     static func from(_ status: EKAuthorizationStatus) -> CalendarAccessStatus {
-        switch CalendarAccessMapping.accessKind(for: status) {
-        case .fullAccess:
-            return .authorized
-        case .denied, .writeOnly:
-            return .denied
-        case .notDetermined:
-            return .notDetermined
-        case .restricted:
-            return .restricted
-        case .unknown:
-            return .notDetermined
-        }
+        CalendarAccessMapping.guiStatus(for: CalendarAccessMapping.accessKind(for: status))
     }
 }

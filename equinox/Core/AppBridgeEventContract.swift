@@ -15,4 +15,10 @@ enum AppBridgeEventContract {
     static let guiSupportsUpdateEvent = false
     static let bridgeSupportsRSVPWrite = false
     static let guiSupportsRSVPWrite = true
+
+    static let bridgeDeleteEventSupportsFutureSpan = true
+    static let guiDeleteEventSpanIsThisEventOnly = true
+    static let bridgeCreateEventFieldsAreMinimal = true
+    static let guiCreateEventSupportsRecurrenceAlarmsTimezone = true
+    static let declinedInvitationVisibleInGUIListButNotDeletable = true
 }

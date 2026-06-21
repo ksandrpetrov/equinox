@@ -34,8 +34,12 @@ final class EventsCoordinator {
     private var loadingIndicatorVisibleSince: Date?
     private var fetchGeneration = 0
 
-    /// Bumped after navigation that should scroll the agenda to `selectedDate`.
+    /// Bumped after navigation or panel reopen that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
+
+    func requestAgendaScroll() {
+        agendaScrollToken &+= 1
+    }
 
     init(
         calendar: Calendar,
@@ -265,10 +269,6 @@ final class EventsCoordinator {
                 }
             }
         }
-    }
-
-    private func requestAgendaScroll() {
-        agendaScrollToken &+= 1
     }
 
     private func performFetch(generation: Int, operation: () async -> Void) async {

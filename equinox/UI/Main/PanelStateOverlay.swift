@@ -48,7 +48,7 @@ struct PanelStateOverlay: View {
                     .font(.subheadline.weight(.semibold))
             } icon: {
                 Image(systemName: "calendar.badge.exclamationmark")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(EquinoxDesign.ColorToken.warning)
             }
 
             Text(String(localized: "Equinox needs access to your calendars to show events.", comment: "Permission banner body"))
@@ -73,7 +73,7 @@ struct PanelStateOverlay: View {
         .padding(EquinoxDesign.spacingMD)
         .background {
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(Color.orange.opacity(0.08))
+                .fill(EquinoxDesign.ColorToken.warning.opacity(0.08))
         }
         .accessibilityElement(children: .combine)
     }
@@ -81,7 +81,7 @@ struct PanelStateOverlay: View {
     private func errorBanner(_ message: String) -> some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.orange)
+                .foregroundStyle(EquinoxDesign.ColorToken.warning)
             Text(message)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -97,7 +97,7 @@ struct PanelStateOverlay: View {
         .padding(.vertical, EquinoxDesign.spacingSM)
         .background {
             RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                .fill(Color.orange.opacity(0.08))
+                .fill(EquinoxDesign.ColorToken.warning.opacity(0.08))
         }
     }
 

@@ -94,18 +94,9 @@ struct AgendaEventCard: View {
                 }
 
                 if let url = event.joinURL {
-                    Button {
+                    JoinMeetingButton(url: url, metrics: metrics) {
                         URLOpener.open(url)
-                    } label: {
-                        Image(systemName: "video.fill")
-                            .font(.system(size: 12))
-                            .symbolRenderingMode(.hierarchical)
-                            .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                    .help(String(localized: "Join meeting", comment: ""))
-                    .accessibilityLabel(String(localized: "Join meeting", comment: ""))
                     .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : 0)
                     .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
                 }

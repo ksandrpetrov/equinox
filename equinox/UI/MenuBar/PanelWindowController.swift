@@ -33,7 +33,7 @@ final class PanelWindowController {
         appState.panel.isPanelVisible = true
 
         if needsPositioning {
-            appState.panel.agendaScrollGeneration &+= 1
+            appState.events.requestAgendaScroll()
         }
     }
 

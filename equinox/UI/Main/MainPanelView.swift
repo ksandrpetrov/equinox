@@ -82,7 +82,7 @@ struct MainPanelView: View {
                 .accessibilityLabel(String(localized: "Loading events", comment: ""))
             Spacer(minLength: 0)
         }
-        .frame(height: 14)
+        .frame(height: metrics.loadingIndicatorHeight)
         .padding(.bottom, EquinoxDesign.spacingXS)
     }
 

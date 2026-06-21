@@ -103,7 +103,9 @@ struct SettingsView: View {
         case .general:
             GeneralSettingsTab(searchText: searchText, prefs: preferencesStore)
         case .calendars:
-            CalendarsSettingsTab(searchText: searchText)
+            if let appState {
+                CalendarsSettingsTab(searchText: searchText, appState: appState)
+            }
         case .appearance:
             AppearanceSettingsTab(searchText: searchText, prefs: preferencesStore)
         case .privacy:

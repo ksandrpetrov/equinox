@@ -36,7 +36,82 @@ final class MeetingIndicatorTests: XCTestCase {
         ))
     }
 
-    private func sampleEvent(start: Date, end: Date, joinURL: URL?) -> DayEvent {
+    func testHidesIndicatorForAllDayEvents() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let calendar = Calendar(identifier: .gregorian)
+        let event = sampleEvent(
+            start: now.addingTimeInterval(10 * 60),
+            end: now.addingTimeInterval(40 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123"),
+            isEventAllDay: true
+        )
+        let eventsByDate = [CalendarDate(date: now, calendar: calendar): [event]]
+
+        XCTAssertFalse(MeetingIndicator.shouldShow(
+            eventsByDate: eventsByDate,
+            now: now,
+            calendar: calendar
+        ))
+    }
+
+    func testHidesIndicatorWhenMeetingStartsAfterLookaheadWindow() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let calendar = Calendar(identifier: .gregorian)
+        let event = sampleEvent(
+            start: now.addingTimeInterval(45 * 60),
+            end: now.addingTimeInterval(75 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123")
+        )
+        let eventsByDate = [CalendarDate(date: now, calendar: calendar): [event]]
+
+        XCTAssertFalse(MeetingIndicator.shouldShow(
+            eventsByDate: eventsByDate,
+            now: now,
+            calendar: calendar,
+            lookaheadMinutes: 30
+        ))
+    }
+
+    func testHidesIndicatorWhenMeetingAlreadyEnded() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let calendar = Calendar(identifier: .gregorian)
+        let event = sampleEvent(
+            start: now.addingTimeInterval(-60 * 60),
+            end: now.addingTimeInterval(-5 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123")
+        )
+        let eventsByDate = [CalendarDate(date: now, calendar: calendar): [event]]
+
+        XCTAssertFalse(MeetingIndicator.shouldShow(
+            eventsByDate: eventsByDate,
+            now: now,
+            calendar: calendar
+        ))
+    }
+
+    func testShowsIndicatorForInProgressMeeting() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let calendar = Calendar(identifier: .gregorian)
+        let event = sampleEvent(
+            start: now.addingTimeInterval(-10 * 60),
+            end: now.addingTimeInterval(20 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123")
+        )
+        let eventsByDate = [CalendarDate(date: now, calendar: calendar): [event]]
+
+        XCTAssertTrue(MeetingIndicator.shouldShow(
+            eventsByDate: eventsByDate,
+            now: now,
+            calendar: calendar
+        ))
+    }
+
+    private func sampleEvent(
+        start: Date,
+        end: Date,
+        joinURL: URL?,
+        isEventAllDay: Bool = false
+    ) -> DayEvent {
         DayEvent(
             id: "test",
             eventIdentifier: "evt-1",
@@ -47,7 +122,7 @@ final class MeetingIndicatorTests: XCTestCase {
             url: nil,
             startDate: start,
             endDate: end,
-            isEventAllDay: false,
+            isEventAllDay: isEventAllDay,
             isFirstDayOfSpan: true,
             isLastDayOfSpan: true,
             isSlotAllDay: false,

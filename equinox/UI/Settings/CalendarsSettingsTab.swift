@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CalendarsSettingsTab: View {
     var searchText: String = ""
-    @State private var filterText = ""
+    @Bindable var appState: AppState
 
     var body: some View {
         SettingsDetailScaffold(title: String(localized: "Calendars", comment: "")) {
@@ -10,13 +10,8 @@ struct CalendarsSettingsTab: View {
                 String(localized: "Visible Calendars", comment: "Settings calendars section title"),
                 subtitle: String(localized: "Choose which calendars appear in Equinox", comment: "Calendars section subtitle")
             ) {
-                CalendarsSettingsSection(filterText: effectiveFilter)
+                CalendarsSettingsSection(appState: appState, filterText: searchText)
             }
         }
-    }
-
-    private var effectiveFilter: String {
-        if !searchText.isEmpty { return searchText }
-        return filterText
     }
 }

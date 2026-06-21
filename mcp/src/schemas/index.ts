@@ -3,6 +3,7 @@ export {
   bridgeEventSchema,
   calendarsDataSchema,
   eventsDataSchema,
+  mcpEnrichedEventSchema,
 } from "./events.js"
 export {
   analyzeScheduleInputSchema,

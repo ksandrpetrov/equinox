@@ -593,11 +593,15 @@ xcodebuild \
 
 | Поведение | GUI | Bridge/MCP |
 |-----------|-----|------------|
-| Declined invitations | Показываются, dimmed | Фильтруются (`isDeclined`) |
+| Declined invitations | Показываются, dimmed; удаление → `eventNotFound` | Фильтруются в `list_events`; `get_event` → `not_found` |
 | Join URL | Web + native rewrite (`NativeJoinURL`) | Только web (`JoinURLDetection`) |
 | Multi-day events | `EventLayout` day slots | Один flat event |
 | Calendar filter | `CalendarSelectionStorage` | Все календари, если не передан `calendarIds` |
 | RSVP | `setParticipationStatus` | Нет команды |
 | `update_event` | Нет в GUI | Есть в MCP |
+| TCC vocabulary | `CalendarAccessStatus.authorized` (legacy alias) | `full_access` / `write_only` в JSON bridge |
+| `create_event` поля | recurrence, alarms, timezone (GUI-only) | title, dates, calendar, allDay, location, notes, url |
+| `delete_event` span | Только `thisEvent` | `thisEvent` (default) или `futureEvents` |
+| Plaud | OAuth, refresh, auto/manual match | MCP enrichment из локального кэша; bridge не знает о Plaud |
 
 См. также [ARCHITECTURE.md](ARCHITECTURE.md).

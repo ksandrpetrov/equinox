@@ -80,9 +80,6 @@ struct AgendaView: View {
                     scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
                     scrollCoordinator.scrollToSelectedDate(appState: appState)
                 }
-                .onChange(of: appState.panel.agendaScrollGeneration) { _, _ in
-                    scrollCoordinator.scrollToSelectedDate(appState: appState)
-                }
                 .onChange(of: appState.events.agendaScrollToken) { _, _ in
                     scrollCoordinator.scrollToSelectedDate(appState: appState)
                 }

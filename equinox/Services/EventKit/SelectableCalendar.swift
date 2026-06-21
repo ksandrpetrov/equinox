@@ -41,3 +41,41 @@ enum CalendarListEntry: Sendable, Equatable {
     case source(String)
     case calendar(SelectableCalendar)
 }
+
+enum CalendarListEntryFiltering {
+    /// Filters grouped calendar list entries by title query while preserving source headers.
+    static func filter(_ entries: [CalendarListEntry], query: String) -> [CalendarListEntry] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return entries }
+        let lowered = trimmed.lowercased()
+        var result: [CalendarListEntry] = []
+        var currentSource: String?
+        var sourceItems: [CalendarListEntry] = []
+
+        func flushSource() {
+            guard currentSource != nil else { return }
+            let matching = sourceItems.filter { item in
+                if case .calendar(let cal) = item {
+                    return cal.title.lowercased().contains(lowered)
+                }
+                return false
+            }
+            if !matching.isEmpty, let source = currentSource {
+                result.append(.source(source))
+                result.append(contentsOf: matching)
+            }
+            sourceItems = []
+        }
+
+        for item in entries {
+            if case .source(let source) = item {
+                flushSource()
+                currentSource = source
+            } else {
+                sourceItems.append(item)
+            }
+        }
+        flushSource()
+        return result.isEmpty && !entries.isEmpty ? entries : result
+    }
+}

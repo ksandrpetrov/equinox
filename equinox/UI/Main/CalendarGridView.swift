@@ -26,7 +26,7 @@ struct CalendarGridView: View {
         VStack(spacing: EquinoxDesign.spacingXS) {
             HStack(spacing: 0) {
                 if prefs.showWeeks {
-                    Color.clear.frame(width: 24)
+                    Color.clear.frame(width: metrics.weekColumnWidth)
                 }
                 ForEach(Array(dowSymbols.enumerated()), id: \.offset) { index, symbol in
                     Text(symbol.uppercased())
@@ -45,7 +45,7 @@ struct CalendarGridView: View {
                             .font(.system(size: metrics.fontSize - 1, design: .monospaced))
                             .foregroundStyle(.tertiary)
                             .contentTransition(.numericText())
-                            .frame(width: 24)
+                            .frame(width: metrics.weekColumnWidth)
                     }
                     ForEach(0..<7, id: \.self) { col in
                         let index = row * 7 + col

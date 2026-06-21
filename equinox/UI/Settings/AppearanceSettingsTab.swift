@@ -122,6 +122,14 @@ struct AppearanceSettingsTab: View {
                         isOn: $prefs.showMonthBoundaries
                     )
                     SettingsDivider()
+                    SettingsRow(title: String(localized: "Calendar rows", comment: "Number of rows in month grid")) {
+                        Stepper(value: $prefs.calendarRowCount, in: 6...10) {
+                            Text("\(prefs.calendarRowCount)")
+                                .monospacedDigit()
+                                .frame(width: 24, alignment: .trailing)
+                        }
+                    }
+                    SettingsDivider()
 
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                         Text(String(localized: "Highlight days", comment: "Weekend highlight picker label"))

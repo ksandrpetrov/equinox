@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct CalendarsSettingsSection: View {
-    @Environment(\.appState) private var appState
+    @Bindable var appState: AppState
     var filterText: String = ""
     @State private var selectedCalendarIDs: Set<String> = []
 
     private var entries: [CalendarListEntry] {
-        appState?.events.calendarEntries ?? []
+        appState.events.calendarEntries
     }
 
     var body: some View {
@@ -35,43 +35,13 @@ struct CalendarsSettingsSection: View {
         .onAppear {
             reloadCalendars()
         }
-        .onChange(of: appState?.events.calendarEntries) { _, _ in
+        .onChange(of: appState.events.calendarEntries) { _, _ in
             reloadCalendars()
         }
     }
 
     private var filteredEntries: [CalendarListEntry] {
-        guard !filterText.isEmpty else { return entries }
-        let query = filterText.lowercased()
-        var result: [CalendarListEntry] = []
-        var currentSource: String?
-        var sourceItems: [CalendarListEntry] = []
-
-        func flushSource() {
-            guard currentSource != nil else { return }
-            let matching = sourceItems.filter { item in
-                if case .calendar(let cal) = item {
-                    return cal.title.lowercased().contains(query)
-                }
-                return false
-            }
-            if !matching.isEmpty, let source = currentSource {
-                result.append(.source(source))
-                result.append(contentsOf: matching)
-            }
-            sourceItems = []
-        }
-
-        for item in entries {
-            if case .source(let source) = item {
-                flushSource()
-                currentSource = source
-            } else {
-                sourceItems.append(item)
-            }
-        }
-        flushSource()
-        return result.isEmpty && !entries.isEmpty ? entries : result
+        CalendarListEntryFiltering.filter(entries, query: filterText)
     }
 
     private func reloadCalendars() {
@@ -92,7 +62,6 @@ struct CalendarsSettingsSection: View {
                 } else {
                     selectedCalendarIDs.remove(calendar.id)
                 }
-                guard let appState else { return }
                 Task {
                     await appState.events.updateSelectedCalendar(
                         identifier: calendar.id,

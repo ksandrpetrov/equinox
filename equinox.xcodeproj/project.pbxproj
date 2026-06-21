@@ -29,6 +29,10 @@
 		ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */; };
 		ABEC001A1B2C3D4E5F6012345 /* Core/AppBridgeEventContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEC001A1B2C3D4E5F6012346 /* Core/AppBridgeEventContract.swift */; };
 		ABECT001A1B2C3D4E5F6012345 /* AppBridgeEventContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABECT001A1B2C3D4E5F6012346 /* AppBridgeEventContractTests.swift */; };
+		MPT001A1B2C3D4E5F6012345 /* MeetingProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */; };
+		BEFT001A1B2C3D4E5F6012345 /* BridgeEventFixturesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */; };
+		BDPT001A1B2C3D4E5F6012345 /* BridgeDateParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */; };
+		BDPTS001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */; };
 		ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */; };
 		AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */; };
 		B2C3D4E501234567890ABCF5 /* UI/Settings/MenuBarIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */; };
@@ -37,6 +41,8 @@
 		BRG002A1B2C3D4E5F6012345 /* EventKitBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BRG002A1B2C3D4E5F6012346 /* EventKitBridge.swift */; };
 		BRG003A1B2C3D4E5F6012345 /* BridgeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BRG003A1B2C3D4E5F6012346 /* BridgeModels.swift */; };
 		BRG004A1B2C3D4E5F6012345 /* Core/JoinURLDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E005A1B2C3D4E5F6012346 /* Core/JoinURLDetection.swift */; };
+		BRGMP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */; };
+		BRGBEM001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeEventMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */; };
 		BRG005A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */; };
 		BRG006A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */; };
 		BRG007A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */; };
@@ -60,7 +66,10 @@
 		CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */; };
 		CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */; };
 		D0E001A1B2C3D4E5F6012345 /* Core/CalendarDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */; };
-		D0E001B1B2C3D4E5F6012345 /* Services/EventKit/EventDraftDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001B1B2C3D4E5F6012346 /* Services/EventKit/EventDraftDefaults.swift */; };
+		D0E001B1B2C3D4E5F6012345 /* Core/EventDraftDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */; };
+		MP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */; };
+		DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */; };
+		JMB001A1B2C3D4E5F6012345 /* UI/Events/JoinMeetingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = JMB001A1B2C3D4E5F6012346 /* UI/Events/JoinMeetingButton.swift */; };
 		D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */; };
 		D0E003A1B2C3D4E5F6012345 /* Services/EventKit/CalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */; };
 		D0E004A1B2C3D4E5F6012345 /* Services/Platform/DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */; };
@@ -240,7 +249,14 @@
 		CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarListingTests.swift; sourceTree = "<group>"; };
 		CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/CalendarSelectionStorage.swift; sourceTree = "<group>"; };
 		D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/CalendarDate.swift; sourceTree = "<group>"; };
-		D0E001B1B2C3D4E5F6012346 /* Services/EventKit/EventDraftDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventDraftDefaults.swift; sourceTree = "<group>"; };
+		D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/EventDraftDefaults.swift; sourceTree = "<group>"; };
+		MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingProvider.swift; sourceTree = "<group>"; };
+		BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/BridgeEventMapping.swift; sourceTree = "<group>"; };
+		DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/DayEventBuilder.swift; sourceTree = "<group>"; };
+		JMB001A1B2C3D4E5F6012346 /* UI/Events/JoinMeetingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Events/JoinMeetingButton.swift; sourceTree = "<group>"; };
+		MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingProviderTests.swift; sourceTree = "<group>"; };
+		BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeEventFixturesTests.swift; sourceTree = "<group>"; };
+		BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeDateParsingTests.swift; sourceTree = "<group>"; };
 		D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/DayEventMapping.swift; sourceTree = "<group>"; };
 		D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/CalendarStore.swift; sourceTree = "<group>"; };
 		D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/DateFormatters.swift; sourceTree = "<group>"; };
@@ -385,8 +401,9 @@
 				ABEC001A1B2C3D4E5F6012346 /* Core/AppBridgeEventContract.swift */,
 				EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */,
 				MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */,
+				MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */,
 				CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */,
-				D0E001B1B2C3D4E5F6012346 /* Services/EventKit/EventDraftDefaults.swift */,
+				D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */,
 				D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */,
 				CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */,
 				SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar.swift */,
@@ -402,6 +419,8 @@
 				BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */,
 				NED001A1B2C3D4E5F6012346 /* Services/EventKit/NewEventDraft.swift */,
 				EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */,
+				BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */,
+				DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */,
 				EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */,
 				NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */,
 				D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */,
@@ -448,6 +467,7 @@
 				7CD76B61B3D540A2A2F4D695 /* UI/Events/NewEventSheet.swift */,
 				1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */,
 				JUP001A1B2C3D4E5F6012346 /* UI/Events/JoinURLPresentation.swift */,
+				JMB001A1B2C3D4E5F6012346 /* UI/Events/JoinMeetingButton.swift */,
 				EDC001A1B2C3D4E5F6012346 /* UI/Events/EventDetailComponents.swift */,
 				RSVP002A1B2C3D4E5F6012346 /* UI/Events/EventRSVPBar.swift */,
 				FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */,
@@ -552,6 +572,9 @@
 				CAMT001A1B2C3D4E5F6012346 /* CalendarAccessMappingTests.swift */,
 				PST001A1B2C3D4E5F6012346 /* PreferencesStoreTests.swift */,
 				ABECT001A1B2C3D4E5F6012346 /* AppBridgeEventContractTests.swift */,
+				MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */,
+				BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */,
+				BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */,
 			);
 			path = equinoxTests;
 			sourceTree = "<group>";
@@ -711,7 +734,6 @@
 				STB001A1B2C3D4E5F6012345 /* App/SettingsTab.swift in Sources */,
 				EKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */,
 				EKMGU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation+GUI.swift in Sources */,
-				BDP001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */,
 				NED001A1B2C3D4E5F6012345 /* Services/EventKit/NewEventDraft.swift in Sources */,
 				EEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */,
 				PPC001A1B2C3D4E5F6012345 /* App/PanelPresentationState.swift in Sources */,
@@ -728,7 +750,9 @@
 				EFR001A1B2C3D4E5F6012345 /* Core/EventFetchRange.swift in Sources */,
 				MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */,
 				CLI001A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */,
-				D0E001B1B2C3D4E5F6012345 /* Services/EventKit/EventDraftDefaults.swift in Sources */,
+				D0E001B1B2C3D4E5F6012345 /* Core/EventDraftDefaults.swift in Sources */,
+				MP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */,
+				DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */,
 				D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */,
 				CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */,
 				SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar.swift in Sources */,
@@ -792,6 +816,7 @@
 				E21BE351F94E4C22BC7FF0C0 /* UI/Events/NewEventSheet.swift in Sources */,
 				97986F0E0B454042872C3572 /* UI/Events/EventDetailView.swift in Sources */,
 				JUP001A1B2C3D4E5F6012345 /* UI/Events/JoinURLPresentation.swift in Sources */,
+				JMB001A1B2C3D4E5F6012345 /* UI/Events/JoinMeetingButton.swift in Sources */,
 				EDC001A1B2C3D4E5F6012345 /* UI/Events/EventDetailComponents.swift in Sources */,
 				RSVP002A1B2C3D4E5F6012345 /* UI/Events/EventRSVPBar.swift in Sources */,
 				1F343D1442E04D48AF79E26E /* UI/Settings/SettingsView.swift in Sources */,
@@ -823,6 +848,7 @@
 				BRG002A1B2C3D4E5F6012345 /* EventKitBridge.swift in Sources */,
 				BRG003A1B2C3D4E5F6012345 /* BridgeModels.swift in Sources */,
 				BRG004A1B2C3D4E5F6012345 /* Core/JoinURLDetection.swift in Sources */,
+				BRGMP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */,
 				BRG005A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */,
 				BRG006A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */,
 				BRG007A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */,
@@ -831,6 +857,7 @@
 				BRGCAM001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarAccessMapping.swift in Sources */,
 				BRGCAS001A1B2C3D4E5F6012345 /* Core/CalendarAccessStatus.swift in Sources */,
 				BRGEEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */,
+				BRGBEM001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeEventMapping.swift in Sources */,
 				BRGEKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -860,6 +887,10 @@
 				CAMT001A1B2C3D4E5F6012345 /* CalendarAccessMappingTests.swift in Sources */,
 				PST001A1B2C3D4E5F6012345 /* PreferencesStoreTests.swift in Sources */,
 				ABECT001A1B2C3D4E5F6012345 /* AppBridgeEventContractTests.swift in Sources */,
+				MPT001A1B2C3D4E5F6012345 /* MeetingProviderTests.swift in Sources */,
+				BEFT001A1B2C3D4E5F6012345 /* BridgeEventFixturesTests.swift in Sources */,
+				BDPT001A1B2C3D4E5F6012345 /* BridgeDateParsingTests.swift in Sources */,
+				BDPTS001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

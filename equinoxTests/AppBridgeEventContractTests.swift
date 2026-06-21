@@ -33,4 +33,21 @@ final class AppBridgeEventContractTests: XCTestCase {
         XCTAssertFalse(AppBridgeEventContract.bridgeSupportsRSVPWrite)
         XCTAssertTrue(AppBridgeEventContract.guiSupportsRSVPWrite)
     }
+
+    func testDeleteCreateSpanContract() {
+        XCTAssertTrue(AppBridgeEventContract.bridgeDeleteEventSupportsFutureSpan)
+        XCTAssertTrue(AppBridgeEventContract.guiDeleteEventSpanIsThisEventOnly)
+        XCTAssertTrue(AppBridgeEventContract.bridgeCreateEventFieldsAreMinimal)
+        XCTAssertTrue(AppBridgeEventContract.guiCreateEventSupportsRecurrenceAlarmsTimezone)
+        XCTAssertTrue(AppBridgeEventContract.declinedInvitationVisibleInGUIListButNotDeletable)
+    }
+
+    func testMeetingProviderPatternsFeedJoinURLDetection() {
+        XCTAssertFalse(MeetingProviderRegistry.allDetectionSubstrings.isEmpty)
+        let zoomPattern = MeetingProviderRegistry.all.first { $0.id == "zoom" }!
+        let sample = "https://\(zoomPattern.detectionSubstrings.first!)123456789"
+        let detected = JoinURLDetection.detectJoinURL(location: sample, url: nil, notes: nil)
+        XCTAssertNotNil(detected)
+        XCTAssertEqual(MeetingProviderRegistry.match(for: detected!)?.id, "zoom")
+    }
 }

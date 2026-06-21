@@ -90,9 +90,9 @@ struct PrivacySettingsTab: View {
 
     private func statusColor(for status: CalendarAccessStatus) -> Color {
         switch status {
-        case .authorized: return .green
-        case .denied, .restricted: return .red
-        case .notDetermined: return .orange
+        case .authorized: return EquinoxDesign.ColorToken.success
+        case .denied, .restricted: return EquinoxDesign.ColorToken.error
+        case .notDetermined: return EquinoxDesign.ColorToken.warning
         }
     }
 }

@@ -6,19 +6,7 @@ enum JoinURLDetection {
         types: NSTextCheckingResult.CheckingType.link.rawValue
     )
 
-    private static let meetingPatterns = [
-        "zoom.us/j/", "zoom.us/s/", "zoom.us/w/", "zoom.us/my/",
-        "zoomgov.com/j/", "zoomgov.com/s/", "zoomgov.com/w/", "zoomgov.com/my/",
-        "teams.microsoft.com/l/meetup-join/",
-        "chime.aws/",
-        "zoommtg://", "msteams://", "chime://",
-        "meet.google.com/", "hangouts.google.com/", "webex.com/",
-        "gotomeeting.com/join", "ringcentral.com/j",
-        "bigbluebutton.org/gl", "https://bigbluebutton.", "https://bbb.",
-        "https://meet.jit.si/", "indigo.collocall.de", "public.senfcall.de",
-        "facetime.apple.com/join", "workplace.com/meet", "youcanbook.me/zoom/",
-        "vk.com/call/"
-    ]
+    private static let meetingPatterns = MeetingProviderRegistry.allDetectionSubstrings
 
     static func detectJoinURL(location: String?, url: String?, notes: String?) -> URL? {
         if let location, let found = detectJoinURL(in: location) { return found }
@@ -36,8 +24,8 @@ enum JoinURLDetection {
             range: NSRange(location: 0, length: text.utf16.count)
         ) { result, _, stop in
             guard let result, let url = result.url else { return }
-            let link = url.absoluteString
-            if meetingPatterns.contains(where: { link.contains($0) }) {
+            let link = url.absoluteString.lowercased()
+            if meetingPatterns.contains(where: { link.contains($0.lowercased()) }) {
                 found = url
                 stop.pointee = true
             }
