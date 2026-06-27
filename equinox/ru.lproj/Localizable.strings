@@ -355,6 +355,8 @@
 /* Plaud OAuth */
 "OAuth callback port 8199 is already in use. Stop the other OAuth client and try again." = "Порт OAuth-callback 8199 уже занят. Остановите другой OAuth-клиент и повторите попытку.";
 "Could not start OAuth callback server: %@" = "Не удалось запустить OAuth-callback сервер: %@";
+"Could not save Plaud credentials because the app signature is invalid or signed with a revoked certificate. Rebuild Equinox with valid local signing and try again." = "Не удалось сохранить учётные данные Plaud: подпись приложения недействительна или сделана отозванным сертификатом. Пересоберите Equinox с корректной локальной подписью и повторите попытку.";
+"Could not save Plaud credentials (Keychain error %@: %@)." = "Не удалось сохранить учётные данные Plaud (ошибка Keychain %@: %@).";
 "Could not save Plaud credentials (Keychain error %@)." = "Не удалось сохранить учётные данные Plaud (ошибка Keychain %@).";
 "Authorization successful!" = "Авторизация успешна!";
 "You can close this tab." = "Можно закрыть эту вкладку.";

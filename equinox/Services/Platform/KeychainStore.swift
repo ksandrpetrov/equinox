@@ -50,6 +50,20 @@ enum KeychainStoreError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .saveFailed(let status):
+            if status == -67_820 {
+                return String(
+                    localized: "Could not save Plaud credentials because the app signature is invalid or signed with a revoked certificate. Rebuild Equinox with valid local signing and try again.",
+                    comment: "Plaud keychain revoked certificate error"
+                )
+            }
+
+            if let systemMessage = SecCopyErrorMessageString(status, nil) as String? {
+                return String(
+                    localized: "Could not save Plaud credentials (Keychain error \(status): \(systemMessage)).",
+                    comment: "Plaud keychain save error with system detail"
+                )
+            }
+
             return String(
                 localized: "Could not save Plaud credentials (Keychain error \(status)).",
                 comment: "Plaud keychain save error"

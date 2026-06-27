@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # run.sh — build and launch equinox.
 #
@@ -8,6 +8,7 @@
 set -e
 
 . "$(dirname "$0")/scripts/require-arm64.sh"
+. "$(dirname "$0")/scripts/xcodebuild-local-settings.sh"
 
 GREEN="\033[0;32m"
 RED="\033[0;31m"
@@ -16,6 +17,7 @@ NC="\033[0m" # No Color
 
 # Always run from the project root (directory of this script).
 cd "$(dirname "$0")"
+load_xcodebuild_local_settings "Local.xcconfig"
 
 DERIVED_DATA="build/DerivedData"
 APP_PATH="${DERIVED_DATA}/Build/Products/Release/equinox.app"
@@ -27,7 +29,8 @@ xcodebuild \
     -scheme equinox \
     -configuration Release \
     -derivedDataPath "${DERIVED_DATA}" \
-    build
+    build \
+    "${XCODEBUILD_LOCAL_SETTINGS[@]}"
 
 if [ ! -d "${APP_PATH}" ]; then
     echo "${RED}Build did not produce ${APP_PATH}${NC}"
@@ -41,7 +44,8 @@ if [ ! -x "${BRIDGE_PATH}" ]; then
         -scheme equinox-bridge \
         -configuration Release \
         -derivedDataPath "${DERIVED_DATA}" \
-        build
+        build \
+        "${XCODEBUILD_LOCAL_SETTINGS[@]}"
 fi
 
 if [ ! -f "mcp/dist/server.js" ]; then

@@ -37,9 +37,11 @@ cp Local.xcconfig.example Local.xcconfig
 - **Без Apple Developer account** — локальная сборка с Automatic signing.
 - **С аккаунтом** — Manual signing и ваш `DEVELOPMENT_TEAM`.
 
+Локальные скрипты (`./run.sh`, `./scripts/build-mcp.sh`) передают signing-настройки из `Local.xcconfig` в `xcodebuild` как command-line overrides. Это важно: target-level настройки Xcode имеют более высокий приоритет, чем base xcconfig, и без override локальная сборка может выбрать устаревший или отозванный сертификат из Keychain.
+
 ## Сборка и запуск GUI
 
-Локально приложение собирается и запускается **только Release** (production). Схема `equinox` закреплена за Release, поэтому Cmd+R в Xcode и `./run.sh` дают одинаковый билд.
+Локально приложение собирается и запускается **только Release** (production). Для запуска из Xcode убедитесь, что signing-настройки target соответствуют вашему `Local.xcconfig`; `./run.sh` делает это автоматически через command-line overrides.
 
 ```bash
 ./run.sh
