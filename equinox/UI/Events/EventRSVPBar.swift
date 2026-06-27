@@ -2,19 +2,10 @@ import SwiftUI
 
 struct EventRSVPRespondBadge: View {
     var body: some View {
-        Text(String(localized: "Respond", comment: "RSVP pending badge"))
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(.primary.opacity(0.85))
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
-            .background {
-                Capsule(style: .continuous)
-                    .fill(EquinoxDesign.ColorToken.pendingBackground)
-                    .overlay {
-                        Capsule(style: .continuous)
-                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
-                    }
-            }
+        EquinoxBadge(
+            text: String(localized: "Respond", comment: "RSVP pending badge"),
+            tint: EquinoxDesign.ColorToken.accent
+        )
     }
 }
 
@@ -48,9 +39,9 @@ struct EventRSVPBar: View {
 
     private var compactBar: some View {
         HStack(spacing: 6) {
-            rsvpButton(.accepted, symbol: "checkmark.circle.fill", label: acceptLabel, tint: .green, compact: true)
-            rsvpButton(.tentative, symbol: "questionmark.circle", label: maybeLabel, tint: .orange, compact: true)
-            rsvpButton(.declined, symbol: "xmark.circle", label: declineLabel, tint: .red, compact: true)
+            rsvpButton(.accepted, symbol: "checkmark.circle.fill", label: acceptLabel, tint: EquinoxDesign.ColorToken.semanticGreen, compact: true)
+            rsvpButton(.tentative, symbol: "questionmark.circle", label: maybeLabel, tint: EquinoxDesign.ColorToken.semanticOrange, compact: true)
+            rsvpButton(.declined, symbol: "xmark.circle", label: declineLabel, tint: EquinoxDesign.ColorToken.semanticRed, compact: true)
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 6)
@@ -59,9 +50,9 @@ struct EventRSVPBar: View {
 
     private var standardBar: some View {
         HStack(spacing: 8) {
-            rsvpButton(.accepted, symbol: "checkmark.circle.fill", label: acceptLabel, tint: .green, compact: false)
-            rsvpButton(.tentative, symbol: "questionmark.circle", label: maybeLabel, tint: .orange, compact: false)
-            rsvpButton(.declined, symbol: "xmark.circle", label: declineLabel, tint: .red, compact: false)
+            rsvpButton(.accepted, symbol: "checkmark.circle.fill", label: acceptLabel, tint: EquinoxDesign.ColorToken.semanticGreen, compact: false)
+            rsvpButton(.tentative, symbol: "questionmark.circle", label: maybeLabel, tint: EquinoxDesign.ColorToken.semanticOrange, compact: false)
+            rsvpButton(.declined, symbol: "xmark.circle", label: declineLabel, tint: EquinoxDesign.ColorToken.semanticRed, compact: false)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
@@ -70,9 +61,9 @@ struct EventRSVPBar: View {
 
     private var detailBar: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
-            detailButton(.accepted, symbol: "checkmark", label: acceptLabel, tint: .green)
-            detailButton(.tentative, symbol: "questionmark", label: maybeLabel, tint: .orange)
-            detailButton(.declined, symbol: "xmark", label: declineLabel, tint: .red)
+            detailButton(.accepted, symbol: "checkmark", label: acceptLabel, tint: EquinoxDesign.ColorToken.semanticGreen)
+            detailButton(.tentative, symbol: "questionmark", label: maybeLabel, tint: EquinoxDesign.ColorToken.semanticOrange)
+            detailButton(.declined, symbol: "xmark", label: declineLabel, tint: EquinoxDesign.ColorToken.semanticRed)
         }
         .padding(EquinoxDesign.spacingSM)
         .background { barBackground }

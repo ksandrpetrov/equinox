@@ -159,14 +159,14 @@ struct EventDetailView: View {
                             Text(String(localized: "Save Link", comment: "Plaud manual link save"))
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
                     .disabled(manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSavingPlaudLink)
 
                     Button(String(localized: "Cancel", comment: "")) {
                         showManualPlaudLink = false
                         manualPlaudURL = ""
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
                     .disabled(isSavingPlaudLink)
                 }
             }

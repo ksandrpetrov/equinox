@@ -15,15 +15,25 @@ extension View {
                         .glassEffect(.regular, in: shape)
                 }
             }
+            .overlay {
+                shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
+            }
             .shadow(color: .black.opacity(effectiveStyle == .glass ? 0.12 : 0.06), radius: 12, y: 4)
         }
         .clipShape(shape)
     }
 
-    func panelCommandBarBackground() -> some View {
-        background {
-            Capsule(style: .continuous)
-                .glassEffect(.regular, in: Capsule(style: .continuous))
+    func panelCommandBarBackground(style: BackgroundStyle, reduceTransparency: Bool = false) -> some View {
+        let effectiveStyle: BackgroundStyle = (style == .glass && reduceTransparency) ? .solid : style
+        let shape = Capsule(style: .continuous)
+        return background {
+            Group {
+                if effectiveStyle == .solid {
+                    shape.fill(EquinoxDesign.ColorToken.surfaceSecondary)
+                } else {
+                    shape.glassEffect(.regular, in: shape)
+                }
+            }
         }
     }
 }
@@ -32,27 +42,40 @@ struct PanelButtonStyle: ButtonStyle {
     var isSelected: Bool = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isHovered = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .opacity(isEnabled ? 1 : 0.5)
             .background(
                 RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                    .fill(Color.primary.opacity(backgroundOpacity(isPressed: configuration.isPressed)))
+                    .fill(backgroundColor(isPressed: configuration.isPressed))
             )
             .overlay {
                 if isSelected {
                     RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                        .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1)
+                        .strokeBorder(EquinoxDesign.ColorToken.accentRing, lineWidth: 1)
                 }
             }
+            .scaleEffect(pressScale(isPressed: configuration.isPressed))
+            .onHover { isHovered = $0 }
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: configuration.isPressed)
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isSelected)
+            .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
     }
 
-    private func backgroundOpacity(isPressed: Bool) -> Double {
-        if isSelected { return isPressed ? 0.16 : 0.12 }
-        return isPressed ? 0.1 : 0.06
+    private func backgroundColor(isPressed: Bool) -> Color {
+        if isSelected {
+            return EquinoxDesign.ColorToken.accentSoft
+        }
+        if isPressed { return EquinoxDesign.ColorToken.interactionPress }
+        if isHovered { return EquinoxDesign.ColorToken.interactionHover }
+        return EquinoxDesign.ColorToken.interactionRest
+    }
+
+    private func pressScale(isPressed: Bool) -> CGFloat {
+        guard isEnabled, isPressed, !reduceMotion else { return 1 }
+        return EquinoxDesign.pressScale
     }
 }
 
@@ -108,7 +131,7 @@ private func panelIconLabel(
     Image(systemName: symbol)
         .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
         .symbolRenderingMode(.hierarchical)
-        .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
+        .foregroundStyle(isSelected ? EquinoxDesign.ColorToken.accent : Color.primary)
         .frame(width: buttonSize, height: buttonSize)
         .contentShape(Rectangle())
 }

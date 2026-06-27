@@ -26,12 +26,12 @@ struct WeekendHighlightPicker: View {
                         .font(.caption.weight(.semibold))
                         .frame(width: 32, height: 28)
                         .background {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
                                 .fill(isOn ? EquinoxDesign.ColorToken.weekendTint.opacity(0.25) : Color.primary.opacity(0.04))
                         }
                         .overlay {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(isOn ? EquinoxDesign.ColorToken.todayAccent : Color.primary.opacity(0.1), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
+                                .strokeBorder(isOn ? EquinoxDesign.ColorToken.accentRing : EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
                         }
                 }
                 .buttonStyle(.plain)

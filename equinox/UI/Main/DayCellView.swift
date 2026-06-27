@@ -48,31 +48,31 @@ struct DayCellView: View {
         }) {
             ZStack {
                 if isHighlighted && !isToday && !isSelected {
-                    RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                        .fill(EquinoxDesign.ColorToken.highlightedDOWBackground)
+                    RoundedRectangle(cornerRadius: EquinoxDesign.cellRadius, style: .continuous)
+                        .fill(EquinoxDesign.ColorToken.weekendTint)
                         .padding(.horizontal, 1)
                 }
 
                 if isToday {
                     Circle()
-                        .fill(EquinoxDesign.ColorToken.todayAccent)
+                        .fill(EquinoxDesign.ColorToken.accent)
                         .frame(width: circleSize, height: circleSize)
                 } else if isSelected {
                     Circle()
-                        .fill(EquinoxDesign.ColorToken.todayAccent.opacity(0.15))
+                        .fill(EquinoxDesign.ColorToken.accentSoft)
                         .frame(width: circleSize, height: circleSize)
                     Circle()
-                        .strokeBorder(EquinoxDesign.ColorToken.todayAccent, lineWidth: 1.5)
+                        .strokeBorder(EquinoxDesign.ColorToken.accentRing, lineWidth: 1.5)
                         .frame(width: circleSize, height: circleSize)
                 } else if isHovered {
                     Circle()
-                        .fill(Color.primary.opacity(0.05))
+                        .fill(EquinoxDesign.ColorToken.interactionHover)
                         .frame(width: circleSize, height: circleSize)
                 }
 
                 VStack(spacing: 2) {
                     Text("\(date.day)")
-                        .font(.system(size: metrics.fontSize, weight: .medium, design: .rounded))
+                        .font(EquinoxDesign.dayNumeralFont(size: metrics.fontSize))
                         .foregroundStyle(textColor)
                         .contentTransition(.numericText())
                     dotRow
@@ -124,7 +124,7 @@ struct DayCellView: View {
                 }
                 if dotColors.count > 3 {
                     Text("+\(dotColors.count - 3)")
-                        .font(.system(size: 7, weight: .bold))
+                        .font(EquinoxDesign.microFont())
                         .foregroundStyle(.secondary)
                 }
             }

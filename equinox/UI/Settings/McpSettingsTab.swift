@@ -49,7 +49,7 @@ struct McpSettingsTab: View {
             Button(String(localized: "Check Again", comment: "MCP readiness refresh")) {
                 mcp.refreshSetup()
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(EquinoxButtonStyle(variant: .bordered))
         }
         .onAppear {
             mcp.refreshSetup()
@@ -199,8 +199,7 @@ struct McpSettingsTab: View {
                         Button(String(localized: "Copy JSON", comment: "")) {
                             mcp.copyConfigToClipboard(mcp.setup.clientConfigString)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                        .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
                     }
 
                     Text(mcp.setup.clientConfigString)
@@ -208,7 +207,7 @@ struct McpSettingsTab: View {
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(EquinoxDesign.spacingSM)
-                        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM))
+                        .equinoxCard(style: .raised, cornerRadius: EquinoxDesign.radiusSM)
 
                     if let serverPath = mcp.setup.serverPath {
                         pathLine(String(localized: "Server", comment: "MCP path label"), serverPath)
@@ -236,8 +235,7 @@ struct McpSettingsTab: View {
                         Button(String(localized: "Copy TOML", comment: "")) {
                             mcp.copyConfigToClipboard(mcp.setup.codexConfigSnippet)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                        .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
                     }
 
                     Text(mcp.setup.codexConfigSnippet)
@@ -245,7 +243,7 @@ struct McpSettingsTab: View {
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(EquinoxDesign.spacingSM)
-                        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM))
+                        .equinoxCard(style: .raised, cornerRadius: EquinoxDesign.radiusSM)
                 }
                 .padding(.vertical, SettingsDesign.rowVerticalPadding)
             }
@@ -326,7 +324,7 @@ struct McpSettingsTab: View {
     private func readinessRow(label: String, ready: Bool, readyText: String, notReadyText: String) -> some View {
         HStack {
             Image(systemName: ready ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundStyle(ready ? .green : .secondary)
+                .foregroundStyle(ready ? EquinoxDesign.ColorToken.semanticGreen : .secondary)
             Text(label)
             Spacer()
             Text(ready ? readyText : notReadyText)

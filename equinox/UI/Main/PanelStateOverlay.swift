@@ -20,7 +20,7 @@ struct PanelStateOverlay: View {
 
     private var shortcutTipBanner: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
-            Text(String(localized: "⌘N New Event · T Today · P Pin", comment: "Shortcut tip banner"))
+            Text(String(localized: "New Event   ⌘N · Go to Today   T · Pin Equinox   P", comment: "Shortcut tip banner"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
@@ -30,15 +30,12 @@ struct PanelStateOverlay: View {
                 Image(systemName: "xmark")
                     .font(.caption2.weight(.semibold))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(EquinoxButtonStyle(variant: .plain, size: .small))
             .accessibilityLabel(String(localized: "Dismiss shortcut tip", comment: ""))
         }
         .padding(.horizontal, EquinoxDesign.spacingMD)
         .padding(.vertical, EquinoxDesign.spacingSM)
-        .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                .fill(Color.primary.opacity(0.05))
-        }
+        .equinoxCard(style: .subtle, cornerRadius: EquinoxDesign.radiusSM)
     }
 
     private var permissionBanner: some View {
@@ -48,7 +45,7 @@ struct PanelStateOverlay: View {
                     .font(.subheadline.weight(.semibold))
             } icon: {
                 Image(systemName: "calendar.badge.exclamationmark")
-                    .foregroundStyle(EquinoxDesign.ColorToken.warning)
+                    .foregroundStyle(EquinoxDesign.ColorToken.semanticOrange)
             }
 
             Text(String(localized: "Equinox needs access to your calendars to show events.", comment: "Permission banner body"))
@@ -59,67 +56,42 @@ struct PanelStateOverlay: View {
                 Button(String(localized: "Request Access", comment: "")) {
                     appState.events.requestCalendarAccessIfNeeded()
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
+                .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
 
                 Button(String(localized: "Open System Settings", comment: "")) {
                     appState.openCalendarPrivacySettings()
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
+                .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(EquinoxDesign.spacingMD)
         .background {
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.warning.opacity(0.08))
+                .fill(EquinoxDesign.ColorToken.semanticOrange.opacity(0.08))
+                .overlay {
+                    RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
+                        .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
+                }
         }
         .accessibilityElement(children: .combine)
     }
 
     private func errorBanner(_ message: String) -> some View {
-        HStack(spacing: EquinoxDesign.spacingSM) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(EquinoxDesign.ColorToken.warning)
-            Text(message)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-            Spacer(minLength: 0)
-            Button(String(localized: "Retry", comment: "")) {
-                appState.events.retryFetchEvents()
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.mini)
-        }
-        .padding(.horizontal, EquinoxDesign.spacingMD)
-        .padding(.vertical, EquinoxDesign.spacingSM)
-        .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.warning.opacity(0.08))
-        }
+        EquinoxBanner(
+            message: message,
+            style: .warning,
+            actionTitle: String(localized: "Retry", comment: ""),
+            action: { appState.events.retryFetchEvents() }
+        )
     }
 
     private var noCalendarsBanner: some View {
-        HStack(spacing: EquinoxDesign.spacingSM) {
-            Image(systemName: "calendar.badge.minus")
-                .foregroundStyle(.secondary)
-            Text(String(localized: "No calendars selected", comment: "No calendars banner"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer(minLength: 0)
-            Button(String(localized: "Calendars…", comment: "Open calendars settings")) {
-                SettingsActivationHandler.openSettings(appState: appState, initialTab: .calendars)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.mini)
-        }
-        .padding(.horizontal, EquinoxDesign.spacingMD)
-        .padding(.vertical, EquinoxDesign.spacingSM)
-        .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                .fill(Color.primary.opacity(0.05))
-        }
+        EquinoxBanner(
+            message: String(localized: "No calendars selected", comment: "No calendars banner"),
+            style: .info,
+            actionTitle: String(localized: "Calendars…", comment: "Open calendars settings"),
+            action: { SettingsActivationHandler.openSettings(appState: appState, initialTab: .calendars) }
+        )
     }
 }

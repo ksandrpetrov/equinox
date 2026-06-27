@@ -28,7 +28,7 @@ struct PlaudSettingsTab: View {
             Button(String(localized: "Refresh Now", comment: "Plaud manual refresh")) {
                 Task { await refresh(force: true) }
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(EquinoxButtonStyle(variant: .bordered))
             .disabled(isRefreshing || !setup.hasKeychainOAuth)
         }
         .onAppear {
@@ -116,13 +116,13 @@ struct PlaudSettingsTab: View {
                     Button(String(localized: "Connect Plaud…", comment: "Plaud OAuth sign in")) {
                         Task { await connectPlaud() }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(EquinoxButtonStyle(variant: .prominent))
                     .disabled(isOAuthBusy)
 
                     Button(String(localized: "Disconnect", comment: "Plaud OAuth sign out")) {
                         Task { await disconnectPlaud() }
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(EquinoxButtonStyle(variant: .bordered))
                     .disabled(isOAuthBusy || !setup.hasKeychainOAuth)
                 }
 
@@ -187,7 +187,7 @@ struct PlaudSettingsTab: View {
     private func statusRow(label: String, ready: Bool) -> some View {
         HStack {
             Image(systemName: ready ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundStyle(ready ? .green : .secondary)
+                .foregroundStyle(ready ? EquinoxDesign.ColorToken.semanticGreen : .secondary)
             Text(label)
             Spacer()
             Text(ready

@@ -42,7 +42,7 @@ struct MenuBarIconPicker: View {
                 .overlay {
                     RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
                         .strokeBorder(
-                            selection == index ? Color.accentColor : Color.primary.opacity(0.08),
+                            selection == index ? EquinoxDesign.ColorToken.accentRing : EquinoxDesign.ColorToken.hairlineBorder,
                             lineWidth: selection == index ? 2 : 1
                         )
                 }

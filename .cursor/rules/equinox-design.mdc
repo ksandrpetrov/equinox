@@ -1,0 +1,99 @@
+---
+description: Equinox brand & design system — use whenever building or styling any Equinox UI, marketing, prototype, or asset. Native-macOS menu-bar calendar aesthetic.
+globs:
+alwaysApply: false
+---
+
+# Equinox Design System
+
+Equinox is a native **macOS menu-bar calendar app**. Its design language is precise, restrained, and native-macOS: a celestial mark, glass panels floating over a dark desktop, cool blue-grey surfaces, and **one** deliberate brand-blue accent. Build everything to feel like it shipped in the app.
+
+When this repo includes the Equinox design-system files, prefer them as the source of truth:
+- Link `styles.css` (it `@import`s `tokens/*.css`) — gives every CSS custom property below.
+- Mount React primitives from the compiled bundle: `<script src="…/_ds_bundle.js">` then `const { Button, DayCell, … } = window.EquinoxDesignSystem_262896`.
+- Read `readme.md` for the full guide; each component has a sibling `.d.ts` + `.prompt.md`.
+
+If the tokens aren't present, hard-code the values in this file.
+
+---
+
+## Color (light · dark)
+
+**Accent — exactly one.** `--accent` `#3373F2` · `#598CFF`. Carries today's circle, selection ring, primary buttons, the join CTA, relative-time cues. Hover → `--accent-strong` `#1F5FE0` · `#6F9BFF`. Selection fill `--accent-soft` (accent @15–18%); selected outline `--accent-ring` (accent @55%). Never introduce a second brand color.
+
+**Surfaces — cool blue-grey, blue channel highest.**
+- window `#ECECEE` · `#1E1F22`
+- panel `#E9EBF0` · `#26292B`
+- secondary `#D5D7DE` · `#303338`
+- weekend tint `#DBE0EB` · `#424752`
+- raised (fields) `#FFFFFF` · `#2C2E33`
+
+**Ink (macOS label opacities, on the surface).** primary 85% · secondary 50/55% · tertiary 26/25% · quaternary 10%. Use `rgba(0,0,0,a)` light / `rgba(255,255,255,a)` dark.
+
+**Hairlines & fills (primary-ink opacities).** hairline border 6%, strong border 12%, separator 10%; interaction fills rest 6% → hover 8% → press 10%, subtle 4%.
+
+**Semantic = Apple system.** red `#FF3B30`·`#FF453A`, orange `#FF9500`·`#FF9F0A`, green `#34C759`·`#30D158`, blue `#007AFF`·`#0A84FF`, plus purple/pink/teal/indigo/brown/graphite/mint for per-calendar event dots. **RSVP:** accepted→green, tentative→orange, declined→red.
+
+---
+
+## Typography — Apple system faces
+
+- `--font-sans` SF Pro → `-apple-system, BlinkMacSystemFont, system-ui, …` (UI)
+- `--font-rounded` SF Pro Rounded → `ui-rounded, …` (day numerals — tabular)
+- `--font-mono` SF Mono → `ui-monospace, SFMono-Regular, Menlo, …` (times, week numbers — tabular)
+
+Compact scale (it's a menu-bar surface): large-title 26 · title 22 · **title2 17 semibold** (panel month header) · title3 15 · headline/body 13 · callout 12 · subheadline 11 · footnote/caption 10 · micro 7. Weights 400/500/600/700. Uppercase weekday headers get `letter-spacing: 0.04em`.
+
+> ⚠️ Fonts are Apple system keywords — real SF on macOS, platform-sans fallback elsewhere. No webfont files ship. Don't substitute a different family without asking; for pixel-faithful off-Mac rendering, supply licensed SF `@font-face` files.
+
+---
+
+## Geometry, depth, motion
+
+- **Spacing** 4pt scale: 4 / 8 / 12 / 16 / 20 / 24 / 32. Panel padding 16.
+- **Radii — continuous (squircle) corners.** controls 8 · cards 10 · panel & sheets 14 · chip 4 · capsule 999. Day cell 8.
+- **Materials.** Panel & sheets use `regularMaterial`: `backdrop-filter: saturate(180%) blur(20px)` + inset hairline. Transparency only on floating chrome (panel, command bar, agenda headers) — never dense content. Solid fallback = opaque panel surface.
+- **Cards = hairline border (6%) + low fill (4%)**, not a heavy shadow.
+- **Elevation (cool).** panel `0 4px 12px rgba(0,0,0,.12)` glass / `.06` solid · sheet `0 12px 40px rgba(0,0,0,.22)` · join button accent glow `0 3px 8px rgba(51,115,242,.22)`.
+- **Motion — two springs.** snappy `cubic-bezier(.22,1,.36,1)` ~200ms (hover, selection); smooth `cubic-bezier(.4,0,.2,1)` ~220ms (expand/disclose). Press scales to 0.97; join button lifts to 1.01. Always gate on `prefers-reduced-motion`.
+- **States.** hover fill 4→8% · press 10% · row hairline fades in on hover · selected = accent tint + 55% ring · disabled = 0.5 opacity.
+
+**Signature element — the DayCell:** today is a filled accent circle with a white SF-Rounded numeral; selection is an accent ring over a soft fill; events show as up to three overlapping calendar-colored dots (+N overflow).
+
+---
+
+## Content & voice
+
+Terse, functional, native-macOS — labels and short imperatives, no personality, no marketing.
+- **Title Case** for actions/menus/buttons: *New Event · Go to Today · Join Meeting · Link Plaud recording…* **Sentence case** for subtitles: *"Open Equinox when you sign in."*
+- Surface **keyboard shortcuts inline** with padded spacing: *"New Event   ⌘N"*, *"Go to Today   T"*, *"Pin Equinox   P"*.
+- **24-hour time**, en-dash range *"09:00 – 10:00"*; short relative cues *"in 10 min" / "now"*. Section headers: *Today / Tomorrow*, else *"Nov 18"* + short weekday.
+- RSVP: *Accept · Maybe · Decline*; pending shows a *Respond* badge.
+- Empty states quiet: *"No upcoming events."* Errors direct & actionable: *"No writable calendars available. Check Calendar access in Privacy settings."*
+- `…` marks actions that open more UI. **No emoji. No exclamation marks. No adjectives.**
+
+---
+
+## Iconography
+
+App uses **Apple SF Symbols**, hierarchical ~1.5–2px stroke (chevron.left/right, calendar, plus, pin/pin.fill, ellipsis, xmark, clock, mappin, video.fill, person.2.fill, waveform, gearshape, paintpalette). Menu-bar date badge is a **template image** in three styles (minimal filled-knockout / classic stroked / compact plain), optionally prefixed by a meeting-camera glyph. Provider glyphs: Zoom→video, Teams→person.2, Chime→phone.
+
+> ⚠️ SF Symbols are proprietary and can't ship to the web. Substitute **Lucide** (nearest stroke match) — the design system draws them inline in `components/core/Icon.jsx` (no CDN). Use Lucide for any web target; keep SF Symbols only in Mac-native code.
+
+---
+
+## Components (React, via `window.EquinoxDesignSystem_262896`)
+
+- **core** — `Icon`, `Button` (prominent / bordered / plain / destructive; regular/small), `IconButton` (square toolbar, `selected` ring), `Card` (secondary/subtle/raised), `Badge`, `Chip` (calendar dot + label), `Toggle`, `Segmented`.
+- **calendar** — `DayCell` (today/selected/dots/boundaries), `EventCard` (agenda row: spine + mono time + title + inline join), `AgendaHeader`, `MenuBarPill`.
+- **events** — `RSVPBar` (Accept/Maybe/Decline), `JoinButton` (accent-gradient meeting CTA), `MetadataRow` (icon-circle + label/value), `StatusChip`, `Banner` (error/warning).
+
+One prominent button per view. Compose kits from these primitives — don't re-implement them.
+
+---
+
+## Do / Don't
+
+**Do:** one accent; cool blue-grey glass; continuous corners; hairline-on-low-fill cards; SF type with rounded numerals + mono times; Title-Case terse copy; snappy/smooth motion; respect light & dark via `:root[data-theme="dark"]`.
+
+**Don't:** add a second brand color; use gradients on content (only the dark celestial desktop + the join button); use emoji; use heavy drop shadows; use generic fonts (Inter/Roboto); write chatty marketing copy; hand-roll SF Symbols as emoji or crude SVG — use the Lucide set.

@@ -51,12 +51,12 @@ struct PrivacySettingsTab: View {
                         Button(String(localized: "Request Access", comment: "")) {
                             appState.events.requestCalendarAccessIfNeeded()
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(EquinoxButtonStyle(variant: .prominent))
 
                         Button(String(localized: "Open System Settings", comment: "")) {
                             appState.openCalendarPrivacySettings()
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(EquinoxButtonStyle(variant: .bordered))
                     }
                     .padding(.vertical, SettingsDesign.rowVerticalPadding)
                 }

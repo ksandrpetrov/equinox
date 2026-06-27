@@ -31,11 +31,18 @@ struct ShortcutsSettingsTab: View {
             Text(title)
             Spacer()
             Text(shortcut)
-                .font(.caption.monospaced())
+                .font(EquinoxDesign.monoTimeFont(size: 11))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
+                .padding(.horizontal, EquinoxDesign.spacingSM)
+                .padding(.vertical, EquinoxDesign.spacingXS)
+                .background {
+                    RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
+                        .fill(EquinoxDesign.ColorToken.interactionSubtle)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
+                                .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
+                        }
+                }
         }
         .padding(.vertical, SettingsDesign.rowVerticalPadding)
     }

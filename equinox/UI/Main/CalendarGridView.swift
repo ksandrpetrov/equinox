@@ -4,6 +4,8 @@ struct CalendarGridView: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var prefs: PreferencesStore { appState.preferences }
     private var numRows: Int { prefs.calendarRowCount }
 
@@ -24,18 +26,53 @@ struct CalendarGridView: View {
 
     var body: some View {
         VStack(spacing: EquinoxDesign.spacingXS) {
-            HStack(spacing: 0) {
-                if prefs.showWeeks {
-                    Color.clear.frame(width: metrics.weekColumnWidth)
-                }
-                ForEach(Array(dowSymbols.enumerated()), id: \.offset) { index, symbol in
-                    Text(symbol.uppercased())
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(prefs.isWeekdayHighlighted(index, weekStartWeekday: prefs.weekStartWeekday) ? Color.secondary : Color.secondary.opacity(0.7))
-                        .frame(maxWidth: .infinity)
-                }
-            }
+            weekdayHeaderRow
 
+            gridBody
+                .id(appState.events.monthDate.julian)
+                .transition(monthTransition)
+        }
+        .padding(EquinoxDesign.spacingXS)
+        .background {
+            RoundedRectangle(cornerRadius: EquinoxDesign.radiusMD, style: .continuous)
+                .fill(EquinoxDesign.ColorToken.surfaceSecondary)
+        }
+        .focusable()
+        .focusEffectDisabled()
+        .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .return]) { press in
+            handleKeyPress(press)
+        }
+        .onAppear {
+            appState.events.refreshVisibleGridRange()
+        }
+        .onChange(of: numRows) { _, _ in
+            appState.events.refreshVisibleGridRange()
+        }
+        .animation(
+            EquinoxDesign.animation(EquinoxDesign.expandAnimation, reduceMotion: reduceMotion),
+            value: appState.events.monthDate.julian
+        )
+        .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
+        .accessibilityHint(String(localized: "Use arrow keys to move between days", comment: ""))
+    }
+
+    private var weekdayHeaderRow: some View {
+        HStack(spacing: 0) {
+            if prefs.showWeeks {
+                Color.clear.frame(width: metrics.weekColumnWidth)
+            }
+            ForEach(Array(dowSymbols.enumerated()), id: \.offset) { index, symbol in
+                Text(symbol.uppercased())
+                    .font(EquinoxDesign.weekdayHeaderFont())
+                    .tracking(EquinoxDesign.weekdayHeaderTracking())
+                    .foregroundStyle(prefs.isWeekdayHighlighted(index, weekStartWeekday: prefs.weekStartWeekday) ? Color.secondary : Color.secondary.opacity(0.7))
+                    .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    private var gridBody: some View {
+        VStack(spacing: EquinoxDesign.spacingXS) {
             ForEach(0..<numRows, id: \.self) { row in
                 HStack(spacing: 0) {
                     if prefs.showWeeks {
@@ -77,24 +114,14 @@ struct CalendarGridView: View {
                 }
             }
         }
-        .padding(EquinoxDesign.spacingXS)
-        .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusMD, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.surfaceSecondary)
-        }
-        .focusable()
-        .focusEffectDisabled()
-        .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .return]) { press in
-            handleKeyPress(press)
-        }
-        .onAppear {
-            appState.events.refreshVisibleGridRange()
-        }
-        .onChange(of: numRows) { _, _ in
-            appState.events.refreshVisibleGridRange()
-        }
-        .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
-        .accessibilityHint(String(localized: "Use arrow keys to move between days", comment: ""))
+    }
+
+    private var monthTransition: AnyTransition {
+        let insertion = AnyTransition.move(edge: appState.events.monthNavigationDirection == .forward ? .trailing : .leading)
+            .combined(with: .opacity)
+        let removal = AnyTransition.move(edge: appState.events.monthNavigationDirection == .forward ? .leading : .trailing)
+            .combined(with: .opacity)
+        return .asymmetric(insertion: insertion, removal: removal)
     }
 
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {

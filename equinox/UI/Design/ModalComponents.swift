@@ -41,15 +41,15 @@ struct ModalErrorBanner: View {
 
     private var foregroundColor: Color {
         switch style {
-        case .error: .red
-        case .warning: .secondary
+        case .error: EquinoxDesign.ColorToken.semanticRed
+        case .warning: EquinoxDesign.ColorToken.semanticOrange
         }
     }
 
     private var backgroundColor: Color {
         switch style {
-        case .error: Color.red.opacity(0.12)
-        case .warning: Color.secondary.opacity(0.12)
+        case .error: EquinoxDesign.ColorToken.semanticRed.opacity(0.12)
+        case .warning: EquinoxDesign.ColorToken.semanticOrange.opacity(0.12)
         }
     }
 }
@@ -140,8 +140,10 @@ struct ModalConfirmDialog: View {
             HStack {
                 Spacer()
                 Button(cancelTitle, action: onCancel)
+                    .buttonStyle(EquinoxButtonStyle(variant: .plain))
                     .keyboardShortcut(.cancelAction)
-                Button(confirmTitle, role: .destructive, action: onConfirm)
+                Button(confirmTitle, action: onConfirm)
+                    .buttonStyle(EquinoxButtonStyle(variant: .destructive))
                     .keyboardShortcut(.defaultAction)
             }
         }
@@ -169,5 +171,6 @@ extension View {
 
     func equinoxSheetPresentation() -> some View {
         presentationBackground(.regularMaterial)
+            .shadow(color: .black.opacity(0.22), radius: 20, y: 12)
     }
 }

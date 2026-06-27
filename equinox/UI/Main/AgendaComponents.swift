@@ -13,7 +13,7 @@ struct AgendaSectionHeader: View {
         HStack(spacing: EquinoxDesign.spacingSM - 2) {
             Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(isToday ? EquinoxDesign.ColorToken.todayAccent : .secondary)
+                .foregroundStyle(isToday ? EquinoxDesign.ColorToken.accent : .secondary)
             if !isToday && !isTomorrow {
                 Text(EquinoxFormatters.shortWeekday(nsDate))
                     .font(.caption.weight(.medium))
@@ -94,7 +94,7 @@ struct AgendaEventCard: View {
                 }
 
                 if let url = event.joinURL {
-                    JoinMeetingButton(url: url, metrics: metrics) {
+                    EquinoxJoinButton(url: url, variant: .compact, metrics: metrics) {
                         URLOpener.open(url)
                     }
                     .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : 0)
@@ -110,8 +110,7 @@ struct AgendaEventCard: View {
                             .symbolRenderingMode(.hierarchical)
                             .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                    .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
                     .help(String(localized: "Open in Plaud", comment: "Plaud agenda button help"))
                     .accessibilityLabel(String(localized: "Open in Plaud", comment: ""))
                     .padding(.trailing, EquinoxDesign.spacingSM)
@@ -121,11 +120,11 @@ struct AgendaEventCard: View {
         }
         .background(
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(calendarColor.opacity(isHovered ? 0.08 : 0.04))
+                .fill(EquinoxDesign.ColorToken.interactionSubtle)
         )
         .overlay {
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .strokeBorder(Color.primary.opacity(isHovered ? 0.08 : 0), lineWidth: 1)
+                .strokeBorder(Color.primary.opacity(isHovered ? 0.08 : 0.06), lineWidth: 1)
         }
         .opacity(isDeclined ? 0.72 : 1)
         .padding(.horizontal, EquinoxDesign.spacingXS)
@@ -155,7 +154,7 @@ struct AgendaEventCard: View {
             if let relative = relativeTimeString {
                 Text(relative)
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(EquinoxDesign.ColorToken.todayAccent)
+                    .foregroundStyle(EquinoxDesign.ColorToken.accent)
             }
         }
     }
@@ -175,7 +174,7 @@ struct AgendaEventCard: View {
                 if let relative = relativeTimeString {
                     Text(relative)
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(EquinoxDesign.ColorToken.todayAccent)
+                        .foregroundStyle(EquinoxDesign.ColorToken.accent)
                 }
             }
 

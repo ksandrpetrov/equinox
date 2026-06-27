@@ -17,7 +17,7 @@ struct AppearancePreview: View {
     }
 
     private var previewEventColor: Color {
-        Color.accentColor
+        EquinoxDesign.ColorToken.accent
     }
 
     var body: some View {
@@ -38,7 +38,7 @@ struct AppearancePreview: View {
                     Image(nsImage: icon)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(.quaternary.opacity(0.4), in: Capsule())
+                        .background(EquinoxDesign.ColorToken.interactionSubtle, in: Capsule())
                 }
 
                 HStack(spacing: EquinoxDesign.spacingSM) {
@@ -53,10 +53,7 @@ struct AppearancePreview: View {
             .padding(.horizontal, EquinoxDesign.spacingMD)
             .padding(.vertical, EquinoxDesign.spacingXS)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
-                    .fill(.quaternary.opacity(0.35))
-            }
+            .equinoxCard(style: .subtle, cornerRadius: SettingsDesign.sectionCornerRadius)
         }
     }
 
@@ -80,10 +77,7 @@ struct AppearancePreview: View {
             Spacer(minLength: 0)
         }
         .padding(.vertical, 3)
-        .background(
-            RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(previewEventColor.opacity(0.04))
-        )
+        .equinoxCard(style: .subtle)
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -97,7 +91,7 @@ struct AppearancePreview: View {
             isHighlighted: false,
             isMonthBoundaryStart: false,
             isMonthBoundaryEnd: false,
-            dotColors: prefs.showEventDots ? [Color.accentColor] : nil,
+            dotColors: prefs.showEventDots ? [EquinoxDesign.ColorToken.accent] : nil,
             metrics: previewMetrics,
             calendar: previewCalendar,
             onSelect: {},

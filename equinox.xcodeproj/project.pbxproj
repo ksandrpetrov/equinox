@@ -69,7 +69,6 @@
 		D0E001B1B2C3D4E5F6012345 /* Core/EventDraftDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */; };
 		MP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */; };
 		DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */; };
-		JMB001A1B2C3D4E5F6012345 /* UI/Events/JoinMeetingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = JMB001A1B2C3D4E5F6012346 /* UI/Events/JoinMeetingButton.swift */; };
 		D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */; };
 		D0E003A1B2C3D4E5F6012345 /* Services/EventKit/CalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */; };
 		D0E004A1B2C3D4E5F6012345 /* Services/Platform/DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */; };
@@ -79,6 +78,7 @@
 		D0E008A1B2C3D4E5F6012345 /* UI/Design/DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E008A1B2C3D4E5F6012346 /* UI/Design/DesignTokens.swift */; };
 		PCS001A1B2C3D4E5F6012345 /* UI/Design/ParticipationChipStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = PCS001A1B2C3D4E5F6012346 /* UI/Design/ParticipationChipStyle.swift */; };
 		D0E009A1B2C3D4E5F6012345 /* UI/Design/PanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E009A1B2C3D4E5F6012346 /* UI/Design/PanelComponents.swift */; };
+		EQX001A1B2C3D4E5F6012345 /* UI/Design/EquinoxComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = EQX001A1B2C3D4E5F6012346 /* UI/Design/EquinoxComponents.swift */; };
 		D0E010A1B2C3D4E5F6012345 /* UI/Design/SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */; };
 		D0E011A1B2C3D4E5F6012345 /* UI/Main/AgendaComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E011A1B2C3D4E5F6012346 /* UI/Main/AgendaComponents.swift */; };
 		D32E536A574A4094924F19FF /* UI/Main/MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DD337E520F4A5C98A656EE /* UI/Main/MainPanelView.swift */; };
@@ -253,7 +253,6 @@
 		MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingProvider.swift; sourceTree = "<group>"; };
 		BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/BridgeEventMapping.swift; sourceTree = "<group>"; };
 		DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/DayEventBuilder.swift; sourceTree = "<group>"; };
-		JMB001A1B2C3D4E5F6012346 /* UI/Events/JoinMeetingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Events/JoinMeetingButton.swift; sourceTree = "<group>"; };
 		MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingProviderTests.swift; sourceTree = "<group>"; };
 		BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeEventFixturesTests.swift; sourceTree = "<group>"; };
 		BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeDateParsingTests.swift; sourceTree = "<group>"; };
@@ -266,6 +265,7 @@
 		D0E008A1B2C3D4E5F6012346 /* UI/Design/DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/DesignTokens.swift; sourceTree = "<group>"; };
 		PCS001A1B2C3D4E5F6012346 /* UI/Design/ParticipationChipStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/ParticipationChipStyle.swift; sourceTree = "<group>"; };
 		D0E009A1B2C3D4E5F6012346 /* UI/Design/PanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/PanelComponents.swift; sourceTree = "<group>"; };
+		EQX001A1B2C3D4E5F6012346 /* UI/Design/EquinoxComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/EquinoxComponents.swift; sourceTree = "<group>"; };
 		D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/SettingsComponents.swift; sourceTree = "<group>"; };
 		D0E011A1B2C3D4E5F6012346 /* UI/Main/AgendaComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/AgendaComponents.swift; sourceTree = "<group>"; };
 		DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/DayEventUniqueCalendars.swift; sourceTree = "<group>"; };
@@ -455,6 +455,7 @@
 				DEC001A1B2C3D4E5F6012346 /* UI/Design/DayEventColors.swift */,
 				SCC001A1B2C3D4E5F6012346 /* UI/Design/SelectableCalendarColors.swift */,
 				D0E009A1B2C3D4E5F6012346 /* UI/Design/PanelComponents.swift */,
+				EQX001A1B2C3D4E5F6012346 /* UI/Design/EquinoxComponents.swift */,
 				MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */,
 				D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */,
 				C44FCB3CA1B3432E91849D32 /* UI/Main/DayCellView.swift */,
@@ -467,7 +468,6 @@
 				7CD76B61B3D540A2A2F4D695 /* UI/Events/NewEventSheet.swift */,
 				1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */,
 				JUP001A1B2C3D4E5F6012346 /* UI/Events/JoinURLPresentation.swift */,
-				JMB001A1B2C3D4E5F6012346 /* UI/Events/JoinMeetingButton.swift */,
 				EDC001A1B2C3D4E5F6012346 /* UI/Events/EventDetailComponents.swift */,
 				RSVP002A1B2C3D4E5F6012346 /* UI/Events/EventRSVPBar.swift */,
 				FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */,
@@ -804,6 +804,7 @@
 				DEC001A1B2C3D4E5F6012345 /* UI/Design/DayEventColors.swift in Sources */,
 				SCC001A1B2C3D4E5F6012345 /* UI/Design/SelectableCalendarColors.swift in Sources */,
 				D0E009A1B2C3D4E5F6012345 /* UI/Design/PanelComponents.swift in Sources */,
+				EQX001A1B2C3D4E5F6012345 /* UI/Design/EquinoxComponents.swift in Sources */,
 				MOD001A1B2C3D4E5F6012345 /* UI/Design/ModalComponents.swift in Sources */,
 				D0E010A1B2C3D4E5F6012345 /* UI/Design/SettingsComponents.swift in Sources */,
 				A2BAAADA0CCA4971A1201CDE /* UI/Main/DayCellView.swift in Sources */,
@@ -816,7 +817,6 @@
 				E21BE351F94E4C22BC7FF0C0 /* UI/Events/NewEventSheet.swift in Sources */,
 				97986F0E0B454042872C3572 /* UI/Events/EventDetailView.swift in Sources */,
 				JUP001A1B2C3D4E5F6012345 /* UI/Events/JoinURLPresentation.swift in Sources */,
-				JMB001A1B2C3D4E5F6012345 /* UI/Events/JoinMeetingButton.swift in Sources */,
 				EDC001A1B2C3D4E5F6012345 /* UI/Events/EventDetailComponents.swift in Sources */,
 				RSVP002A1B2C3D4E5F6012345 /* UI/Events/EventRSVPBar.swift in Sources */,
 				1F343D1442E04D48AF79E26E /* UI/Settings/SettingsView.swift in Sources */,

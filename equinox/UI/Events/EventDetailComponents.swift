@@ -217,59 +217,8 @@ struct EventDetailJoinButton: View {
     let url: URL
     let action: () -> Void
 
-    @State private var isHovered = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: EquinoxDesign.spacingMD) {
-                Image(systemName: JoinURLPresentation.meetingSystemImage(for: url))
-                    .font(.title3.weight(.semibold))
-                    .symbolRenderingMode(.hierarchical)
-                    .frame(width: 36, height: 36)
-                    .background {
-                        Circle()
-                            .fill(Color.white.opacity(0.18))
-                    }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(String(localized: "Join Meeting", comment: ""))
-                        .font(.headline)
-                    Text(JoinURLPresentation.meetingDisplayName(for: url))
-                        .font(.caption)
-                        .opacity(0.85)
-                }
-
-                Spacer(minLength: 0)
-
-                Image(systemName: "arrow.up.right")
-                    .font(.caption.weight(.bold))
-                    .opacity(0.85)
-            }
-            .foregroundStyle(.white)
-            .padding(.horizontal, EquinoxDesign.spacingMD)
-            .padding(.vertical, EquinoxDesign.spacingMD)
-            .background {
-                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.accentColor,
-                                Color.accentColor.opacity(isHovered ? 0.82 : 0.92)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: Color.accentColor.opacity(isHovered ? 0.35 : 0.22), radius: 8, y: 3)
-            }
-            .scaleEffect(isHovered && !reduceMotion ? 1.01 : 1)
-        }
-        .buttonStyle(.plain)
-        .onHover { isHovered = $0 }
-        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-        .accessibilityLabel(String(localized: "Join Meeting", comment: ""))
-        .accessibilityHint(JoinURLPresentation.meetingDisplayName(for: url))
+        EquinoxJoinButton(url: url, variant: .full, action: action)
     }
 }
 

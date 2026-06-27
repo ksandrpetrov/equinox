@@ -141,17 +141,16 @@ struct AgendaView: View {
             Image(systemName: "calendar.badge.clock")
                 .font(.system(size: 32))
                 .foregroundStyle(.tertiary)
-            Text(String(localized: "No upcoming events", comment: "Agenda empty list"))
+            Text(String(localized: "No upcoming events.", comment: "Agenda empty list"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Button {
                 appState.panel.newEventInitialDate = appState.events.selectedDate
                 appState.panel.isNewEventSheetPresented = true
             } label: {
-                Text(String(localized: "Create Event", comment: "Empty agenda CTA"))
+                Text(String(localized: "New Event", comment: "Empty agenda CTA"))
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
+            .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

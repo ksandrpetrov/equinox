@@ -37,6 +37,14 @@ final class EventsCoordinator {
     /// Bumped after navigation or panel reopen that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
 
+    /// Direction of the last month navigation for grid transition animation.
+    private(set) var monthNavigationDirection: MonthNavigationDirection = .forward
+
+    enum MonthNavigationDirection {
+        case forward
+        case backward
+    }
+
     func requestAgendaScroll() {
         agendaScrollToken &+= 1
     }
@@ -140,10 +148,12 @@ final class EventsCoordinator {
     }
 
     func goToPreviousMonth() {
+        monthNavigationDirection = .backward
         selectDate(selectedDate.addingMonthsPreservingDay(-1, calendar: calendar))
     }
 
     func goToNextMonth() {
+        monthNavigationDirection = .forward
         selectDate(selectedDate.addingMonthsPreservingDay(1, calendar: calendar))
     }
 

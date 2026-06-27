@@ -47,7 +47,7 @@ enum EquinoxFormatters {
     }
 
     static func agendaHeader(_ date: Date) -> String {
-        let formatter = formatter(key: "agenda.header") { $0.dateFormat = "EEEE, d MMMM" }
+        let formatter = formatter(key: "agenda.header") { $0.setLocalizedDateFormatFromTemplate("MMMd") }
         return formatter.string(from: date)
     }
 

@@ -4,6 +4,12 @@ struct PanelCommandBar: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    private var backgroundStyle: BackgroundStyle {
+        BackgroundStyle(rawValue: appState.preferences.backgroundStyle) ?? .glass
+    }
+
     private var monthTitle: String {
         EquinoxFormatters.formatter(key: "month.year") { $0.dateFormat = "MMMM yyyy" }
             .string(from: appState.events.monthDate.date(in: appState.calendar))
@@ -50,13 +56,16 @@ struct PanelCommandBar: View {
                     appState.panel.newEventInitialDate = appState.events.selectedDate
                     appState.panel.isNewEventSheetPresented = true
                 } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 13, weight: .semibold))
-                        .symbolRenderingMode(.hierarchical)
-                        .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
+                    HStack(spacing: EquinoxDesign.spacingXS) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 11, weight: .bold))
+                        Text(String(localized: "New Event", comment: ""))
+                            .font(.caption.weight(.semibold))
+                    }
+                    .padding(.horizontal, EquinoxDesign.spacingSM)
+                    .padding(.vertical, EquinoxDesign.spacingXS)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
+                .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
                 .help(String(localized: "New Event   ⌘N", comment: ""))
                 .accessibilityLabel(String(localized: "New Event", comment: ""))
                 .keyboardShortcut("n", modifiers: .command)
@@ -102,7 +111,7 @@ struct PanelCommandBar: View {
         }
         .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.spacingXS)
-        .panelCommandBarBackground()
+        .panelCommandBarBackground(style: backgroundStyle, reduceTransparency: reduceTransparency)
         .frame(height: EquinoxDesign.commandBarHeight)
         .padding(.bottom, EquinoxDesign.spacingXS)
     }

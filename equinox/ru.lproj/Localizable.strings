@@ -72,7 +72,7 @@
 "New Event   ⌘N" = "Новое событие   ⌘N";
 "Next month" = "Следующий месяц";
 "No events" = "Нет событий";
-"No upcoming events" = "Нет предстоящих событий";
+"No upcoming events." = "Нет предстоящих событий.";
 /* Alert none
    Repeat none */
 "None" = "Нет";
@@ -128,7 +128,6 @@
 "Now" = "Сейчас";
 "in %lld min" = "через %lld мин";
 "in %lld h" = "через %lld ч";
-"Create Event" = "Создать событие";
 "Show Details" = "Подробности";
 "Show month boundaries" = "Показывать границы месяца";
 "Highlight days" = "Выделять дни";
@@ -167,6 +166,7 @@
 "Calendars…" = "Календари…";
 "Retry" = "Повторить";
 "Loading events" = "Загрузка событий";
+"New Event   ⌘N · Go to Today   T · Pin Equinox   P" = "Новое событие   ⌘N · Перейти к сегодня   T · Закрепить Equinox   P";
 "⌘N New Event · T Today · P Pin" = "⌘N Новое событие · T Сегодня · P Закрепить";
 "Dismiss shortcut tip" = "Скрыть подсказку";
 "Calendar access is required to load events." = "Для загрузки событий требуется доступ к календарю.";
