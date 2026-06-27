@@ -25,7 +25,11 @@ final class PanelWindowController {
         updatePanelAgendaMaxHeight(statusItem: statusItem)
 
         let needsPositioning = !panel.isVisible
-        applyGeometry(statusItem: statusItem, resize: true, reposition: needsPositioning)
+        if needsPositioning {
+            applyGeometry(statusItem: statusItem, resize: false, reposition: true)
+        } else {
+            applyGeometry(statusItem: statusItem, resize: true, reposition: false)
+        }
         if !isPinned {
             NSApp.activate()
         }
@@ -34,12 +38,15 @@ final class PanelWindowController {
 
         if needsPositioning {
             appState.events.requestAgendaScroll()
+            DispatchQueue.main.async { [weak self, weak statusItem] in
+                guard let self, let statusItem, self.isVisible else { return }
+                self.applyGeometry(statusItem: statusItem, resize: true, reposition: true)
+            }
         }
     }
 
     func hide() {
         panel?.orderOut(nil)
-        detachHostingControllerFromContainers()
         appState.panel.isPanelVisible = false
     }
 
@@ -105,8 +112,10 @@ final class PanelWindowController {
     }
 
     private func assignHostingController(to panel: NSPanel) {
-        detachHostingControllerFromContainers()
-        panel.contentViewController = ensureHostingController()
+        let hostingController = ensureHostingController()
+        if panel.contentViewController !== hostingController {
+            panel.contentViewController = hostingController
+        }
     }
 
     private func ensureHostingController() -> NSHostingController<MainPanelView> {
@@ -117,12 +126,6 @@ final class PanelWindowController {
         hc.sizingOptions = [.intrinsicContentSize]
         hostingController = hc
         return hc
-    }
-
-    private func detachHostingControllerFromContainers() {
-        if panel?.contentViewController === hostingController {
-            panel?.contentViewController = nil
-        }
     }
 
     private func applyGeometry(

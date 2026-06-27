@@ -140,10 +140,16 @@ final class EventsCoordinator {
     }
 
     func goToToday() {
-        todayDate = CalendarDate.today(calendar: calendar)
-        monthDate = todayDate
-        selectedDate = todayDate
-        refreshVisibleGridRange()
+        let newToday = CalendarDate.today(calendar: calendar)
+        let monthChanged = newToday.monthIndex != monthDate.monthIndex || newToday.year != monthDate.year
+        let needsInitialVisibleRange = firstVisibleDate == lastVisibleDate
+
+        todayDate = newToday
+        monthDate = newToday
+        selectedDate = newToday
+        if monthChanged || needsInitialVisibleRange {
+            refreshVisibleGridRange()
+        }
         requestAgendaScroll()
     }
 

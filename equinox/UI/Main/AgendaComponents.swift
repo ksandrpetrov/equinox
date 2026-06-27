@@ -97,22 +97,19 @@ struct AgendaEventCard: View {
                     EquinoxJoinButton(url: url, variant: .compact, metrics: metrics) {
                         URLOpener.open(url)
                     }
-                    .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : 0)
+                    .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : EquinoxDesign.spacingXS)
                     .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
                 }
 
                 if let match = plaudMatch {
-                    Button {
+                    PanelIconButton(
+                        symbol: "waveform",
+                        help: String(localized: "Open in Plaud", comment: "Plaud agenda button help"),
+                        accessibilityLabel: String(localized: "Open in Plaud", comment: ""),
+                        buttonSize: metrics.toolbarButtonSize
+                    ) {
                         URLOpener.open(match.webURL)
-                    } label: {
-                        Image(systemName: "waveform")
-                            .font(.system(size: 12))
-                            .symbolRenderingMode(.hierarchical)
-                            .frame(width: metrics.toolbarButtonSize, height: metrics.toolbarButtonSize)
                     }
-                    .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
-                    .help(String(localized: "Open in Plaud", comment: "Plaud agenda button help"))
-                    .accessibilityLabel(String(localized: "Open in Plaud", comment: ""))
                     .padding(.trailing, EquinoxDesign.spacingSM)
                     .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
                 }
