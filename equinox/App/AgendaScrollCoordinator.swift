@@ -1,9 +1,14 @@
 import Foundation
 
+enum AgendaScrollTarget: Hashable {
+    case day(julian: Int)
+    case event(id: String)
+}
+
 @Observable
 @MainActor
 final class AgendaScrollCoordinator {
-    var scrolledSectionID: Int?
+    var scrolledTarget: AgendaScrollTarget?
     private(set) var rangeFirst: CalendarDate?
     private(set) var rangeLast: CalendarDate?
 
@@ -60,15 +65,17 @@ final class AgendaScrollCoordinator {
         }
     }
 
-    func scrollToSelectedDate(appState: AppState) {
+    func scrollToFocus(appState: AppState) {
         let anchor = appState.events.todayDate
+        let selected = appState.events.selectedDate
         bootstrapRangeIfNeeded(anchor: anchor)
-        ensureDateInRange(appState.events.selectedDate, anchor: anchor)
+        ensureDateInRange(selected, anchor: anchor)
         commitAgendaToCoordinator(appState.events, anchor: anchor)
         isProgrammaticScroll = true
         programmaticScrollGeneration &+= 1
         let generation = programmaticScrollGeneration
-        scrollAgenda(to: appState.events.selectedDate.julian)
+        let target = focusTarget(appState: appState)
+        scrollAgenda(to: target)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             if self.programmaticScrollGeneration == generation {
                 self.isProgrammaticScroll = false
@@ -76,9 +83,8 @@ final class AgendaScrollCoordinator {
         }
     }
 
-    func handleAgendaScroll(to julian: Int?, anchor: CalendarDate) {
-        guard let julian else { return }
-        let visibleDate = CalendarDate(julian: julian)
+    func handleAgendaScroll(to target: AgendaScrollTarget?, anchor: CalendarDate, appState: AppState) {
+        guard let target, let visibleDate = visibleDate(for: target, appState: appState) else { return }
         extendRangeIfNeeded(for: visibleDate, anchor: anchor)
     }
 
@@ -87,8 +93,8 @@ final class AgendaScrollCoordinator {
             isProgrammaticScroll = false
             return
         }
-        guard let julian = scrolledSectionID else { return }
-        let visibleDate = CalendarDate(julian: julian)
+        guard let target = scrolledTarget,
+              let visibleDate = visibleDate(for: target, appState: appState) else { return }
         appState.events.syncSelectionFromAgendaScroll(visibleDate)
         let anchor = appState.events.todayDate
         let range = displayRange(anchor: anchor)
@@ -98,19 +104,43 @@ final class AgendaScrollCoordinator {
         commitAgendaToCoordinator(appState.events, anchor: anchor)
     }
 
+    private func focusTarget(appState: AppState) -> AgendaScrollTarget {
+        let selected = appState.events.selectedDate
+        let today = appState.events.todayDate
+        if selected == today,
+           let eventID = AgendaFocus.focusEventID(in: appState.events.events(for: selected)) {
+            return .event(id: eventID)
+        }
+        return .day(julian: selected.julian)
+    }
+
+    private func visibleDate(for target: AgendaScrollTarget, appState: AppState) -> CalendarDate? {
+        switch target {
+        case .day(let julian):
+            return CalendarDate(julian: julian)
+        case .event(let id):
+            for (date, events) in appState.events.eventsByDate {
+                if events.contains(where: { $0.id == id }) {
+                    return date
+                }
+            }
+            return nil
+        }
+    }
+
     private func applyRange(first: CalendarDate, last: CalendarDate) {
         rangeFirst = first
         rangeLast = last
     }
 
-    private func scrollAgenda(to julian: Int) {
-        guard scrolledSectionID == julian else {
-            scrolledSectionID = julian
+    private func scrollAgenda(to target: AgendaScrollTarget) {
+        guard scrolledTarget == target else {
+            scrolledTarget = target
             return
         }
-        scrolledSectionID = nil
+        scrolledTarget = nil
         DispatchQueue.main.async {
-            self.scrolledSectionID = julian
+            self.scrolledTarget = target
         }
     }
 }

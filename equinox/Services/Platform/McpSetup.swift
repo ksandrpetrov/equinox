@@ -20,8 +20,8 @@ struct McpSetup: Equatable {
 enum McpConfigurator {
     static let serverName = "equinox-calendar"
 
+    @MainActor
     static func buildSetup(enabled: Bool? = nil) -> McpSetup {
-        ensureBundledBridgeInstalled()
         let serverPath = resolveServerPath()
         let bridgePath = resolveBridgePath()
         let nodePath = resolveNodeExecutable()
@@ -46,6 +46,7 @@ enum McpConfigurator {
         )
     }
 
+    @MainActor
     static func setEnabled(_ enabled: Bool) throws {
         if enabled {
             try ensureCursorConfig()
@@ -66,36 +67,44 @@ enum McpConfigurator {
         }
     }
 
+    @MainActor
     static func ensureCursorConfigIfEnabled() {
         guard PreferencesStore.shared.isMcpEnabled else { return }
         try? ensureCursorConfig()
         try? ensureClaudeDesktopConfig()
     }
 
+    @MainActor
     static func ensureCursorConfig() throws {
         try ensureClientConfig(at: cursorUserConfigPath())
     }
 
+    @MainActor
     static func ensureClaudeDesktopConfig() throws {
         try ensureClientConfig(at: claudeDesktopConfigPath())
     }
 
+    @MainActor
     static func installCursorConfig(nodePath: String, serverPath: String, bridgePath: String) throws {
         try installClientConfig(at: cursorUserConfigPath(), nodePath: nodePath, serverPath: serverPath, bridgePath: bridgePath)
     }
 
+    @MainActor
     static func installClaudeDesktopConfig(nodePath: String, serverPath: String, bridgePath: String) throws {
         try installClientConfig(at: claudeDesktopConfigPath(), nodePath: nodePath, serverPath: serverPath, bridgePath: bridgePath)
     }
 
+    @MainActor
     static func removeCursorConfig() throws {
         try removeClientConfig(at: cursorUserConfigPath())
     }
 
+    @MainActor
     static func removeClaudeDesktopConfig() throws {
         try removeClientConfig(at: claudeDesktopConfigPath())
     }
 
+    @MainActor
     private static func ensureClientConfig(at configPath: String) throws {
         let setup = buildSetup()
         guard setup.isServerReady, setup.isBridgeReady, setup.isNodeReady else {
@@ -261,8 +270,8 @@ enum McpConfigurator {
         if let override = ProcessInfo.processInfo.environment["EQUINOX_MCP_NODE_PATH"] {
             candidates.append(URL(fileURLWithPath: override))
         }
-        if let which = whichExecutable("node") {
-            candidates.append(which)
+        if let pathNode = resolvedNodeFromPath {
+            candidates.append(pathNode)
         }
         candidates.append(URL(fileURLWithPath: "/opt/homebrew/bin/node"))
         candidates.append(URL(fileURLWithPath: "/usr/local/bin/node"))
@@ -342,20 +351,17 @@ enum McpConfigurator {
         return FileManager.default.homeDirectoryForCurrentUser
     }
 
-    private static func whichExecutable(_ name: String) -> URL? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        process.arguments = [name]
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = Pipe()
-        guard (try? process.run()) != nil else { return nil }
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else { return nil }
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let text = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !text.isEmpty else { return nil }
-        return URL(fileURLWithPath: text)
+    private static let resolvedNodeFromPath: URL? = resolveNodeFromPathEnvironment()
+
+    private static func resolveNodeFromPathEnvironment() -> URL? {
+        guard let pathEnv = ProcessInfo.processInfo.environment["PATH"] else { return nil }
+        for component in pathEnv.split(separator: ":") {
+            let candidate = URL(fileURLWithPath: String(component)).appendingPathComponent("node")
+            if FileManager.default.isExecutableFile(atPath: candidate.path) {
+                return candidate
+            }
+        }
+        return nil
     }
 
     private static func defaultClientConfig() -> [String: Any] {

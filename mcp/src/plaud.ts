@@ -414,9 +414,9 @@ function resolveRecordingRange(input: PlaudRecordingsInput): { start: Date; end:
   const start = parseLocalDate(startDate)
   const end = input.date || !input.endDate
     ? addLocalDays(start, 1)
-    : parseLocalDate(input.endDate)
+    : addLocalDays(parseLocalDate(input.endDate), 1)
   if (end <= start) {
-    throw new PlaudCacheError("endDate must be after startDate.")
+    throw new PlaudCacheError("endDate must be on or after startDate.")
   }
   return { start, end }
 }

@@ -30,7 +30,7 @@ struct CalendarGridView: View {
 
             gridBody
                 .id(appState.events.monthDate.julian)
-                .transition(monthTransition)
+                .transition(EquinoxDesign.monthTransition(forward: appState.events.monthNavigationDirection == .forward))
         }
         .padding(EquinoxDesign.spacingXS)
         .background {
@@ -65,7 +65,7 @@ struct CalendarGridView: View {
                 Text(symbol.uppercased())
                     .font(EquinoxDesign.weekdayHeaderFont())
                     .tracking(EquinoxDesign.weekdayHeaderTracking())
-                    .foregroundStyle(prefs.isWeekdayHighlighted(index, weekStartWeekday: prefs.weekStartWeekday) ? Color.secondary : Color.secondary.opacity(0.7))
+                    .foregroundStyle(prefs.isWeekdayHighlighted(index, weekStartWeekday: prefs.weekStartWeekday) ? Color.secondary : EquinoxDesign.ColorToken.weekdayDimmed)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -79,7 +79,7 @@ struct CalendarGridView: View {
                         let mondayCol = columnForWeekday(startDOW: prefs.weekStartWeekday, dow: 1)
                         let weekDate = gridDates[row * 7 + mondayCol]
                         Text("\(CalendarDate.weekOfYear(year: weekDate.year, monthIndex: weekDate.monthIndex, day: weekDate.day))")
-                            .font(.system(size: metrics.fontSize - 1, design: .monospaced))
+                            .font(EquinoxDesign.monoTimeFont(size: metrics.fontSize - 1))
                             .foregroundStyle(.tertiary)
                             .contentTransition(.numericText())
                             .frame(width: metrics.weekColumnWidth)
@@ -114,14 +114,6 @@ struct CalendarGridView: View {
                 }
             }
         }
-    }
-
-    private var monthTransition: AnyTransition {
-        let insertion = AnyTransition.move(edge: appState.events.monthNavigationDirection == .forward ? .trailing : .leading)
-            .combined(with: .opacity)
-        let removal = AnyTransition.move(edge: appState.events.monthNavigationDirection == .forward ? .leading : .trailing)
-            .combined(with: .opacity)
-        return .asymmetric(insertion: insertion, removal: removal)
     }
 
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {

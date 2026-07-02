@@ -32,6 +32,7 @@ let iconSizes: [(String, Int)] = [
 
 let iconMarginRatio: CGFloat = 0.098
 let iconCornerRatio: CGFloat = 0.2237
+// Matches SurfaceWindow dark (#1E1F22) in Colors.xcassets
 let iconBackground = NSColor(calibratedRed: 30 / 255, green: 31 / 255, blue: 34 / 255, alpha: 1)
 let iconEdge = NSColor.white.withAlphaComponent(0.10)
 

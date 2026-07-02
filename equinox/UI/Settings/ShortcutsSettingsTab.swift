@@ -10,7 +10,7 @@ struct ShortcutsSettingsTab: View {
             ) {
                 SettingsRow(title: String(localized: "Keyboard shortcut", comment: "")) {
                     KeyboardShortcuts.Recorder(for: .togglePanel)
-                        .frame(width: 160, height: 28)
+                        .frame(width: EquinoxDesign.ControlWidth.shortcutRecorder, height: EquinoxDesign.ControlWidth.shortcutRecorderHeight)
                 }
             }
 

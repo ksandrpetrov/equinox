@@ -17,7 +17,7 @@ struct PanelCommandBar: View {
 
     var body: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
-            PanelButtonGroup(spacing: 2) {
+            PanelButtonGroup(spacing: EquinoxDesign.spacingMicro) {
                 PanelIconButton(
                     symbol: "chevron.left",
                     help: String(localized: "Previous month", comment: ""),
@@ -58,7 +58,7 @@ struct PanelCommandBar: View {
                 } label: {
                     HStack(spacing: EquinoxDesign.spacingXS) {
                         Image(systemName: "plus")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.caption.weight(.bold))
                         Text(String(localized: "New Event", comment: ""))
                             .font(.caption.weight(.semibold))
                     }

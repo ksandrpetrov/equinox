@@ -48,8 +48,8 @@ struct ModalErrorBanner: View {
 
     private var backgroundColor: Color {
         switch style {
-        case .error: EquinoxDesign.ColorToken.semanticRed.opacity(0.12)
-        case .warning: EquinoxDesign.ColorToken.semanticOrange.opacity(0.12)
+        case .error: EquinoxDesign.ColorToken.semanticRed.opacity(EquinoxDesign.StateOpacity.badgeTint)
+        case .warning: EquinoxDesign.ColorToken.semanticOrange.opacity(EquinoxDesign.StateOpacity.badgeTint)
         }
     }
 }
@@ -171,6 +171,10 @@ extension View {
 
     func equinoxSheetPresentation() -> some View {
         presentationBackground(.regularMaterial)
-            .shadow(color: .black.opacity(0.22), radius: 20, y: 12)
+            .shadow(
+                color: .black.opacity(EquinoxDesign.ShadowToken.sheetOpacity),
+                radius: EquinoxDesign.ShadowToken.sheetRadius,
+                y: EquinoxDesign.ShadowToken.sheetYOffset
+            )
     }
 }

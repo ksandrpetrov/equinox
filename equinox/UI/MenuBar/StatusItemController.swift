@@ -165,8 +165,8 @@ final class StatusItemController: NSObject {
 
         if prefs.isIconHidden {
             if prefs.showMeetingIndicator && appState.events.shouldShowMeetingIndicator {
-                button.image = NSImage(named: "meetSolid")
-                button.image?.isTemplate = true
+                let scale = button.window?.screen?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+                button.image = MenuBarIconRenderer.meetingIndicatorImage(scale: scale)
                 button.imagePosition = .imageLeading
             } else {
                 button.image = nil
@@ -184,7 +184,7 @@ final class StatusItemController: NSObject {
             var title = iconDateFormatter.string(from: Date())
             if !prefs.isIconHidden { title = " " + title }
             button.title = title
-            button.font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: MenuBarDesign.clockFontSize, weight: .medium)
         } else {
             button.title = ""
         }

@@ -98,4 +98,26 @@ describe("findFreeTime", () => {
     expect(slots.length).toBeGreaterThan(0)
     expect(slots.every((slot) => slot.durationMinutes >= 30)).toBe(true)
   })
+
+  it("clamps free slots to workEnd when busy events start after hours", () => {
+    const events = [
+      event({
+        title: "Dinner",
+        startDate: "2026-06-13T19:00:00.000Z",
+        endDate: "2026-06-13T20:00:00.000Z",
+      }),
+    ]
+
+    const slots = findFreeTime(events, "2026-06-13", "2026-06-13", "09:00", "18:00", 30)
+    expect(slots).toHaveLength(1)
+    expect(new Date(slots[0].end).getHours()).toBeLessThanOrEqual(18)
+  })
+})
+
+describe("analytics date range", () => {
+  it("rejects ranges longer than 366 days", () => {
+    expect(() => analyzeSchedule([], "2025-01-01", "2026-12-31", false)).toThrow(
+      "Date range spans",
+    )
+  })
 })

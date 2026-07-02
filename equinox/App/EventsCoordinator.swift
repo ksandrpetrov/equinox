@@ -8,6 +8,7 @@ final class EventsCoordinator {
     private let preferences: PreferencesStore
     var onMeetingIndicatorChanged: () -> Void = {}
     var onPlaudDataChanged: () -> Void = {}
+    var isPanelVisible: () -> Bool = { false }
 
     var monthDate: CalendarDate
     var selectedDate: CalendarDate
@@ -33,6 +34,7 @@ final class EventsCoordinator {
     private var loadingIndicatorGeneration = 0
     private var loadingIndicatorVisibleSince: Date?
     private var fetchGeneration = 0
+    private var awaitingAgendaFocusAfterFetch = false
 
     /// Bumped after navigation or panel reopen that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
@@ -47,6 +49,9 @@ final class EventsCoordinator {
 
     func requestAgendaScroll() {
         agendaScrollToken &+= 1
+        if isPanelVisible() {
+            awaitingAgendaFocusAfterFetch = true
+        }
     }
 
     init(
@@ -92,6 +97,7 @@ final class EventsCoordinator {
         lastFetchError = await calendarStore.lastFetchError
         updateMeetingIndicator()
         onPlaudDataChanged()
+        maybeRefocusAgendaAfterFetch()
     }
 
     func refreshFetchRange(reason: FetchRangeRefreshReason) {
@@ -342,6 +348,14 @@ final class EventsCoordinator {
             self.shouldShowLoadingIndicator = false
             self.loadingIndicatorVisibleSince = nil
         }
+    }
+
+    private func maybeRefocusAgendaAfterFetch() {
+        guard awaitingAgendaFocusAfterFetch,
+              isPanelVisible(),
+              selectedDate == todayDate else { return }
+        awaitingAgendaFocusAfterFetch = false
+        agendaScrollToken &+= 1
     }
 }
 

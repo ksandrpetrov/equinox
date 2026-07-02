@@ -21,6 +21,8 @@ struct EventRSVPBar: View {
     var isResponding: Bool = false
     let onRespond: (EventParticipationStatus) -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         Group {
             switch layout {
@@ -32,30 +34,30 @@ struct EventRSVPBar: View {
                 detailBar
             }
         }
-        .opacity(isResponding ? 0.55 : 1)
+        .opacity(isResponding ? EquinoxDesign.StateOpacity.responding : 1)
         .disabled(isResponding)
-        .animation(EquinoxDesign.hoverAnimation, value: isResponding)
+        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isResponding)
     }
 
     private var compactBar: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: EquinoxDesign.spacingSM - 2) {
             rsvpButton(.accepted, symbol: "checkmark.circle.fill", label: acceptLabel, tint: EquinoxDesign.ColorToken.semanticGreen, compact: true)
             rsvpButton(.tentative, symbol: "questionmark.circle", label: maybeLabel, tint: EquinoxDesign.ColorToken.semanticOrange, compact: true)
             rsvpButton(.declined, symbol: "xmark.circle", label: declineLabel, tint: EquinoxDesign.ColorToken.semanticRed, compact: true)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 6)
+        .padding(.horizontal, EquinoxDesign.spacingSM - 2)
+        .padding(.vertical, EquinoxDesign.spacingSM - 2)
         .background { barBackground }
     }
 
     private var standardBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: EquinoxDesign.spacingSM) {
             rsvpButton(.accepted, symbol: "checkmark.circle.fill", label: acceptLabel, tint: EquinoxDesign.ColorToken.semanticGreen, compact: false)
             rsvpButton(.tentative, symbol: "questionmark.circle", label: maybeLabel, tint: EquinoxDesign.ColorToken.semanticOrange, compact: false)
             rsvpButton(.declined, symbol: "xmark.circle", label: declineLabel, tint: EquinoxDesign.ColorToken.semanticRed, compact: false)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 8)
+        .padding(.horizontal, EquinoxDesign.spacingSM)
+        .padding(.vertical, EquinoxDesign.spacingSM)
         .background { barBackground }
     }
 
@@ -71,10 +73,10 @@ struct EventRSVPBar: View {
 
     private var barBackground: some View {
         RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(0.85))
+            .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(EquinoxDesign.StateOpacity.barBackground))
             .overlay {
                 RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+                    .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
             }
     }
 
@@ -101,9 +103,9 @@ struct EventRSVPBar: View {
         return Button {
             onRespond(targetStatus)
         } label: {
-            HStack(spacing: compact ? 4 : 6) {
+            HStack(spacing: compact ? EquinoxDesign.spacingXS : EquinoxDesign.spacingSM - 2) {
                 Image(systemName: symbol)
-                    .font(.system(size: compact ? 12 : 14, weight: .semibold))
+                    .font(compact ? .caption.weight(.semibold) : .subheadline.weight(.semibold))
                 if !compact || isSelected {
                     Text(label)
                         .font(compact ? .caption.weight(.semibold) : .subheadline.weight(.semibold))
@@ -113,15 +115,15 @@ struct EventRSVPBar: View {
             }
             .foregroundStyle(isSelected ? tint : .secondary)
             .frame(maxWidth: compact ? nil : .infinity)
-            .padding(.horizontal, compact ? 8 : 10)
-            .padding(.vertical, compact ? 6 : 8)
+            .padding(.horizontal, compact ? EquinoxDesign.spacingSM : EquinoxDesign.spacingSM + 2)
+            .padding(.vertical, compact ? EquinoxDesign.spacingSM - 2 : EquinoxDesign.spacingSM)
             .background {
                 RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                    .fill(isSelected ? tint.opacity(0.16) : Color.primary.opacity(0.04))
+                    .fill(isSelected ? tint.opacity(EquinoxDesign.StateOpacity.selectionTint) : EquinoxDesign.ColorToken.interactionSubtle)
                     .overlay {
                         if isSelected {
                             RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                                .strokeBorder(tint.opacity(0.35), lineWidth: 1)
+                                .strokeBorder(tint.opacity(EquinoxDesign.StateOpacity.selectionBorder), lineWidth: 1)
                         }
                     }
             }
@@ -140,9 +142,9 @@ struct EventRSVPBar: View {
         return Button {
             onRespond(targetStatus)
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: EquinoxDesign.spacingSM - 2) {
                 Image(systemName: symbol)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.subheadline.weight(.bold))
                 Text(label)
                     .font(.caption.weight(.semibold))
                     .lineLimit(1)
@@ -150,14 +152,14 @@ struct EventRSVPBar: View {
             }
             .foregroundStyle(isSelected ? tint : .secondary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, EquinoxDesign.spacingSM + 2)
+            .padding(.vertical, EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro)
             .background {
                 RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                    .fill(isSelected ? tint.opacity(0.16) : Color.primary.opacity(0.04))
+                    .fill(isSelected ? tint.opacity(EquinoxDesign.StateOpacity.selectionTint) : EquinoxDesign.ColorToken.interactionSubtle)
                     .overlay {
                         if isSelected {
                             RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                                .strokeBorder(tint.opacity(0.35), lineWidth: 1)
+                                .strokeBorder(tint.opacity(EquinoxDesign.StateOpacity.selectionBorder), lineWidth: 1)
                         }
                     }
             }

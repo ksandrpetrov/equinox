@@ -83,6 +83,7 @@ struct SettingsView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
+        .background(SettingsDesign.ColorToken.surfaceWindow)
         .searchable(text: $searchText, prompt: String(localized: "Search settings", comment: "Settings search placeholder"))
         .toolbarBackground(.visible, for: .windowToolbar)
         .frame(minWidth: SettingsDesign.windowMinWidth, minHeight: SettingsDesign.windowMinHeight)

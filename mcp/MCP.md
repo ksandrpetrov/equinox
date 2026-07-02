@@ -64,6 +64,8 @@ TypeScript MCP-сервер в `mcp/`, предоставляющий AI-кли�
 |------------|------------|
 | `EQUINOX_BRIDGE_PATH` | Путь к бинарю `equinox-bridge` (по умолчанию: `build/DerivedData/Build/Products/Release/equinox-bridge`) |
 | `EQUINOX_APP_BRIDGE_STATE_PATH` | Опциональный путь к state-файлу локального Equinox app bridge. По умолчанию: `~/Library/Application Support/com.equinox.equinoxApp/mcp-app-bridge.json` |
+| `EQUINOX_APP_BRIDGE_TIMEOUT_MS` | Таймаут HTTP-запроса к app bridge (по умолчанию: `30000`). Увеличьте для медленных EventKit-операций |
+| `EQUINOX_BRIDGE_DEBUG` | `1` или `true` — логировать причины fallback на CLI в stderr (для read-only команд; мутации логируются всегда) |
 | `EQUINOX_PLAUD_CACHE_DIR` | Опциональный путь к локальному кэшу Plaud Equinox. По умолчанию: `~/Library/Application Support/com.equinox.equinoxApp` |
 
 ### TCC
@@ -71,6 +73,10 @@ TypeScript MCP-сервер в `mcp/`, предоставляющий AI-кли�
 Основной путь MCP — через локальный loopback proxy, который поднимает запущенный `equinox.app`. Приложение запускает `equinox-bridge` от своего имени, поэтому macOS применяет Calendar permission Equinox. Это нужно для AI-клиентов без Calendar entitlement: прямой запуск bridge из Cursor/Codex/Claude может быть заблокирован TCC.
 
 Если `equinox.app` не запущен, MCP пробует прямой fallback на `equinox-bridge`. Статус проверяется инструментом `get_calendar_access_status`; запрос — `request_calendar_access`.
+
+**Политика fallback:** read-only команды при ошибке app bridge (таймаут, HTTP-ошибка, отсутствие state-файла) повторяются через CLI. Мутирующие команды (`create_event`, `update_event`, `delete_event`) **не** повторяются после доставки запроса в app bridge — это защищает от двойных мутаций при таймауте. CLI fallback для мутаций допустим только при `ECONNREFUSED` или HTTP 401/404/413 (запрос отвергнут до запуска bridge).
+
+**Семантика дат:** `YYYY-MM-DD` интерпретируется в локальной таймзоне машины; `endDate` включительно для `list_events`, аналитики и `list_plaud_recordings`. Аналитика ограничена диапазоном 366 дней.
 
 ## Разработка
 
@@ -117,7 +123,7 @@ npm test       # vitest
 | Инструмент | Источник | Назначение |
 |------------|----------|------------|
 | `get_plaud_status` | `plaud-recordings.json`, `plaud-match-cache.json` | Проверить наличие и свежесть локального каталога Plaud и кэша привязок |
-| `list_plaud_recordings` | `plaud-recordings.json`, `plaud-match-cache.json` | Найти записи Plaud за день или диапазон, включая уже кэшированные привязки к событиям |
+| `list_plaud_recordings` | `plaud-recordings.json`, `plaud-match-cache.json` | Найти записи Plaud за день или диапазон (`endDate` включительно), включая уже кэшированные привязки к событиям |
 
 Plaud-инструменты не обращаются в Plaud API, не обновляют каталог и не читают OAuth tokens из Keychain. Каталог обновляет `equinox.app` через вкладку Plaud или фоновые refresh-сценарии.
 
@@ -139,7 +145,7 @@ Plaud-инструменты не обращаются в Plaud API, не обн
 
 ## Протокол
 
-MCP-инструменты валидируют вход через **Zod** на границе, вызывают `invokeBridge()` в `src/bridge.ts` и возвращают JSON через `requireBridgeData()`.
+MCP-инструменты валидируют вход через **Zod** на границе, вызывают `invokeBridge()` в `src/bridge.ts`, валидируют ответ по per-command схеме через `requireBridgeData()` и возвращают `structuredContent` с `outputSchema` для всех 13 инструментов.
 
 Протокол bridge: [../bridge/BRIDGE.md](../bridge/BRIDGE.md)
 
@@ -153,7 +159,7 @@ Single source of truth для имён инструментов: `mcp/src/tools/
 - Отклонённые приглашения скрыты в bridge/MCP (GUI показывает их dimmed).
 - Нет RSVP через MCP.
 - Join URL в bridge — только web (`JoinURLDetection`); GUI дополнительно переписывает на нативные приложения.
-- Аналитика считается только по загруженному диапазону (максимум 500 событий на один `list_events`).
+- Аналитика считается только по загруженному диапазону (максимум 500 событий на один `list_events`, максимум 366 дней на аналитический запрос).
 - Plaud MCP читает только локальный кэш Equinox; он не ходит в Plaud API, не читает Keychain и не обновляет каталог сам.
 - Редактирование событий в GUI не поддерживается; в MCP — `update_event`.
 - Bridge не возвращает recurrence rules и alarms; GUI-only создание события может сохранять recurrence и alert через `CalendarStore`.

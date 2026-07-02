@@ -1,6 +1,7 @@
 import XCTest
 @testable import equinox
 
+@MainActor
 final class McpSetupTests: XCTestCase {
     func testBuildClientConfigJSONUsesResolvedPaths() throws {
         let json = McpConfigurator.buildClientConfigJSON(

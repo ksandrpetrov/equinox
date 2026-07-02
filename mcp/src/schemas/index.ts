@@ -6,6 +6,17 @@ export {
   mcpEnrichedEventSchema,
 } from "./events.js"
 export {
+  accessRequestOutputSchema,
+  accessStatusOutputSchema,
+  eventOutputSchema,
+  findConflictsOutputSchema,
+  findFreeTimeOutputSchema,
+  mutationOutputSchema,
+  plaudRecordingsOutputSchema,
+  plaudStatusOutputSchema,
+  scheduleAnalysisOutputSchema,
+} from "./outputs.js"
+export {
   analyzeScheduleInputSchema,
   createEventInputSchema,
   deleteEventInputSchema,
@@ -13,5 +24,6 @@ export {
   findFreeTimeInputSchema,
   getEventInputSchema,
   listEventsInputSchema,
+  listPlaudRecordingsInputSchema,
   updateEventInputSchema,
 } from "./toolInputs.js"

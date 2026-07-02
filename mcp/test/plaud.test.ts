@@ -65,6 +65,33 @@ describe("Plaud cache reader", () => {
     ])
   })
 
+  it("treats endDate as inclusive for date ranges", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "equinox-plaud-"))
+    await writePlaudCatalog(directory, {
+      recordings: [
+        recording({
+          fileID,
+          title: "day one",
+          recordedAt: "2026-06-01T08:00:00.000Z",
+          durationSeconds: 60,
+        }),
+        recording({
+          fileID: "08b11808ce5b448bcf4c8bed5e26098a",
+          title: "day two",
+          recordedAt: "2026-06-02T08:00:00.000Z",
+          durationSeconds: 60,
+        }),
+      ],
+    })
+
+    const data = await listPlaudRecordings({
+      startDate: "2026-06-01",
+      endDate: "2026-06-02",
+    }, directory)
+
+    expect(data.count).toBe(2)
+  })
+
   it("attaches cached Plaud matches to calendar events", async () => {
     const directory = await mkdtemp(join(tmpdir(), "equinox-plaud-"))
     await writePlaudCatalog(directory, {

@@ -1,6 +1,6 @@
 import AppKit
 
-@Observable
+@Observable @MainActor
 final class PreferencesStore {
     static let shared = PreferencesStore()
 
@@ -161,7 +161,7 @@ final class PreferencesStore {
         notifyMenuBarAppearanceChanged()
     }
 
-    static func registeredDefaultValues() -> [String: Any] {
+    nonisolated static func registeredDefaultValues() -> [String: Any] {
         let cal = Calendar.autoupdatingCurrent
         let weekStart = min(max(cal.firstWeekday - 1, 0), 6)
         return [

@@ -10,7 +10,7 @@ struct AgendaSectionHeader: View {
         let isToday = calendar.isDateInToday(nsDate)
         let isTomorrow = calendar.isDateInTomorrow(nsDate)
 
-        HStack(spacing: EquinoxDesign.spacingSM - 2) {
+        HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
             Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(isToday ? EquinoxDesign.ColorToken.accent : .secondary)
@@ -22,23 +22,13 @@ struct AgendaSectionHeader: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, EquinoxDesign.spacingSM)
-        .padding(.vertical, EquinoxDesign.spacingSM - 3)
-        .background { agendaHeaderBackground }
+        .padding(.vertical, EquinoxDesign.agendaHeaderVerticalPadding)
+        .equinoxGlassSurface(
+            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous),
+            style: backgroundStyle
+        )
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .padding(.top, EquinoxDesign.spacingXS)
-    }
-
-    @ViewBuilder
-    private var agendaHeaderBackground: some View {
-        let shape = RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-        if backgroundStyle == .solid {
-            shape.fill(EquinoxDesign.ColorToken.surfaceSecondary)
-        } else {
-            shape
-                .fill(.regularMaterial)
-                .overlay { shape.fill(Color.primary.opacity(0.04)) }
-                .glassEffect(.regular, in: shape)
-        }
     }
 
     private func agendaSectionTitle(isToday: Bool, isTomorrow: Bool, nsDate: Date) -> String {
@@ -55,6 +45,7 @@ struct AgendaEventCard: View {
     var plaudMatch: PlaudEventMatch? = nil
     var onTap: (() -> Void)? = nil
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
     private var calendarColor: Color {
@@ -73,10 +64,10 @@ struct AgendaEventCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
             HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
-                RoundedRectangle(cornerRadius: 2, style: .continuous)
-                    .fill(calendarColor)
-                    .frame(width: 3)
-                    .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
+                EventStripeView(
+                    color: calendarColor,
+                    verticalPadding: showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro
+                )
 
                 Group {
                     if showsSecondaryDetails {
@@ -85,9 +76,9 @@ struct AgendaEventCard: View {
                         compactEventContent
                     }
                 }
-                .padding(.leading, metrics.agendaEventLeadingMargin - 3)
+                .padding(.leading, metrics.agendaContentLeadingInset)
                 .padding(.trailing, trailingPadding)
-                .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
+                .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     onTap?()
@@ -115,18 +106,11 @@ struct AgendaEventCard: View {
                 }
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.interactionSubtle)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .strokeBorder(Color.primary.opacity(isHovered ? 0.08 : 0.06), lineWidth: 1)
-        }
-        .opacity(isDeclined ? 0.72 : 1)
+        .equinoxCard(style: .subtle, isHovered: isHovered)
+        .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedEvent : 1)
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .onHover { isHovered = $0 }
-        .animation(EquinoxDesign.hoverAnimation, value: isHovered)
+        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(eventAccessibilityLabel)
         .accessibilityHint(String(localized: "Tap to show details.", comment: "Agenda event hint"))
@@ -142,7 +126,7 @@ struct AgendaEventCard: View {
             Text(event.title)
                 .font(.caption.weight(.medium))
                 .lineLimit(1)
-                .opacity(isDeclined ? 0.55 : 1)
+                .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
             Spacer(minLength: EquinoxDesign.spacingXS)
             if event.showsRSVPControls,
                event.participationStatus?.needsResponse == true {
@@ -178,7 +162,7 @@ struct AgendaEventCard: View {
             Text(event.title)
                 .font(.body.weight(.medium))
                 .lineLimit(2)
-                .opacity(isDeclined ? 0.55 : 1)
+                .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
 
             if showLocation || !event.calendarTitle.isEmpty {
                 HStack(spacing: EquinoxDesign.spacingXS) {

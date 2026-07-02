@@ -35,7 +35,7 @@ struct GeneralSettingsTab: View {
                             Text(String(localized: "Saturday", comment: "")).tag(6)
                         }
                         .labelsHidden()
-                        .frame(width: 160)
+                        .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
                     }
 
                     SettingsDivider()
@@ -54,7 +54,7 @@ struct GeneralSettingsTab: View {
                             }
                         }
                         .labelsHidden()
-                        .frame(width: 160)
+                        .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
                     }
                 }
             }
@@ -74,7 +74,7 @@ struct GeneralSettingsTab: View {
                         subtitle: String(localized: "Default proportion of the agenda section", comment: "")
                     ) {
                         Slider(value: $prefs.agendaHeightRatio, in: 0.15...0.65)
-                            .frame(width: 160)
+                            .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
                     }
                 }
             }

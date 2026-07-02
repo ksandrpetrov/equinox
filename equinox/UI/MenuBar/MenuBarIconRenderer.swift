@@ -9,14 +9,11 @@ struct MenuBarIconView: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
-    /// Template menu bar images must rasterize as opaque black; the system tints them.
-    private static let templateInk = Color.black
-
     private var ink: Color {
         if forPreview {
-            return colorScheme == .dark ? .white : .black
+            return colorScheme == .dark ? MenuBarDesign.previewInkDark : MenuBarDesign.previewInkLight
         }
-        return Self.templateInk
+        return MenuBarDesign.templateInk
     }
 
     private var outline: Bool { iconStyle == .classic }
@@ -26,40 +23,50 @@ struct MenuBarIconView: View {
     var body: some View {
         HStack(spacing: 0) {
             if meeting {
-                Image(iconStyle == .minimal ? "meetOutline" : "meetSolid")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 14, height: 14)
-                    .padding(.leading, 3)
+                MenuBarMeetingGlyph(filled: iconStyle != .minimal)
+                    .padding(.leading, MenuBarDesign.meetingLeadingPadding)
             }
             dateBadge
         }
-        .frame(height: 16)
+        .frame(height: MenuBarDesign.barHeight)
         .foregroundStyle(ink)
     }
 
     @ViewBuilder
     private var dateBadge: some View {
         let textView = Text(text)
-            .font(.system(size: 11.5, weight: iconStyle == .minimal ? .bold : .semibold))
-            .padding(.horizontal, 4)
+            .font(MenuBarDesign.dateFont(minimal: iconStyle == .minimal))
+            .padding(.horizontal, MenuBarDesign.badgeHorizontalPadding)
 
         if plain {
             textView
         } else if outline {
             textView.background {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                RoundedRectangle(cornerRadius: MenuBarDesign.badgeRadius, style: .continuous)
                     .strokeBorder(ink, lineWidth: 1)
             }
         } else {
             ZStack {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                RoundedRectangle(cornerRadius: MenuBarDesign.badgeRadius, style: .continuous)
                     .fill(ink)
                 textView
                     .blendMode(.destinationOut)
             }
             .compositingGroup()
         }
+    }
+}
+
+/// Shared meeting indicator glyph so the menu bar icon and hidden-icon fallback
+/// stay visually identical. Rendered as a template so the system tints it.
+struct MenuBarMeetingGlyph: View {
+    var filled: Bool = true
+
+    var body: some View {
+        Image(systemName: filled ? "video.fill" : "video")
+            .font(MenuBarDesign.meetingIconFont())
+            .symbolRenderingMode(.monochrome)
+            .frame(width: MenuBarDesign.meetingIconSize, height: MenuBarDesign.meetingIconSize)
     }
 }
 
@@ -77,6 +84,18 @@ enum MenuBarIconRenderer {
         return image
     }
 
+    /// Standalone meeting indicator for the hidden-icon menu bar fallback.
+    @MainActor
+    static func meetingIndicatorImage(scale: CGFloat) -> NSImage? {
+        let view = MenuBarMeetingGlyph()
+            .foregroundStyle(MenuBarDesign.templateInk)
+            .frame(height: MenuBarDesign.barHeight)
+        guard let image = rasterize(view, colorScheme: .light, scale: scale) else { return nil }
+        image.isTemplate = true
+        return image
+    }
+
+    @MainActor
     static func iconText(prefs: PreferencesStore, calendar: Calendar, today: CalendarDate) -> String {
         if prefs.showMonthInIcon || prefs.showDayOfWeekInIcon {
             let locale = appLocale
@@ -93,15 +112,25 @@ enum MenuBarIconRenderer {
 
     @MainActor
     static func previewImage(text: String, prefs: PreferencesStore, colorScheme: ColorScheme) -> NSImage? {
-        let view = MenuBarIconView(
+        previewImage(
             text: text,
             iconStyle: MenuBarIconStyle(rawValue: prefs.menuBarIconType) ?? .minimal,
             showMeetingIndicator: prefs.showMeetingIndicator,
+            colorScheme: colorScheme
+        )
+    }
+
+    @MainActor
+    static func previewImage(text: String, iconStyle: MenuBarIconStyle, showMeetingIndicator: Bool, colorScheme: ColorScheme) -> NSImage? {
+        let view = MenuBarIconView(
+            text: text,
+            iconStyle: iconStyle,
+            showMeetingIndicator: showMeetingIndicator,
             shouldShowMeetingIndicator: false,
             forPreview: true
         )
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
+        .padding(.horizontal, MenuBarDesign.previewHorizontalPadding)
+        .padding(.vertical, MenuBarDesign.previewVerticalPadding)
         return rasterize(view, colorScheme: colorScheme, scale: NSScreen.main?.backingScaleFactor ?? 2)
     }
 

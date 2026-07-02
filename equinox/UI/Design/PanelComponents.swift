@@ -11,16 +11,45 @@ extension View {
                 } else {
                     shape
                         .fill(.regularMaterial)
-                        .overlay { shape.fill(Color.primary.opacity(0.06)) }
+                        .overlay { shape.fill(EquinoxDesign.ColorToken.interactionRest) }
                         .glassEffect(.regular, in: shape)
                 }
             }
             .overlay {
                 shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
             }
-            .shadow(color: .black.opacity(effectiveStyle == .glass ? 0.12 : 0.06), radius: 12, y: 4)
+            .shadow(
+                color: .black.opacity(
+                    effectiveStyle == .glass
+                        ? EquinoxDesign.ShadowToken.panelGlassOpacity
+                        : EquinoxDesign.ShadowToken.panelSolidOpacity
+                ),
+                radius: EquinoxDesign.ShadowToken.panelRadius,
+                y: EquinoxDesign.ShadowToken.panelYOffset
+            )
         }
         .clipShape(shape)
+    }
+
+    /// Shared glass/solid surface used by secondary panel chrome (e.g. agenda
+    /// section headers). Keeps the material + tint + optional solid fallback
+    /// consistent with `panelBackground` without duplicating the recipe.
+    func equinoxGlassSurface<S: Shape>(
+        _ shape: S,
+        style: BackgroundStyle = .glass,
+        tint: Color = EquinoxDesign.ColorToken.interactionSubtle,
+        solidFill: Color = EquinoxDesign.ColorToken.surfaceSecondary
+    ) -> some View {
+        background {
+            if style == .solid {
+                shape.fill(solidFill)
+            } else {
+                shape
+                    .fill(.regularMaterial)
+                    .overlay { shape.fill(tint) }
+                    .glassEffect(.regular, in: shape)
+            }
+        }
     }
 
     func panelCommandBarBackground(style: BackgroundStyle, reduceTransparency: Bool = false) -> some View {
@@ -46,7 +75,7 @@ struct PanelButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .opacity(isEnabled ? 1 : 0.5)
+            .opacity(isEnabled ? 1 : EquinoxDesign.StateOpacity.disabled)
             .background(
                 RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
                     .fill(backgroundColor(isPressed: configuration.isPressed))
@@ -129,7 +158,7 @@ private func panelIconLabel(
     buttonSize: CGFloat
 ) -> some View {
     Image(systemName: symbol)
-        .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+        .font(EquinoxDesign.panelIconFont(isSelected: isSelected))
         .symbolRenderingMode(.hierarchical)
         .foregroundStyle(isSelected ? EquinoxDesign.ColorToken.accent : Color.primary)
         .frame(width: buttonSize, height: buttonSize)

@@ -8,10 +8,10 @@ struct AboutSettingsTab: View {
             Image("AppLogo")
                 .resizable()
                 .interpolation(.high)
-                .frame(width: 96, height: 96)
+                .frame(width: EquinoxDesign.ControlWidth.aboutLogo, height: EquinoxDesign.ControlWidth.aboutLogo)
 
             Text(String(localized: "Equinox", comment: "App name"))
-                .font(.largeTitle.bold())
+                .font(EquinoxDesign.aboutTitleFont())
 
             if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
@@ -29,6 +29,7 @@ struct AboutSettingsTab: View {
                 destination: URL(string: "https://github.com/aleksandr/equinox")!
             )
             .font(.footnote)
+            .foregroundStyle(EquinoxDesign.ColorToken.semanticBlue)
 
             Spacer()
         }

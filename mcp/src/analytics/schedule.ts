@@ -1,4 +1,7 @@
+import { assertAnalyticsDateRange, isValidCalendarDate } from "../schemas/dates.js"
 import type { BridgeEvent } from "../types.js"
+
+export { assertAnalyticsDateRange }
 
 export type BusyInterval = {
   start: Date
@@ -85,6 +88,9 @@ function parseDayBoundary(value: string, endOfDay: boolean): Date {
   if (value.includes("T")) {
     return parseInstant(value)
   }
+  if (!isValidCalendarDate(value)) {
+    throw new Error(`Invalid calendar date: ${value}`)
+  }
   const [year, month, day] = value.split("-").map(Number)
   const date = new Date(year, month - 1, day)
   if (endOfDay) {
@@ -122,6 +128,7 @@ export function analyzeSchedule(
   truncated: boolean,
   workMinutesPerDay = 8 * 60,
 ): ScheduleAnalysis {
+  assertAnalyticsDateRange(startDate, endDate)
   const days = enumerateDays(startDate, endDate)
   const dayStats = new Map<string, DayScheduleStats>()
   for (const date of days) {
@@ -276,6 +283,7 @@ export function findFreeTime(
   workEnd = "18:00",
   minDurationMinutes = 30,
 ): FreeTimeSlot[] {
+  assertAnalyticsDateRange(startDate, endDate)
   const days = enumerateDays(startDate, endDate)
   const workStartMinutes = parseWorkTime(workStart, 9, 0)
   const workEndMinutes = parseWorkTime(workEnd, 18, 0)
@@ -312,11 +320,16 @@ export function findFreeTime(
 
     let cursor = workStartDate
     for (const interval of busy) {
-      if (interval.start > cursor) {
-        pushSlotIfLongEnough(slots, cursor, interval.start, minDurationMinutes)
+      const clampedStart = new Date(Math.max(interval.start.getTime(), workStartDate.getTime()))
+      const clampedEnd = new Date(Math.min(interval.end.getTime(), workEndDate.getTime()))
+      if (clampedEnd <= clampedStart) {
+        continue
       }
-      if (interval.end > cursor) {
-        cursor = interval.end
+      if (clampedStart > cursor) {
+        pushSlotIfLongEnough(slots, cursor, clampedStart, minDurationMinutes)
+      }
+      if (clampedEnd > cursor) {
+        cursor = clampedEnd
       }
     }
     if (cursor < workEndDate) {

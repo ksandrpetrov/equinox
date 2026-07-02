@@ -44,10 +44,7 @@ struct AppearanceSettingsTab: View {
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                         Text(String(localized: "Menu Bar Icon", comment: "Settings section: menu bar icon"))
                             .font(.subheadline.weight(.semibold))
-                        MenuBarIconPicker(selection: Binding(
-                            get: { prefs.menuBarIconType },
-                            set: { prefs.menuBarIconType = $0 }
-                        ))
+                        MenuBarIconPicker(prefs: prefs)
                     }
                     .padding(.vertical, EquinoxDesign.spacingSM)
 
@@ -76,7 +73,7 @@ struct AppearanceSettingsTab: View {
                     SettingsDivider()
                     SettingsLabeledToggle(
                         title: String(localized: "Show meeting indicator", comment: ""),
-                        subtitle: String(localized: "Dot when a meeting is starting soon", comment: ""),
+                        subtitle: String(localized: "Camera icon when a meeting is starting soon", comment: "Meeting indicator toggle subtitle"),
                         isOn: $prefs.showMeetingIndicator
                     )
                     SettingsDivider()
@@ -87,7 +84,7 @@ struct AppearanceSettingsTab: View {
                             }
                         }
                         .labelsHidden()
-                        .frame(width: 140)
+                        .frame(width: EquinoxDesign.ControlWidth.settingsPickerNarrow)
                     }
                 }
             }
@@ -126,7 +123,7 @@ struct AppearanceSettingsTab: View {
                         Stepper(value: $prefs.calendarRowCount, in: 6...10) {
                             Text("\(prefs.calendarRowCount)")
                                 .monospacedDigit()
-                                .frame(width: 24, alignment: .trailing)
+                                .frame(width: EquinoxDesign.ControlWidth.trailingLabel, alignment: .trailing)
                         }
                     }
                     SettingsDivider()

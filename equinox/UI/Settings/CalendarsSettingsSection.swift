@@ -22,8 +22,8 @@ struct CalendarsSettingsSection: View {
                         Text(NSLocalizedString(source, comment: "Calendar source/account name"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
-                            .padding(.top, index == 0 ? 4 : 12)
-                            .padding(.bottom, 4)
+                            .padding(.top, index == 0 ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMD)
+                            .padding(.bottom, EquinoxDesign.spacingXS)
                     case .calendar(let calendar):
                         calendarRow(calendar)
                     }
@@ -31,7 +31,7 @@ struct CalendarsSettingsSection: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minHeight: 200, maxHeight: 400)
+        .frame(minHeight: EquinoxDesign.settingsCalendarListMinHeight, maxHeight: EquinoxDesign.panelAgendaMaxHeight)
         .onAppear {
             reloadCalendars()
         }
@@ -70,10 +70,10 @@ struct CalendarsSettingsSection: View {
                 }
             }
         )) {
-            HStack(spacing: 8) {
+            HStack(spacing: EquinoxDesign.spacingSM) {
                 Circle()
                     .fill(calendar.swiftUIColor)
-                    .frame(width: 10, height: 10)
+                    .frame(width: EquinoxDesign.ControlWidth.calendarColorDot, height: EquinoxDesign.ControlWidth.calendarColorDot)
                 Text(calendar.title)
             }
         }

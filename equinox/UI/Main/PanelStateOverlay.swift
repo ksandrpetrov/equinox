@@ -68,7 +68,7 @@ struct PanelStateOverlay: View {
         .padding(EquinoxDesign.spacingMD)
         .background {
             RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.semanticOrange.opacity(0.08))
+                .fill(EquinoxDesign.ColorToken.semanticOrange.opacity(EquinoxDesign.StateOpacity.warningBannerTint))
                 .overlay {
                     RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
                         .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)

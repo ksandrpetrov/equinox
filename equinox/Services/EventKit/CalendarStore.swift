@@ -11,7 +11,6 @@ actor CalendarStore {
     private var fetchCache = EventFetchCache()
     private var calendarSelection = CalendarSelectionService()
 
-    var isFetchingEvents: Bool { fetchCache.isFetchingEvents }
     var lastFetchError: String? { fetchCache.lastFetchError }
 
     var hasCalendarAccess: Bool {
@@ -56,10 +55,6 @@ actor CalendarStore {
         fetchCache.selectedCalendarEvents(calendar: calendar)
     }
 
-    func events(for date: CalendarDate) -> [DayEvent] {
-        fetchCache.events(on: date, calendar: calendar)
-    }
-
     func calendarEntries() -> [CalendarListEntry] {
         calendarSelection.calendarEntries
     }
@@ -82,7 +77,6 @@ actor CalendarStore {
     }
 
     func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async {
-        fetchCache.isFetchingEvents = true
         fetchCache.lastFetchError = nil
         fetchCache.lastFetchedFirst = first
         fetchCache.lastFetchedLast = last
@@ -91,7 +85,6 @@ actor CalendarStore {
             calendarSelection.refresh(from: store)
         }
         await fetchEventsWithStartDate(first, endDate: last, refetch: refetch)
-        fetchCache.isFetchingEvents = false
     }
 
     func refetchAll(first: CalendarDate? = nil, last: CalendarDate? = nil) async {
@@ -241,10 +234,13 @@ actor CalendarStore {
 }
 
 private final class ExternalChangeDispatcher: @unchecked Sendable {
+    private let lock = NSLock()
     private var handler: (@Sendable () -> Void)?
     private var pendingChange = false
 
     func setHandler(_ handler: @escaping @Sendable () -> Void) {
+        lock.lock()
+        defer { lock.unlock() }
         self.handler = handler
         if pendingChange {
             pendingChange = false
@@ -253,6 +249,8 @@ private final class ExternalChangeDispatcher: @unchecked Sendable {
     }
 
     func notify() {
+        lock.lock()
+        defer { lock.unlock() }
         if let handler {
             handler()
         } else {

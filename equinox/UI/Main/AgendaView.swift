@@ -44,6 +44,7 @@ struct AgendaView: View {
                                             appState.panel.isEventDetailPresented = true
                                         }
                                     )
+                                    .id(AgendaScrollTarget.event(id: event.id))
                                     .contextMenu {
                                         Button(String(localized: "Show Details", comment: "Agenda context menu")) {
                                             appState.panel.selectedEvent = event
@@ -67,24 +68,24 @@ struct AgendaView: View {
                                     calendar: appState.calendar,
                                     backgroundStyle: backgroundStyle
                                 )
-                                .id(section.date.julian)
+                                .id(AgendaScrollTarget.day(julian: section.date.julian))
                             }
                         }
                     }
                     .scrollTargetLayout()
                 }
                 .scrollIndicators(.hidden)
-                .scrollPosition(id: $scrollCoordinator.scrolledSectionID, anchor: .top)
+                .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: .top)
                 .onAppear {
                     scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
                     scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
-                    scrollCoordinator.scrollToSelectedDate(appState: appState)
+                    scrollCoordinator.scrollToFocus(appState: appState)
                 }
                 .onChange(of: appState.events.agendaScrollToken) { _, _ in
-                    scrollCoordinator.scrollToSelectedDate(appState: appState)
+                    scrollCoordinator.scrollToFocus(appState: appState)
                 }
-                .onChange(of: scrollCoordinator.scrolledSectionID) { _, julian in
-                    scrollCoordinator.handleAgendaScroll(to: julian, anchor: appState.events.todayDate)
+                .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
+                    scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, appState: appState)
                 }
                 .onScrollPhaseChange { _, newPhase in
                     if newPhase == .idle {
@@ -120,12 +121,12 @@ struct AgendaView: View {
         }
         .onChange(of: prefs.showEventDays) { _, _ in
             scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate, force: true)
-            scrollCoordinator.scrollToSelectedDate(appState: appState)
+            scrollCoordinator.scrollToFocus(appState: appState)
         }
     }
 
     private var emptyDayRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: EquinoxDesign.spacingSM) {
             Image(systemName: "calendar.badge.minus")
                 .foregroundStyle(.tertiary)
             Text(String(localized: "No events", comment: "Agenda empty day"))
@@ -133,13 +134,13 @@ struct AgendaView: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(.leading, metrics.agendaEventLeadingMargin)
-        .padding(.vertical, 8)
+        .padding(.vertical, EquinoxDesign.spacingSM)
     }
 
     private var emptyAgenda: some View {
         VStack(spacing: EquinoxDesign.spacingMD) {
             Image(systemName: "calendar.badge.clock")
-                .font(.system(size: 32))
+                .font(EquinoxDesign.emptyStateIconFont())
                 .foregroundStyle(.tertiary)
             Text(String(localized: "No upcoming events.", comment: "Agenda empty list"))
                 .font(.subheadline)

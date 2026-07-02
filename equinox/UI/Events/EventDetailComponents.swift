@@ -11,16 +11,17 @@ struct EventDetailHeroHeader: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: EquinoxDesign.spacingMD) {
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(event.swiftUIColor)
-                .frame(width: 4)
-                .padding(.vertical, 2)
+            EventStripeView(
+                color: event.swiftUIColor,
+                width: EquinoxDesign.EventStripe.widthHero,
+                verticalPadding: EquinoxDesign.spacingMicro
+            )
 
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                 Text(event.title)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(.primary)
-                    .opacity(isDeclined ? 0.65 : 1)
+                    .opacity(isDeclined ? EquinoxDesign.StateOpacity.declined : 1)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(spacing: EquinoxDesign.spacingSM) {
@@ -52,6 +53,7 @@ private struct EventDetailCloseButton: View {
     let isDisabled: Bool
     let action: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
     var body: some View {
@@ -62,17 +64,21 @@ private struct EventDetailCloseButton: View {
                 .frame(width: EquinoxDesign.toolbarButtonSize, height: EquinoxDesign.toolbarButtonSize)
                 .background {
                     Circle()
-                        .fill(Color.primary.opacity(isHovered ? 0.1 : 0.06))
+                        .fill(
+                            isHovered
+                                ? EquinoxDesign.ColorToken.interactionPress
+                                : EquinoxDesign.ColorToken.interactionRest
+                        )
                 }
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.45 : 1)
+        .opacity(isDisabled ? EquinoxDesign.StateOpacity.closeDisabled : 1)
         .keyboardShortcut(.cancelAction)
         .help(String(localized: "Close", comment: "Event detail close button help"))
         .accessibilityLabel(String(localized: "Close", comment: "Event detail close button"))
         .onHover { isHovered = $0 }
-        .animation(EquinoxDesign.hoverAnimation, value: isHovered)
+        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
     }
 }
 
@@ -81,21 +87,13 @@ struct EventDetailCalendarChip: View {
     let color: Color
 
     var body: some View {
-        HStack(spacing: 5) {
-            Circle()
-                .fill(color)
-                .frame(width: 7, height: 7)
-            Text(title)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background {
-            Capsule(style: .continuous)
-                .fill(Color.primary.opacity(0.05))
-        }
+        EquinoxChip(
+            text: title,
+            dotColor: color,
+            foreground: .secondary,
+            background: EquinoxDesign.ColorToken.interactionRest,
+            usesCapsule: true
+        )
     }
 }
 
@@ -103,19 +101,13 @@ struct EventDetailStatusChip: View {
     let status: EventParticipationStatus
 
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: status.detailSymbolName)
-                .font(.caption2.weight(.semibold))
-            Text(status.localizedLabel)
-                .font(.caption.weight(.semibold))
-        }
-        .foregroundStyle(status.chipForeground)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background {
-            Capsule(style: .continuous)
-                .fill(status.chipBackground)
-        }
+        EquinoxChip(
+            text: status.localizedLabel,
+            symbol: status.detailSymbolName,
+            foreground: status.chipForeground,
+            background: status.chipBackground,
+            usesCapsule: true
+        )
     }
 }
 
@@ -127,8 +119,10 @@ struct EventDetailMetadataCard: View {
             ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                 EventDetailMetadataRow(model: row)
                 if index < rows.count - 1 {
-                    Divider()
-                        .padding(.leading, 44)
+                    Rectangle()
+                        .fill(EquinoxDesign.ColorToken.separator)
+                        .frame(height: 1)
+                        .padding(.leading, EquinoxDesign.ControlWidth.metadataIcon + EquinoxDesign.spacingMD)
                 }
             }
         }
@@ -152,13 +146,13 @@ struct EventDetailMetadataRow: View {
             Image(systemName: model.symbol)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(model.tint)
-                .frame(width: 28, height: 28)
+                .frame(width: EquinoxDesign.ControlWidth.metadataIcon, height: EquinoxDesign.ControlWidth.metadataIcon)
                 .background {
                     Circle()
-                        .fill(model.tint.opacity(0.12))
+                        .fill(model.tint.opacity(EquinoxDesign.StateOpacity.metadataIconBackground))
                 }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
                 if let title = model.title {
                     Text(title)
                         .font(.caption.weight(.medium))
@@ -172,7 +166,7 @@ struct EventDetailMetadataRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, EquinoxDesign.spacingMD)
-        .padding(.vertical, EquinoxDesign.spacingSM + 2)
+        .padding(.vertical, EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro)
     }
 }
 
@@ -203,7 +197,7 @@ struct EventDetailNotesCard: View {
 
             Text(notes)
                 .font(.body)
-                .foregroundStyle(.primary.opacity(0.9))
+                .foregroundStyle(.primary.opacity(EquinoxDesign.StateOpacity.notesBody))
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -228,6 +222,7 @@ struct EventDetailSecondaryActionButton: View {
     var subtitle: String? = nil
     let action: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
     var body: some View {
@@ -237,9 +232,9 @@ struct EventDetailSecondaryActionButton: View {
                     .font(.body.weight(.semibold))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
+                    .frame(width: EquinoxDesign.ControlWidth.metadataIcon, height: EquinoxDesign.ControlWidth.metadataIcon)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
                     Text(title)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
@@ -257,30 +252,12 @@ struct EventDetailSecondaryActionButton: View {
                     .foregroundStyle(.tertiary)
             }
             .padding(.horizontal, EquinoxDesign.spacingMD)
-            .padding(.vertical, EquinoxDesign.spacingSM + 2)
-            .background {
-                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .fill(Color.primary.opacity(isHovered ? 0.07 : 0.04))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                            .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-                    }
-            }
+            .padding(.vertical, EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro)
+            .equinoxCard(style: .subtle, isHovered: isHovered)
         }
         .buttonStyle(.plain)
         .onHover { isHovered = $0 }
-        .animation(EquinoxDesign.hoverAnimation, value: isHovered)
-    }
-}
-
-private struct EventDetailCardBackground: View {
-    var body: some View {
-        RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(0.72))
-            .overlay {
-                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-            }
+        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
     }
 }
 

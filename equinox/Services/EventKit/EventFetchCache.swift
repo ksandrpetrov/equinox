@@ -8,7 +8,6 @@ struct EventFetchCache {
     var lastFetchedFirst = CalendarDate(year: 1583, monthIndex: 0, day: 1)
     var lastFetchedLast = CalendarDate(year: 1583, monthIndex: 0, day: 1)
     var hasFetchedRange = false
-    var isFetchingEvents = false
     var lastFetchError: String?
 
     mutating func selectedCalendarEvents(calendar: Calendar) -> [CalendarDate: [DayEvent]] {
@@ -17,10 +16,6 @@ struct EventFetchCache {
             result[CalendarDate(date: date, calendar: calendar)] = events
         }
         return result
-    }
-
-    func events(on date: CalendarDate, calendar: Calendar) -> [DayEvent] {
-        selectedCalendarEventsByDate[date.date(in: calendar)] ?? []
     }
 
     mutating func resetForRefetch() {

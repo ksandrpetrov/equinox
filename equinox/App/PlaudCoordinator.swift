@@ -16,7 +16,7 @@ final class PlaudCoordinator {
     private let calendarAccessStatus: () -> CalendarAccessStatus
     private let isPlaudEnabled: () -> Bool
 
-    var setup = PlaudConfigurator.buildSetup()
+    var setup = PlaudConfigurator.buildSetupFromPreferences()
 
     init(
         preferences: PreferencesStore,
@@ -59,26 +59,22 @@ final class PlaudCoordinator {
             let fresh = await plaudService.refreshMatches(for: pastEvents, isPlaudEnabled: isPlaudEnabled())
             guard !Task.isCancelled else { return }
             plaudLinks.merge(fresh) { _, new in new }
-            setup = await plaudService.setupStatus()
+            setup = await plaudService.setupStatus(isPlaudEnabled: isPlaudEnabled())
         }
     }
 
     func refreshSetup() async {
-        setup = await plaudService.setupStatus()
-    }
-
-    func refreshSetupForSettings() async {
-        setup = await plaudService.setupStatus()
+        setup = await plaudService.setupStatus(isPlaudEnabled: isPlaudEnabled())
     }
 
     func signIn() async throws {
         try await PlaudOAuthClient.signIn()
-        setup = await plaudService.setupStatus()
+        setup = await plaudService.setupStatus(isPlaudEnabled: isPlaudEnabled())
     }
 
     func signOut() async {
         await PlaudOAuthClient.signOut()
-        setup = PlaudConfigurator.buildSetup(cacheStats: nil)
+        setup = PlaudConfigurator.buildSetup(enabled: false, cacheStats: nil)
     }
 
     func forceRefresh() async {
@@ -87,7 +83,7 @@ final class PlaudCoordinator {
         let historyEvents = await historyEvents()
         let fresh = await plaudService.refreshMatches(for: historyEvents, isPlaudEnabled: isPlaudEnabled())
         plaudLinks.merge(fresh) { _, new in new }
-        setup = await plaudService.setupStatus()
+        setup = await plaudService.setupStatus(isPlaudEnabled: isPlaudEnabled())
         didMatchPlaudHistory = true
     }
 
@@ -102,7 +98,7 @@ final class PlaudCoordinator {
             let fresh = await plaudService.refreshMatches(for: historyEvents, isPlaudEnabled: isPlaudEnabled())
             guard !Task.isCancelled else { return }
             plaudLinks.merge(fresh) { _, new in new }
-            setup = await plaudService.setupStatus()
+            setup = await plaudService.setupStatus(isPlaudEnabled: isPlaudEnabled())
         }
     }
 
@@ -112,7 +108,7 @@ final class PlaudCoordinator {
             guard let eventID = event.eventIdentifier else { return nil }
             let key = PlaudEventMatching.matchKey(eventIdentifier: eventID, startDate: event.startDate)
             plaudLinks[key] = match
-            setup = await plaudService.setupStatus()
+            setup = await plaudService.setupStatus(isPlaudEnabled: isPlaudEnabled())
             return nil
         } catch {
             return error.localizedDescription

@@ -5,7 +5,8 @@ struct AppearancePreview: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private var previewMetrics: SizeMetrics {
-        SizeMetrics.metrics(for: .small)
+        let preference = SizePreference(rawValue: prefs.sizePreference) ?? .medium
+        return SizeMetrics.metrics(for: preference)
     }
 
     private var previewCalendar: Calendar {
@@ -36,8 +37,8 @@ struct AppearancePreview: View {
                     colorScheme: colorScheme
                 ) {
                     Image(nsImage: icon)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, MenuBarDesign.previewCapsuleHorizontalPadding)
+                        .padding(.vertical, MenuBarDesign.previewCapsuleVerticalPadding)
                         .background(EquinoxDesign.ColorToken.interactionSubtle, in: Capsule())
                 }
 
@@ -59,9 +60,7 @@ struct AppearancePreview: View {
 
     private var previewEventRow: some View {
         HStack(alignment: .center, spacing: 0) {
-            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                .fill(previewEventColor)
-                .frame(width: 3, height: 12)
+            EventStripeView(color: previewEventColor, verticalPadding: EquinoxDesign.ChipMetrics.verticalPadding)
 
             HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
                 Text(String(localized: "09:00 – 10:00", comment: "Appearance preview sample time"))
@@ -71,12 +70,12 @@ struct AppearancePreview: View {
                     .font(.caption.weight(.medium))
                     .lineLimit(1)
             }
-            .padding(.leading, previewMetrics.agendaEventLeadingMargin - 3)
+            .padding(.leading, previewMetrics.agendaContentLeadingInset)
             .padding(.trailing, EquinoxDesign.spacingSM)
 
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 3)
+        .padding(.vertical, EquinoxDesign.spacingMicro + 1)
         .equinoxCard(style: .subtle)
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .fixedSize(horizontal: false, vertical: true)

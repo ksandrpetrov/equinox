@@ -31,7 +31,7 @@ struct EquinoxButtonStyle: ButtonStyle {
             .background { background(isPressed: configuration.isPressed) }
             .overlay { borderOverlay(isPressed: configuration.isPressed) }
             .scaleEffect(pressScale(isPressed: configuration.isPressed))
-            .opacity(isEnabled ? 1 : 0.5)
+            .opacity(isEnabled ? 1 : EquinoxDesign.StateOpacity.disabled)
             .onHover { isHovered = $0 }
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: configuration.isPressed)
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
@@ -48,7 +48,7 @@ struct EquinoxButtonStyle: ButtonStyle {
     private func foregroundColor(isPressed: Bool) -> Color {
         switch variant {
         case .prominent:
-            return .white
+            return EquinoxDesign.onAccentForeground
         case .destructive:
             return EquinoxDesign.ColorToken.semanticRed
         case .bordered, .plain:
@@ -63,9 +63,13 @@ struct EquinoxButtonStyle: ButtonStyle {
         case .prominent:
             shape.fill(isPressed || isHovered ? EquinoxDesign.ColorToken.accentStrong : EquinoxDesign.ColorToken.accent)
         case .destructive:
-            shape.fill(EquinoxDesign.ColorToken.semanticRed.opacity(fillOpacity(isPressed: isPressed)))
+            shape.fill(EquinoxDesign.ColorToken.semanticRed.opacity(interactionFill(isPressed: isPressed)))
         case .bordered, .plain:
-            shape.fill(Color.primary.opacity(fillOpacity(isPressed: isPressed)))
+            if variant == .plain && !isPressed && !isHovered {
+                shape.fill(Color.clear)
+            } else {
+                shape.fill(interactionColor(isPressed: isPressed))
+            }
         }
     }
 
@@ -75,17 +79,23 @@ struct EquinoxButtonStyle: ButtonStyle {
             RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
                 .strokeBorder(
                     variant == .destructive
-                        ? EquinoxDesign.ColorToken.semanticRed.opacity(0.35)
+                        ? EquinoxDesign.ColorToken.semanticRed.opacity(EquinoxDesign.StateOpacity.selectionBorder)
                         : EquinoxDesign.ColorToken.hairlineBorder,
                     lineWidth: 1
                 )
         }
     }
 
-    private func fillOpacity(isPressed: Bool) -> Double {
-        if isPressed { return 0.10 }
-        if isHovered { return 0.08 }
-        return variant == .plain ? 0 : 0.06
+    private func interactionColor(isPressed: Bool) -> Color {
+        if isPressed { return EquinoxDesign.ColorToken.interactionPress }
+        if isHovered { return EquinoxDesign.ColorToken.interactionHover }
+        return EquinoxDesign.ColorToken.interactionRest
+    }
+
+    private func interactionFill(isPressed: Bool) -> Double {
+        if isPressed { return EquinoxDesign.StateOpacity.selectionTint }
+        if isHovered { return EquinoxDesign.StateOpacity.selectionTint - 0.02 }
+        return EquinoxDesign.StateOpacity.selectionTint - 0.04
     }
 
     private func pressScale(isPressed: Bool) -> CGFloat {
@@ -116,7 +126,7 @@ struct EquinoxCardModifier: ViewModifier {
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(
-                        Color.primary.opacity(isHovered ? 0.08 : 0.06),
+                        isHovered ? EquinoxDesign.ColorToken.interactionHover : EquinoxDesign.ColorToken.hairlineBorder,
                         lineWidth: 1
                     )
             }
@@ -125,7 +135,7 @@ struct EquinoxCardModifier: ViewModifier {
     private var fillColor: Color {
         switch style {
         case .secondary:
-            EquinoxDesign.ColorToken.surfaceSecondary.opacity(0.5)
+            EquinoxDesign.ColorToken.surfaceSecondary.opacity(EquinoxDesign.StateOpacity.disabled)
         case .subtle:
             EquinoxDesign.ColorToken.interactionSubtle
         case .raised:
@@ -154,14 +164,14 @@ struct EquinoxBadge: View {
         Text(text)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(tint)
-            .padding(.horizontal, 7)
-            .padding(.vertical, 3)
+            .padding(.horizontal, EquinoxDesign.ChipMetrics.badgeHorizontalPadding)
+            .padding(.vertical, EquinoxDesign.ChipMetrics.badgeVerticalPadding)
             .background {
                 Capsule(style: .continuous)
-                    .fill(tint.opacity(0.12))
+                    .fill(tint.opacity(EquinoxDesign.StateOpacity.badgeTint))
                     .overlay {
                         Capsule(style: .continuous)
-                            .strokeBorder(tint.opacity(0.25), lineWidth: 0.5)
+                            .strokeBorder(tint.opacity(EquinoxDesign.StateOpacity.badgeBorder), lineWidth: 0.5)
                     }
             }
     }
@@ -170,29 +180,59 @@ struct EquinoxBadge: View {
 struct EquinoxChip: View {
     let text: String
     var dotColor: Color? = nil
+    var symbol: String? = nil
+    var foreground: Color = .secondary
+    var background: Color = EquinoxDesign.ColorToken.interactionSubtle
+    var border: Color = EquinoxDesign.ColorToken.hairlineBorder
+    var usesCapsule = false
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: EquinoxDesign.ChipMetrics.spacing) {
             if let dotColor {
                 Circle()
                     .fill(dotColor)
-                    .frame(width: 6, height: 6)
+                    .frame(
+                        width: EquinoxDesign.ChipMetrics.detailDotSize,
+                        height: EquinoxDesign.ChipMetrics.detailDotSize
+                    )
+            }
+            if let symbol {
+                Image(systemName: symbol)
+                    .font(.caption2.weight(.semibold))
             }
             Text(text)
-                .font(.caption2.weight(.medium))
+                .font(.caption.weight(.medium))
                 .lineLimit(1)
         }
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
+        .foregroundStyle(foreground)
+        .padding(.horizontal, EquinoxDesign.ChipMetrics.detailHorizontalPadding)
+        .padding(.vertical, EquinoxDesign.ChipMetrics.detailVerticalPadding)
         .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.interactionSubtle)
-                .overlay {
-                    RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
-                        .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
-                }
+            if usesCapsule {
+                Capsule(style: .continuous)
+                    .fill(background)
+            } else {
+                RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
+                    .fill(background)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
+                            .strokeBorder(border, lineWidth: 0.5)
+                    }
+            }
         }
+    }
+}
+
+// MARK: - Event detail card
+
+struct EventDetailCardBackground: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
+            .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(EquinoxDesign.StateOpacity.cardBackground))
+            .overlay {
+                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
+                    .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
+            }
     }
 }
 
@@ -285,27 +325,27 @@ struct EquinoxJoinButton: View {
             Image(systemName: JoinURLPresentation.meetingSystemImage(for: url))
                 .font(.title3.weight(.semibold))
                 .symbolRenderingMode(.hierarchical)
-                .frame(width: 36, height: 36)
+                .frame(width: EquinoxDesign.ControlWidth.joinIcon, height: EquinoxDesign.ControlWidth.joinIcon)
                 .background {
                     Circle()
-                        .fill(Color.white.opacity(0.18))
+                        .fill(EquinoxDesign.onAccentForeground.opacity(EquinoxDesign.StateOpacity.joinGlassOverlay))
                 }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
                 Text(String(localized: "Join Meeting", comment: ""))
                     .font(.headline)
                 Text(JoinURLPresentation.meetingDisplayName(for: url))
                     .font(.caption)
-                    .opacity(0.85)
+                    .opacity(EquinoxDesign.StateOpacity.joinSubtitle)
             }
 
             Spacer(minLength: 0)
 
             Image(systemName: "arrow.up.right")
                 .font(.caption.weight(.bold))
-                .opacity(0.85)
+                .opacity(EquinoxDesign.StateOpacity.joinSubtitle)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(EquinoxDesign.onAccentForeground)
         .padding(.horizontal, EquinoxDesign.spacingMD)
         .padding(.vertical, EquinoxDesign.spacingMD)
         .background { joinBackground }
@@ -314,9 +354,9 @@ struct EquinoxJoinButton: View {
 
     private var compactLabel: some View {
         Image(systemName: JoinURLPresentation.meetingSystemImage(for: url))
-            .font(.system(size: 12, weight: .semibold))
+            .font(.caption.weight(.semibold))
             .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(.white)
+            .foregroundStyle(EquinoxDesign.onAccentForeground)
             .frame(width: metrics?.toolbarButtonSize ?? EquinoxDesign.toolbarButtonSize,
                    height: metrics?.toolbarButtonSize ?? EquinoxDesign.toolbarButtonSize)
             .background { joinBackground }
@@ -335,6 +375,12 @@ struct EquinoxJoinButton: View {
                     endPoint: .bottomTrailing
                 )
             )
-            .shadow(color: EquinoxDesign.ColorToken.accent.opacity(isHovered ? 0.35 : 0.22), radius: 8, y: 3)
+            .shadow(
+                color: EquinoxDesign.ColorToken.accent.opacity(
+                    isHovered ? EquinoxDesign.ShadowToken.joinHoverOpacity : EquinoxDesign.ShadowToken.joinRestOpacity
+                ),
+                radius: EquinoxDesign.ShadowToken.joinRadius,
+                y: EquinoxDesign.ShadowToken.joinYOffset
+            )
     }
 }

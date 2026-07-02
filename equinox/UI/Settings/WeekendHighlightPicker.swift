@@ -11,7 +11,7 @@ struct WeekendHighlightPicker: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: EquinoxDesign.spacingSM - 2) {
             ForEach(0..<7, id: \.self) { col in
                 let dow = weekdayForColumn(startDOW: preferences.weekStartWeekday, col: col)
                 let isOn = (preferences.highlightedWeekdays & (1 << dow)) != 0
@@ -24,10 +24,10 @@ struct WeekendHighlightPicker: View {
                 } label: {
                     Text(String(dowLabels[dow].prefix(2)))
                         .font(.caption.weight(.semibold))
-                        .frame(width: 32, height: 28)
+                        .frame(width: EquinoxDesign.ControlWidth.weekdayCell, height: EquinoxDesign.ControlWidth.weekdayCellHeight)
                         .background {
                             RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                                .fill(isOn ? EquinoxDesign.ColorToken.weekendTint.opacity(0.25) : Color.primary.opacity(0.04))
+                                .fill(isOn ? EquinoxDesign.ColorToken.weekendTint.opacity(EquinoxDesign.StateOpacity.weekendHighlight) : EquinoxDesign.ColorToken.interactionSubtle)
                         }
                         .overlay {
                             RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)

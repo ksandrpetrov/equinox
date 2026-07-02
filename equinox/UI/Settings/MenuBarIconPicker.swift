@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct MenuBarIconPicker: View {
-    @Binding var selection: Int
+    @Bindable var prefs: PreferencesStore
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var selection: Int { prefs.menuBarIconType }
 
     private let styleNames = [
         String(localized: "Minimal", comment: "Menu bar icon style"),
@@ -27,17 +30,14 @@ struct MenuBarIconPicker: View {
     private func iconButton(for style: MenuBarIconStyle) -> some View {
         let index = style.rawValue
         Button {
-            selection = index
+            prefs.menuBarIconType = index
         } label: {
-            Image("menubaricon\(index)")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 20)
+            styleThumbnail(for: style)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, EquinoxDesign.spacingLG)
                 .background {
                     RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                        .fill(Color.primary.opacity(selection == index ? 0.06 : 0.03))
+                        .fill(selection == index ? EquinoxDesign.ColorToken.interactionRest : EquinoxDesign.ColorToken.pickerUnselected)
                 }
                 .overlay {
                     RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
@@ -50,5 +50,29 @@ struct MenuBarIconPicker: View {
         .buttonStyle(.plain)
         .accessibilityLabel(styleNames[index])
         .accessibilityAddTraits(selection == index ? .isSelected : [])
+    }
+
+    @ViewBuilder
+    private func styleThumbnail(for style: MenuBarIconStyle) -> some View {
+        if let icon = MenuBarIconRenderer.previewImage(
+            text: previewText,
+            iconStyle: style,
+            showMeetingIndicator: false,
+            colorScheme: colorScheme
+        ) {
+            Image(nsImage: icon)
+                .frame(height: EquinoxDesign.ControlWidth.menuBarPickerPreviewHeight)
+        } else {
+            Color.clear
+                .frame(height: EquinoxDesign.ControlWidth.menuBarPickerPreviewHeight)
+        }
+    }
+
+    private var previewText: String {
+        MenuBarIconRenderer.iconText(
+            prefs: prefs,
+            calendar: Calendar.current,
+            today: CalendarDate(year: 2026, monthIndex: 5, day: 13)
+        )
     }
 }

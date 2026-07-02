@@ -57,6 +57,10 @@ final class AppState {
             plaud.matchHistoryIfNeeded()
         }
 
+        events.isPanelVisible = { [weak self] in
+            self?.panel.isPanelVisible == true
+        }
+
         Task { await events.refreshCalendarAccessStatus() }
     }
 

@@ -59,7 +59,7 @@ struct SettingsSection<Content: View>: View {
                     .fill(EquinoxDesign.ColorToken.interactionSubtle)
                     .overlay {
                         RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
-                            .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
+                            .strokeBorder(EquinoxDesign.ColorToken.strongBorder, lineWidth: 1)
                     }
             }
         }
@@ -120,7 +120,9 @@ struct SettingsRow<Control: View>: View {
 
 struct SettingsDivider: View {
     var body: some View {
-        Divider()
+        Rectangle()
+            .fill(EquinoxDesign.ColorToken.separator)
+            .frame(height: 1)
     }
 }
 

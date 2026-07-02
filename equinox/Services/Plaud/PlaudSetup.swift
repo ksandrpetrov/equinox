@@ -17,18 +17,17 @@ struct PlaudSetup: Equatable, Sendable {
 
 enum PlaudConfigurator {
     static func buildSetup(
-        enabled: Bool? = nil,
+        enabled: Bool,
         recordCount: Int = 0,
         lastRefreshAt: Date? = nil,
         cacheStats: (positive: Int, negative: Int, manual: Int)? = nil,
         lastError: String? = nil
     ) -> PlaudSetup {
-        let prefs = PreferencesStore.shared
         let stats = cacheStats ?? (positive: 0, negative: 0, manual: 0)
         let keychainTokens = PlaudOAuthClient.loadTokens()
 
         return PlaudSetup(
-            isEnabled: enabled ?? prefs.isPlaudEnabled,
+            isEnabled: enabled,
             recordCount: recordCount,
             lastRefreshAt: lastRefreshAt,
             cachePositiveCount: stats.positive,
@@ -38,6 +37,22 @@ enum PlaudConfigurator {
             hasKeychainOAuth: keychainTokens != nil,
             keychainOAuthExpiresAt: keychainTokens?.expiresAtDate,
             keychainOAuthHasRefresh: keychainTokens?.hasRefreshToken ?? false
+        )
+    }
+
+    @MainActor
+    static func buildSetupFromPreferences(
+        recordCount: Int = 0,
+        lastRefreshAt: Date? = nil,
+        cacheStats: (positive: Int, negative: Int, manual: Int)? = nil,
+        lastError: String? = nil
+    ) -> PlaudSetup {
+        buildSetup(
+            enabled: PreferencesStore.shared.isPlaudEnabled,
+            recordCount: recordCount,
+            lastRefreshAt: lastRefreshAt,
+            cacheStats: cacheStats,
+            lastError: lastError
         )
     }
 }

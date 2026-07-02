@@ -1,13 +1,13 @@
-import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
 import { invokeBridge, requireBridgeData } from "../bridge.js"
+import {
+  accessRequestOutputSchema,
+  accessStatusOutputSchema,
+  calendarsDataSchema,
+} from "../schemas/outputs.js"
 import { jsonToolResult } from "../toolResponse.js"
-import type {
-  AccessRequestData,
-  AccessStatusData,
-  CalendarsData,
-} from "../types.js"
+import { runToolSafely } from "../toolErrors.js"
 
 export function registerCalendarTools(server: McpServer) {
   server.registerTool(
@@ -15,7 +15,8 @@ export function registerCalendarTools(server: McpServer) {
     {
       title: "Статус доступа к календарю",
       description:
-        "Проверяет TCC-разрешение EventKit для equinox-bridge. Используйте перед чтением или изменением событий.",
+        "Проверяет TCC-разрешение EventKit. Сначала использует equinox.app bridge; при его отсутствии — прямой equinox-bridge CLI. Вызовите перед чтением или изменением событий.",
+      outputSchema: accessStatusOutputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -23,10 +24,10 @@ export function registerCalendarTools(server: McpServer) {
         openWorldHint: false,
       },
     },
-    async () => {
-      const response = await invokeBridge<AccessStatusData>({ command: "access_status" })
-      return jsonToolResult(requireBridgeData(response))
-    },
+    async () => runToolSafely(async () => {
+      const response = await invokeBridge({ command: "access_status" })
+      return jsonToolResult(requireBridgeData(response, accessStatusOutputSchema))
+    }),
   )
 
   server.registerTool(
@@ -34,7 +35,8 @@ export function registerCalendarTools(server: McpServer) {
     {
       title: "Запросить доступ к календарю",
       description:
-        "Запрашивает доступ к системным календарям macOS через EventKit. Может показать системный диалог разрешений.",
+        "Запрашивает доступ к системным календарям macOS через EventKit. Может показать системный диалог разрешений и ждать ответа пользователя без таймаута.",
+      outputSchema: accessRequestOutputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -42,10 +44,10 @@ export function registerCalendarTools(server: McpServer) {
         openWorldHint: false,
       },
     },
-    async () => {
-      const response = await invokeBridge<AccessRequestData>({ command: "request_access" })
-      return jsonToolResult(requireBridgeData(response))
-    },
+    async () => runToolSafely(async () => {
+      const response = await invokeBridge({ command: "request_access" })
+      return jsonToolResult(requireBridgeData(response, accessRequestOutputSchema))
+    }),
   )
 
   server.registerTool(
@@ -54,6 +56,7 @@ export function registerCalendarTools(server: McpServer) {
       title: "Список календарей",
       description:
         "Возвращает все доступные календари EventKit с источником, цветом и флагом allowsContentModifications.",
+      outputSchema: calendarsDataSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -61,9 +64,9 @@ export function registerCalendarTools(server: McpServer) {
         openWorldHint: false,
       },
     },
-    async () => {
-      const response = await invokeBridge<CalendarsData>({ command: "list_calendars" })
-      return jsonToolResult(requireBridgeData(response))
-    },
+    async () => runToolSafely(async () => {
+      const response = await invokeBridge({ command: "list_calendars" })
+      return jsonToolResult(requireBridgeData(response, calendarsDataSchema))
+    }),
   )
 }

@@ -112,7 +112,7 @@ struct NewEventSheet: View {
                             HStack {
                                 Circle()
                                     .fill(modifiableCalendars[i].swiftUIColor)
-                                    .frame(width: 10, height: 10)
+                                    .frame(width: EquinoxDesign.ControlWidth.calendarColorDot, height: EquinoxDesign.ControlWidth.calendarColorDot)
                                 Text(modifiableCalendars[i].title)
                             }
                             .tag(i)

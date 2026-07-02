@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createRequire } from "node:module"
 import { pathToFileURL } from "node:url"
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
@@ -8,11 +9,14 @@ import { registerPrompts } from "./prompts.js"
 import { registerResources } from "./resources.js"
 import { registerTools } from "./tools/index.js"
 
+const require = createRequire(import.meta.url)
+const { version } = require("../package.json") as { version: string }
+
 export function createEquinoxMcpServer(): McpServer {
   const server = new McpServer(
     {
       name: "equinox-calendar-mcp",
-      version: "0.1.0",
+      version,
     },
     {
       capabilities: {

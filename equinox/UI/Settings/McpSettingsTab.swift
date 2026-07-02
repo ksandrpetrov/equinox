@@ -203,7 +203,7 @@ struct McpSettingsTab: View {
                     }
 
                     Text(mcp.setup.clientConfigString)
-                        .font(.system(.caption, design: .monospaced))
+                        .font(EquinoxDesign.codeFont(.caption))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(EquinoxDesign.spacingSM)
@@ -239,7 +239,7 @@ struct McpSettingsTab: View {
                     }
 
                     Text(mcp.setup.codexConfigSnippet)
-                        .font(.system(.caption, design: .monospaced))
+                        .font(EquinoxDesign.codeFont(.caption))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(EquinoxDesign.spacingSM)
@@ -291,7 +291,7 @@ struct McpSettingsTab: View {
                     .font(.subheadline.weight(.medium))
                 Spacer(minLength: EquinoxDesign.spacingSM)
                 Text(tool.id)
-                    .font(.system(.caption2, design: .monospaced))
+                    .font(EquinoxDesign.codeFont(.caption2))
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
@@ -345,7 +345,7 @@ struct McpSettingsTab: View {
             Text("\(label):")
                 .font(.footnote.weight(.medium))
             Text(path)
-                .font(.system(.footnote, design: .monospaced))
+                .font(EquinoxDesign.codeFont(.footnote))
                 .textSelection(.enabled)
                 .foregroundStyle(.secondary)
         }

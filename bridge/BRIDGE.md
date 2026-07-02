@@ -24,6 +24,13 @@ Bridge и GUI-приложение используют общий маппин�
 
 Основной MCP-путь обычно не запускает bridge напрямую из AI-клиента: `mcp/src/bridge.ts` сначала пробует локальный app bridge proxy внутри запущенного `equinox.app`, а уже он запускает `equinox-bridge`. Если приложение не запущено, MCP делает direct fallback на bridge.
 
+### Политика fallback (MCP → bridge)
+
+- Read-only команды (`list_events`, `access_status`, …) при ошибке app bridge повторяются через прямой CLI.
+- Мутирующие команды (`create_event`, `update_event`, `delete_event`) **не** повторяются после таймаута или обрыва HTTP — MCP возвращает ошибку, чтобы избежать двойных мутаций.
+- CLI fallback для мутаций допустим только если запрос не дошёл до bridge: нет state-файла app bridge, `ECONNREFUSED`, HTTP 401/404/413.
+- Таймаут app bridge по умолчанию 30 с (`EQUINOX_APP_BRIDGE_TIMEOUT_MS`).
+
 ## Envelope
 
 **Успех:**

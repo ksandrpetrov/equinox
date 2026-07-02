@@ -5,7 +5,7 @@ struct PlaudSettingsTab: View {
     var searchText: String = ""
     @Environment(\.appState) private var appState
     @Bindable var prefs: PreferencesStore
-    @State private var setup = PlaudConfigurator.buildSetup()
+    @State private var setup = PlaudConfigurator.buildSetupFromPreferences()
     @State private var statusMessage: String?
     @State private var oauthStatusMessage: String?
     @State private var isRefreshing = false
@@ -211,7 +211,7 @@ struct PlaudSettingsTab: View {
     private func refreshSetup() {
         guard let appState else { return }
         Task {
-            await appState.plaud.refreshSetupForSettings()
+            await appState.plaud.refreshSetup()
             setup = appState.plaud.setup
         }
     }
@@ -274,7 +274,7 @@ struct PlaudSettingsTab: View {
             await appState.plaud.forceRefresh()
         } else {
             appState.plaud.refreshMatchesIfNeeded()
-            await appState.plaud.refreshSetupForSettings()
+            await appState.plaud.refreshSetup()
         }
         setup = appState.plaud.setup
         statusMessage = String(localized: "Plaud catalog refreshed.", comment: "Plaud status")

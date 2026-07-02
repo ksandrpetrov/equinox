@@ -45,7 +45,7 @@ enum SettingsActivationHandler {
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
-        window.setContentSize(NSSize(width: 720, height: 560))
+        window.setContentSize(NSSize(width: SettingsDesign.windowMinWidth, height: SettingsDesign.windowMinHeight))
         window.center()
         window.makeKeyAndOrderFront(nil)
     }

@@ -4,9 +4,6 @@ import Foundation
 @MainActor
 final class PanelPresentationState {
     var isPanelVisible = false
-    /// Bumped each time the panel becomes visible so the agenda re-scrolls to the selected day.
-    /// The hosting controller is reused across show/hide, so `onAppear` alone does not re-fire on reopen.
-    /// Scroll is driven by `EventsCoordinator.agendaScrollToken` (see `requestAgendaScroll()`).
     var isNewEventSheetPresented = false
     var newEventInitialDate: CalendarDate?
     var selectedEvent: DayEvent?

@@ -171,10 +171,7 @@ struct EventDetailView: View {
                 }
             }
             .padding(EquinoxDesign.spacingMD)
-            .background {
-                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(0.72))
-            }
+            .background { EventDetailCardBackground() }
         } else {
             EventDetailSecondaryActionButton(
                 title: String(localized: "Link Plaud recording…", comment: "Plaud manual link action"),

@@ -145,16 +145,27 @@ final class McpAppBridgeServer {
         process.standardOutput = stdout
         process.standardError = stderr
 
+        let stdoutHandle = stdout.fileHandleForReading
+        let stderrHandle = stderr.fileHandleForReading
+
         do {
             try process.run()
-            process.waitUntilExit()
         } catch {
             sendJSONError(code: "bridge_launch_failed", message: error.localizedDescription, status: 502, on: connection)
             return
         }
 
-        let output = stdout.fileHandleForReading.readDataToEndOfFile()
-        let errorOutput = stderr.fileHandleForReading.readDataToEndOfFile()
+        let stderrGroup = DispatchGroup()
+        var errorOutput = Data()
+        stderrGroup.enter()
+        DispatchQueue.global(qos: .utility).async {
+            errorOutput = stderrHandle.readDataToEndOfFile()
+            stderrGroup.leave()
+        }
+
+        let output = stdoutHandle.readDataToEndOfFile()
+        stderrGroup.wait()
+        process.waitUntilExit()
         guard (process.terminationStatus == 0 || process.terminationStatus == 1), !output.isEmpty else {
             let message = String(data: errorOutput + output, encoding: .utf8)?
                 .trimmingCharacters(in: .whitespacesAndNewlines)

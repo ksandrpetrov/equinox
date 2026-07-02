@@ -108,7 +108,7 @@ struct DayCellView: View {
     }
 
     private var textColor: Color {
-        if isToday { return .white }
+        if isToday { return EquinoxDesign.onAccentForeground }
         if isInCurrentMonth { return .primary }
         return .secondary
     }

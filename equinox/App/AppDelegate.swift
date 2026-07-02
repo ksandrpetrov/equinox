@@ -41,6 +41,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             statusItemController?.handleDateURL(Date())
         } else {
             let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.calendar = Calendar(identifier: .gregorian)
             formatter.dateFormat = "yyyy-MM-dd"
             if let date = formatter.date(from: dateString) {
                 statusItemController?.handleDateURL(date)

@@ -20,8 +20,9 @@ actor PlaudService {
         }
     }
 
-    func setupStatus() -> PlaudSetup {
+    func setupStatus(isPlaudEnabled: Bool) -> PlaudSetup {
         PlaudConfigurator.buildSetup(
+            enabled: isPlaudEnabled,
             recordCount: recordings.count,
             lastRefreshAt: lastRefreshAt,
             cacheStats: cache.stats(),
@@ -31,7 +32,7 @@ actor PlaudService {
 
     func refreshIfNeeded(force: Bool = false, isPlaudEnabled: Bool) async -> PlaudSetup {
         guard isPlaudEnabled else {
-            return setupStatus()
+            return setupStatus(isPlaudEnabled: false)
         }
 
         let shouldRefresh = force
@@ -39,7 +40,7 @@ actor PlaudService {
             || Date().timeIntervalSince(lastRefreshAt!) >= Self.staleInterval
 
         guard shouldRefresh else {
-            return setupStatus()
+            return setupStatus(isPlaudEnabled: isPlaudEnabled)
         }
 
         do {
@@ -52,7 +53,7 @@ actor PlaudService {
             lastError = error.localizedDescription
         }
 
-        return setupStatus()
+        return setupStatus(isPlaudEnabled: isPlaudEnabled)
     }
 
     func saveManualLink(for event: DayEvent, url: URL) throws -> PlaudEventMatch {
