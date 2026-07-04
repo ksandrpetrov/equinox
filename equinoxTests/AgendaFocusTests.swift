@@ -55,6 +55,63 @@ final class AgendaFocusTests: XCTestCase {
         )
     }
 
+    // MARK: - Cross-day focus
+
+    private let today = CalendarDate(year: 2023, monthIndex: 10, day: 14)
+    private let day: TimeInterval = 86_400
+
+    private func crossDayFocus(_ eventsByDate: [CalendarDate: [DayEvent]]) -> String? {
+        AgendaFocus.focusEventID(
+            from: today,
+            through: today.addingDays(45),
+            eventsFor: { eventsByDate[$0] ?? [] },
+            now: now
+        )
+    }
+
+    func testCrossDayFocusesTomorrowWhenTodayAllPast() {
+        let eventsByDate: [CalendarDate: [DayEvent]] = [
+            today: [makeEvent(id: "past-today", start: now.addingTimeInterval(-7200), end: now.addingTimeInterval(-3600))],
+            today.addingDays(1): [makeEvent(id: "tomorrow", start: now.addingTimeInterval(day), end: now.addingTimeInterval(day + 3600))]
+        ]
+
+        XCTAssertEqual(crossDayFocus(eventsByDate), "tomorrow")
+    }
+
+    func testCrossDaySkipsEmptyDaysToNextEvent() {
+        let eventsByDate: [CalendarDate: [DayEvent]] = [
+            today.addingDays(2): [makeEvent(id: "in-two-days", start: now.addingTimeInterval(2 * day), end: now.addingTimeInterval(2 * day + 3600))]
+        ]
+
+        XCTAssertEqual(crossDayFocus(eventsByDate), "in-two-days")
+    }
+
+    func testCrossDayPrefersTodayOngoingOverTomorrow() {
+        let eventsByDate: [CalendarDate: [DayEvent]] = [
+            today: [makeEvent(id: "ongoing-today", start: now.addingTimeInterval(-900), end: now.addingTimeInterval(900))],
+            today.addingDays(1): [makeEvent(id: "tomorrow", start: now.addingTimeInterval(day), end: now.addingTimeInterval(day + 3600))]
+        ]
+
+        XCTAssertEqual(crossDayFocus(eventsByDate), "ongoing-today")
+    }
+
+    func testCrossDayReturnsNilWhenAllTimedEventsArePast() {
+        let eventsByDate: [CalendarDate: [DayEvent]] = [
+            today: [makeEvent(id: "past", start: now.addingTimeInterval(-7200), end: now.addingTimeInterval(-3600))]
+        ]
+
+        XCTAssertNil(crossDayFocus(eventsByDate))
+    }
+
+    func testCrossDaySkipsAllDayOnlyTodayToTimedTomorrow() {
+        let eventsByDate: [CalendarDate: [DayEvent]] = [
+            today: [makeEvent(id: "all-day", start: now.addingTimeInterval(-3600), end: now.addingTimeInterval(3600), isEventAllDay: true)],
+            today.addingDays(1): [makeEvent(id: "tomorrow", start: now.addingTimeInterval(day), end: now.addingTimeInterval(day + 3600))]
+        ]
+
+        XCTAssertEqual(crossDayFocus(eventsByDate), "tomorrow")
+    }
+
     private func makeEvent(
         id: String,
         start: Date,

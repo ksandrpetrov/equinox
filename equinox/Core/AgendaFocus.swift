@@ -1,6 +1,24 @@
 import Foundation
 
 enum AgendaFocus {
+    /// Timed event to scroll to, walking day-by-day from `firstDate`: the first day with an
+    /// ongoing or upcoming timed event wins. nil → nothing ongoing/upcoming in the range.
+    static func focusEventID(
+        from firstDate: CalendarDate,
+        through lastDate: CalendarDate,
+        eventsFor: (CalendarDate) -> [DayEvent],
+        now: Date = Date()
+    ) -> String? {
+        var date = firstDate
+        while date <= lastDate {
+            if let eventID = focusEventID(in: eventsFor(date), now: now) {
+                return eventID
+            }
+            date = date.addingDays(1)
+        }
+        return nil
+    }
+
     /// Timed event to scroll to: ongoing first, else next upcoming; nil → scroll to day header.
     static func focusEventID(in events: [DayEvent], now: Date = Date()) -> String? {
         let timed = events

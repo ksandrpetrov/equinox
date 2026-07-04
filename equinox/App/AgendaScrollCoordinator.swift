@@ -108,7 +108,11 @@ final class AgendaScrollCoordinator {
         let selected = appState.events.selectedDate
         let today = appState.events.todayDate
         if selected == today,
-           let eventID = AgendaFocus.focusEventID(in: appState.events.events(for: selected)) {
+           let eventID = AgendaFocus.focusEventID(
+               from: today,
+               through: displayRange(anchor: today).last,
+               eventsFor: appState.events.events(for:)
+           ) {
             return .event(id: eventID)
         }
         return .day(julian: selected.julian)
