@@ -3,6 +3,7 @@ import SwiftUI
 struct AgendaSectionHeader: View {
     let date: CalendarDate
     let calendar: Calendar
+    let metrics: SizeMetrics
     var backgroundStyle: BackgroundStyle = .glass
 
     var body: some View {
@@ -12,11 +13,11 @@ struct AgendaSectionHeader: View {
 
         HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
             Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
-                .font(.subheadline.weight(.semibold))
+                .font(.system(size: metrics.fontSize + 1, weight: .semibold))
                 .foregroundStyle(isToday ? EquinoxDesign.ColorToken.accent : .secondary)
             if !isToday && !isTomorrow {
                 Text(EquinoxFormatters.shortWeekday(nsDate))
-                    .font(.caption.weight(.medium))
+                    .font(.system(size: metrics.fontSize - 1, weight: .medium))
                     .foregroundStyle(.tertiary)
             }
         }
@@ -121,7 +122,7 @@ struct AgendaEventCard: View {
     private var compactEventContent: some View {
         HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
             Text(timeRangeString)
-                .font(EquinoxDesign.monoTimeFont(size: 11))
+                .font(EquinoxDesign.monoTimeFont(size: max(10, metrics.fontSize - 2)))
                 .foregroundStyle(.secondary)
             Text(event.title)
                 .font(.caption.weight(.medium))
@@ -145,7 +146,7 @@ struct AgendaEventCard: View {
         VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
             HStack(alignment: .firstTextBaseline) {
                 Text(timeRangeString)
-                    .font(EquinoxDesign.monoTimeFont(size: 11))
+                    .font(EquinoxDesign.monoTimeFont(size: max(10, metrics.fontSize - 2)))
                     .foregroundStyle(.secondary)
                 Spacer(minLength: EquinoxDesign.spacingXS)
                 if event.showsRSVPControls,

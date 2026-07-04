@@ -220,7 +220,7 @@ struct NewEventSheet: View {
         saveError = nil
         isSaving = true
         Task {
-            if let error = await appState.events.createEvent(from: draft) {
+            if let error = await appState.createEvent(from: draft) {
                 saveError = error
                 isSaving = false
             } else {

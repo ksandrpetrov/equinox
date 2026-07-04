@@ -1,5 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 
+import { eventResourceSchema } from "./schemas/resourceSchemas.js"
+
 const calendarDocs = `# Equinox Calendar MCP
 
 Локальный MCP-сервер для управления и анализа системных календарей macOS через EventKit. Он умеет читать календари и события, создавать/обновлять/удалять события по явной просьбе пользователя, считать загрузку, искать конфликты и свободное время, а также читать локальный кэш Plaud-записей Equinox.
@@ -54,65 +56,6 @@ daily_agenda, weekly_calendar_review
 equinox://docs/calendar, equinox://schema/event
 `
 
-const eventSchema = {
-  $schema: "https://json-schema.org/draft/2020-12/schema",
-  title: "EquinoxBridgeEvent",
-  type: "object",
-  required: [
-    "calendarItemIdentifier",
-    "title",
-    "startDate",
-    "endDate",
-    "isAllDay",
-    "calendarIdentifier",
-    "calendarTitle",
-    "calendarColorHex",
-    "allowsContentModifications",
-    "hasAttendees",
-  ],
-  properties: {
-    eventIdentifier: { type: ["string", "null"] },
-    calendarItemIdentifier: { type: "string" },
-    title: { type: "string" },
-    location: { type: ["string", "null"] },
-    notes: { type: ["string", "null"] },
-    url: { type: ["string", "null"] },
-    startDate: { type: "string", description: "ISO-8601 instant" },
-    endDate: { type: "string", description: "ISO-8601 instant" },
-    isAllDay: { type: "boolean" },
-    joinURL: { type: ["string", "null"], description: "Detected meeting URL" },
-    calendarIdentifier: { type: "string" },
-    calendarTitle: { type: "string" },
-    calendarColorHex: { type: "string", pattern: "^#[0-9A-F]{6}$" },
-    allowsContentModifications: { type: "boolean" },
-    hasAttendees: { type: "boolean" },
-    participationStatus: {
-      type: ["string", "null"],
-      description: "EventKit participation status mapped by Equinox when attendees exist",
-    },
-    hasPlaudRecording: {
-      type: "boolean",
-      description: "Whether Equinox has a cached Plaud recording linked to this event",
-    },
-    plaudRecording: {
-      type: ["object", "null"],
-      properties: {
-        fileID: { type: "string" },
-        webURL: { type: "string" },
-        source: { type: "string", enum: ["auto", "manual"] },
-        matchedAt: { type: "string", description: "ISO-8601 instant" },
-        title: { type: "string" },
-        recordedAt: { type: "string", description: "ISO-8601 instant" },
-        endDate: { type: "string", description: "ISO-8601 instant" },
-        durationSeconds: { type: "number" },
-      },
-      required: ["fileID", "webURL", "source"],
-      additionalProperties: false,
-    },
-  },
-  additionalProperties: false,
-}
-
 export function registerResources(server: McpServer) {
   server.registerResource(
     "equinox_docs_calendar",
@@ -146,7 +89,7 @@ export function registerResources(server: McpServer) {
         {
           uri: uri.href,
           mimeType: "application/json",
-          text: JSON.stringify(eventSchema, null, 2),
+          text: JSON.stringify(eventResourceSchema, null, 2),
         },
       ],
     }),

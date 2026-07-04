@@ -3,6 +3,7 @@ import { z } from "zod"
 import {
   bridgeCalendarSchema,
   bridgeEventSchema,
+  bridgeEventsDataSchema,
   calendarsDataSchema,
   eventsDataSchema,
   mcpEnrichedEventSchema,
@@ -145,6 +146,7 @@ export const plaudRecordingsOutputSchema = plaudStatusOutputSchema.extend({
 export {
   bridgeCalendarSchema,
   bridgeEventSchema,
+  bridgeEventsDataSchema,
   calendarsDataSchema,
   eventsDataSchema,
   mcpEnrichedEventSchema,

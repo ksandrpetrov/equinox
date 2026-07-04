@@ -1,6 +1,9 @@
 import Foundation
 
 enum AgendaFocus {
+    /// Delay before clearing programmatic-scroll guard after `scrollPosition` updates.
+    static let programmaticScrollSettleDelay: TimeInterval = 0.35
+
     /// Timed event to scroll to, walking day-by-day from `firstDate`: the first day with an
     /// ongoing or upcoming timed event wins. nil → nothing ongoing/upcoming in the range.
     static func focusEventID(

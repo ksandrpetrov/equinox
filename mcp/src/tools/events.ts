@@ -6,6 +6,7 @@ import { invokeBridge, requireBridgeData } from "../bridge.js"
 import { attachPlaudRecordingsToEvents } from "../plaud.js"
 import {
   eventOutputSchema,
+  bridgeEventsDataSchema,
   eventsDataSchema,
   findConflictsOutputSchema,
   findFreeTimeOutputSchema,
@@ -53,7 +54,7 @@ export function registerEventTools(server: McpServer) {
         command: "list_events",
         ...bridgeInput,
       })
-      const data = requireBridgeData(response, eventsDataSchema)
+      const data = requireBridgeData(response, bridgeEventsDataSchema)
       if (includePlaud === false) {
         return jsonToolResult(data)
       }
@@ -191,7 +192,7 @@ export function registerAnalyticsTools(server: McpServer) {
         calendarIds: input.calendarIds,
         limit: 500,
       })
-      const data = requireBridgeData(response, eventsDataSchema)
+      const data = requireBridgeData(response, bridgeEventsDataSchema)
       const analysis = analyzeSchedule(
         data.events,
         input.startDate,
@@ -225,7 +226,7 @@ export function registerAnalyticsTools(server: McpServer) {
         ...input,
         limit: 500,
       })
-      const data = requireBridgeData(response, eventsDataSchema)
+      const data = requireBridgeData(response, bridgeEventsDataSchema)
       return jsonToolResult({
         startDate: input.startDate,
         endDate: input.endDate,
@@ -260,7 +261,7 @@ export function registerAnalyticsTools(server: McpServer) {
         calendarIds: input.calendarIds,
         limit: 500,
       })
-      const data = requireBridgeData(response, eventsDataSchema)
+      const data = requireBridgeData(response, bridgeEventsDataSchema)
       const slots = findFreeTime(
         data.events,
         input.startDate,

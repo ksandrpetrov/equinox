@@ -7,7 +7,6 @@ struct SizeMetrics {
     let cellRadius: CGFloat
     let cellDotWidth: CGFloat
     let agendaEventLeadingMargin: CGFloat
-    let agendaDotWidth: CGFloat
     let panelWidth: CGFloat
     let sheetWidth: CGFloat
     let toolbarButtonSize: CGFloat
@@ -24,19 +23,19 @@ struct SizeMetrics {
         case .small:
             return SizeMetrics(fontSize: 11, calendarTitleFontSize: 13, cellSize: 30,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
-                               agendaEventLeadingMargin: 8, agendaDotWidth: 6,
+                               agendaEventLeadingMargin: 8,
                                panelWidth: 340, sheetWidth: 340, toolbarButtonSize: 26,
                                weekColumnWidth: 24, loadingIndicatorHeight: 14)
         case .medium:
             return SizeMetrics(fontSize: 13, calendarTitleFontSize: 15, cellSize: 36,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
-                               agendaEventLeadingMargin: 10, agendaDotWidth: 7,
+                               agendaEventLeadingMargin: 10,
                                panelWidth: 380, sheetWidth: 380, toolbarButtonSize: 28,
                                weekColumnWidth: 24, loadingIndicatorHeight: 14)
         case .large:
             return SizeMetrics(fontSize: 15, calendarTitleFontSize: 17, cellSize: 40,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4.5,
-                               agendaEventLeadingMargin: 12, agendaDotWidth: 8,
+                               agendaEventLeadingMargin: 12,
                                panelWidth: 420, sheetWidth: 420, toolbarButtonSize: 30,
                                weekColumnWidth: 24, loadingIndicatorHeight: 14)
         }

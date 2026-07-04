@@ -1,6 +1,8 @@
 import AppKit
 import SwiftUI
 
+/// Composition root for the menu bar panel. UI should call these facade methods instead of
+/// reaching into `events`, `panel`, or `plaud` coordinators directly.
 @Observable
 @MainActor
 final class AppState {
@@ -21,6 +23,46 @@ final class AppState {
     func togglePinnedState() {
         isPinned.toggle()
         panel.onPinStateChanged?()
+    }
+
+    func selectDate(_ date: CalendarDate) {
+        events.selectDate(date)
+    }
+
+    func goToToday() {
+        events.goToToday()
+    }
+
+    func createEvent(from draft: NewEventDraft) async -> String? {
+        await events.createEvent(from: draft)
+    }
+
+    func deleteEvent(identifier: String) async -> String? {
+        await events.deleteEvent(identifier: identifier)
+    }
+
+    /// Presents the menu bar panel when set by `StatusItemController` during setup.
+    var onRequestPresentPanel: ((Bool) -> Void)?
+
+    /// Navigates the calendar to `date` and optionally presents the panel (`resetToToday: false`).
+    func navigateToDate(_ date: Date, presentPanel: Bool = true) {
+        let calendarDate = CalendarDate(date: date, calendar: calendar)
+        events.selectDate(calendarDate)
+        if presentPanel {
+            onRequestPresentPanel?(false)
+        }
+    }
+
+    /// Parses `yyyy-MM-dd` deep-link paths and navigates to that day.
+    func navigateToDeepLinkDateString(_ dateString: String, presentPanel: Bool = true) -> Bool {
+        guard let calendarDate = CalendarDateParsing.parseDayString(dateString) else {
+            return false
+        }
+        events.selectDate(calendarDate)
+        if presentPanel {
+            onRequestPresentPanel?(false)
+        }
+        return true
     }
 
     init() {

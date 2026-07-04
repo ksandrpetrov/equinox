@@ -40,7 +40,7 @@ export const bridgeEventSchema = z.object({
   allowsContentModifications: z.boolean(),
   hasAttendees: z.boolean(),
   participationStatus: z.string().nullable().optional(),
-})
+}).strict()
 
 /** MCP tool output after optional Plaud cache enrichment. */
 export const mcpEnrichedEventSchema = bridgeEventSchema.extend({
@@ -50,6 +50,12 @@ export const mcpEnrichedEventSchema = bridgeEventSchema.extend({
 
 export const calendarsDataSchema = z.object({
   calendars: z.array(bridgeCalendarSchema),
+})
+
+/** Raw EventKit list_events response from equinox-bridge (no Plaud enrichment). */
+export const bridgeEventsDataSchema = z.object({
+  events: z.array(bridgeEventSchema),
+  truncated: z.boolean(),
 })
 
 export const eventsDataSchema = z.object({

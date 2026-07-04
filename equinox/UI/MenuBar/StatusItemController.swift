@@ -30,6 +30,9 @@ final class StatusItemController: NSObject {
         appState.events.onMeetingIndicatorChanged = { [weak self] in
             self?.updateMenuBarIcon()
         }
+        appState.onRequestPresentPanel = { [weak self] resetToToday in
+            self?.showPanelIfHidden(resetToToday: resetToToday)
+        }
         NotificationCenter.default.addObserver(
             forName: kEquinoxSizePreferenceChanged,
             object: nil,
@@ -100,12 +103,7 @@ final class StatusItemController: NSObject {
         panelController.isVisible
     }
 
-    private func syncPanelVisibleState() {
-        appState.panel.isPanelVisible = isPanelActuallyVisible
-    }
-
     func applyPinState() {
-        syncPanelVisibleState()
         if !appState.isPinned, isPanelActuallyVisible {
             NSApp.activate()
             panelController.window?.makeKeyAndOrderFront(nil)
@@ -114,8 +112,7 @@ final class StatusItemController: NSObject {
     }
 
     private func togglePanel() {
-        syncPanelVisibleState()
-        if appState.panel.isPanelVisible {
+        if isPanelActuallyVisible {
             hidePanel()
         } else {
             showPanel()
@@ -124,15 +121,14 @@ final class StatusItemController: NSObject {
 
     private func showPanel(resetToToday: Bool = true) {
         if resetToToday {
-            appState.events.goToToday()
+            appState.goToToday()
         }
         panelController.show(statusItem: statusItem, isPinned: appState.isPinned)
         updateDismissMonitoring()
     }
 
     private func showPanelIfHidden(resetToToday: Bool = true) {
-        syncPanelVisibleState()
-        if !appState.panel.isPanelVisible { showPanel(resetToToday: resetToToday) }
+        if !isPanelActuallyVisible { showPanel(resetToToday: resetToToday) }
     }
 
     private func hidePanel() {
@@ -144,7 +140,6 @@ final class StatusItemController: NSObject {
         statusItemMoveWorkItem?.cancel()
         let workItem = DispatchWorkItem { [weak self] in
             guard let self else { return }
-            self.syncPanelVisibleState()
             self.panelController.repositionUnderStatusItem(self.statusItem)
         }
         statusItemMoveWorkItem = workItem
@@ -210,12 +205,6 @@ final class StatusItemController: NSObject {
         }
     }
 
-    func handleDateURL(_ date: Date) {
-        let calDate = CalendarDate(date: date, calendar: appState.calendar)
-        appState.events.selectDate(calDate)
-        showPanelIfHidden(resetToToday: false)
-    }
-
     private func setupDismissMonitoring() {
         dismissMonitor.install { [weak self] in
             self?.handleAppResignActive()
@@ -243,7 +232,6 @@ final class StatusItemController: NSObject {
 
     private func handleAppResignActive() {
         guard !appState.isPinned else { return }
-        syncPanelVisibleState()
         guard isPanelActuallyVisible else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -257,7 +245,6 @@ final class StatusItemController: NSObject {
 
     private func handleOutsideClick() {
         guard !appState.isPinned else { return }
-        syncPanelVisibleState()
         guard isPanelActuallyVisible else { return }
         hidePanel()
     }

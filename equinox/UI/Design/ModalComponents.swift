@@ -13,43 +13,17 @@ struct ModalErrorBanner: View {
     var style: ModalBannerStyle = .error
 
     var body: some View {
-        HStack(alignment: .top, spacing: EquinoxDesign.spacingSM) {
-            Image(systemName: iconName)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(foregroundColor)
-            Text(message)
-                .font(.footnote)
-                .foregroundStyle(foregroundColor)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, EquinoxDesign.spacingMD)
-        .padding(.vertical, EquinoxDesign.spacingSM)
-        .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                .fill(backgroundColor)
-        }
-        .accessibilityElement(children: .combine)
+        EquinoxBanner(
+            message: message,
+            style: equinoxStyle,
+            presentation: .filled
+        )
     }
 
-    private var iconName: String {
+    private var equinoxStyle: EquinoxBannerStyle {
         switch style {
-        case .error: "exclamationmark.triangle.fill"
-        case .warning: "info.circle.fill"
-        }
-    }
-
-    private var foregroundColor: Color {
-        switch style {
-        case .error: EquinoxDesign.ColorToken.semanticRed
-        case .warning: EquinoxDesign.ColorToken.semanticOrange
-        }
-    }
-
-    private var backgroundColor: Color {
-        switch style {
-        case .error: EquinoxDesign.ColorToken.semanticRed.opacity(EquinoxDesign.StateOpacity.badgeTint)
-        case .warning: EquinoxDesign.ColorToken.semanticOrange.opacity(EquinoxDesign.StateOpacity.badgeTint)
+        case .error: .error
+        case .warning: .warning
         }
     }
 }

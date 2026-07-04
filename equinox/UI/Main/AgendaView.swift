@@ -66,6 +66,7 @@ struct AgendaView: View {
                                 AgendaSectionHeader(
                                     date: section.date,
                                     calendar: appState.calendar,
+                                    metrics: metrics,
                                     backgroundStyle: backgroundStyle
                                 )
                                 .id(AgendaScrollTarget.day(julian: section.date.julian))
@@ -79,17 +80,17 @@ struct AgendaView: View {
                 .onAppear {
                     scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
                     scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
-                    scrollCoordinator.scrollToFocus(appState: appState)
+                    scrollCoordinator.scrollToFocus(events: appState.events)
                 }
                 .onChange(of: appState.events.agendaScrollToken) { _, _ in
-                    scrollCoordinator.scrollToFocus(appState: appState)
+                    scrollCoordinator.scrollToFocus(events: appState.events)
                 }
                 .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
-                    scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, appState: appState)
+                    scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, events: appState.events)
                 }
                 .onScrollPhaseChange { _, newPhase in
                     if newPhase == .idle {
-                        scrollCoordinator.commitScrollSettle(appState: appState)
+                        scrollCoordinator.commitScrollSettle(events: appState.events)
                     }
                 }
             }
@@ -106,7 +107,7 @@ struct AgendaView: View {
                     pendingDelete = nil
                     Task {
                         appState.panel.panelFeedback = nil
-                        if let error = await appState.events.deleteEvent(identifier: eventIdentifier) {
+                        if let error = await appState.deleteEvent(identifier: eventIdentifier) {
                             appState.panel.panelFeedback = error
                         } else if appState.panel.selectedEvent?.id == eventID {
                             appState.panel.selectedEvent = nil
@@ -121,7 +122,7 @@ struct AgendaView: View {
         }
         .onChange(of: prefs.showEventDays) { _, _ in
             scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate, force: true)
-            scrollCoordinator.scrollToFocus(appState: appState)
+            scrollCoordinator.scrollToFocus(events: appState.events)
         }
     }
 

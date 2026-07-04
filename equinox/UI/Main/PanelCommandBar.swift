@@ -35,7 +35,7 @@ struct PanelCommandBar: View {
             }
 
             Text(monthTitle)
-                .font(EquinoxDesign.panelTitleFont())
+                .font(.system(size: metrics.calendarTitleFontSize, weight: .semibold))
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -48,7 +48,7 @@ struct PanelCommandBar: View {
                     accessibilityLabel: String(localized: "Go to Today", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    appState.events.goToToday()
+                    appState.goToToday()
                 }
                 .keyboardShortcut("t")
 
@@ -93,7 +93,7 @@ struct PanelCommandBar: View {
                     buttonSize: metrics.toolbarButtonSize
                 ) {
                     Button(String(localized: "Go to Today", comment: "")) {
-                        appState.events.goToToday()
+                        appState.goToToday()
                     }
                     .keyboardShortcut("t")
                     Divider()

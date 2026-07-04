@@ -244,9 +244,15 @@ enum EquinoxBannerStyle {
     case info
 }
 
+enum EquinoxBannerPresentation {
+    case filled
+    case card
+}
+
 struct EquinoxBanner: View {
     let message: String
     var style: EquinoxBannerStyle = .error
+    var presentation: EquinoxBannerPresentation = .card
     var actionTitle: String? = nil
     var action: (() -> Void)? = nil
 
@@ -267,7 +273,13 @@ struct EquinoxBanner: View {
         }
         .padding(.horizontal, EquinoxDesign.spacingMD)
         .padding(.vertical, EquinoxDesign.spacingSM)
-        .equinoxCard(style: .subtle, cornerRadius: EquinoxDesign.radiusSM)
+        .background {
+            if presentation == .filled {
+                RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
+                    .fill(filledBackgroundColor)
+            }
+        }
+        .modifier(CardPresentationModifier(presentation: presentation))
         .accessibilityElement(children: .combine)
     }
 
@@ -284,6 +296,26 @@ struct EquinoxBanner: View {
         case .error: EquinoxDesign.ColorToken.semanticRed
         case .warning: EquinoxDesign.ColorToken.semanticOrange
         case .info: .secondary
+        }
+    }
+
+    private var filledBackgroundColor: Color {
+        switch style {
+        case .error: EquinoxDesign.ColorToken.semanticRed.opacity(EquinoxDesign.StateOpacity.badgeTint)
+        case .warning: EquinoxDesign.ColorToken.semanticOrange.opacity(EquinoxDesign.StateOpacity.badgeTint)
+        case .info: Color.secondary.opacity(EquinoxDesign.StateOpacity.badgeTint)
+        }
+    }
+}
+
+private struct CardPresentationModifier: ViewModifier {
+    let presentation: EquinoxBannerPresentation
+
+    func body(content: Content) -> some View {
+        if presentation == .card {
+            content.equinoxCard(style: .subtle, cornerRadius: EquinoxDesign.radiusSM)
+        } else {
+            content
         }
     }
 }

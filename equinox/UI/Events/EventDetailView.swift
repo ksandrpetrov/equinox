@@ -232,7 +232,7 @@ struct EventDetailView: View {
         }
         isDeleting = true
         Task {
-            if let error = await appState.events.deleteEvent(identifier: id) {
+            if let error = await appState.deleteEvent(identifier: id) {
                 actionError = error
                 isDeleting = false
             } else {

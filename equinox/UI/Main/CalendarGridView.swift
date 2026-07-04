@@ -103,7 +103,7 @@ struct CalendarGridView: View {
                             dotColors: dots,
                             metrics: metrics,
                             calendar: appState.calendar,
-                            onSelect: { appState.events.selectDate(date) },
+                            onSelect: { appState.selectDate(date) },
                             onDoubleClick: {
                                 appState.panel.newEventInitialDate = date
                                 appState.panel.isNewEventSheetPresented = true
@@ -134,7 +134,7 @@ struct CalendarGridView: View {
             return .ignored
         }
         if let next {
-            appState.events.selectDate(next)
+            appState.selectDate(next)
             return .handled
         }
         return .ignored

@@ -6,6 +6,7 @@ final class EventsCoordinator {
     let calendar: Calendar
     private let calendarStore: CalendarStore
     private let preferences: PreferencesStore
+    private let fetchCoordinator: EventFetchCoordinator
     var onMeetingIndicatorChanged: () -> Void = {}
     var onPlaudDataChanged: () -> Void = {}
     var isPanelVisible: () -> Bool = { false }
@@ -29,11 +30,6 @@ final class EventsCoordinator {
 
     private var agendaVisibleFirst: CalendarDate?
     private var agendaVisibleLast: CalendarDate?
-    private var activeFetchCount = 0
-    private var loadingIndicatorTask: Task<Void, Never>?
-    private var loadingIndicatorGeneration = 0
-    private var loadingIndicatorVisibleSince: Date?
-    private var fetchGeneration = 0
     private var awaitingAgendaFocusAfterFetch = false
 
     /// Bumped after navigation or panel reopen that should scroll the agenda to `selectedDate`.
@@ -62,10 +58,20 @@ final class EventsCoordinator {
         self.calendar = calendar
         self.calendarStore = calendarStore
         self.preferences = preferences
+        self.fetchCoordinator = EventFetchCoordinator(calendarStore: calendarStore)
         let today = CalendarDate.today(calendar: calendar)
         monthDate = today
         selectedDate = today
         todayDate = today
+
+        fetchCoordinator.onPresentationUpdate = { [weak self] shouldShow, isFetching in
+            guard let self else { return }
+            self.shouldShowLoadingIndicator = shouldShow
+            self.isFetchingEvents = isFetching
+        }
+        fetchCoordinator.onSyncComplete = { [weak self] in
+            await self?.syncFromCalendarStore()
+        }
     }
 
     func registerExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) {
@@ -86,7 +92,10 @@ final class EventsCoordinator {
     }
 
     func retryFetchEvents() {
-        scheduleFetch(range: (first: firstVisibleDate, last: lastVisibleDate), refetch: true)
+        fetchCoordinator.scheduleFetch(
+            range: (first: firstVisibleDate, last: lastVisibleDate),
+            refetch: true
+        )
     }
 
     func syncFromCalendarStore() async {
@@ -268,7 +277,7 @@ final class EventsCoordinator {
         let range = fetchRange(coveringGridFrom: gridFirst, through: gridLast)
         firstVisibleDate = range.first
         lastVisibleDate = range.last
-        scheduleFetch(range: range)
+        fetchCoordinator.scheduleFetch(range: range)
     }
 
     private func applyAgendaFetchExtensionIfNeeded() {
@@ -276,78 +285,7 @@ final class EventsCoordinator {
         guard range.first != firstVisibleDate || range.last != lastVisibleDate else { return }
         firstVisibleDate = range.first
         lastVisibleDate = range.last
-        scheduleFetch(range: range)
-    }
-
-    private func scheduleFetch(range: (first: CalendarDate, last: CalendarDate), refetch: Bool = false) {
-        fetchGeneration &+= 1
-        let generation = fetchGeneration
-        Task {
-            await performFetch(generation: generation) {
-                if refetch {
-                    await calendarStore.refetchAll(first: range.first, last: range.last)
-                } else {
-                    await calendarStore.fetchEvents(first: range.first, last: range.last)
-                }
-            }
-        }
-    }
-
-    private func performFetch(generation: Int, operation: () async -> Void) async {
-        beginFetchPresentation()
-        defer {
-            endFetchPresentation()
-        }
-        lastFetchError = nil
-        await operation()
-        guard generation == fetchGeneration else { return }
-        lastFetchError = await calendarStore.lastFetchError
-        await syncFromCalendarStore()
-    }
-
-    private func beginFetchPresentation() {
-        activeFetchCount += 1
-        isFetchingEvents = true
-        loadingIndicatorGeneration &+= 1
-        loadingIndicatorTask?.cancel()
-
-        guard !shouldShowLoadingIndicator else { return }
-        let generation = loadingIndicatorGeneration
-        loadingIndicatorTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: 150_000_000)
-            guard !Task.isCancelled,
-                  let self,
-                  self.loadingIndicatorGeneration == generation,
-                  self.isFetchingEvents else { return }
-            self.shouldShowLoadingIndicator = true
-            self.loadingIndicatorVisibleSince = Date()
-        }
-    }
-
-    private func endFetchPresentation() {
-        activeFetchCount = max(0, activeFetchCount - 1)
-        guard activeFetchCount == 0 else { return }
-
-        isFetchingEvents = false
-        loadingIndicatorGeneration &+= 1
-        loadingIndicatorTask?.cancel()
-
-        guard shouldShowLoadingIndicator else { return }
-        let visibleDuration = Date().timeIntervalSince(loadingIndicatorVisibleSince ?? Date())
-        let remaining = max(0, 0.2 - visibleDuration)
-        let generation = loadingIndicatorGeneration
-
-        loadingIndicatorTask = Task { @MainActor [weak self] in
-            if remaining > 0 {
-                try? await Task.sleep(nanoseconds: UInt64(remaining * 1_000_000_000))
-            }
-            guard !Task.isCancelled,
-                  let self,
-                  self.loadingIndicatorGeneration == generation,
-                  !self.isFetchingEvents else { return }
-            self.shouldShowLoadingIndicator = false
-            self.loadingIndicatorVisibleSince = nil
-        }
+        fetchCoordinator.scheduleFetch(range: range)
     }
 
     private func maybeRefocusAgendaAfterFetch() {

@@ -38,15 +38,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let url = urls.first, url.host == "date", url.pathComponents.count >= 2 else { return }
         let dateString = url.pathComponents[1]
         if dateString == "now" {
-            statusItemController?.handleDateURL(Date())
+            appState.navigateToDate(Date())
         } else {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.calendar = Calendar(identifier: .gregorian)
-            formatter.dateFormat = "yyyy-MM-dd"
-            if let date = formatter.date(from: dateString) {
-                statusItemController?.handleDateURL(date)
-            }
+            _ = appState.navigateToDeepLinkDateString(dateString)
         }
     }
 

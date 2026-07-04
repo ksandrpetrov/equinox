@@ -48,7 +48,7 @@ struct DayCellView: View {
         }) {
             ZStack {
                 if isHighlighted && !isToday && !isSelected {
-                    RoundedRectangle(cornerRadius: EquinoxDesign.cellRadius, style: .continuous)
+                    RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
                         .fill(EquinoxDesign.ColorToken.weekendTint)
                         .padding(.horizontal, 1)
                 }

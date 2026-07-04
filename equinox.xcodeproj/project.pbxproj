@@ -68,6 +68,10 @@
 		CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */; };
 		CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */; };
 		D0E001A1B2C3D4E5F6012345 /* Core/CalendarDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */; };
+		CDP001A1B2C3D4E5F6012345 /* Core/CalendarDateParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDP001A1B2C3D4E5F6012346 /* Core/CalendarDateParsing.swift */; };
+		CLE001A1B2C3D4E5F6012345 /* Core/CalendarListEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLE001A1B2C3D4E5F6012346 /* Core/CalendarListEntry.swift */; };
+		AGL001A1B2C3D4E5F6012345 /* Core/AgendaLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGL001A1B2C3D4E5F6012346 /* Core/AgendaLayout.swift */; };
+		ALTT001A1B2C3D4E5F6012345 /* AgendaLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ALTT001A1B2C3D4E5F6012346 /* AgendaLayoutTests.swift */; };
 		D0E001B1B2C3D4E5F6012345 /* Core/EventDraftDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */; };
 		MP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */; };
 		DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */; };
@@ -94,6 +98,7 @@
 		EEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */; };
 		EFR001A1B2C3D4E5F6012345 /* Core/EventFetchRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */; };
 		EFT001A1B2C3D4E5F6012345 /* EventFetchRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFT001A1B2C3D4E5F6012346 /* EventFetchRangeTests.swift */; };
+		EFCT001A1B2C3D4E5F6012345 /* EventFetchCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCT001A1B2C3D4E5F6012346 /* EventFetchCacheTests.swift */; };
 		EKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */; };
 		EKM001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */; };
 		EKMT001A1B2C3D4E5F6012345 /* EventKitCalendarMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */; };
@@ -102,6 +107,8 @@
 		EKMGU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation+GUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMGU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation+GUI.swift */; };
 		NJR001A1B2C3D4E5F6012345 /* Services/EventKit/NativeJoinURLResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */; };
 		EVC001A1B2C3D4E5F6012345 /* App/EventsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */; };
+		LIC001A1B2C3D4E5F6012345 /* App/LoadingIndicatorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */; };
+		EFCO001A1B2C3D4E5F6012345 /* App/EventFetchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */; };
 		MCP001A1B2C3D4E5F6012345 /* App/McpCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP001A1B2C3D4E5F6012346 /* App/McpCoordinator.swift */; };
 		ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */; };
 		FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */; };
@@ -154,7 +161,7 @@
 		RSVP002A1B2C3D4E5F6012345 /* UI/Events/EventRSVPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP002A1B2C3D4E5F6012346 /* UI/Events/EventRSVPBar.swift */; };
 		SAH001A1B2C3D4E5F6012345 /* App/SettingsActivationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = SAH001A1B2C3D4E5F6012346 /* App/SettingsActivationHandler.swift */; };
 		SCC001A1B2C3D4E5F6012345 /* UI/Design/SelectableCalendarColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = SCC001A1B2C3D4E5F6012346 /* UI/Design/SelectableCalendarColors.swift */; };
-		SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar.swift */; };
+		SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar+EventKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar+EventKit.swift */; };
 		STB001A1B2C3D4E5F6012345 /* App/SettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = STB001A1B2C3D4E5F6012346 /* App/SettingsTab.swift */; };
 		T0E001A1B2C3D4E5F6012345 /* CalendarDateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E001A1B2C3D4E5F6012346 /* CalendarDateTests.swift */; };
 		T0E002A1B2C3D4E5F6012345 /* JoinURLDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E002A1B2C3D4E5F6012346 /* JoinURLDetectionTests.swift */; };
@@ -255,6 +262,10 @@
 		CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarListingTests.swift; sourceTree = "<group>"; };
 		CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/CalendarSelectionStorage.swift; sourceTree = "<group>"; };
 		D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/CalendarDate.swift; sourceTree = "<group>"; };
+		CDP001A1B2C3D4E5F6012346 /* Core/CalendarDateParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/CalendarDateParsing.swift; sourceTree = "<group>"; };
+		CLE001A1B2C3D4E5F6012346 /* Core/CalendarListEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/CalendarListEntry.swift; sourceTree = "<group>"; };
+		AGL001A1B2C3D4E5F6012346 /* Core/AgendaLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AgendaLayout.swift; sourceTree = "<group>"; };
+		ALTT001A1B2C3D4E5F6012346 /* AgendaLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaLayoutTests.swift; sourceTree = "<group>"; };
 		D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/EventDraftDefaults.swift; sourceTree = "<group>"; };
 		MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingProvider.swift; sourceTree = "<group>"; };
 		BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/BridgeEventMapping.swift; sourceTree = "<group>"; };
@@ -284,6 +295,7 @@
 		EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitEventFields.swift; sourceTree = "<group>"; };
 		EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/EventFetchRange.swift; sourceTree = "<group>"; };
 		EFT001A1B2C3D4E5F6012346 /* EventFetchRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFetchRangeTests.swift; sourceTree = "<group>"; };
+		EFCT001A1B2C3D4E5F6012346 /* EventFetchCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventFetchCacheTests.swift; sourceTree = "<group>"; };
 		EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitEventExtensions.swift; sourceTree = "<group>"; };
 		EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitCalendarMapping.swift; sourceTree = "<group>"; };
 		EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitCalendarMappingTests.swift; sourceTree = "<group>"; };
@@ -291,6 +303,8 @@
 		EKMGU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation+GUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/EventKit/EventKitMutation+GUI.swift"; sourceTree = "<group>"; };
 		EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitMutation.swift; sourceTree = "<group>"; };
 		EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/EventsCoordinator.swift; sourceTree = "<group>"; };
+		LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/LoadingIndicatorController.swift; sourceTree = "<group>"; };
+		EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/EventFetchCoordinator.swift; sourceTree = "<group>"; };
 		MCP001A1B2C3D4E5F6012346 /* App/McpCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/McpCoordinator.swift; sourceTree = "<group>"; };
 		ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AgendaScrollCoordinator.swift; sourceTree = "<group>"; };
 		FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/SettingsView.swift; sourceTree = "<group>"; };
@@ -345,7 +359,7 @@
 		RSVP002A1B2C3D4E5F6012346 /* UI/Events/EventRSVPBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Events/EventRSVPBar.swift; sourceTree = "<group>"; };
 		SAH001A1B2C3D4E5F6012346 /* App/SettingsActivationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/SettingsActivationHandler.swift; sourceTree = "<group>"; };
 		SCC001A1B2C3D4E5F6012346 /* UI/Design/SelectableCalendarColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/SelectableCalendarColors.swift; sourceTree = "<group>"; };
-		SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/SelectableCalendar.swift; sourceTree = "<group>"; };
+		SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar+EventKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/EventKit/SelectableCalendar+EventKit.swift"; sourceTree = "<group>"; };
 		SMU002A1B2C3D4E5F6012346 /* UI/Design/SizeMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/SizeMetrics.swift; sourceTree = "<group>"; };
 		STB001A1B2C3D4E5F6012346 /* App/SettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/SettingsTab.swift; sourceTree = "<group>"; };
 		T0E001A1B2C3D4E5F6012346 /* CalendarDateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDateTests.swift; sourceTree = "<group>"; };
@@ -396,12 +410,17 @@
 				STB001A1B2C3D4E5F6012346 /* App/SettingsTab.swift */,
 				PPC001A1B2C3D4E5F6012346 /* App/PanelPresentationState.swift */,
 				EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */,
+				LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */,
+				EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */,
 				MCP001A1B2C3D4E5F6012346 /* App/McpCoordinator.swift */,
 				ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */,
 				PLM001A1B2C3D4E5F6012346 /* App/PanelLayoutMetrics.swift */,
 				PLC001A1B2C3D4E5F6012346 /* App/PlaudCoordinator.swift */,
 				B4C1DCC2A9FE4B8B804C4770 /* App/AppState.swift */,
 				D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */,
+				CDP001A1B2C3D4E5F6012346 /* Core/CalendarDateParsing.swift */,
+				CLE001A1B2C3D4E5F6012346 /* Core/CalendarListEntry.swift */,
+				AGL001A1B2C3D4E5F6012346 /* Core/AgendaLayout.swift */,
 				DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */,
 				DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */,
 				DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */,
@@ -415,7 +434,7 @@
 				D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */,
 				D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */,
 				CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */,
-				SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar.swift */,
+				SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar+EventKit.swift */,
 				EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */,
 				URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */,
 				D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */,
@@ -567,6 +586,7 @@
 				T0E004A1B2C3D4E5F6012346 /* MonthGridTests.swift */,
 				T0E005A1B2C3D4E5F6012346 /* EventParticipationTests.swift */,
 				EFT001A1B2C3D4E5F6012346 /* EventFetchRangeTests.swift */,
+				EFCT001A1B2C3D4E5F6012346 /* EventFetchCacheTests.swift */,
 				MTT001A1B2C3D4E5F6012346 /* MeetingIndicatorTests.swift */,
 				PTT001A1B2C3D4E5F6012346 /* PlaudTimestampTests.swift */,
 				CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */,
@@ -574,6 +594,7 @@
 				AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */,
 				ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */,
 				AFT001A1B2C3D4E5F6012346 /* AgendaFocusTests.swift */,
+				ALTT001A1B2C3D4E5F6012346 /* AgendaLayoutTests.swift */,
 				T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */,
 				T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */,
 				DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */,
@@ -750,10 +771,15 @@
 				EEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */,
 				PPC001A1B2C3D4E5F6012345 /* App/PanelPresentationState.swift in Sources */,
 				EVC001A1B2C3D4E5F6012345 /* App/EventsCoordinator.swift in Sources */,
+				LIC001A1B2C3D4E5F6012345 /* App/LoadingIndicatorController.swift in Sources */,
+				EFCO001A1B2C3D4E5F6012345 /* App/EventFetchCoordinator.swift in Sources */,
 				MCP001A1B2C3D4E5F6012345 /* App/McpCoordinator.swift in Sources */,
 				ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */,
 				PLM001A1B2C3D4E5F6012345 /* App/PanelLayoutMetrics.swift in Sources */,
 				D0E001A1B2C3D4E5F6012345 /* Core/CalendarDate.swift in Sources */,
+				CDP001A1B2C3D4E5F6012345 /* Core/CalendarDateParsing.swift in Sources */,
+				CLE001A1B2C3D4E5F6012345 /* Core/CalendarListEntry.swift in Sources */,
+				AGL001A1B2C3D4E5F6012345 /* Core/AgendaLayout.swift in Sources */,
 				DE001A1B2C3D4E5F6012345 /* Core/DayEvent.swift in Sources */,
 				DDC001A1B2C3D4E5F6012345 /* Core/DayEventUniqueCalendars.swift in Sources */,
 				DE002A1B2C3D4E5F6012345 /* Core/AgendaSections.swift in Sources */,
@@ -768,7 +794,7 @@
 				DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */,
 				D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */,
 				CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */,
-				SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar.swift in Sources */,
+				SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar+EventKit.swift in Sources */,
 				EKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */,
 				PLC001A1B2C3D4E5F6012345 /* App/PlaudCoordinator.swift in Sources */,
 				URL001A1B2C3D4E5F6012345 /* Services/Platform/URLOpener.swift in Sources */,
@@ -886,6 +912,7 @@
 				T0E004A1B2C3D4E5F6012345 /* MonthGridTests.swift in Sources */,
 				T0E005A1B2C3D4E5F6012345 /* EventParticipationTests.swift in Sources */,
 				EFT001A1B2C3D4E5F6012345 /* EventFetchRangeTests.swift in Sources */,
+				EFCT001A1B2C3D4E5F6012345 /* EventFetchCacheTests.swift in Sources */,
 				MTT001A1B2C3D4E5F6012345 /* MeetingIndicatorTests.swift in Sources */,
 				PTT001A1B2C3D4E5F6012345 /* PlaudTimestampTests.swift in Sources */,
 				CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */,
@@ -893,6 +920,7 @@
 				AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */,
 				ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */,
 				AFT001A1B2C3D4E5F6012345 /* AgendaFocusTests.swift in Sources */,
+				ALTT001A1B2C3D4E5F6012345 /* AgendaLayoutTests.swift in Sources */,
 				T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */,
 				T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */,
 				DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */,

@@ -5,11 +5,14 @@ struct PlaudSettingsTab: View {
     var searchText: String = ""
     @Environment(\.appState) private var appState
     @Bindable var prefs: PreferencesStore
-    @State private var setup = PlaudConfigurator.buildSetupFromPreferences()
     @State private var statusMessage: String?
     @State private var oauthStatusMessage: String?
     @State private var isRefreshing = false
     @State private var isOAuthBusy = false
+
+    private var setup: PlaudSetup {
+        appState?.plaud.setup ?? PlaudConfigurator.buildSetupFromPreferences()
+    }
 
     var body: some View {
         SettingsDetailScaffold(title: String(localized: "Plaud", comment: "Plaud prefs tab label")) {
@@ -32,10 +35,10 @@ struct PlaudSettingsTab: View {
             .disabled(isRefreshing || !setup.hasKeychainOAuth)
         }
         .onAppear {
-            refreshSetup()
+            Task { await appState?.plaud.refreshSetup() }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            refreshSetup()
+            Task { await appState?.plaud.refreshSetup() }
         }
     }
 
@@ -61,7 +64,7 @@ struct PlaudSettingsTab: View {
                             Task { await refresh(force: true) }
                         } else {
                             appState?.plaud.refreshMatchesIfNeeded()
-                            refreshSetup()
+                            Task { await appState?.plaud.refreshSetup() }
                         }
                     }
             }
@@ -208,42 +211,32 @@ struct PlaudSettingsTab: View {
         .padding(.vertical, SettingsDesign.rowVerticalPadding)
     }
 
-    private func refreshSetup() {
-        guard let appState else { return }
-        Task {
-            await appState.plaud.refreshSetup()
-            setup = appState.plaud.setup
-        }
-    }
-
     @MainActor
     private func connectPlaud() async {
         isOAuthBusy = true
         oauthStatusMessage = nil
         defer { isOAuthBusy = false }
 
+        guard let appState else { return }
+
         do {
-            try await appState?.plaud.signIn()
-            refreshSetup()
+            try await appState.plaud.signIn()
             let message = String(localized: "Plaud account connected.", comment: "Plaud OAuth status")
             oauthStatusMessage = message
             statusMessage = message
-            if let appState {
-                await appState.plaud.forceRefresh()
-                setup = appState.plaud.setup
-            }
+            await appState.plaud.forceRefresh()
         } catch PlaudOAuthError.alreadySignedIn {
-            refreshSetup()
             let message = String(
                 localized: "Plaud account is already connected. Disconnect first to switch accounts.",
                 comment: "Plaud OAuth already connected"
             )
             oauthStatusMessage = message
             statusMessage = message
+            await appState.plaud.refreshSetup()
         } catch {
             oauthStatusMessage = error.localizedDescription
             statusMessage = error.localizedDescription
-            refreshSetup()
+            await appState.plaud.refreshSetup()
         }
     }
 
@@ -254,7 +247,6 @@ struct PlaudSettingsTab: View {
         defer { isOAuthBusy = false }
 
         await appState?.plaud.signOut()
-        refreshSetup()
         let message = String(localized: "Plaud account disconnected.", comment: "Plaud OAuth status")
         oauthStatusMessage = message
         statusMessage = message
@@ -265,10 +257,7 @@ struct PlaudSettingsTab: View {
         isRefreshing = true
         defer { isRefreshing = false }
 
-        guard let appState else {
-            refreshSetup()
-            return
-        }
+        guard let appState else { return }
 
         if force {
             await appState.plaud.forceRefresh()
@@ -276,7 +265,6 @@ struct PlaudSettingsTab: View {
             appState.plaud.refreshMatchesIfNeeded()
             await appState.plaud.refreshSetup()
         }
-        setup = appState.plaud.setup
         statusMessage = String(localized: "Plaud catalog refreshed.", comment: "Plaud status")
     }
 }

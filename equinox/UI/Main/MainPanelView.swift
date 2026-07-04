@@ -17,8 +17,10 @@ struct MainPanelView: View {
 
     private var computedAgendaHeight: CGFloat {
         guard showAgenda else { return 0 }
-        let maxHeight = appState.layout.panelAgendaMaxHeight
-        return max(120, min(maxHeight, maxHeight * appState.preferences.agendaHeightRatio / 0.35))
+        return AgendaLayout.agendaHeight(
+            maxHeight: appState.layout.panelAgendaMaxHeight,
+            heightRatio: appState.preferences.agendaHeightRatio
+        )
     }
 
     var body: some View {

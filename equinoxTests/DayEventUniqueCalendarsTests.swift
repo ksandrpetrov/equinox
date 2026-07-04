@@ -49,4 +49,23 @@ final class DayEventUniqueCalendarsTests: XCTestCase {
         let events = (0..<5).map { makeEvent(calendarID: "cal-\($0)", red: CGFloat($0) / 5) }
         XCTAssertEqual(DayEvent.makeDotColors(for: events)?.count, 3)
     }
+
+    func testMakeUniqueCalendarEventsReturnsNilForEmpty() {
+        XCTAssertNil(DayEvent.makeUniqueCalendarEvents(for: []))
+    }
+
+    func testMakeUniqueCalendarEventsDeduplicatesCalendars() {
+        let events = [
+            makeEvent(calendarID: "a", red: 1),
+            makeEvent(calendarID: "a", red: 1),
+            makeEvent(calendarID: "b", red: 0.5),
+        ]
+        let unique = DayEvent.makeUniqueCalendarEvents(for: events)
+        XCTAssertEqual(unique?.map(\.calendarIdentifier), ["a", "b"])
+    }
+
+    func testMakeUniqueCalendarEventsCapsAtThree() {
+        let events = (0..<5).map { makeEvent(calendarID: "cal-\($0)", red: CGFloat($0) / 5) }
+        XCTAssertEqual(DayEvent.makeUniqueCalendarEvents(for: events)?.count, 3)
+    }
 }
