@@ -58,12 +58,16 @@ cp Local.xcconfig.example Local.xcconfig
 ### Ручная сборка через xcodebuild
 
 ```bash
+. scripts/xcodebuild-local-settings.sh
+load_xcodebuild_local_settings Local.xcconfig
+
 xcodebuild \
   -project equinox.xcodeproj \
   -scheme equinox \
   -configuration Release \
   -derivedDataPath build/DerivedData \
-  build
+  build \
+  "${XCODEBUILD_LOCAL_SETTINGS[@]}"
 ```
 
 Артефакт: `build/DerivedData/Build/Products/Release/equinox.app`
