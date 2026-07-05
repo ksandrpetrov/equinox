@@ -103,14 +103,11 @@ struct AgendaView: View {
                 confirmTitle: String(localized: "Delete", comment: ""),
                 onConfirm: {
                     let eventIdentifier = pending.eventIdentifier
-                    let eventID = pending.id
                     pendingDelete = nil
                     Task {
                         appState.panel.panelFeedback = nil
                         if let error = await appState.deleteEvent(identifier: eventIdentifier) {
                             appState.panel.panelFeedback = error
-                        } else if appState.panel.selectedEvent?.id == eventID {
-                            appState.panel.selectedEvent = nil
                         }
                     }
                 },

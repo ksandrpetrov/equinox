@@ -11,6 +11,7 @@ final class StatusItemController: NSObject {
     private var refreshScheduler: PeriodicRefreshScheduler?
 
     private var statusItemMoveWorkItem: DispatchWorkItem?
+    private var shortcutEventsTask: Task<Void, Never>?
     private var iconDateFormatter = DateFormatter()
 
     init(appState: AppState) {
@@ -55,6 +56,8 @@ final class StatusItemController: NSObject {
     }
 
     func teardown() {
+        shortcutEventsTask?.cancel()
+        shortcutEventsTask = nil
         dismissMonitor.teardown()
         refreshScheduler?.stop()
         statusItemMoveWorkItem?.cancel()
@@ -200,8 +203,12 @@ final class StatusItemController: NSObject {
     }
 
     private func setupShortcut() {
-        KeyboardShortcuts.onKeyUp(for: .togglePanel) { [weak self] in
-            Task { @MainActor in self?.statusItemClicked() }
+        shortcutEventsTask = Task { [weak self] in
+            for await event in KeyboardShortcuts.events(for: .togglePanel) where event == .keyUp {
+                await MainActor.run { [weak self] in
+                    self?.statusItemClicked()
+                }
+            }
         }
     }
 

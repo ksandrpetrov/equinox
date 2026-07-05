@@ -3,45 +3,23 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
+import { BRIDGE_TOOL_COMMANDS } from "../src/bridgeCommands.js"
 import { bridgeEventSchema, mcpEnrichedEventSchema } from "../src/schemas/index.js"
+import {
+  bridgeEventAllKeys,
+  bridgeEventOptionalKeys,
+  bridgeEventRequiredKeys,
+  bridgeUpdateMutableFields,
+} from "../src/schemas/generated/bridgeEventKeys.js"
+import { createEventInputSchema } from "../src/schemas/toolInputs.js"
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures")
 const bridgeEvents = JSON.parse(
   readFileSync(join(fixtureDir, "bridge-events.json"), "utf8"),
 ) as Record<string, unknown>[]
 
-/** Golden keys shared with `equinoxTests/BridgeEventFixturesTests.swift`. */
-const fullEventKeys = new Set([
-  "eventIdentifier",
-  "calendarItemIdentifier",
-  "title",
-  "location",
-  "notes",
-  "url",
-  "startDate",
-  "endDate",
-  "isAllDay",
-  "joinURL",
-  "calendarIdentifier",
-  "calendarTitle",
-  "calendarColorHex",
-  "allowsContentModifications",
-  "hasAttendees",
-  "participationStatus",
-])
-
-const minimalEventKeys = new Set([
-  "calendarItemIdentifier",
-  "title",
-  "startDate",
-  "endDate",
-  "isAllDay",
-  "calendarIdentifier",
-  "calendarTitle",
-  "calendarColorHex",
-  "allowsContentModifications",
-  "hasAttendees",
-])
+const fullEventKeys = new Set(bridgeEventAllKeys)
+const minimalEventKeys = new Set(bridgeEventRequiredKeys)
 
 describe("bridge schemas", () => {
   it("accepts golden bridge event fixtures", () => {
@@ -113,5 +91,45 @@ describe("bridge schemas", () => {
     const full = bridgeEventSchema.parse(bridgeEvents[0])
     expect(() => new URL(full.joinURL!)).not.toThrow()
     expect(full.joinURL).toContain("zoom.us")
+  })
+
+  it("keeps generated updateMutableFields in sync with schema JSON", () => {
+    const schemaPath = join(dirname(fileURLToPath(import.meta.url)), "../../bridge/schema/bridge-protocol.schema.json")
+    const schema = JSON.parse(readFileSync(schemaPath, "utf8")) as { updateMutableFields: string[] }
+    expect([...bridgeUpdateMutableFields]).toEqual(schema.updateMutableFields)
+  })
+
+  it("keeps generated optional event keys in sync with schema JSON", () => {
+    const schemaPath = join(dirname(fileURLToPath(import.meta.url)), "../../bridge/schema/bridge-protocol.schema.json")
+    const schema = JSON.parse(readFileSync(schemaPath, "utf8")) as { bridgeEvent: { optional: string[] } }
+    expect([...bridgeEventOptionalKeys]).toEqual(schema.bridgeEvent.optional)
+  })
+
+  it("keeps bridge tool commands within schema command list", () => {
+    const schemaPath = join(dirname(fileURLToPath(import.meta.url)), "../../bridge/schema/bridge-protocol.schema.json")
+    const schema = JSON.parse(readFileSync(schemaPath, "utf8")) as { commands: string[] }
+    const schemaCommands = new Set(schema.commands)
+    for (const entry of BRIDGE_TOOL_COMMANDS) {
+      if (!entry.command) continue
+      expect(schemaCommands.has(entry.command)).toBe(true)
+    }
+  })
+
+  it("rejects create_event with same-day YYYY-MM-DD pair", () => {
+    const result = createEventInputSchema.safeParse({
+      title: "All-day",
+      startDate: "2026-06-14",
+      endDate: "2026-06-14",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts create_event when endDate is the next calendar day for date-only inputs", () => {
+    const result = createEventInputSchema.safeParse({
+      title: "All-day",
+      startDate: "2026-06-14",
+      endDate: "2026-06-15",
+    })
+    expect(result.success).toBe(true)
   })
 })

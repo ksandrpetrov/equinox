@@ -30,6 +30,7 @@
 - `SizeMetrics` передаётся параметром, не через environment
 - Чистые функции в `Core/` + XCTest в `equinoxTests/`; view вызывает `appState.createEvent(from:)`, не строит `EKEvent`
 - MCP: tools в `mcp/src/tools/`, EventKit через `invokeBridge` в `mcp/src/bridge.ts`, аналитика только в `mcp/src/analytics/`
+- **UI access:** мутации через `AppState` facade; чтение и `@Bindable` — напрямую `appState.events` / `panel` / `plaud` (см. `ARCHITECTURE.md` § UI access patterns)
 
 ### 2.3. Отсутствие мёртвого кода
 

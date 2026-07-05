@@ -70,7 +70,7 @@ struct DayCellView: View {
                         .frame(width: circleSize, height: circleSize)
                 }
 
-                VStack(spacing: 2) {
+                VStack(spacing: EquinoxDesign.spacingMicro) {
                     Text("\(date.day)")
                         .font(EquinoxDesign.dayNumeralFont(size: metrics.fontSize))
                         .foregroundStyle(textColor)

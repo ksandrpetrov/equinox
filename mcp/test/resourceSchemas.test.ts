@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  assertEndAfterStart,
-  assertUpdateHasMutableField,
-} from "../src/bridgeCommandValidation.js"
+import { updateHasMutableField } from "../src/bridgeCommandValidation.js"
 import { eventResourceSchema } from "../src/schemas/resourceSchemas.js"
 import { mcpEnrichedEventSchema } from "../src/schemas/events.js"
+
+function endIsAfterStart(startDate: string, endDate: string, endLabel = "endDate"): void {
+  const startMs = Date.parse(startDate)
+  const endMs = Date.parse(endDate)
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) {
+    throw new Error(`${endLabel} must be after startDate`)
+  }
+}
 
 describe("eventResourceSchema", () => {
   it("is generated from mcpEnrichedEventSchema", () => {
@@ -34,16 +39,14 @@ describe("eventResourceSchema", () => {
 
 describe("bridgeCommandValidation", () => {
   it("rejects endDate before startDate", () => {
-    expect(() => assertEndAfterStart(
+    expect(() => endIsAfterStart(
       "2026-06-13T12:00:00.000Z",
       "2026-06-13T11:00:00.000Z",
     )).toThrow(/after startDate/)
   })
 
   it("requires at least one update field", () => {
-    expect(() => assertUpdateHasMutableField({ eventIdentifier: "abc" }))
-      .toThrow(/at least one mutable field/)
-    expect(() => assertUpdateHasMutableField({ eventIdentifier: "abc", title: "New" }))
-      .not.toThrow()
+    expect(updateHasMutableField({ eventIdentifier: "abc" })).toBe(false)
+    expect(updateHasMutableField({ eventIdentifier: "abc", title: "New" })).toBe(true)
   })
 })

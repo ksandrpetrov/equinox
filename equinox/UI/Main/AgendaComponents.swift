@@ -13,11 +13,11 @@ struct AgendaSectionHeader: View {
 
         HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
             Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
-                .font(.system(size: metrics.fontSize + 1, weight: .semibold))
+                .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
                 .foregroundStyle(isToday ? EquinoxDesign.ColorToken.accent : .secondary)
             if !isToday && !isTomorrow {
                 Text(EquinoxFormatters.shortWeekday(nsDate))
-                    .font(.system(size: metrics.fontSize - 1, weight: .medium))
+                    .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
                     .foregroundStyle(.tertiary)
             }
         }

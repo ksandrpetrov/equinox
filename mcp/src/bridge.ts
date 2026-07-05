@@ -272,7 +272,3 @@ export function requireBridgeData<T>(
     throw new BridgeInvocationError(message)
   }
 }
-
-export function repoRootPath(): string {
-  return repoRoot
-}

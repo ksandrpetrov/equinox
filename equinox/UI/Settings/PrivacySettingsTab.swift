@@ -49,7 +49,7 @@ struct PrivacySettingsTab: View {
 
                     HStack(spacing: EquinoxDesign.spacingMD) {
                         Button(String(localized: "Request Access", comment: "")) {
-                            appState.events.requestCalendarAccessIfNeeded()
+                            appState.requestCalendarAccessIfNeeded()
                         }
                         .buttonStyle(EquinoxButtonStyle(variant: .prominent))
 
@@ -65,7 +65,7 @@ struct PrivacySettingsTab: View {
             }
         }
         .onAppear {
-            Task { await appState.events.refreshCalendarAccessStatus() }
+            Task { await appState.refreshCalendarAccessStatus() }
         }
     }
 

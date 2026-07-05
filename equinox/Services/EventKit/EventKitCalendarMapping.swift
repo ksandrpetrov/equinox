@@ -1,26 +1,20 @@
-import AppKit
 import EventKit
 import Foundation
 
-/// Shared EventKit/AppKit calendar mapping for `CalendarStore` and `EventKitBridge`.
-/// Intentionally not in `Core/` — depends on EventKit and AppKit.
+/// Shared EventKit calendar mapping for `CalendarStore` and `EventKitBridge`.
+/// Intentionally not in `Core/` — depends on EventKit.
 enum EventKitCalendarMapping {
-    static func colorHex(_ color: NSColor) -> String {
-        let rgb = color.usingColorSpace(.sRGB) ?? color
-        let red = Int(round(rgb.redComponent * 255))
-        let green = Int(round(rgb.greenComponent * 255))
-        let blue = Int(round(rgb.blueComponent * 255))
-        return String(format: "#%02X%02X%02X", red, green, blue)
+    static func colorHex(_ cgColor: CGColor) -> String {
+        ColorHex.hex(from: cgColor) ?? "#808080"
     }
 
-    static func colorHexOrGray(_ color: NSColor?) -> String {
-        guard let color else { return "#808080" }
-        return colorHex(color)
+    static func colorHexOrGray(_ cgColor: CGColor?) -> String {
+        ColorHex.hexOrGray(cgColor)
     }
 
-    static func rgbComponents(from color: NSColor) -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
-        let rgb = (color.usingColorSpace(.sRGB) ?? color)
-        return (rgb.redComponent, rgb.greenComponent, rgb.blueComponent, rgb.alphaComponent)
+    static func rgbComponents(from cgColor: CGColor) -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
+        let rgba = ColorHex.cgColorComponents(cgColor) ?? ColorHex.RGBA(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
+        return (rgba.red, rgba.green, rgba.blue, rgba.alpha)
     }
 
     static func calendarTypeLabel(_ type: EKCalendarType) -> String {
@@ -40,7 +34,7 @@ enum EventKitCalendarMapping {
             title: calendar.title,
             sourceTitle: calendar.source.title,
             sourceIdentifier: calendar.source.sourceIdentifier,
-            colorHex: calendar.color.map { colorHex($0) },
+            colorHex: calendar.cgColor.map { colorHex($0) },
             allowsContentModifications: calendar.allowsContentModifications,
             isSubscribed: calendar.isSubscribed,
             type: calendarTypeLabel(calendar.type)

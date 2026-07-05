@@ -199,8 +199,6 @@ enum McpConfigurator {
         """
     }
 
-    static let toolNames = McpToolNames.all
-
     // MARK: - Path resolution
 
     static func resolveServerPath() -> String? {

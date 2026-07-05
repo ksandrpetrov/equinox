@@ -17,6 +17,9 @@ load_xcodebuild_local_settings "Local.xcconfig"
 echo "${GREEN}Generating MCP tool-name list...${NC}"
 ./scripts/gen-mcp-tool-names.sh
 
+echo "${GREEN}Generating bridge protocol schemas...${NC}"
+./scripts/gen-bridge-schemas.sh
+
 DERIVED_DATA="build/DerivedData"
 BRIDGE_PATH="${DERIVED_DATA}/Build/Products/Release/equinox-bridge"
 

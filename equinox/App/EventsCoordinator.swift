@@ -7,13 +7,28 @@ final class EventsCoordinator {
     private let calendarStore: CalendarStore
     private let preferences: PreferencesStore
     private let fetchCoordinator: EventFetchCoordinator
+    private let navigation: CalendarNavigationCoordinator
+
     var onMeetingIndicatorChanged: () -> Void = {}
     var onPlaudDataChanged: () -> Void = {}
-    var isPanelVisible: () -> Bool = { false }
+    var isPanelVisible: () -> Bool = { false } {
+        didSet { navigation.isPanelVisible = isPanelVisible }
+    }
 
-    var monthDate: CalendarDate
-    var selectedDate: CalendarDate
-    var todayDate: CalendarDate
+    var monthDate: CalendarDate {
+        get { navigation.monthDate }
+        set { navigation.monthDate = newValue }
+    }
+
+    var selectedDate: CalendarDate {
+        get { navigation.selectedDate }
+        set { navigation.selectedDate = newValue }
+    }
+
+    var todayDate: CalendarDate {
+        get { navigation.todayDate }
+        set { navigation.todayDate = newValue }
+    }
 
     var firstVisibleDate: CalendarDate = CalendarDate(year: 1583, monthIndex: 0, day: 1)
     var lastVisibleDate: CalendarDate = CalendarDate(year: 1583, monthIndex: 0, day: 1)
@@ -28,27 +43,17 @@ final class EventsCoordinator {
     var calendarAccessStatus: CalendarAccessStatus = .notDetermined
     var lastFetchError: String?
 
+    var agendaScrollToken: Int { navigation.agendaScrollToken }
+    var monthNavigationDirection: CalendarNavigationCoordinator.MonthNavigationDirection {
+        navigation.monthNavigationDirection
+    }
+
+    var visibleGridDates: [CalendarDate] {
+        navigation.visibleGridDates
+    }
+
     private var agendaVisibleFirst: CalendarDate?
     private var agendaVisibleLast: CalendarDate?
-    private var awaitingAgendaFocusAfterFetch = false
-
-    /// Bumped after navigation or panel reopen that should scroll the agenda to `selectedDate`.
-    private(set) var agendaScrollToken = 0
-
-    /// Direction of the last month navigation for grid transition animation.
-    private(set) var monthNavigationDirection: MonthNavigationDirection = .forward
-
-    enum MonthNavigationDirection {
-        case forward
-        case backward
-    }
-
-    func requestAgendaScroll() {
-        agendaScrollToken &+= 1
-        if isPanelVisible() {
-            awaitingAgendaFocusAfterFetch = true
-        }
-    }
 
     init(
         calendar: Calendar,
@@ -59,10 +64,11 @@ final class EventsCoordinator {
         self.calendarStore = calendarStore
         self.preferences = preferences
         self.fetchCoordinator = EventFetchCoordinator(calendarStore: calendarStore)
-        let today = CalendarDate.today(calendar: calendar)
-        monthDate = today
-        selectedDate = today
-        todayDate = today
+        self.navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences)
+
+        navigation.onVisibleGridRangeChanged = { [weak self] first, last in
+            self?.updateVisibleRange(first: first, last: last)
+        }
 
         fetchCoordinator.onPresentationUpdate = { [weak self] shouldShow, isFetching in
             guard let self else { return }
@@ -71,6 +77,10 @@ final class EventsCoordinator {
         }
         fetchCoordinator.onSyncComplete = { [weak self] in
             await self?.syncFromCalendarStore()
+        }
+
+        preferences.onVisibleGridPreferencesChanged = { [weak self] in
+            self?.refreshVisibleGridRange()
         }
     }
 
@@ -141,75 +151,32 @@ final class EventsCoordinator {
         )
     }
 
-    /// Recomputes the visible grid range from `monthDate` + preferences and refreshes the fetch
-    /// window. Centralizes the grid range trigger so views only signal intent (navigation, appear,
-    /// row-count change) instead of computing ranges themselves.
     func refreshVisibleGridRange() {
-        let gridDates = monthGridDates(
-            monthDate: monthDate,
-            weekStartWeekday: preferences.weekStartWeekday,
-            numRows: preferences.calendarRowCount
-        )
-        guard let first = gridDates.first, let last = gridDates.last else { return }
-        updateVisibleRange(first: first, last: last)
+        navigation.refreshVisibleGridRange()
+    }
+
+    func requestAgendaScroll() {
+        navigation.requestAgendaScroll()
     }
 
     func goToToday() {
-        let newToday = CalendarDate.today(calendar: calendar)
-        let monthChanged = newToday.monthIndex != monthDate.monthIndex || newToday.year != monthDate.year
-        let needsInitialVisibleRange = firstVisibleDate == lastVisibleDate
-
-        todayDate = newToday
-        monthDate = newToday
-        selectedDate = newToday
-        if monthChanged || needsInitialVisibleRange {
-            refreshVisibleGridRange()
-        }
-        requestAgendaScroll()
+        navigation.goToToday(isInitialVisibleRange: firstVisibleDate == lastVisibleDate)
     }
 
     func goToPreviousMonth() {
-        monthNavigationDirection = .backward
-        selectDate(selectedDate.addingMonthsPreservingDay(-1, calendar: calendar))
+        navigation.goToPreviousMonth()
     }
 
     func goToNextMonth() {
-        monthNavigationDirection = .forward
-        selectDate(selectedDate.addingMonthsPreservingDay(1, calendar: calendar))
+        navigation.goToNextMonth()
     }
 
     func selectDate(_ date: CalendarDate) {
-        applySelection(date, scrollAgenda: true)
+        navigation.selectDate(date)
     }
 
-    /// Updates calendar selection from agenda scroll without re-scrolling the agenda.
     func syncSelectionFromAgendaScroll(_ date: CalendarDate) {
-        applySelection(date, scrollAgenda: false)
-    }
-
-    private func applySelection(_ date: CalendarDate, scrollAgenda: Bool) {
-        let newMonthDate = CalendarDate(year: date.year, monthIndex: date.monthIndex, day: 1)
-        let monthChanged = date.monthIndex != monthDate.monthIndex || date.year != monthDate.year
-        let selectionChanged = selectedDate != date
-        let monthDateChanged = monthChanged && monthDate != newMonthDate
-
-        guard selectionChanged || monthDateChanged else {
-            if scrollAgenda {
-                requestAgendaScroll()
-            }
-            return
-        }
-
-        if selectionChanged {
-            selectedDate = date
-        }
-        if monthDateChanged {
-            monthDate = newMonthDate
-            refreshVisibleGridRange()
-        }
-        if scrollAgenda {
-            requestAgendaScroll()
-        }
+        navigation.syncSelectionFromAgendaScroll(date)
     }
 
     func events(for date: CalendarDate) -> [DayEvent] {
@@ -226,16 +193,14 @@ final class EventsCoordinator {
     }
 
     func refreshTodayAndMeetingIndicator() {
-        let today = CalendarDate.today(calendar: calendar)
-        if today != todayDate {
-            todayDate = today
-        }
+        navigation.refreshTodayIfNeeded()
         updateMeetingIndicator()
     }
 
     func createEvent(from draft: NewEventDraft) async -> String? {
         do {
             try await calendarStore.createEvent(from: draft)
+            await syncFromCalendarStore()
             return nil
         } catch {
             return error.localizedDescription
@@ -245,6 +210,7 @@ final class EventsCoordinator {
     func deleteEvent(identifier: String) async -> String? {
         do {
             try await calendarStore.deleteEvent(identifier: identifier)
+            await syncFromCalendarStore()
             return nil
         } catch {
             return error.localizedDescription
@@ -289,11 +255,11 @@ final class EventsCoordinator {
     }
 
     private func maybeRefocusAgendaAfterFetch() {
-        guard awaitingAgendaFocusAfterFetch,
+        guard navigation.awaitingAgendaFocusAfterFetch,
               isPanelVisible(),
               selectedDate == todayDate else { return }
-        awaitingAgendaFocusAfterFetch = false
-        agendaScrollToken &+= 1
+        navigation.clearAwaitingAgendaFocusAfterFetch()
+        navigation.requestAgendaScroll()
     }
 }
 

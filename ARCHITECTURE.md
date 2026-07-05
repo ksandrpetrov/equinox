@@ -64,6 +64,20 @@ flowchart TB
   - `kEquinoxSizePreferenceChanged` — размер панели S/M/L
   - `kEquinoxMenuBarAppearanceChanged` — перерисовка иконки menu bar
 
+## UI access patterns
+
+`AppState` — composition root. Паттерн доступа из SwiftUI:
+
+| Действие | Куда обращаться |
+|----------|----------------|
+| Мутации: create/delete event, RSVP, calendar selection, navigate+present | `AppState` facade (`createEvent`, `deleteEvent`, `selectDate`, `goToToday`, …) |
+| Чтение/биндинг: `monthDate`, `selectedDate`, `eventsByDate`, loading flags | `appState.events` (`EventsCoordinator`) |
+| Pin/popover, panel chrome | `appState.panel` (`PanelPresentationState`) |
+| Plaud status, recordings, match UI | `appState.plaud` (`PlaudCoordinator`) |
+| Персистентные настройки | `appState.preferences` (`PreferencesStore.shared`) |
+
+Навигация по датам/месяцам вынесена в `CalendarNavigationCoordinator`; `EventsCoordinator` делегирует и re-export'ит flat API (`monthDate`, `selectDate`, …) без изменения call sites.
+
 ## Различия поведения app и bridge
 
 Задокументированные различия (намеренные; не выравнивать без явной задачи):
@@ -152,6 +166,12 @@ General, Calendars, Appearance, **Privacy**, Shortcuts, About, MCP, **Plaud** �
 
 См. [AGENTS.md](AGENTS.md) §9 для матрицы «изменение → тест».
 
-## Bridge schema codegen (deferred)
+## Bridge schema codegen (hybrid)
 
-Bridge command/response shapes are maintained manually in four places today: `bridge/BridgeModels.swift`, `mcp/src/schemas/events.ts`, `mcp/src/schemas/toolInputs.ts`, and inline schemas in `mcp/src/resources.ts`. A single OpenAPI/JSON Schema source with codegen for Swift `BridgeCommand` and TypeScript Zod remains **deferred** — high setup cost, low ROI until the bridge protocol stabilizes or new commands are added frequently. Until then, contract tests in `AppBridgeEventContract` and `equinoxTests/AppBridgeEventContractTests.swift` guard intentional app vs bridge behavior; MCP registry tests guard tool-name sync.
+`bridge/schema/bridge-protocol.schema.json` is the single source of truth for **command names**, **bridge event field keys**, and **`updateMutableFields`**. `scripts/gen-bridge-schemas.sh` (run from `scripts/build-mcp.sh`) generates:
+
+- `equinox/Core/Generated/BridgeCommandNames.generated.swift`
+- `equinox/Core/Generated/BridgeEventFieldKeys.generated.swift`
+- `mcp/src/schemas/generated/bridgeEventKeys.ts`
+
+MCP imports mutable-field lists from generated `bridgeEventKeys.ts`; Swift contract tests assert generated output matches the schema JSON. **Payload shapes** (`BridgeCommand`, `BridgeEvent`, Zod `bridgeEventSchema`, tool input schemas) remain hand-written and are guarded by golden fixtures (`mcp/test/fixtures/bridge-events.json`, `BridgeEventFixturesTests`) and `BridgeCommandSyncTests`. Full struct/codegen from schema is deferred until the protocol changes more frequently.

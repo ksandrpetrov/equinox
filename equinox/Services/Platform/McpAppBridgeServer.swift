@@ -2,7 +2,7 @@ import Foundation
 import Network
 import Security
 
-final class McpAppBridgeServer {
+final class McpAppBridgeServer: @unchecked Sendable {
     private static let stateFileName = "mcp-app-bridge.json"
     private static let tokenFileName = "mcp-app-bridge.token"
     private static let maxRequestBytes = 1_048_576

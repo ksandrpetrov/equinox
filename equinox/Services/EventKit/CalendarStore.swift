@@ -6,7 +6,7 @@ actor CalendarStore {
     private let calendar: Calendar
     private let isNativeAppInstalled: NativeAppInstalledChecker
     private let externalChangeDispatcher = ExternalChangeDispatcher()
-    private var storeObserver: NSObjectProtocol?
+    private nonisolated(unsafe) var storeObserver: NSObjectProtocol?
 
     private var fetchCache = EventFetchCache()
     private var calendarSelection = CalendarSelectionService()
@@ -106,6 +106,9 @@ actor CalendarStore {
         guard ekCalendar.allowsContentModifications else {
             throw CalendarStoreError.readOnlyCalendar
         }
+        guard BridgeCommandValidation.endIsAfterStart(start: draft.startDate, end: draft.endDate) else {
+            throw CalendarStoreError.endDateBeforeStart
+        }
 
         let event = EKEvent(eventStore: store)
         EventKitMutation.applyCreate(from: draft, to: event, calendar: ekCalendar)
@@ -181,8 +184,9 @@ actor CalendarStore {
         let cals = calendarSelection.validCalendars(from: store)
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
         let events = store.events(matching: predicate)
+        let sources = events.map(DayEventSource.extract(from:))
         let newEventsForDate = await DayEventBuilder.buildDayEvents(
-            from: events,
+            from: sources,
             rangeStart: rangeStart,
             rangeEnd: rangeEnd,
             calendar: calendar,
@@ -208,8 +212,9 @@ actor CalendarStore {
 
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: cals)
         let events = store.events(matching: predicate)
+        let sources = events.map(DayEventSource.extract(from:))
         let byDate = await DayEventBuilder.buildDayEvents(
-            from: events,
+            from: sources,
             rangeStart: start,
             rangeEnd: end,
             calendar: calendar,
@@ -263,6 +268,7 @@ enum CalendarStoreError: Error, LocalizedError {
     case eventNotFound
     case calendarNotFound
     case readOnlyCalendar
+    case endDateBeforeStart
 
     var errorDescription: String? {
         switch self {
@@ -272,6 +278,8 @@ enum CalendarStoreError: Error, LocalizedError {
             return String(localized: "The calendar could not be found.", comment: "Create event error")
         case .readOnlyCalendar:
             return String(localized: "This calendar is read-only.", comment: "Create event error")
+        case .endDateBeforeStart:
+            return String(localized: "End date must be after start date.", comment: "Create event validation error")
         }
     }
 }

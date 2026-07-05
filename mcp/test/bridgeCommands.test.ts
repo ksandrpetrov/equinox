@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest"
 
-import { BRIDGE_TOOL_COMMANDS, bridgeCommandForTool } from "../src/bridgeCommands.js"
+import { BRIDGE_TOOL_COMMANDS } from "../src/bridgeCommands.js"
 import { bridgeEventsDataSchema } from "../src/schemas/events.js"
 import { MCP_TOOL_NAMES } from "../src/tools/registry.js"
+
+function bridgeCommandForTool(tool: (typeof MCP_TOOL_NAMES)[number]): string | undefined {
+  return BRIDGE_TOOL_COMMANDS.find((entry) => entry.tool === tool)?.command
+}
 
 describe("bridge tool command mapping", () => {
   it("covers every registered MCP tool", () => {

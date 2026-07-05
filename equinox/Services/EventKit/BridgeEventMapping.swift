@@ -24,7 +24,7 @@ enum BridgeEventMapping {
             joinURL: joinURL?.absoluteString,
             calendarIdentifier: fields.calendarIdentifier,
             calendarTitle: fields.calendarTitle,
-            calendarColorHex: EventKitCalendarMapping.colorHexOrGray(event.calendar.color),
+            calendarColorHex: EventKitCalendarMapping.colorHexOrGray(event.calendar.cgColor),
             allowsContentModifications: fields.allowsContentModifications,
             hasAttendees: fields.hasAttendees,
             participationStatus: EventParticipationMapping.bridgeStatusName(

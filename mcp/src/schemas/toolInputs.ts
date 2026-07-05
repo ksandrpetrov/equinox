@@ -1,10 +1,12 @@
 import { z } from "zod"
 
+import { bridgeUpdateMutableFields } from "../bridgeCommandValidation.js"
 import {
   assertAnalyticsDateRange,
   calendarDateSchema,
   datePattern,
   endDateAfterStartDate,
+  endDateOnOrAfterStartDate,
   eventDateInputSchema,
   optionalUrlSchema,
   timePattern,
@@ -16,6 +18,7 @@ export {
   calendarDayCount,
   datePattern,
   endDateAfterStartDate,
+  endDateOnOrAfterStartDate,
   eventDateInputSchema,
   isValidCalendarDate,
   maxAnalyticsRangeDays,
@@ -25,7 +28,7 @@ export {
 } from "./dates.js"
 
 const dateRangeRefine = (input: { startDate: string; endDate: string }) =>
-  endDateAfterStartDate(input.startDate, input.endDate)
+  endDateOnOrAfterStartDate(input.startDate, input.endDate)
 
 export const listEventsInputSchema = z.object({
   startDate: calendarDateSchema,
@@ -71,6 +74,12 @@ export const updateEventInputSchema = z.object({
   {
     message: "endDate must be after startDate when both are provided.",
     path: ["endDate"],
+  },
+).refine(
+  (input) => bridgeUpdateMutableFields.some((key) => input[key as keyof typeof input] !== undefined),
+  {
+    message: "update_event requires at least one mutable field.",
+    path: ["eventIdentifier"],
   },
 )
 
@@ -131,7 +140,7 @@ export const listPlaudRecordingsInputSchema = z.object({
   message: "Provide either date or startDate/endDate, not both.",
   path: ["endDate"],
 }).refine(
-  (input) => !input.startDate || !input.endDate || endDateAfterStartDate(input.startDate, input.endDate),
+  (input) => !input.startDate || !input.endDate || endDateOnOrAfterStartDate(input.startDate, input.endDate),
   {
     message: "endDate must be on or after startDate.",
     path: ["endDate"],

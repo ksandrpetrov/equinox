@@ -102,7 +102,9 @@ struct SettingsView: View {
     private var detailTab: some View {
         switch selectedTab ?? .general {
         case .general:
-            GeneralSettingsTab(searchText: searchText, prefs: preferencesStore)
+            if let appState {
+                GeneralSettingsTab(searchText: searchText, appState: appState, prefs: preferencesStore)
+            }
         case .calendars:
             if let appState {
                 CalendarsSettingsTab(searchText: searchText, appState: appState)

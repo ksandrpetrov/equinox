@@ -105,7 +105,7 @@ npm test       # vitest
 | `list_events` | `list_events` | `startDate`, `endDate` (YYYY-MM-DD), опц. `calendarIds`, `limit` ≤ 500, `includePlaud` |
 | `get_event` | `get_event` | `eventIdentifier`; по умолчанию дополняется Plaud-полями |
 | `create_event` | `create_event` | `title`, `startDate`, `endDate`, опц. `calendarId`, `allDay`, `location`, `notes`, `url` |
-| `update_event` | `update_event` | `eventIdentifier` + частичные поля |
+| `update_event` | `update_event` | `eventIdentifier` + хотя бы одно mutable поле (`title`, `startDate`, `endDate`, `allDay`, `location`, `notes`, `url`, `calendarId`); identifier-only → `invalid_request` |
 | `delete_event` | `delete_event` | `eventIdentifier`, опц. `span`: `thisEvent` \| `futureEvents` |
 
 `list_events` и `get_event` возвращают EventKit-поля bridge. Если в локальном Plaud-кэше есть привязка, MCP добавляет `hasPlaudRecording: true` и объект `plaudRecording`. Для `list_events` это можно отключить через `includePlaud: false`.

@@ -9,7 +9,12 @@ final class PreferencesStore {
 
     var isPanelPinned: Bool { didSet { persist(isPanelPinned, forKey: kPanelPinned) } }
     var showEventDays: Int { didSet { persist(showEventDays, forKey: kShowEventDays) } }
-    var weekStartWeekday: Int { didSet { persist(weekStartWeekday, forKey: kWeekStartDOW) } }
+    var weekStartWeekday: Int {
+        didSet {
+            persist(weekStartWeekday, forKey: kWeekStartDOW)
+            if !isLoading { notifyVisibleGridPreferencesChanged() }
+        }
+    }
     var highlightedWeekdays: Int { didSet { persist(highlightedWeekdays, forKey: kHighlightedDOWs) } }
     var showWeeks: Bool { didSet { persist(showWeeks, forKey: kShowWeeks) } }
     var showEventDots: Bool { didSet { persist(showEventDots, forKey: kShowEventDots) } }
@@ -45,12 +50,20 @@ final class PreferencesStore {
         }
     }
     var backgroundStyle: Int { didSet { persist(backgroundStyle, forKey: kBackgroundStyle) } }
-    var calendarRowCount: Int { didSet { persist(calendarRowCount, forKey: kCalendarNumRows) } }
+    var calendarRowCount: Int {
+        didSet {
+            persist(calendarRowCount, forKey: kCalendarNumRows)
+            if !isLoading { notifyVisibleGridPreferencesChanged() }
+        }
+    }
     var showMonthBoundaries: Bool { didSet { persist(showMonthBoundaries, forKey: kShowMonthBoundaries) } }
     var agendaHeightRatio: Double { didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) } }
     var isMcpEnabled: Bool { didSet { persist(isMcpEnabled, forKey: kMcpEnabled) } }
     var isPlaudEnabled: Bool { didSet { persist(isPlaudEnabled, forKey: kPlaudEnabled) } }
     var hasSeenShortcutTip: Bool { didSet { persist(hasSeenShortcutTip, forKey: kHasSeenShortcutTip) } }
+
+    /// Called when `weekStartWeekday` or `calendarRowCount` changes (grid fetch range must refresh).
+    var onVisibleGridPreferencesChanged: (() -> Void)?
 
     private struct StoredValues {
         var isPanelPinned: Bool
@@ -119,6 +132,10 @@ final class PreferencesStore {
     private func notifyMenuBarAppearanceChanged() {
         guard !isLoading else { return }
         NotificationCenter.default.post(name: kEquinoxMenuBarAppearanceChanged, object: nil)
+    }
+
+    private func notifyVisibleGridPreferencesChanged() {
+        onVisibleGridPreferencesChanged?()
     }
 
     private static func clampedMenuBarIconType(_ value: Int) -> Int {

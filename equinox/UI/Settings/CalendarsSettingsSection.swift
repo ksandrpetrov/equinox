@@ -63,7 +63,7 @@ struct CalendarsSettingsSection: View {
                     selectedCalendarIDs.remove(calendar.id)
                 }
                 Task {
-                    await appState.events.updateSelectedCalendar(
+                    await appState.updateSelectedCalendar(
                         identifier: calendar.id,
                         selected: newVal
                     )

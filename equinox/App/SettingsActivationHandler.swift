@@ -11,7 +11,7 @@ import SwiftUI
 /// the `.regular`/`.accessory` activation policy explicitly.
 enum SettingsActivationHandler {
     private static let windowIdentifier = "equinoxSettingsWindow"
-    private static var closeObserver: NSObjectProtocol?
+    private nonisolated(unsafe) static var closeObserver: NSObjectProtocol?
 
     static func install() {
         guard closeObserver == nil else { return }

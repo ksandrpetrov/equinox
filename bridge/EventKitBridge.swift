@@ -15,21 +15,21 @@ final class EventKitBridge {
         }
 
         switch command.command {
-        case "access_status":
+        case BridgeCommandNames.accessStatus:
             return accessStatus()
-        case "request_access":
+        case BridgeCommandNames.requestAccess:
             return requestAccess()
-        case "list_calendars":
+        case BridgeCommandNames.listCalendars:
             return listCalendars()
-        case "list_events":
+        case BridgeCommandNames.listEvents:
             return listEvents(command)
-        case "get_event":
+        case BridgeCommandNames.getEvent:
             return getEvent(command)
-        case "create_event":
+        case BridgeCommandNames.createEvent:
             return createEvent(command)
-        case "update_event":
+        case BridgeCommandNames.updateEvent:
             return updateEvent(command)
-        case "delete_event":
+        case BridgeCommandNames.deleteEvent:
             return deleteEvent(command)
         default:
             return .failure(code: "unknown_command", message: "Unknown command: \(command.command)")
@@ -134,6 +134,9 @@ final class EventKitBridge {
         guard let end = BridgeDateParsing.parseInstant(command.endDate) else {
             return .failure(code: "invalid_request", message: "endDate is required")
         }
+        guard BridgeCommandValidation.endIsAfterStart(start: start, end: end) else {
+            return .failure(code: "invalid_request", message: "endDate must be after startDate")
+        }
 
         let calendar: EKCalendar
         if let calendarId = command.calendarId, let resolved = store.calendar(withIdentifier: calendarId) {
@@ -186,6 +189,25 @@ final class EventKitBridge {
         }
         guard event.calendar.allowsContentModifications else {
             return .failure(code: "read_only_calendar", message: "Event calendar does not allow modifications")
+        }
+        guard BridgeCommandValidation.bridgeUpdateHasMutableField(
+            title: command.title,
+            startDate: command.startDate,
+            endDate: command.endDate,
+            allDay: command.allDay,
+            location: command.location,
+            notes: command.notes,
+            url: command.url,
+            calendarId: command.calendarId
+        ) else {
+            return .failure(code: "invalid_request", message: "update_event requires at least one mutable field")
+        }
+
+        if let startString = command.startDate, let endString = command.endDate,
+           let start = BridgeDateParsing.parseInstant(startString),
+           let end = BridgeDateParsing.parseInstant(endString),
+           !BridgeCommandValidation.endIsAfterStart(start: start, end: end) {
+            return .failure(code: "invalid_request", message: "endDate must be after startDate")
         }
 
         var targetCalendar: EKCalendar?

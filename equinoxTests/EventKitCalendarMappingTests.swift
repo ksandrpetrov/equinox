@@ -1,11 +1,9 @@
-import AppKit
-import EventKit
 import XCTest
 @testable import equinox
 
 final class EventKitCalendarMappingTests: XCTestCase {
     func testColorHexFormatsSRGB() {
-        let color = NSColor(red: 1, green: 0.5, blue: 0, alpha: 1)
+        let color = CGColor(red: 1, green: 0.5, blue: 0, alpha: 1)
         XCTAssertEqual(EventKitCalendarMapping.colorHex(color), "#FF8000")
     }
 
@@ -14,7 +12,7 @@ final class EventKitCalendarMappingTests: XCTestCase {
     }
 
     func testColorHexOrGrayUsesColorWhenPresent() {
-        let color = NSColor(red: 0, green: 0, blue: 1, alpha: 1)
+        let color = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
         XCTAssertEqual(EventKitCalendarMapping.colorHexOrGray(color), "#0000FF")
     }
 

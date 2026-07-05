@@ -4,6 +4,7 @@ import {
   createEventInputSchema,
   listEventsInputSchema,
   listPlaudRecordingsInputSchema,
+  updateEventInputSchema,
 } from "../src/schemas/toolInputs.js"
 import { scheduleAnalysisOutputSchema } from "../src/schemas/outputs.js"
 import { analyzeSchedule } from "../src/analytics/schedule.js"
@@ -38,6 +39,19 @@ describe("tool input schemas", () => {
       startDate: "2026-06-13T12:00:00.000Z",
       endDate: "2026-06-13T11:00:00.000Z",
     })).toThrow()
+  })
+
+  it("rejects update_event without mutable fields", () => {
+    expect(() => updateEventInputSchema.parse({
+      eventIdentifier: "evt-1",
+    })).toThrow(/at least one mutable field/)
+  })
+
+  it("accepts update_event with a mutable field", () => {
+    expect(() => updateEventInputSchema.parse({
+      eventIdentifier: "evt-1",
+      title: "Updated",
+    })).not.toThrow()
   })
 
   it("rejects mixing date and endDate in list_plaud_recordings", () => {

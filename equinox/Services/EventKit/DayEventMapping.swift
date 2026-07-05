@@ -1,4 +1,3 @@
-import AppKit
 import EventKit
 import Foundation
 
@@ -9,9 +8,42 @@ enum DayEventMapping {
         joinURL: URL?,
         dayKey: Date
     ) -> DayEvent {
-        let fields = EventKitEventFields.extract(from: event)
-        let color = event.calendar.color ?? .gray
-        let components = EventKitCalendarMapping.rgbComponents(from: color)
+        dayEvent(
+            from: EventKitEventFields.extract(from: event),
+            calendarColor: event.calendar.cgColor,
+            slot: slot,
+            joinURL: joinURL,
+            dayKey: dayKey
+        )
+    }
+
+    static func dayEvent(
+        from fields: EventKitEventFields,
+        calendarColor: CGColor?,
+        slot: EventDaySlot,
+        joinURL: URL?,
+        dayKey: Date
+    ) -> DayEvent {
+        let components = EventKitCalendarMapping.rgbComponents(
+            from: calendarColor ?? CGColor(gray: 0.5, alpha: 1)
+        )
+        return dayEvent(
+            from: fields,
+            calendarColorComponents: (components.red, components.green, components.blue, components.alpha),
+            slot: slot,
+            joinURL: joinURL,
+            dayKey: dayKey
+        )
+    }
+
+    static func dayEvent(
+        from fields: EventKitEventFields,
+        calendarColorComponents: (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat),
+        slot: EventDaySlot,
+        joinURL: URL?,
+        dayKey: Date
+    ) -> DayEvent {
+        let components = calendarColorComponents
         let syntheticID: String
         if let eventID = fields.eventIdentifier {
             syntheticID = "\(dayKey.timeIntervalSince1970)-\(eventID)"

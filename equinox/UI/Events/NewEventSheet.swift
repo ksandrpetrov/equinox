@@ -189,6 +189,10 @@ struct NewEventSheet: View {
     private func save() {
         guard !isSaving else { return }
         guard selectedCalendarIndex < modifiableCalendars.count else { return }
+        guard endDate > startDate else {
+            saveError = String(localized: "End date must be after start date.", comment: "Create event validation error")
+            return
+        }
         let calendar = modifiableCalendars[selectedCalendarIndex]
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)

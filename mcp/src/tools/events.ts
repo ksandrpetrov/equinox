@@ -6,7 +6,6 @@ import { invokeBridge, requireBridgeData } from "../bridge.js"
 import { attachPlaudRecordingsToEvents } from "../plaud.js"
 import {
   eventOutputSchema,
-  bridgeEventsDataSchema,
   eventsDataSchema,
   findConflictsOutputSchema,
   findFreeTimeOutputSchema,
@@ -14,6 +13,7 @@ import {
   mutationOutputSchema,
   scheduleAnalysisOutputSchema,
 } from "../schemas/outputs.js"
+import { fetchBridgeEventsForRange } from "./eventBridgeFetch.js"
 import {
   analyzeScheduleInputSchema,
   createEventInputSchema,
@@ -26,7 +26,7 @@ import {
 } from "../schemas/toolInputs.js"
 import { jsonToolResult } from "../toolResponse.js"
 import { runToolSafely } from "../toolErrors.js"
-import type { EventData, EventsData } from "../types.js"
+import type { EventData } from "../types.js"
 
 const listEventsDescription =
   "Возвращает события за диапазон дат (YYYY-MM-DD, endDate включительно, локальная таймзона машины). "
@@ -50,11 +50,7 @@ export function registerEventTools(server: McpServer) {
     },
     async (input) => runToolSafely(async () => {
       const { includePlaud, ...bridgeInput } = input
-      const response = await invokeBridge<EventsData>({
-        command: "list_events",
-        ...bridgeInput,
-      })
-      const data = requireBridgeData(response, bridgeEventsDataSchema)
+      const data = await fetchBridgeEventsForRange(bridgeInput, bridgeInput.limit ?? 500)
       if (includePlaud === false) {
         return jsonToolResult(data)
       }
@@ -97,7 +93,7 @@ export function registerEventTools(server: McpServer) {
       title: "Создать событие",
       description:
         "Создаёт событие в выбранном или дефолтном календаре. Даты — ISO-8601 или YYYY-MM-DD (локальная таймзона для date-only). "
-        + "endDate должна быть позже startDate. url должен быть валидным URL.",
+        + "endDate должна быть позже startDate; для all-day date-only используйте следующий календарный день как endDate (EventKit convention). url должен быть валидным URL.",
       inputSchema: createEventInputSchema,
       outputSchema: mutationOutputSchema,
       annotations: {
@@ -185,14 +181,7 @@ export function registerAnalyticsTools(server: McpServer) {
     },
     async (input) => runToolSafely(async () => {
       assertAnalyticsDateRange(input.startDate, input.endDate)
-      const response = await invokeBridge<EventsData>({
-        command: "list_events",
-        startDate: input.startDate,
-        endDate: input.endDate,
-        calendarIds: input.calendarIds,
-        limit: 500,
-      })
-      const data = requireBridgeData(response, bridgeEventsDataSchema)
+      const data = await fetchBridgeEventsForRange(input)
       const analysis = analyzeSchedule(
         data.events,
         input.startDate,
@@ -221,12 +210,7 @@ export function registerAnalyticsTools(server: McpServer) {
     },
     async (input) => runToolSafely(async () => {
       assertAnalyticsDateRange(input.startDate, input.endDate)
-      const response = await invokeBridge<EventsData>({
-        command: "list_events",
-        ...input,
-        limit: 500,
-      })
-      const data = requireBridgeData(response, bridgeEventsDataSchema)
+      const data = await fetchBridgeEventsForRange(input)
       return jsonToolResult({
         startDate: input.startDate,
         endDate: input.endDate,
@@ -254,14 +238,7 @@ export function registerAnalyticsTools(server: McpServer) {
     },
     async (input) => runToolSafely(async () => {
       assertAnalyticsDateRange(input.startDate, input.endDate)
-      const response = await invokeBridge<EventsData>({
-        command: "list_events",
-        startDate: input.startDate,
-        endDate: input.endDate,
-        calendarIds: input.calendarIds,
-        limit: 500,
-      })
-      const data = requireBridgeData(response, bridgeEventsDataSchema)
+      const data = await fetchBridgeEventsForRange(input)
       const slots = findFreeTime(
         data.events,
         input.startDate,

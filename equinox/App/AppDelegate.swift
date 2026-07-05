@@ -20,7 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardShortcutMigration.migrateIfNeeded()
         statusItemController = StatusItemController(appState: appState)
         statusItemController?.setup()
-        appState.events.requestCalendarAccessIfNeeded()
+        appState.requestCalendarAccessIfNeeded()
         McpConfigurator.ensureBundledBridgeInstalled()
         if let bridgePath = McpConfigurator.resolveBridgePath() {
             mcpAppBridgeServer = McpAppBridgeServer(bridgePath: bridgePath)

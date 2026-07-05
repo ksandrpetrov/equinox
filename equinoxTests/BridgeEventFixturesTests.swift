@@ -3,17 +3,8 @@ import XCTest
 
 /// Golden JSON keys shared with `mcp/test/fixtures/bridge-events.json`.
 enum BridgeEventFixtures {
-    static let fullEventKeys: Set<String> = [
-        "eventIdentifier", "calendarItemIdentifier", "title", "location", "notes", "url",
-        "startDate", "endDate", "isAllDay", "joinURL", "calendarIdentifier", "calendarTitle",
-        "calendarColorHex", "allowsContentModifications", "hasAttendees", "participationStatus",
-    ]
-
-    static let minimalEventKeys: Set<String> = [
-        "calendarItemIdentifier", "title", "startDate", "endDate", "isAllDay",
-        "calendarIdentifier", "calendarTitle", "calendarColorHex",
-        "allowsContentModifications", "hasAttendees",
-    ]
+    static let fullEventKeys: Set<String> = BridgeEventFieldKeys.all
+    static let minimalEventKeys: Set<String> = BridgeEventFieldKeys.required
 
     static let fullEventJSON = """
     {"eventIdentifier":"evt-full-1","calendarItemIdentifier":"item-full-1","title":"Team Sync","location":"Room A","notes":"Agenda in doc","url":"https://example.com/doc","startDate":"2026-06-14T10:00:00.000Z","endDate":"2026-06-14T11:00:00.000Z","isAllDay":false,"joinURL":"https://zoom.us/j/123456789","calendarIdentifier":"cal-1","calendarTitle":"Work","calendarColorHex":"#FF0000","allowsContentModifications":true,"hasAttendees":true,"participationStatus":"accepted"}
@@ -39,6 +30,10 @@ final class BridgeEventFixturesTests: XCTestCase {
         let data = Data(BridgeEventFixtures.minimalEventJSON.utf8)
         let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         XCTAssertEqual(Set(object?.keys.map { $0 } ?? []), BridgeEventFixtures.minimalEventKeys)
+    }
+
+    func testOptionalFieldKeysAreAllMinusRequired() {
+        XCTAssertEqual(BridgeEventFieldKeys.optional, BridgeEventFieldKeys.all.subtracting(BridgeEventFieldKeys.required))
     }
 
     func testDeclinedFixtureParticipationStatus() throws {
@@ -115,6 +110,11 @@ final class BridgeEventFixturesTests: XCTestCase {
         let joinURLString = object?["joinURL"] as? String
         let joinURL = URL(string: joinURLString!)
         XCTAssertEqual(MeetingProviderRegistry.match(for: joinURL!)?.id, "zoom")
+    }
+
+    func testGeneratedBridgeEventKeysMatchFixtures() {
+        XCTAssertEqual(BridgeEventFieldKeys.all, BridgeEventFixtures.fullEventKeys.union(BridgeEventFixtures.minimalEventKeys))
+        XCTAssertTrue(BridgeEventFieldKeys.required.isSubset(of: BridgeEventFixtures.fullEventKeys))
     }
 
     func testSwiftFixtureJSONMatchesInlineGoldenStrings() throws {

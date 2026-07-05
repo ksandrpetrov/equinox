@@ -23,19 +23,19 @@ struct PanelCommandBar: View {
                     help: String(localized: "Previous month", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    appState.events.goToPreviousMonth()
+                    appState.goToPreviousMonth()
                 }
                 PanelIconButton(
                     symbol: "chevron.right",
                     help: String(localized: "Next month", comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    appState.events.goToNextMonth()
+                    appState.goToNextMonth()
                 }
             }
 
             Text(monthTitle)
-                .font(.system(size: metrics.calendarTitleFontSize, weight: .semibold))
+                .font(EquinoxDesign.calendarTitleFont(size: metrics.calendarTitleFontSize))
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .frame(maxWidth: .infinity, alignment: .leading)

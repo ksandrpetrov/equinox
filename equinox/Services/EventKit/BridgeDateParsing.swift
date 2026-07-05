@@ -2,19 +2,19 @@ import Foundation
 
 /// ISO and day-boundary date parsing shared by `EventKitBridge` and MCP analytics.
 enum BridgeDateParsing {
-    private static let isoFormatter: ISO8601DateFormatter = {
+    private nonisolated(unsafe) static let isoFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter
     }()
 
-    private static let isoFormatterNoFraction: ISO8601DateFormatter = {
+    private nonisolated(unsafe) static let isoFormatterNoFraction: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
     }()
 
-    private static let dayFormatter: DateFormatter = {
+    private nonisolated(unsafe) static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.locale = Locale(identifier: "en_US_POSIX")

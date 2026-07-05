@@ -1,12 +1,33 @@
 import EventKit
 import Foundation
 
+struct DayEventSource: Sendable {
+    let fields: EventKitEventFields
+    let calendarColorRed: CGFloat
+    let calendarColorGreen: CGFloat
+    let calendarColorBlue: CGFloat
+    let calendarColorAlpha: CGFloat
+
+    static func extract(from event: EKEvent) -> DayEventSource {
+        let components = EventKitCalendarMapping.rgbComponents(
+            from: event.calendar.cgColor ?? CGColor(gray: 0.5, alpha: 1)
+        )
+        return DayEventSource(
+            fields: EventKitEventFields.extract(from: event),
+            calendarColorRed: components.red,
+            calendarColorGreen: components.green,
+            calendarColorBlue: components.blue,
+            calendarColorAlpha: components.alpha
+        )
+    }
+}
+
 typealias ResolveNativeJoinURL = @Sendable (URL) async -> URL?
 
 /// Builds display-ready `DayEvent` day slots from EventKit events.
 enum DayEventBuilder {
     static func buildDayEvents(
-        from events: [EKEvent],
+        from sources: [DayEventSource],
         rangeStart: Date,
         rangeEnd: Date,
         calendar: Calendar,
@@ -14,8 +35,8 @@ enum DayEventBuilder {
     ) async -> [Date: [DayEvent]] {
         var newEventsForDate: [Date: [DayEvent]] = [:]
 
-        for event in events {
-            let fields = EventKitEventFields.extract(from: event)
+        for source in sources {
+            let fields = source.fields
             let layoutInput = EventLayoutInput(
                 startDate: fields.startDate,
                 endDate: fields.endDate,
@@ -43,7 +64,13 @@ enum DayEventBuilder {
 
             for slot in slots {
                 let dayEvent = DayEventMapping.dayEvent(
-                    from: event,
+                    from: fields,
+                    calendarColorComponents: (
+                        red: source.calendarColorRed,
+                        green: source.calendarColorGreen,
+                        blue: source.calendarColorBlue,
+                        alpha: source.calendarColorAlpha
+                    ),
                     slot: slot,
                     joinURL: joinURL,
                     dayKey: slot.dayStart

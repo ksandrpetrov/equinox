@@ -108,6 +108,16 @@ describe("equinox-bridge contract", () => {
     expect(response.error?.code).toBe("invalid_request")
   })
 
+  it.skipIf(!bridgePath || !bridgeHasCalendarAccess())("update_event without mutable fields returns invalid_request", () => {
+    const response = invokeBridge({
+      command: "update_event",
+      eventIdentifier: "nonexistent-id-for-validation-only",
+    })
+    expect(response.ok).toBe(false)
+    expect(response.error?.code).toBe("invalid_request")
+    expect(response.error?.message).toMatch(/at least one mutable field/)
+  })
+
   it.skipIf(!bridgePath || !bridgeHasCalendarAccess())("delete_event without identifier returns invalid_request", () => {
     const response = invokeBridge({ command: "delete_event" })
     expect(response.ok).toBe(false)

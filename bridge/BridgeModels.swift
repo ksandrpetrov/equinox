@@ -90,7 +90,7 @@ struct BridgeCalendar: Encodable {
         title = item.title
         sourceTitle = item.sourceTitle
         sourceIdentifier = item.sourceIdentifier
-        colorHex = EventKitCalendarMapping.colorHexOrGray(calendar.color)
+        colorHex = EventKitCalendarMapping.colorHexOrGray(calendar.cgColor)
         allowsContentModifications = item.allowsContentModifications
         isSubscribed = item.isSubscribed
         type = item.type

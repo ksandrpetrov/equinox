@@ -5,7 +5,7 @@ struct PanelStateOverlay: View {
 
     var body: some View {
         VStack(spacing: EquinoxDesign.spacingSM) {
-            if !appState.preferences.hasSeenShortcutTip {
+            if shouldShowShortcutTip {
                 shortcutTipBanner
             }
             if !appState.events.calendarAccessStatus.isAuthorized {
@@ -16,6 +16,13 @@ struct PanelStateOverlay: View {
                 noCalendarsBanner
             }
         }
+    }
+
+    private var shouldShowShortcutTip: Bool {
+        !appState.preferences.hasSeenShortcutTip
+            && appState.events.calendarAccessStatus.isAuthorized
+            && appState.events.lastFetchError == nil
+            && appState.events.hasSelectedCalendars
     }
 
     private var shortcutTipBanner: some View {
@@ -54,7 +61,7 @@ struct PanelStateOverlay: View {
 
             HStack(spacing: EquinoxDesign.spacingSM) {
                 Button(String(localized: "Request Access", comment: "")) {
-                    appState.events.requestCalendarAccessIfNeeded()
+                    appState.requestCalendarAccessIfNeeded()
                 }
                 .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
 

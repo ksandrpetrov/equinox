@@ -64,7 +64,7 @@ export function parseCalendarDate(value: string): Date {
 
 export function endDateAfterStartDate(startDate: string, endDate: string): boolean {
   if (datePattern.test(startDate) && datePattern.test(endDate)) {
-    return parseCalendarDate(endDate) >= parseCalendarDate(startDate)
+    return parseCalendarDate(endDate) > parseCalendarDate(startDate)
   }
   const start = new Date(startDate)
   const end = new Date(endDate)
@@ -72,4 +72,17 @@ export function endDateAfterStartDate(startDate: string, endDate: string): boole
     return false
   }
   return end > start
+}
+
+/** Inclusive range for list/analytics queries (endDate may equal startDate). */
+export function endDateOnOrAfterStartDate(startDate: string, endDate: string): boolean {
+  if (datePattern.test(startDate) && datePattern.test(endDate)) {
+    return parseCalendarDate(endDate) >= parseCalendarDate(startDate)
+  }
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return false
+  }
+  return end >= start
 }

@@ -22,6 +22,14 @@ export const plaudEventRecordingSchema = z.object({
   durationSeconds: z.number().optional(),
 })
 
+export const bridgeParticipationStatusSchema = z.enum([
+  "unknown",
+  "pending",
+  "accepted",
+  "declined",
+  "tentative",
+])
+
 /** EventKit fields returned by equinox-bridge (no MCP enrichment). */
 export const bridgeEventSchema = z.object({
   eventIdentifier: z.string().nullable().optional(),
@@ -39,7 +47,7 @@ export const bridgeEventSchema = z.object({
   calendarColorHex: z.string(),
   allowsContentModifications: z.boolean(),
   hasAttendees: z.boolean(),
-  participationStatus: z.string().nullable().optional(),
+  participationStatus: bridgeParticipationStatusSchema.nullable().optional(),
 }).strict()
 
 /** MCP tool output after optional Plaud cache enrichment. */

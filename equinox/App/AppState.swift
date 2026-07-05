@@ -1,8 +1,10 @@
 import AppKit
 import SwiftUI
 
-/// Composition root for the menu bar panel. UI should call these facade methods instead of
-/// reaching into `events`, `panel`, or `plaud` coordinators directly.
+/// Composition root for the menu bar panel.
+/// - Mutations (create/delete/RSVP/calendar access) → call facade methods on `AppState`.
+/// - Reads and SwiftUI bindings (`monthDate`, `eventsByDate`, loading flags) → `appState.events`,
+///   `appState.panel`, or `appState.plaud` coordinators directly (`@Observable` pattern).
 @Observable
 @MainActor
 final class AppState {
@@ -25,6 +27,32 @@ final class AppState {
         panel.onPinStateChanged?()
     }
 
+    func setPinned(_ pinned: Bool) {
+        guard isPinned != pinned else { return }
+        isPinned = pinned
+        panel.onPinStateChanged?()
+    }
+
+    func goToPreviousMonth() {
+        events.goToPreviousMonth()
+    }
+
+    func goToNextMonth() {
+        events.goToNextMonth()
+    }
+
+    func requestCalendarAccessIfNeeded() {
+        events.requestCalendarAccessIfNeeded()
+    }
+
+    func refreshCalendarAccessStatus() async {
+        await events.refreshCalendarAccessStatus()
+    }
+
+    func updateSelectedCalendar(identifier: String, selected: Bool) async {
+        await events.updateSelectedCalendar(identifier: identifier, selected: selected)
+    }
+
     func selectDate(_ date: CalendarDate) {
         events.selectDate(date)
     }
@@ -38,7 +66,17 @@ final class AppState {
     }
 
     func deleteEvent(identifier: String) async -> String? {
-        await events.deleteEvent(identifier: identifier)
+        let result = await events.deleteEvent(identifier: identifier)
+        if result == nil {
+            clearSelectedEventIfDeleted(identifier: identifier)
+        }
+        return result
+    }
+
+    private func clearSelectedEventIfDeleted(identifier: String) {
+        if panel.selectedEvent?.eventIdentifier == identifier {
+            panel.selectedEvent = nil
+        }
     }
 
     /// Presents the menu bar panel when set by `StatusItemController` during setup.

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsTab: View {
     var searchText: String = ""
+    @Bindable var appState: AppState
     @Bindable var prefs: PreferencesStore
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var showResetConfirmation = false
@@ -64,7 +65,10 @@ struct GeneralSettingsTab: View {
                     SettingsLabeledToggle(
                         title: String(localized: "Pin panel by default", comment: ""),
                         subtitle: String(localized: "Keep the calendar panel open as a floating window", comment: ""),
-                        isOn: $prefs.isPanelPinned
+                        isOn: Binding(
+                            get: { appState.isPinned },
+                            set: { appState.setPinned($0) }
+                        )
                     )
 
                     SettingsDivider()

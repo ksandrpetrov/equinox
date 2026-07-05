@@ -207,16 +207,13 @@ final class PanelWindowController {
     }
 
     private func agendaMaxHeight(statusItem: NSStatusItem) -> CGFloat {
-        guard let screen = screenForStatusItem(statusItem) else { return 220 }
-        let maxPanel = screen.visibleFrame.height * 0.85
-        let prefs = appState.preferences
-        let metrics = sizeMetrics
-        let commandBarHeight: CGFloat = EquinoxDesign.commandBarHeight + 8
-        let dowRow: CGFloat = 20
-        let gridHeight = dowRow + CGFloat(prefs.calendarRowCount) * (metrics.cellSize + 4)
-        let splitHeight: CGFloat = 10
-        let padding = EquinoxDesign.panelPadding * 2
-        let fixed = commandBarHeight + gridHeight + splitHeight + padding + 16
-        return max(120, min(400, maxPanel - fixed))
+        guard let screen = screenForStatusItem(statusItem) else {
+            return PanelAgendaLayout.agendaMaxHeightFallback
+        }
+        return PanelAgendaLayout.maxHeight(
+            metrics: sizeMetrics,
+            calendarRowCount: appState.preferences.calendarRowCount,
+            screenVisibleHeight: screen.visibleFrame.height
+        )
     }
 }

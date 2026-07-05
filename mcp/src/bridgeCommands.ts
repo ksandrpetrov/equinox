@@ -66,7 +66,3 @@ export const BRIDGE_TOOL_COMMANDS: BridgeToolCommand[] = [
   { tool: "get_plaud_status", requiredPayloadKeys: [], usesBridge: false },
   { tool: "list_plaud_recordings", requiredPayloadKeys: [], usesBridge: false },
 ]
-
-export function bridgeCommandForTool(tool: (typeof MCP_TOOL_NAMES)[number]): string | undefined {
-  return BRIDGE_TOOL_COMMANDS.find((entry) => entry.tool === tool)?.command
-}

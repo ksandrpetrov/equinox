@@ -10,11 +10,7 @@ struct CalendarGridView: View {
     private var numRows: Int { prefs.calendarRowCount }
 
     private var gridDates: [CalendarDate] {
-        monthGridDates(
-            monthDate: appState.events.monthDate,
-            weekStartWeekday: prefs.weekStartWeekday,
-            numRows: numRows
-        )
+        appState.events.visibleGridDates
     }
 
     private var dowSymbols: [String] {

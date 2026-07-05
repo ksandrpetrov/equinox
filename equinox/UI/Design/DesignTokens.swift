@@ -180,6 +180,18 @@ enum EquinoxDesign {
         .system(size: size, weight: .medium, design: .rounded)
     }
 
+    static func calendarTitleFont(size: CGFloat) -> Font {
+        .system(size: size, weight: .semibold)
+    }
+
+    static func agendaSectionTitleFont(size: CGFloat) -> Font {
+        .system(size: size + 1, weight: .semibold)
+    }
+
+    static func agendaSectionSubtitleFont(size: CGFloat) -> Font {
+        .system(size: size - 1, weight: .medium)
+    }
+
     static func microFont(size: CGFloat = 7) -> Font {
         .system(size: size, weight: .bold)
     }

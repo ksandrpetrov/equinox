@@ -2,8 +2,8 @@ import Foundation
 
 enum EquinoxFormatters {
     private static let cacheLock = NSLock()
-    private static var cachedLocaleIdentifier: String?
-    private static var formatters: [String: DateFormatter] = [:]
+    private nonisolated(unsafe) static var cachedLocaleIdentifier: String?
+    private nonisolated(unsafe) static var formatters: [String: DateFormatter] = [:]
 
     static var appLocale: Locale {
         Locale.autoupdatingCurrent
@@ -53,11 +53,6 @@ enum EquinoxFormatters {
 
     static func shortWeekday(_ date: Date) -> String {
         let formatter = formatter(key: "weekday.short") { $0.dateFormat = "EEE" }
-        return formatter.string(from: date)
-    }
-
-    static func dayMonth(_ date: Date) -> String {
-        let formatter = formatter(key: "day.month") { $0.dateFormat = "d MMMM" }
         return formatter.string(from: date)
     }
 
