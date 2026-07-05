@@ -1,0 +1,44 @@
+{
+  "commands": [
+    "access_status",
+    "request_access",
+    "list_calendars",
+    "list_events",
+    "get_event",
+    "create_event",
+    "update_event",
+    "delete_event"
+  ],
+  "bridgeEvent": {
+    "required": [
+      "calendarItemIdentifier",
+      "title",
+      "startDate",
+      "endDate",
+      "isAllDay",
+      "calendarIdentifier",
+      "calendarTitle",
+      "calendarColorHex",
+      "allowsContentModifications",
+      "hasAttendees"
+    ],
+    "optional": [
+      "eventIdentifier",
+      "location",
+      "notes",
+      "url",
+      "joinURL",
+      "participationStatus"
+    ]
+  },
+  "updateMutableFields": [
+    "title",
+    "startDate",
+    "endDate",
+    "allDay",
+    "location",
+    "notes",
+    "url",
+    "calendarId"
+  ]
+}
