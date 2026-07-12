@@ -13,6 +13,7 @@ struct AgendaView: View {
 
     @State private var pendingDelete: PendingDeleteEvent?
     @State private var scrollCoordinator = AgendaScrollCoordinator()
+    @State private var sectionHeaderHeight: CGFloat = 0
 
     private var prefs: PreferencesStore { appState.preferences }
     private var backgroundStyle: BackgroundStyle {
@@ -70,13 +71,24 @@ struct AgendaView: View {
                                     backgroundStyle: backgroundStyle
                                 )
                                 .id(AgendaScrollTarget.day(julian: section.date.julian))
+                                .background {
+                                    GeometryReader { geometry in
+                                        Color.clear.preference(
+                                            key: AgendaSectionHeaderHeightKey.self,
+                                            value: geometry.size.height
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                     .scrollTargetLayout()
                 }
                 .scrollIndicators(.hidden)
-                .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: .top)
+                .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
+                .onPreferenceChange(AgendaSectionHeaderHeightKey.self) { height in
+                    sectionHeaderHeight = height
+                }
                 .onAppear {
                     scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
                     scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
@@ -123,6 +135,26 @@ struct AgendaView: View {
         }
     }
 
+    private var agendaScrollAnchor: UnitPoint {
+        if case .event = scrollCoordinator.scrolledTarget {
+            guard height > 0 else { return .top }
+            return UnitPoint(x: 0.5, y: min(0.5, agendaHeaderClearance / height))
+        }
+        return .top
+    }
+
+    private var agendaHeaderClearance: CGFloat {
+        max(sectionHeaderHeight, estimatedSectionHeaderHeight) + EquinoxDesign.spacingXS
+    }
+
+    private var estimatedSectionHeaderHeight: CGFloat {
+        metrics.fontSize
+            + 1
+            + EquinoxDesign.spacingSM
+            + EquinoxDesign.agendaHeaderVerticalPadding * 2
+            + EquinoxDesign.spacingXS
+    }
+
     private var emptyDayRow: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
             Image(systemName: "calendar.badge.minus")
@@ -163,5 +195,13 @@ struct AgendaView: View {
             showEmptyDays: prefs.showDaysWithNoEvents,
             eventsFor: appState.events.events(for:)
         )
+    }
+}
+
+private struct AgendaSectionHeaderHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
