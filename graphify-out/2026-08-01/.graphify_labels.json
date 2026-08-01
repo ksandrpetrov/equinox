@@ -133,5 +133,19 @@
   "131": "main.swift",
   "132": ".accessStatus",
   "133": "AgendaFocus",
-  "134": "EventFetchRange.swift"
+  "134": "EventFetchRange.swift",
+  "135": "PanelCommandBar",
+  "136": "PanelLayoutMetrics",
+  "137": "CalendarsSettingsTab",
+  "138": "BridgeEvent",
+  "139": "DateFormatter",
+  "140": "EKCalendar",
+  "141": "EKEventStore",
+  "142": "Set",
+  "143": "PlaudRecording",
+  "144": "Never",
+  "145": "Task",
+  "146": "EventParticipationStatus",
+  "147": "EventParticipationStatus",
+  "148": "EventParticipationStatus"
 }
