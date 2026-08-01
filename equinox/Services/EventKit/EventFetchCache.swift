@@ -2,15 +2,18 @@ import Foundation
 
 /// Incremental EventKit fetch cache and selected-calendar filtering for `CalendarStore`.
 struct EventFetchCache {
+    struct FetchPlan: Equatable {
+        let fetchStart: CalendarDate
+        let fetchEnd: CalendarDate
+        let isRefetch: Bool
+    }
+
     var eventsForDate: [Date: [DayEvent]] = [:]
     private(set) var selectedCalendarEventsByDate: [Date: [DayEvent]] = [:]
     private var previouslyFetchedJulians = IndexSet()
-    var lastFetchedFirst = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-    var lastFetchedLast = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-    var hasFetchedRange = false
     var lastFetchError: String?
 
-    mutating func selectedCalendarEvents(calendar: Calendar) -> [CalendarDate: [DayEvent]] {
+    func selectedCalendarEvents(calendar: Calendar) -> [CalendarDate: [DayEvent]] {
         var result: [CalendarDate: [DayEvent]] = [:]
         for (date, events) in selectedCalendarEventsByDate {
             result[CalendarDate(date: date, calendar: calendar)] = events
@@ -18,15 +21,16 @@ struct EventFetchCache {
         return result
     }
 
-    mutating func resetForRefetch() {
+    mutating func clearEvents() {
         previouslyFetchedJulians = IndexSet()
         eventsForDate = [:]
+        selectedCalendarEventsByDate = [:]
     }
 
-    /// Returns false when the julian range was already fetched.
-    mutating func prepareFetchRange(first: CalendarDate, last: CalendarDate, refetch: Bool) -> (fetchStart: CalendarDate, fetchEnd: CalendarDate)? {
+    /// Plans an inclusive calendar-day fetch without changing the last successful snapshot.
+    func prepareFetchRange(first: CalendarDate, last: CalendarDate, refetch: Bool) -> FetchPlan? {
         if refetch {
-            resetForRefetch()
+            return FetchPlan(fetchStart: first, fetchEnd: last, isRefetch: true)
         }
 
         let dateRange = first.julian..<(last.julian + 1)
@@ -48,12 +52,32 @@ struct EventFetchCache {
             fetchEnd = CalendarDate(julian: lastJulian)
         }
 
-        previouslyFetchedJulians.insert(integersIn: dateRange)
-        return (fetchStart, fetchEnd)
+        return FetchPlan(fetchStart: fetchStart, fetchEnd: fetchEnd, isRefetch: false)
     }
 
-    mutating func mergeEvents(_ newEventsForDate: [Date: [DayEvent]]) {
-        eventsForDate.merge(newEventsForDate) { _, new in new }
+    mutating func commitFetch(
+        _ newEventsForDate: [Date: [DayEvent]],
+        plan: FetchPlan,
+        calendar: Calendar
+    ) {
+        if plan.isRefetch {
+            eventsForDate = newEventsForDate
+            previouslyFetchedJulians = IndexSet()
+        } else {
+            let datesToReplace = eventsForDate.keys.filter { date in
+                let calendarDate = CalendarDate(date: date, calendar: calendar)
+                return calendarDate >= plan.fetchStart && calendarDate <= plan.fetchEnd
+            }
+            for date in datesToReplace {
+                eventsForDate.removeValue(forKey: date)
+            }
+            eventsForDate.merge(newEventsForDate) { _, new in new }
+        }
+
+        previouslyFetchedJulians.insert(
+            integersIn: plan.fetchStart.julian..<(plan.fetchEnd.julian + 1)
+        )
+        lastFetchError = nil
     }
 
     mutating func applyCalendarFilter(selectedCalendarIDs: Set<String>) {

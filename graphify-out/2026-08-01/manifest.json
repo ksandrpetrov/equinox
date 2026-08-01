@@ -775,13 +775,13 @@
     "semantic_hash": "7fb07d1914e6abd3c5d442980153eff1"
   },
   "AGENTS.md": {
-    "mtime": 1785570877.1029131,
-    "ast_hash": "03ac3d4b69afc8ff50c8614f989b5893",
+    "mtime": 1785571480.3763366,
+    "ast_hash": "6d16aebf55e3721bb1c792b30102e355",
     "semantic_hash": ""
   },
   "ARCHITECTURE.md": {
-    "mtime": 1785570684.0502598,
-    "ast_hash": "3cb02f08261de1e8f4c3d8692cdc33e7",
+    "mtime": 1785571480.3768685,
+    "ast_hash": "378b093d4ddabeec8a5da21a3c0ac37a",
     "semantic_hash": ""
   },
   "BUILD.md": {

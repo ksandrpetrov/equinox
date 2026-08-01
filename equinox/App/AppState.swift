@@ -60,6 +60,11 @@ final class AppState {
         events.goToToday()
     }
 
+    func panelDidOpen() {
+        events.refreshForPanelPresentation()
+        events.requestAgendaScroll()
+    }
+
     func createEvent(from draft: NewEventDraft) async -> String? {
         await events.createEvent(from: draft)
     }

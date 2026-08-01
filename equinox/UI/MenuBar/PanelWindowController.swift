@@ -37,7 +37,7 @@ final class PanelWindowController {
         appState.panel.isPanelVisible = true
 
         if needsPositioning {
-            appState.events.requestAgendaScroll()
+            appState.panelDidOpen()
             DispatchQueue.main.async { [weak self, weak statusItem] in
                 guard let self, let statusItem, self.isVisible else { return }
                 self.applyGeometry(statusItem: statusItem, resize: true, reposition: true)

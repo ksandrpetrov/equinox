@@ -59,10 +59,10 @@ actor CalendarStore {
         calendarSelection.calendarEntries
     }
 
-    func requestCalendarAccessIfNeeded() async {
+    func requestCalendarAccessIfNeeded() async -> Bool {
         if hasCalendarAccess {
-            await prepareStoreAndRefetch()
-            return
+            prepareStore()
+            return true
         }
 
         let granted = await withCheckedContinuation { continuation in
@@ -72,31 +72,19 @@ actor CalendarStore {
         }
 
         if granted {
-            await prepareStoreAndRefetch()
+            prepareStore()
+            return true
         }
+        fetchCache.clearEvents()
+        return false
     }
 
-    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async {
-        fetchCache.lastFetchError = nil
-        fetchCache.lastFetchedFirst = first
-        fetchCache.lastFetchedLast = last
-        fetchCache.hasFetchedRange = true
-        if refetch {
-            calendarSelection.refresh(from: store)
-        }
+    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async -> Bool {
         await fetchEventsWithStartDate(first, endDate: last, refetch: refetch)
     }
 
-    func refetchAll(first: CalendarDate? = nil, last: CalendarDate? = nil) async {
-        if let first, let last {
-            await fetchEvents(first: first, last: last, refetch: true)
-            return
-        }
-        guard fetchCache.hasFetchedRange else {
-            calendarSelection.refresh(from: store)
-            return
-        }
-        await fetchEvents(first: fetchCache.lastFetchedFirst, last: fetchCache.lastFetchedLast, refetch: true)
+    func refetchAll(first: CalendarDate, last: CalendarDate) async -> Bool {
+        await fetchEvents(first: first, last: last, refetch: true)
     }
 
     func createEvent(from draft: NewEventDraft) throws {
@@ -132,7 +120,7 @@ actor CalendarStore {
         try store.remove(event, span: .thisEvent, commit: true)
     }
 
-    func setParticipationStatus(_ status: EventParticipationStatus, for eventID: String) async throws {
+    func setParticipationStatus(_ status: EventParticipationStatus, for eventID: String) throws {
         guard let event = store.event(withIdentifier: eventID) else {
             throw CalendarParticipationError.eventNotFound
         }
@@ -145,7 +133,6 @@ actor CalendarStore {
             throw CalendarParticipationError.kvoFailed
         }
         try store.save(event, span: .thisEvent, commit: true)
-        await refetchAll()
     }
 
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
@@ -155,9 +142,9 @@ actor CalendarStore {
 
     // MARK: - Private
 
-    private func prepareStoreAndRefetch() async {
+    private func prepareStore() {
         refreshEventKitStore()
-        await refetchAll()
+        calendarSelection.refresh(from: store)
     }
 
     private func refreshEventKitStore() {
@@ -169,18 +156,24 @@ actor CalendarStore {
         _ startDate: CalendarDate,
         endDate: CalendarDate,
         refetch: Bool
-    ) async {
+    ) async -> Bool {
         guard hasCalendarAccess else {
+            fetchCache.clearEvents()
             fetchCache.lastFetchError = String(localized: "Calendar access is required to load events.", comment: "Fetch error")
-            return
+            return false
+        }
+
+        if refetch {
+            calendarSelection.refresh(from: store)
         }
 
         guard let fetchRange = fetchCache.prepareFetchRange(first: startDate, last: endDate, refetch: refetch) else {
-            return
+            fetchCache.lastFetchError = nil
+            return true
         }
 
         let rangeStart = fetchRange.fetchStart.date(in: calendar)
-        let rangeEnd = fetchRange.fetchEnd.date(in: calendar)
+        let rangeEnd = fetchRange.fetchEnd.addingDays(1).date(in: calendar)
         let cals = calendarSelection.validCalendars(from: store)
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
         let events = store.events(matching: predicate)
@@ -194,8 +187,9 @@ actor CalendarStore {
                 await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
             }
         )
-        fetchCache.mergeEvents(newEventsForDate)
+        fetchCache.commitFetch(newEventsForDate, plan: fetchRange, calendar: calendar)
         applyCalendarFilter()
+        return true
     }
 
     private func applyCalendarFilter() {

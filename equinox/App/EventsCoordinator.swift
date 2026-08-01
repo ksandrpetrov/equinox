@@ -42,6 +42,7 @@ final class EventsCoordinator {
     var hasSelectedCalendars = false
     var calendarAccessStatus: CalendarAccessStatus = .notDetermined
     var lastFetchError: String?
+    var hasCompletedInitialEventLoad = false
 
     var agendaScrollToken: Int { navigation.agendaScrollToken }
     var monthNavigationDirection: CalendarNavigationCoordinator.MonthNavigationDirection {
@@ -75,8 +76,8 @@ final class EventsCoordinator {
             self.shouldShowLoadingIndicator = shouldShow
             self.isFetchingEvents = isFetching
         }
-        fetchCoordinator.onSyncComplete = { [weak self] in
-            await self?.syncFromCalendarStore()
+        fetchCoordinator.onSyncComplete = { [weak self] successfulFetch in
+            await self?.syncFromCalendarStore(markInitialLoadComplete: successfulFetch)
         }
 
         preferences.onVisibleGridPreferencesChanged = { [weak self] in
@@ -91,29 +92,47 @@ final class EventsCoordinator {
     }
 
     func requestCalendarAccessIfNeeded() {
+        let range = updateCurrentFetchRange()
         Task {
-            await calendarStore.requestCalendarAccessIfNeeded()
-            await syncFromCalendarStore()
+            _ = await fetchCoordinator.fetch(
+                range: range,
+                refetch: true,
+                preparesCalendarAccess: true
+            )
         }
     }
 
     func refreshCalendarAccessStatus() async {
         calendarAccessStatus = await calendarStore.accessStatus()
+        if !calendarAccessStatus.isAuthorized {
+            eventsByDate = [:]
+            hasCompletedInitialEventLoad = false
+            updateMeetingIndicator()
+        }
     }
 
     func retryFetchEvents() {
+        let range = updateCurrentFetchRange()
         fetchCoordinator.scheduleFetch(
-            range: (first: firstVisibleDate, last: lastVisibleDate),
+            range: range,
             refetch: true
         )
     }
 
-    func syncFromCalendarStore() async {
-        eventsByDate = await calendarStore.selectedCalendarEvents()
-        calendarEntries = await calendarStore.calendarEntries()
+    func syncFromCalendarStore(markInitialLoadComplete: Bool = false) async {
         calendarAccessStatus = await calendarStore.accessStatus()
+        if calendarAccessStatus.isAuthorized {
+            eventsByDate = await calendarStore.selectedCalendarEvents()
+        } else {
+            eventsByDate = [:]
+            hasCompletedInitialEventLoad = false
+        }
+        calendarEntries = await calendarStore.calendarEntries()
         hasSelectedCalendars = await calendarStore.hasSelectedCalendars()
         lastFetchError = await calendarStore.lastFetchError
+        if markInitialLoadComplete, calendarAccessStatus.isAuthorized {
+            hasCompletedInitialEventLoad = true
+        }
         updateMeetingIndicator()
         onPlaudDataChanged()
         maybeRefocusAgendaAfterFetch()
@@ -153,6 +172,13 @@ final class EventsCoordinator {
 
     func refreshVisibleGridRange() {
         navigation.refreshVisibleGridRange()
+    }
+
+    func refreshForPanelPresentation() {
+        fetchCoordinator.scheduleFetch(
+            range: updateCurrentFetchRange(),
+            refetch: true
+        )
     }
 
     func requestAgendaScroll() {
@@ -200,7 +226,7 @@ final class EventsCoordinator {
     func createEvent(from draft: NewEventDraft) async -> String? {
         do {
             try await calendarStore.createEvent(from: draft)
-            await syncFromCalendarStore()
+            _ = await reloadCurrentEvents()
             return nil
         } catch {
             return error.localizedDescription
@@ -210,7 +236,7 @@ final class EventsCoordinator {
     func deleteEvent(identifier: String) async -> String? {
         do {
             try await calendarStore.deleteEvent(identifier: identifier)
-            await syncFromCalendarStore()
+            _ = await reloadCurrentEvents()
             return nil
         } catch {
             return error.localizedDescription
@@ -228,7 +254,7 @@ final class EventsCoordinator {
         }
         do {
             try await calendarStore.setParticipationStatus(status, for: eventID)
-            await syncFromCalendarStore()
+            _ = await reloadCurrentEvents()
             return nil
         } catch {
             return error.localizedDescription
@@ -252,6 +278,24 @@ final class EventsCoordinator {
         firstVisibleDate = range.first
         lastVisibleDate = range.last
         fetchCoordinator.scheduleFetch(range: range)
+    }
+
+    private func reloadCurrentEvents() async -> Bool {
+        await fetchCoordinator.fetch(
+            range: updateCurrentFetchRange(),
+            refetch: true
+        )
+    }
+
+    private func updateCurrentFetchRange() -> (first: CalendarDate, last: CalendarDate) {
+        guard let gridFirst = visibleGridDates.first,
+              let gridLast = visibleGridDates.last else {
+            return (firstVisibleDate, lastVisibleDate)
+        }
+        let range = fetchRange(coveringGridFrom: gridFirst, through: gridLast)
+        firstVisibleDate = range.first
+        lastVisibleDate = range.last
+        return range
     }
 
     private func maybeRefocusAgendaAfterFetch() {

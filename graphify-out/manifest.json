@@ -10,9 +10,9 @@
     "semantic_hash": "f9a3a0931cebd541485613aab38e55ee"
   },
   "equinox/App/AppState.swift": {
-    "mtime": 1785570207.039488,
-    "ast_hash": "1e303f9e80316776b04f9bd9ea122018",
-    "semantic_hash": "1e303f9e80316776b04f9bd9ea122018"
+    "mtime": 1785573385.568839,
+    "ast_hash": "d92003fa24afa9168dc862f3f2f0a72b",
+    "semantic_hash": ""
   },
   "equinox/App/CalendarNavigationCoordinator.swift": {
     "mtime": 1783245788.693193,
@@ -30,14 +30,14 @@
     "semantic_hash": "c7d6319912da1cef8378c1c8768bb09d"
   },
   "equinox/App/EventFetchCoordinator.swift": {
-    "mtime": 1783244655.4362962,
-    "ast_hash": "3958fe4167f1e842fcbf06457d2de763",
-    "semantic_hash": "3958fe4167f1e842fcbf06457d2de763"
+    "mtime": 1785573310.619138,
+    "ast_hash": "70dea14f7838356fd768edc529c970a0",
+    "semantic_hash": ""
   },
   "equinox/App/EventsCoordinator.swift": {
-    "mtime": 1783248290.998393,
-    "ast_hash": "7e5ddb82c90c67191736c5c3796ff083",
-    "semantic_hash": "7e5ddb82c90c67191736c5c3796ff083"
+    "mtime": 1785573617.3819575,
+    "ast_hash": "ed0113def4e0d5909442b0e333b78bfe",
+    "semantic_hash": ""
   },
   "equinox/App/KeyboardShortcutNames.swift": {
     "mtime": 1781377804.1406603,
@@ -255,9 +255,9 @@
     "semantic_hash": "5eccb91954609c6922bae08985fcb4c0"
   },
   "equinox/Services/EventKit/CalendarStore.swift": {
-    "mtime": 1785570207.0422432,
-    "ast_hash": "38b648ad02049ab9073461bf79b3fd43",
-    "semantic_hash": "38b648ad02049ab9073461bf79b3fd43"
+    "mtime": 1785573617.3826082,
+    "ast_hash": "1aed5d5eff9115cabdf4e0627addeabc",
+    "semantic_hash": ""
   },
   "equinox/Services/EventKit/DayEventBuilder.swift": {
     "mtime": 1783247166.0073373,
@@ -270,9 +270,9 @@
     "semantic_hash": "0b1fc03a5e4df9a9714402f7c6441051"
   },
   "equinox/Services/EventKit/EventFetchCache.swift": {
-    "mtime": 1782976331.8912673,
-    "ast_hash": "265623ec4dde343206bbac6e0c6dc3bc",
-    "semantic_hash": "265623ec4dde343206bbac6e0c6dc3bc"
+    "mtime": 1785573617.3832347,
+    "ast_hash": "e8dc1c0c4cc6bf4f6e772ec3a661ad9b",
+    "semantic_hash": ""
   },
   "equinox/Services/EventKit/EventKitCalendarMapping.swift": {
     "mtime": 1785570242.129199,
@@ -470,9 +470,9 @@
     "semantic_hash": "a0504d53af6f59fe1614292507da7b80"
   },
   "equinox/UI/Main/AgendaView.swift": {
-    "mtime": 1785075036.2748978,
-    "ast_hash": "9c0194bfa42d758c105b5e1d91936ddb",
-    "semantic_hash": "9c0194bfa42d758c105b5e1d91936ddb"
+    "mtime": 1785573400.503099,
+    "ast_hash": "9f51c4e1f93020ed59dca680df8f58e5",
+    "semantic_hash": ""
   },
   "equinox/UI/Main/CalendarGridView.swift": {
     "mtime": 1785075036.273809,
@@ -515,9 +515,9 @@
     "semantic_hash": "74fc38927cc2ccae829c78dd2c053d0e"
   },
   "equinox/UI/MenuBar/PanelWindowController.swift": {
-    "mtime": 1783248432.8243122,
-    "ast_hash": "605097d1acee17ab306a6d4f2bb934b9",
-    "semantic_hash": "605097d1acee17ab306a6d4f2bb934b9"
+    "mtime": 1785573385.5693393,
+    "ast_hash": "1ccc08c8edd5ca4d3adbe44a746bab95",
+    "semantic_hash": ""
   },
   "equinox/UI/MenuBar/PeriodicRefreshScheduler.swift": {
     "mtime": 1781377842.782298,
@@ -660,9 +660,9 @@
     "semantic_hash": "4730018b2691951c542f5cb84dbed251"
   },
   "equinoxTests/EventFetchCacheTests.swift": {
-    "mtime": 1783244655.4367445,
-    "ast_hash": "8d32ef8b400e627e8a8e0ee267a1a836",
-    "semantic_hash": "8d32ef8b400e627e8a8e0ee267a1a836"
+    "mtime": 1785573513.4021926,
+    "ast_hash": "d03cc03a9e8e815973ed9f5b07d7001c",
+    "semantic_hash": ""
   },
   "equinoxTests/EventFetchRangeTests.swift": {
     "mtime": 1781450034.712942,
@@ -685,9 +685,9 @@
     "semantic_hash": "125190d19468768e77eddcfd92f081c6"
   },
   "equinoxTests/EventsCoordinatorSyncTests.swift": {
-    "mtime": 1783248477.8424816,
-    "ast_hash": "eb8fb4a3f3424f7f77ebed499b3e9d1d",
-    "semantic_hash": "eb8fb4a3f3424f7f77ebed499b3e9d1d"
+    "mtime": 1785574038.9477232,
+    "ast_hash": "f7a63f767e59660a2358f326b67f5eb9",
+    "semantic_hash": ""
   },
   "equinoxTests/JoinURLDetectionTests.swift": {
     "mtime": 1782564189.0430784,

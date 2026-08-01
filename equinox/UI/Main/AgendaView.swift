@@ -6,6 +6,26 @@ private struct PendingDeleteEvent: Identifiable {
     let title: String
 }
 
+enum AgendaContentState: Equatable {
+    case hidden
+    case loading
+    case content
+
+    static func resolve(
+        accessStatus: CalendarAccessStatus,
+        hasCompletedInitialLoad: Bool,
+        hasFetchError: Bool
+    ) -> AgendaContentState {
+        guard accessStatus == .authorized || accessStatus == .notDetermined else {
+            return .hidden
+        }
+        if hasCompletedInitialLoad {
+            return .content
+        }
+        return hasFetchError ? .hidden : .loading
+    }
+}
+
 struct AgendaView: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
@@ -19,9 +39,14 @@ struct AgendaView: View {
     var body: some View {
         let sections = agendaSections
         Group {
-            if sections.isEmpty {
+            switch contentState {
+            case .hidden:
+                Color.clear
+            case .loading:
+                loadingAgenda
+            case .content where sections.isEmpty:
                 emptyAgenda
-            } else {
+            case .content:
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: EquinoxDesign.spacingXS, pinnedViews: [.sectionHeaders]) {
                         ForEach(sections, id: \.date) { section in
@@ -162,6 +187,17 @@ struct AgendaView: View {
         .padding(.vertical, EquinoxDesign.spacingSM)
     }
 
+    private var loadingAgenda: some View {
+        HStack(spacing: EquinoxDesign.spacingSM) {
+            ProgressView()
+                .controlSize(.small)
+            Text(String(localized: "Loading events", comment: "Agenda initial loading state"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     private var emptyAgenda: some View {
         VStack(spacing: EquinoxDesign.spacingMD) {
             Image(systemName: "calendar.badge.clock")
@@ -189,6 +225,14 @@ struct AgendaView: View {
             pinnedDate: appState.events.selectedDate,
             showEmptyDays: prefs.showDaysWithNoEvents,
             eventsFor: appState.events.events(for:)
+        )
+    }
+
+    private var contentState: AgendaContentState {
+        AgendaContentState.resolve(
+            accessStatus: appState.events.calendarAccessStatus,
+            hasCompletedInitialLoad: appState.events.hasCompletedInitialEventLoad,
+            hasFetchError: appState.events.lastFetchError != nil
         )
     }
 }
