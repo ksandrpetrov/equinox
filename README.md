@@ -1,6 +1,6 @@
 # equinox
 
-equinox — календарь для macOS в строке меню. Он показывает месячную сетку и agenda поверх рабочего стола, помогает быстро создать или удалить событие, ответить на приглашение, открыть ссылку на встречу и найти связанную запись Plaud для прошедшей встречи. В проект также входит **Calendar MCP**: локальный сервер, через который AI-клиенты вроде Cursor, Codex и Claude могут читать, анализировать и по запросу менять системный календарь macOS.
+equinox — календарь для macOS в строке меню. Он показывает месячную сетку и agenda поверх рабочего стола, помогает быстро создать или удалить событие, ответить на приглашение, открыть ссылку на встречу и найти связанную запись Plaud для прошедшей встречи.
 
 ## Что умеет приложение
 
@@ -17,7 +17,7 @@ equinox — календарь для macOS в строке меню. Он по�
 - **Keyboard-first действия** — глобальный shortcut, `T` для Today, `Cmd+N` для нового события, `P` для pin/unpin, `Cmd+,` для настроек.
 - **Join meeting** — распознаёт Zoom, Microsoft Teams и Amazon Chime в URL, location и notes; в GUI может открывать нативное приложение, если оно установлено.
 
-Редактирование существующего события в GUI намеренно не поддерживается. Для частичного обновления события есть MCP-инструмент `update_event`.
+Редактирование существующего события в GUI намеренно не поддерживается.
 
 ### Оформление и menu bar
 
@@ -36,18 +36,9 @@ equinox — календарь для macOS в строке меню. Он по�
 - **Ручная привязка** — можно вставить ссылку `https://web.plaud.ai/file/...` в карточке прошедшего события.
 - **Открытие записи** — если match найден, карточка события показывает кнопку **Open in Plaud**.
 
-### Calendar MCP (опционально)
-
-- **13 инструментов** — доступ к календарю, список календарей, чтение/создание/обновление/удаление событий, анализ загрузки, поиск конфликтов, поиск свободного времени и read-only доступ к локальному кэшу Plaud.
-- **Prompts и resources** — готовые шаблоны `daily_agenda`, `weekly_calendar_review`, Markdown-обзор `equinox://docs/calendar` и JSON Schema `equinox://schema/event`.
-- **Plaud в событиях** — `list_events` и `get_event` могут автоматически добавлять `hasPlaudRecording` и `plaudRecording` из локального кэша Equinox.
-- **Автонастройка** — вкладка MCP в Settings может записать конфиг в Cursor и Claude Desktop; для Codex показывает TOML-сниппет.
-- **Поддерживаемые клиенты** — Cursor, Codex, Claude Desktop.
-- **Безопасный путь доступа** — основной MCP-путь идёт через запущенный `equinox.app`, чтобы macOS применяла Calendar permission Equinox; прямой fallback на `equinox-bridge` остаётся для headless-сценариев.
-
 ### Настройки
 
-Settings содержит вкладки: General, Calendars, Appearance, Privacy, Shortcuts, MCP, Plaud, About. В настройках можно управлять автозапуском, первым днём недели, количеством дней в agenda, pin-поведением, высотой agenda, выбранными календарями, внешним видом, shortcut, MCP-подключением и Plaud-интеграцией.
+Settings содержит вкладки: General, Calendars, Appearance, Privacy, Shortcuts, Plaud, About. В настройках можно управлять автозапуском, первым днём недели, количеством дней в agenda, pin-поведением, высотой agenda, выбранными календарями, внешним видом, shortcut и Plaud-интеграцией.
 
 ## Требования
 
@@ -56,8 +47,7 @@ Settings содержит вкладки: General, Calendars, Appearance, Privac
 | Платформа | Mac на **Apple Silicon** (M1 или новее); Intel не поддерживается |
 | macOS | **26.0** или новее |
 | Сборка GUI | Xcode |
-| MCP | Node.js (для `mcp/`) |
-| Доступ к календарю | EventKit full-access API; у `equinox.app` и `equinox-bridge` **раздельные** разрешения TCC |
+| Доступ к календарю | EventKit full-access API для `equinox.app` |
 
 ## Быстрый старт
 
@@ -66,7 +56,7 @@ cp Local.xcconfig.example Local.xcconfig
 ./run.sh
 ```
 
-`./run.sh` собирает приложение в **Release**, при необходимости — `equinox-bridge` и MCP-сервер, затем запускает equinox. После старта ищите иконку в строке меню.
+`./run.sh` собирает приложение в **Release** и запускает equinox. После старта ищите иконку в строке меню.
 
 `Local.xcconfig` хранит настройки подписи кода вне репозитория и добавлен в `.gitignore` — не коммитьте его. Подробнее — в [BUILD.md](BUILD.md).
 
@@ -79,39 +69,9 @@ xcodebuild -project equinox.xcodeproj -scheme equinox -configuration Debug \
   -derivedDataPath build/DerivedData test
 ```
 
-MCP (TypeScript):
-
-```bash
-cd mcp && npm install && npm run build && npm test
-```
-
-Полная сборка bridge + MCP + тесты:
-
-```bash
-./scripts/build-mcp.sh
-```
-
-## MCP / bridge
-
-`equinox-bridge` — headless CLI (JSON ↔ EventKit), используемый MCP-сервером. MCP сначала пытается обратиться к локальному app bridge proxy внутри запущенного `equinox.app`; если приложение не запущено, используется прямой запуск bridge.
-
-```bash
-./scripts/build-mcp.sh
-```
-
-**Настройка клиентов:**
-
-1. Откройте equinox → Settings → MCP.
-2. Убедитесь, что bridge, Node.js и MCP-сервер в статусе «готов».
-3. Включите «Auto-configure Cursor and Claude» или скопируйте JSON / TOML-сниппет вручную.
-4. Перезапустите MCP-клиент или перезагрузите его MCP-серверы.
-5. Держите `equinox.app` запущенным для основного app bridge proxy пути; прямой fallback на `equinox-bridge` может потребовать отдельное Calendar-разрешение macOS.
-
-Подробности — в [mcp/MCP.md](mcp/MCP.md) и [bridge/BRIDGE.md](bridge/BRIDGE.md).
-
 ## Архитектура
 
-equinox — гибрид **AppKit-оболочки и SwiftUI-панелей**. Бизнес-логика дат, сетки, раскладки событий, RSVP и join URL живёт в `Core/`. Доступ к EventKit идёт через `CalendarStore` (GUI) и `EventKitBridge` (CLI). UI не обращается к `EKEventStore` напрямую; MCP работает через app bridge proxy или `equinox-bridge`.
+equinox — гибрид **AppKit-оболочки и SwiftUI-панелей**. Бизнес-логика дат, сетки, раскладки событий, RSVP и join URL живёт в `Core/`. Доступ к EventKit идёт только через `CalendarStore`; UI не обращается к `EKEventStore` напрямую.
 
 ```
 equinox/        — приложение в строке меню (Swift/SwiftUI + AppKit)
@@ -119,22 +79,18 @@ equinox/        — приложение в строке меню (Swift/SwiftUI
   Core/           — чистая логика (тестируемая)
   Services/       — EventKit, Plaud, настройки, платформенные хелперы
   UI/             — SwiftUI-вью и design tokens
-bridge/         — CLI equinox-bridge (JSON ↔ EventKit)
-mcp/            — TypeScript MCP-сервер
 equinoxTests/   — XCTest
-scripts/        — run.sh, build-mcp.sh, require-arm64.sh
+scripts/        — вспомогательные скрипты сборки и проверки
 ```
 
-Подробная схема слоёв, потоков данных, ограничений GUI/MCP и подсистемы Plaud — в [ARCHITECTURE.md](ARCHITECTURE.md).
+Подробная схема слоёв, потоков данных и подсистемы Plaud — в [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Документация
 
 | Документ | Назначение |
 |----------|------------|
-| [BUILD.md](BUILD.md) | Сборка, запуск, MCP, тесты, нотаризация |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Слои, потоки данных, Plaud, различия app vs bridge |
-| [bridge/BRIDGE.md](bridge/BRIDGE.md) | JSON-протокол equinox-bridge |
-| [mcp/MCP.md](mcp/MCP.md) | Справочник инструментов MCP |
+| [BUILD.md](BUILD.md) | Сборка, запуск, тесты, нотаризация |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Слои, потоки данных и Plaud |
 | [AGENTS.md](AGENTS.md) | Правила для AI-агентов и разработчиков |
 
 ## Лицензия

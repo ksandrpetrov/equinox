@@ -8,7 +8,7 @@
 
 **Приоритет:** при конфликте скорости генерации и поддерживаемости — всегда выбирать поддерживаемость, стабильность и сохранение бизнес-сценариев.
 
-Справочники: [BUILD.md](BUILD.md) (сборка, MCP, подпись), [ARCHITECTURE.md](ARCHITECTURE.md) (слои, app vs bridge matrix).
+Справочники: [BUILD.md](BUILD.md) (сборка и подпись), [ARCHITECTURE.md](ARCHITECTURE.md) (слои и ключевые потоки).
 
 ---
 
@@ -19,30 +19,28 @@
 ### 2.1. Поддерживаемость
 
 - Бизнес-логика дат/сетки/лейаута — в `equinox/Core/`, без AppKit/SwiftUI/EventKit
-- EventKit — только через `CalendarStore` (app) и `EventKitBridge` (CLI)
+- EventKit — только через `CalendarStore`
 - UI — только в `equinox/UI/`, получает `AppState` и `SizeMetrics` явно
 
 ### 2.2. Дешевизна при вайбкодинге
 
 - Константы UserDefaults — `let k*` в `equinox/App/Constants.swift`
-- MCP tools — Zod на входе, JSON bridge на выходе
-- Говорящие имена, маленькие функции, явные контракты (`CalendarDate`, `DayEvent`, `BridgeResponse<T>`)
+- Говорящие имена, маленькие функции, явные контракты (`CalendarDate`, `DayEvent`, `NewEventDraft`)
 - `SizeMetrics` передаётся параметром, не через environment
 - Чистые функции в `Core/` + XCTest в `equinoxTests/`; view вызывает `appState.createEvent(from:)`, не строит `EKEvent`
-- MCP: tools в `mcp/src/tools/`, EventKit через `invokeBridge` в `mcp/src/bridge.ts`, аналитика только в `mcp/src/analytics/`
 - **UI access:** мутации через `AppState` facade; чтение и `@Bindable` — напрямую `appState.events` / `panel` / `plaud` (см. `ARCHITECTURE.md` § UI access patterns)
 
 ### 2.3. Отсутствие мёртвого кода
 
 Запрещены неиспользуемые компоненты, флаги, ветки, неактуальные комментарии, временные обходы без срока жизни, закомментированный код, абстракции «на будущее».
 
-При удалении фичи синхронно убрать: Swift view/controller, `k*`-ключи в `Constants.swift`, `PreferencesStore`, settings tab, assets, entitlements (app и bridge раздельно), MCP tool + bridge command + test, локализацию. Для Plaud — весь стек (`PlaudCoordinator`, `PlaudService`, `PlaudLiveClient`, `PlaudRecordingsStore`, `PlaudMatchCache`, `PlaudOAuthClient`, `Core/Plaud*`, `PlaudSettingsTab`, `kPlaudEnabled`).
+При удалении фичи синхронно убрать: Swift view/controller, `k*`-ключи в `Constants.swift`, `PreferencesStore`, settings tab, assets, entitlements, тесты и локализацию. Для Plaud — весь стек (`PlaudCoordinator`, `PlaudService`, `PlaudLiveClient`, `PlaudRecordingsStore`, `PlaudMatchCache`, `PlaudOAuthClient`, `Core/Plaud*`, `PlaudSettingsTab`, `kPlaudEnabled`).
 
 ### 2.4. Стабильность продукта
 
 - `CalendarStore` — `actor`; не нарушать изоляцию EventKit
 - `NotificationCenter`: `kEquinoxSizePreferenceChanged`, `kEquinoxMenuBarAppearanceChanged` — не ломать подписчиков (события календаря — через `EventsCoordinator.syncFromCalendarStore()`)
-- Два независимых TCC-разрешения: `equinox.app` и `equinox-bridge`
+- Разрешение Calendar в TCC принадлежит `equinox.app`
 
 ### 2.5. Стабильность бизнес-сценариев
 
@@ -61,10 +59,10 @@
 1. Прочитать файл и соседей (импорты, вызовы, тесты)
 2. Поиск аналогов в репозитории
 3. Проверить слои `App/`, `Core/`, `Services/`, `UI/`
-4. Понять бизнес-сценарии (раздел 7) и UI-регрессии (раздел 8)
-5. Найти тесты в `equinoxTests/` и `mcp/test/`
-6. Расширять существующее (`CalendarStore`, `PreferencesStore`, `DesignTokens`, bridge-команды), не создавать новый механизм
-7. Зафиксировать предположения в ответе (раздел 10)
+4. Понять бизнес-сценарии (раздел 5) и UI-регрессии (раздел 6)
+5. Найти тесты в `equinoxTests/`
+6. Расширять существующее (`CalendarStore`, `PreferencesStore`, `DesignTokens`), не создавать новый механизм
+7. Зафиксировать допущения и ограничения в ответе (раздел 8)
 
 ### Карта «куда смотреть первым»
 
@@ -75,12 +73,10 @@
 | Meeting URLs | `Core/JoinURLDetection.swift`, `equinoxTests/JoinURLDetectionTests.swift` |
 | UI панели | `UI/Main/`, `UI/Design/DesignTokens.swift` |
 | Настройки | `UI/Settings/`, `Services/PreferencesStore.swift`, `App/Constants.swift` |
-| MCP tool | `mcp/src/tools/`, `bridge/EventKitBridge.swift`, `mcp/test/` |
 | Menu bar | `UI/MenuBar/StatusItemController.swift`, `MenuBarIconRenderer.swift` |
-| MCP setup | `Services/Platform/McpSetup.swift`, `equinoxTests/McpSetupTests.swift` |
 | Plaud | `App/PlaudCoordinator.swift`, `Services/Plaud/`, `Core/PlaudEventMatching.swift` |
 | Privacy / TCC | `PrivacySettingsTab.swift`, `CalendarAccessMapping.swift`, `AppDelegate` |
-| Calendar mapping | `Services/EventKit/EventKitCalendarMapping.swift` — не дублировать в `CalendarStore` и `EventKitBridge` |
+| Calendar mapping | `Services/EventKit/EventKitCalendarMapping.swift` — не дублировать в `CalendarStore` |
 
 ### Структура
 
@@ -90,17 +86,14 @@ equinox/     — macOS menu bar app (Swift/SwiftUI + AppKit)
   Core/      — чистая логика
   Services/  — EventKit, preferences, platform
   UI/        — SwiftUI + Design tokens
-bridge/      — equinox-bridge CLI
-mcp/         — TypeScript MCP server
 equinoxTests/
 run.sh       — сборка и запуск GUI (Release)
-scripts/     — build-mcp.sh, require-arm64.sh, embed-mcp-in-app.sh, …
+scripts/     — вспомогательные скрипты сборки и проверки
 ```
 
 | Таргет | Назначение |
 |--------|------------|
 | `equinox` | GUI |
-| `equinox-bridge` | Headless EventKit CLI |
 | `equinoxTests` | Unit-тесты |
 
 ```bash
@@ -114,12 +107,12 @@ cp Local.xcconfig.example Local.xcconfig
 ## 4. Правила изменения кода
 
 - Минимально достаточный diff; без большого рефакторинга и новой архитектуры (нет Redux/TCA)
-- Не дублировать логику между `Core/`, `CalendarStore`, `EventKitBridge`, MCP
+- Не дублировать логику между `Core/` и `CalendarStore`
 - Не оставлять TODO без контекста; удалять код, ставший ненужным
 - Стиль: `@Observable`, `actor`, `Sendable`, `@MainActor` где принято
-- EventKit-мутации только в `CalendarStore` / `EventKitBridge`
-- Не менять публичные контракты без описания последствий: MCP tool schemas, bridge JSON commands, `k*` keys, `equinox://date/yyyy-MM-dd`
-- **Запрещено:** signing в `project.pbxproj`, Debug-only поведение, прямой EventKit в UI/MCP, новые зависимости без обоснования, случайные UI-изменения, врать о проверках
+- EventKit-мутации только в `CalendarStore`
+- Не менять публичные контракты без описания последствий: `k*` keys, `equinox://date/yyyy-MM-dd`
+- **Запрещено:** signing в `project.pbxproj`, Debug-only поведение, прямой EventKit в UI, новые зависимости без обоснования, случайные UI-изменения, врать о проверках
 
 ### Слои
 
@@ -128,8 +121,6 @@ cp Local.xcconfig.example Local.xcconfig
 | `Core/` | Чистые функции | AppKit, SwiftUI, EventKit, сеть |
 | `Services/` | EventKit, UserDefaults | SwiftUI views |
 | `UI/` | Презентация, `@Bindable AppState` | Прямой `EKEventStore` |
-| `bridge/` | EventKit CLI, JSON | Зависимость от GUI |
-| `mcp/` | MCP tools, Zod, analytics | Прямой EventKit |
 
 ### Состояние
 
@@ -166,19 +157,12 @@ cp Local.xcconfig.example Local.xcconfig
 | Plaud OAuth | `PlaudSettingsTab`, `PlaudOAuthClient`, `Core/PlaudOAuthPKCE` |
 | Privacy / TCC | `PrivacySettingsTab`, `AppDelegate` |
 | Deep link `equinox://date/yyyy-MM-dd` | `AppDelegate.application(_:open:)` |
-| MCP автонастройка | `McpSettingsTab`, `McpConfigurator` |
-| Настройки (8 tabs) | `SettingsView`, `*SettingsTab` |
+| Настройки (7 tabs) | `SettingsView`, `*SettingsTab` |
 | Launch at login | `LaunchAtLogin.swift` |
-
-### MCP (bridge + mcp/)
-
-Команды: доступ (`get_calendar_access_status`, `request_calendar_access`), чтение (`list_calendars`, `list_events`, `get_event`), мутации (`create_event`, `update_event`, `delete_event`), аналитика (`analyze_schedule`, `find_conflicts`, `find_free_time`). Подробности — [mcp/MCP.md](mcp/MCP.md) и [bridge/BRIDGE.md](bridge/BRIDGE.md).
-
-Расхождения GUI vs bridge/MCP — см. [ARCHITECTURE.md](ARCHITECTURE.md) (app vs bridge matrix).
 
 ### Edge cases
 
-Пустой календарь; многодневные события; границы месяца; медленный EventKit fetch; `.EKEventStoreChanged`; TCC отдельно для app и bridge; даты 1583–3333; размеры S/M/L; pin ↔ popover.
+Пустой календарь; многодневные события; границы месяца; медленный EventKit fetch; `.EKEventStoreChanged`; TCC-разрешение приложения; даты 1583–3333; размеры S/M/L; pin ↔ popover.
 
 ---
 
@@ -196,11 +180,9 @@ cp Local.xcconfig.example Local.xcconfig
 load_xcodebuild_local_settings Local.xcconfig
 xcodebuild -project equinox.xcodeproj -scheme equinox -configuration Debug \
   -derivedDataPath build/DerivedData test "${XCODEBUILD_LOCAL_SETTINGS[@]}" # Swift tests
-./scripts/build-mcp.sh                      # bridge + MCP + tests
-cd mcp && npm run build && npm test
 ```
 
-Тесты: все `equinoxTests/*.swift` и `mcp/test/*.ts` (не перечислять вручную — список гниёт).
+Тесты: все `equinoxTests/*.swift` (не перечислять вручную — список гниёт).
 
 | Изменено | Проверки |
 |----------|----------|
@@ -209,8 +191,6 @@ cd mcp && npm run build && npm test
 | Plaud (`Services/Plaud*`, `Core/Plaud*`) | test + `./run.sh` |
 | `PreferencesStore`, `Constants.swift` | `./run.sh` + persistence |
 | `equinox/UI/*` | `./run.sh` + UI чеклист (раздел 6) |
-| `bridge/*` | bridge build + `build-mcp.sh` |
-| `mcp/*` | `npm run build && npm test` |
 | `project.pbxproj` | diff **без** `DEVELOPMENT_TEAM` |
 
 **Нет в проекте:** SwiftLint, ESLint, pre-commit, CI build/test (только signing guard), XCUITest. Не отмечать [x] без реального запуска.
@@ -233,13 +213,13 @@ cd mcp && npm run build && npm test
 
 ## Критичные правила (сводка)
 
-1. EventKit только через `CalendarStore` и `EventKitBridge`
+1. EventKit только через `CalendarStore`
 2. `Core/` чистый — логика + XCTest
 3. Минимальный UI diff — `SizeMetrics`, `DesignTokens`, `PanelComponents`
 4. Signing только в `Local.xcconfig`
 5. Удалять мёртвый код синхронно
 6. Release = production (`./run.sh`)
-7. Два TCC-разрешения
+7. TCC-разрешение принадлежит приложению
 8. Локализация — `String(localized:comment:)`
 
 ---
@@ -251,7 +231,6 @@ cd mcp && npm run build && npm test
 | CI build/test | Отсутствует |
 | SwiftLint | Отсутствует |
 | XCUITest | Отсутствуют |
-| MCP `update_event` в GUI | Намеренно нет |
 | Notarization | Ручной процесс, см. BUILD.md |
 | macOS min 26.0 | Текущий target |
 

@@ -7,15 +7,6 @@ final class EventKitCalendarMappingTests: XCTestCase {
         XCTAssertEqual(EventKitCalendarMapping.colorHex(color), "#FF8000")
     }
 
-    func testColorHexOrGrayUsesFallbackForNil() {
-        XCTAssertEqual(EventKitCalendarMapping.colorHexOrGray(nil), "#808080")
-    }
-
-    func testColorHexOrGrayUsesColorWhenPresent() {
-        let color = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
-        XCTAssertEqual(EventKitCalendarMapping.colorHexOrGray(color), "#0000FF")
-    }
-
     func testCalendarTypeLabels() {
         XCTAssertEqual(EventKitCalendarMapping.calendarTypeLabel(.local), "local")
         XCTAssertEqual(EventKitCalendarMapping.calendarTypeLabel(.calDAV), "caldav")

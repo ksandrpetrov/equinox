@@ -54,12 +54,6 @@ struct SettingsView: View {
                 .tag(SettingsTab.shortcuts)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "MCP", comment: "MCP prefs tab label"),
-                    symbol: "puzzlepiece.extension"
-                )
-                .tag(SettingsTab.mcp)
-
-                SettingsSidebarLabel(
                     title: String(localized: "Plaud", comment: "Plaud prefs tab label"),
                     symbol: "waveform"
                 )
@@ -115,8 +109,6 @@ struct SettingsView: View {
             PrivacySettingsTab(searchText: searchText)
         case .shortcuts:
             ShortcutsSettingsTab()
-        case .mcp:
-            McpSettingsTab(searchText: searchText)
         case .plaud:
             PlaudSettingsTab(searchText: searchText, prefs: preferencesStore)
         case .about:

@@ -90,7 +90,6 @@ final class PreferencesStore {
     var agendaHeightRatio = 0.35 {
         didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) }
     }
-    var isMcpEnabled = false { didSet { persist(isMcpEnabled, forKey: kMcpEnabled) } }
     var isPlaudEnabled = false { didSet { persist(isPlaudEnabled, forKey: kPlaudEnabled) } }
     var hasSeenShortcutTip = false { didSet { persist(hasSeenShortcutTip, forKey: kHasSeenShortcutTip) } }
 
@@ -185,7 +184,6 @@ final class PreferencesStore {
             kShowMeetingIndicator: false,
             kMenuBarIconType: 0,
             kShowDaysWithNoEventsInAgenda: false,
-            kMcpEnabled: false,
             kPlaudEnabled: false,
             kCalendarNumRows: 6,
         ]
@@ -221,7 +219,6 @@ final class PreferencesStore {
             forKey: kAgendaHeightRatio,
             using: Self.clampedAgendaHeightRatio
         )
-        isMcpEnabled = defaults.bool(forKey: kMcpEnabled)
         isPlaudEnabled = defaults.bool(forKey: kPlaudEnabled)
         hasSeenShortcutTip = defaults.bool(forKey: kHasSeenShortcutTip)
     }

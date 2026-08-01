@@ -1,38 +1,18 @@
 {
-  "bridge/BridgeModels.swift": {
-    "mtime": 1783245326.1791837,
-    "ast_hash": "0f7a73b3cee754bdc55bbf3faf867b86",
-    "semantic_hash": "0f7a73b3cee754bdc55bbf3faf867b86"
-  },
-  "bridge/EventKitBridge.swift": {
-    "mtime": 1785072788.9165094,
-    "ast_hash": "1567e1c0454c76b00b25b262b9712929",
-    "semantic_hash": ""
-  },
-  "bridge/main.swift": {
-    "mtime": 1781351161.6486373,
-    "ast_hash": "561cc6458c97fd9441f37f7fa0debb2d",
-    "semantic_hash": "561cc6458c97fd9441f37f7fa0debb2d"
-  },
-  "bridge/schema/bridge-protocol.schema.json": {
-    "mtime": 1783245086.9972348,
-    "ast_hash": "9afde60acfe73095087f2ece94e0363f",
-    "semantic_hash": "9afde60acfe73095087f2ece94e0363f"
-  },
   "equinox/App/AgendaScrollCoordinator.swift": {
     "mtime": 1783284518.824154,
     "ast_hash": "221586832e38ef594af9ff33dd38d8ca",
     "semantic_hash": "221586832e38ef594af9ff33dd38d8ca"
   },
   "equinox/App/AppDelegate.swift": {
-    "mtime": 1785089151.1673965,
-    "ast_hash": "86073f5b69b4b67f68e79103fcaa4e4f",
-    "semantic_hash": ""
+    "mtime": 1785570207.0386672,
+    "ast_hash": "f9a3a0931cebd541485613aab38e55ee",
+    "semantic_hash": "f9a3a0931cebd541485613aab38e55ee"
   },
   "equinox/App/AppState.swift": {
-    "mtime": 1783245796.6057057,
-    "ast_hash": "82d5de85603064a92b963c45d75806c2",
-    "semantic_hash": "82d5de85603064a92b963c45d75806c2"
+    "mtime": 1785570207.039488,
+    "ast_hash": "1e303f9e80316776b04f9bd9ea122018",
+    "semantic_hash": "1e303f9e80316776b04f9bd9ea122018"
   },
   "equinox/App/CalendarNavigationCoordinator.swift": {
     "mtime": 1783245788.693193,
@@ -40,9 +20,9 @@
     "semantic_hash": "a3c2613211578e3e6dc51353c35ce05e"
   },
   "equinox/App/Constants.swift": {
-    "mtime": 1782021932.2015848,
-    "ast_hash": "6d26a4e56e5266cf1e352b36541b0c2c",
-    "semantic_hash": "6d26a4e56e5266cf1e352b36541b0c2c"
+    "mtime": 1785570207.041095,
+    "ast_hash": "89d2bedb5a5a54479027bcf7e2fc4e68",
+    "semantic_hash": "89d2bedb5a5a54479027bcf7e2fc4e68"
   },
   "equinox/App/EquinoxApp.swift": {
     "mtime": 1781380528.6739528,
@@ -69,11 +49,6 @@
     "ast_hash": "6571cc183fea8b85e601efd5d569ea72",
     "semantic_hash": "6571cc183fea8b85e601efd5d569ea72"
   },
-  "equinox/App/McpCoordinator.swift": {
-    "mtime": 1781977028.279963,
-    "ast_hash": "dfbe2be6b46ddfefe860e37350c96b70",
-    "semantic_hash": "dfbe2be6b46ddfefe860e37350c96b70"
-  },
   "equinox/App/PanelLayoutMetrics.swift": {
     "mtime": 1781426442.5519378,
     "ast_hash": "78cc727b86f5160d7acb651ffb60837c",
@@ -92,12 +67,12 @@
   "equinox/App/SettingsActivationHandler.swift": {
     "mtime": 1785073261.870916,
     "ast_hash": "c4a75dd8d787099554bbbef3d74434a1",
-    "semantic_hash": ""
+    "semantic_hash": "c4a75dd8d787099554bbbef3d74434a1"
   },
   "equinox/App/SettingsTab.swift": {
-    "mtime": 1783244655.4368277,
-    "ast_hash": "24ba5fe4f081c52df6bd5166aba27aa4",
-    "semantic_hash": "24ba5fe4f081c52df6bd5166aba27aa4"
+    "mtime": 1785570207.0402832,
+    "ast_hash": "639ac9623680ccc6132a715bd7c92fb8",
+    "semantic_hash": "639ac9623680ccc6132a715bd7c92fb8"
   },
   "equinox/Colors.xcassets/AccentColor.colorset/Contents.json": {
     "mtime": 1782564702.755801,
@@ -164,11 +139,6 @@
     "ast_hash": "1c0c7c3986fb97486f0d92e00fbc1b14",
     "semantic_hash": "1c0c7c3986fb97486f0d92e00fbc1b14"
   },
-  "equinox/Core/AppBridgeEventContract.swift": {
-    "mtime": 1782564189.0468872,
-    "ast_hash": "c35a8ecaa8ec07af92b6781e95883280",
-    "semantic_hash": "c35a8ecaa8ec07af92b6781e95883280"
-  },
   "equinox/Core/CalendarAccessStatus.swift": {
     "mtime": 1781427028.794425,
     "ast_hash": "bce95e72cf9fd3a3b9eb4e59af68c705",
@@ -195,9 +165,9 @@
     "semantic_hash": "7ae63ebce4416a241e185d729deef921"
   },
   "equinox/Core/ColorHex.swift": {
-    "mtime": 1783245306.8328764,
-    "ast_hash": "815fd9170b731a09b415bd949f828e27",
-    "semantic_hash": "815fd9170b731a09b415bd949f828e27"
+    "mtime": 1785570242.130756,
+    "ast_hash": "4097e0d8f97d205bb649d4767a3ad481",
+    "semantic_hash": "4097e0d8f97d205bb649d4767a3ad481"
   },
   "equinox/Core/DayEvent.swift": {
     "mtime": 1781976942.0134687,
@@ -225,19 +195,9 @@
     "semantic_hash": "f623ecb06370880e804a4d1bb6f75bd8"
   },
   "equinox/Core/EventParticipation.swift": {
-    "mtime": 1781425922.8206794,
-    "ast_hash": "95e6ad013ad37f14cd1d64444c170097",
-    "semantic_hash": "95e6ad013ad37f14cd1d64444c170097"
-  },
-  "equinox/Core/Generated/BridgeCommandNames.generated.swift": {
-    "mtime": 1785089640.281507,
-    "ast_hash": "f15d6ee967d0164ba160ef5223ee2ffe",
-    "semantic_hash": "f15d6ee967d0164ba160ef5223ee2ffe"
-  },
-  "equinox/Core/Generated/BridgeEventFieldKeys.generated.swift": {
-    "mtime": 1785089640.2816741,
-    "ast_hash": "247d8c1ae169b1b6423609ed05385dcf",
-    "semantic_hash": "247d8c1ae169b1b6423609ed05385dcf"
+    "mtime": 1785570242.130535,
+    "ast_hash": "9e5eb494566bc2476396f62c98817bbc",
+    "semantic_hash": "9e5eb494566bc2476396f62c98817bbc"
   },
   "equinox/Core/JoinURLDetection.swift": {
     "mtime": 1783151573.9205813,
@@ -272,47 +232,32 @@
   "equinox/Core/PlaudOAuthPKCE.swift": {
     "mtime": 1785088943.1420772,
     "ast_hash": "47ac12086a90c654537d6d08042bde0f",
-    "semantic_hash": ""
+    "semantic_hash": "47ac12086a90c654537d6d08042bde0f"
   },
   "equinox/Core/PlaudTimestamp.swift": {
     "mtime": 1781441916.5924687,
     "ast_hash": "40b94765aee3d78dae77d15574afba4b",
     "semantic_hash": "40b94765aee3d78dae77d15574afba4b"
   },
-  "equinox/Services/EventKit/BridgeCommandValidation.swift": {
-    "mtime": 1783248309.082507,
-    "ast_hash": "54654a4de123f09875d66e7873fe2c9c",
-    "semantic_hash": "54654a4de123f09875d66e7873fe2c9c"
-  },
-  "equinox/Services/EventKit/BridgeDateParsing.swift": {
-    "mtime": 1785072788.908345,
-    "ast_hash": "0e12813b9a4c0467750243c7c2c98617",
-    "semantic_hash": ""
-  },
-  "equinox/Services/EventKit/BridgeEventMapping.swift": {
-    "mtime": 1783245113.7884521,
-    "ast_hash": "c2429bfcd446ff018ed9106580aedf37",
-    "semantic_hash": "c2429bfcd446ff018ed9106580aedf37"
-  },
   "equinox/Services/EventKit/CalendarAccessMapping.swift": {
-    "mtime": 1782564189.046956,
-    "ast_hash": "d4ee007fc02a9f4835327ba100320704",
-    "semantic_hash": "d4ee007fc02a9f4835327ba100320704"
+    "mtime": 1785570242.1299796,
+    "ast_hash": "776c4174e66503e32d12f700ab7d6e9b",
+    "semantic_hash": "776c4174e66503e32d12f700ab7d6e9b"
   },
   "equinox/Services/EventKit/CalendarSelectionService.swift": {
     "mtime": 1785089581.6830251,
     "ast_hash": "7ceebf40238159063cabf670aa91269e",
-    "semantic_hash": ""
+    "semantic_hash": "7ceebf40238159063cabf670aa91269e"
   },
   "equinox/Services/EventKit/CalendarSelectionStorage.swift": {
     "mtime": 1785089151.1668842,
     "ast_hash": "5eccb91954609c6922bae08985fcb4c0",
-    "semantic_hash": ""
+    "semantic_hash": "5eccb91954609c6922bae08985fcb4c0"
   },
   "equinox/Services/EventKit/CalendarStore.swift": {
-    "mtime": 1783248296.2087836,
-    "ast_hash": "1c4fd45725c9c14c533502e324fa0203",
-    "semantic_hash": "1c4fd45725c9c14c533502e324fa0203"
+    "mtime": 1785570207.0422432,
+    "ast_hash": "38b648ad02049ab9073461bf79b3fd43",
+    "semantic_hash": "38b648ad02049ab9073461bf79b3fd43"
   },
   "equinox/Services/EventKit/DayEventBuilder.swift": {
     "mtime": 1783247166.0073373,
@@ -330,9 +275,9 @@
     "semantic_hash": "265623ec4dde343206bbac6e0c6dc3bc"
   },
   "equinox/Services/EventKit/EventKitCalendarMapping.swift": {
-    "mtime": 1783245110.2314858,
-    "ast_hash": "5d5a936bb8074de8a7611daf88656f6f",
-    "semantic_hash": "5d5a936bb8074de8a7611daf88656f6f"
+    "mtime": 1785570242.129199,
+    "ast_hash": "e112b7bb8007936dd7db1b391f0fcd36",
+    "semantic_hash": "e112b7bb8007936dd7db1b391f0fcd36"
   },
   "equinox/Services/EventKit/EventKitEventExtensions.swift": {
     "mtime": 1781976937.969522,
@@ -340,19 +285,14 @@
     "semantic_hash": "74c6e765a9b800e48b5f883a096f813d"
   },
   "equinox/Services/EventKit/EventKitEventFields.swift": {
-    "mtime": 1781427546.9752102,
-    "ast_hash": "9b50645bebf914c4f32c2fd4e6af5b8c",
-    "semantic_hash": "9b50645bebf914c4f32c2fd4e6af5b8c"
-  },
-  "equinox/Services/EventKit/EventKitMutation+GUI.swift": {
-    "mtime": 1782021881.2261834,
-    "ast_hash": "0bf60a0bee2a1424956026050d665bb1",
-    "semantic_hash": "0bf60a0bee2a1424956026050d665bb1"
+    "mtime": 1785570242.129615,
+    "ast_hash": "8027dcbae8a8d115bb6578d2dca407f3",
+    "semantic_hash": "8027dcbae8a8d115bb6578d2dca407f3"
   },
   "equinox/Services/EventKit/EventKitMutation.swift": {
-    "mtime": 1782021883.1734922,
-    "ast_hash": "634689275c094bf0bc4f28605a1bfece",
-    "semantic_hash": "634689275c094bf0bc4f28605a1bfece"
+    "mtime": 1785570207.0425355,
+    "ast_hash": "9dff93c4a268b9df800cfd69976d9966",
+    "semantic_hash": "9dff93c4a268b9df800cfd69976d9966"
   },
   "equinox/Services/EventKit/NativeJoinURLResolver.swift": {
     "mtime": 1781425916.416314,
@@ -389,26 +329,6 @@
     "ast_hash": "cde70d5fb8a2ed4a52c78c32dc864b97",
     "semantic_hash": "cde70d5fb8a2ed4a52c78c32dc864b97"
   },
-  "equinox/Services/Platform/McpAppBridgeServer.swift": {
-    "mtime": 1785089581.6827497,
-    "ast_hash": "beed5e38d58272d6bb18f7eb789252e6",
-    "semantic_hash": ""
-  },
-  "equinox/Services/Platform/McpSetup.swift": {
-    "mtime": 1783248367.1403358,
-    "ast_hash": "3ee814d3031aa7baf207f4e4e6eeb2d4",
-    "semantic_hash": "3ee814d3031aa7baf207f4e4e6eeb2d4"
-  },
-  "equinox/Services/Platform/McpToolCatalog.swift": {
-    "mtime": 1781977084.6057897,
-    "ast_hash": "9a3858da0d6a90c807bd4cf60ff98a90",
-    "semantic_hash": "9a3858da0d6a90c807bd4cf60ff98a90"
-  },
-  "equinox/Services/Platform/McpToolNames.generated.swift": {
-    "mtime": 1785089640.1892052,
-    "ast_hash": "0c5712021d9c380254235135d6d394d6",
-    "semantic_hash": "0c5712021d9c380254235135d6d394d6"
-  },
   "equinox/Services/Platform/URLOpener.swift": {
     "mtime": 1781425920.6406322,
     "ast_hash": "3c5a672c4d427367cd58fd41f4898302",
@@ -417,7 +337,7 @@
   "equinox/Services/Plaud/PlaudLiveClient.swift": {
     "mtime": 1785088943.1437275,
     "ast_hash": "0f48675eeb1ea149a68c29e8d1138277",
-    "semantic_hash": ""
+    "semantic_hash": "0f48675eeb1ea149a68c29e8d1138277"
   },
   "equinox/Services/Plaud/PlaudMatchCache.swift": {
     "mtime": 1781423470.356347,
@@ -427,17 +347,17 @@
   "equinox/Services/Plaud/PlaudOAuthCallbackServer.swift": {
     "mtime": 1785089581.6820142,
     "ast_hash": "3615a8749c4a3e0f57054618598730a3",
-    "semantic_hash": ""
+    "semantic_hash": "3615a8749c4a3e0f57054618598730a3"
   },
   "equinox/Services/Plaud/PlaudOAuthClient.swift": {
     "mtime": 1785088943.1432896,
     "ast_hash": "8cdea26111b1bf4b3076366077b34d22",
-    "semantic_hash": ""
+    "semantic_hash": "8cdea26111b1bf4b3076366077b34d22"
   },
   "equinox/Services/Plaud/PlaudOAuthModels.swift": {
     "mtime": 1785088943.142916,
     "ast_hash": "23edf1c2e568abd252dcb25eb7fa542d",
-    "semantic_hash": ""
+    "semantic_hash": "23edf1c2e568abd252dcb25eb7fa542d"
   },
   "equinox/Services/Plaud/PlaudRecordingsStore.swift": {
     "mtime": 1781441931.9186316,
@@ -455,9 +375,9 @@
     "semantic_hash": "2bc31f8c327823c8d7fbf4e6aa6cddbe"
   },
   "equinox/Services/PreferencesStore.swift": {
-    "mtime": 1785089461.368709,
-    "ast_hash": "2eb0049a59f2e5ad6e5111fa293f305f",
-    "semantic_hash": ""
+    "mtime": 1785570207.041611,
+    "ast_hash": "cfce22a23a0aaa3a3c0b505cfbf7692b",
+    "semantic_hash": "cfce22a23a0aaa3a3c0b505cfbf7692b"
   },
   "equinox/UI/Design/AccessibilityHelpers.swift": {
     "mtime": 1781425951.6306548,
@@ -472,12 +392,12 @@
   "equinox/UI/Design/DesignTokens.swift": {
     "mtime": 1785075157.4819725,
     "ast_hash": "d428bd41930ba5147cc4b6cc46d8df4e",
-    "semantic_hash": ""
+    "semantic_hash": "d428bd41930ba5147cc4b6cc46d8df4e"
   },
   "equinox/UI/Design/EquinoxComponents.swift": {
     "mtime": 1785075157.4822829,
     "ast_hash": "aa72c123a99941b48779f6ae8c1d6bac",
-    "semantic_hash": ""
+    "semantic_hash": "aa72c123a99941b48779f6ae8c1d6bac"
   },
   "equinox/UI/Design/EventStripeView.swift": {
     "mtime": 1782977000.4837077,
@@ -497,7 +417,7 @@
   "equinox/UI/Design/PanelComponents.swift": {
     "mtime": 1785074984.8479078,
     "ast_hash": "c3337e3f4168fef5e332f66f42baa143",
-    "semantic_hash": ""
+    "semantic_hash": "c3337e3f4168fef5e332f66f42baa143"
   },
   "equinox/UI/Design/ParticipationChipStyle.swift": {
     "mtime": 1782997287.668213,
@@ -512,27 +432,27 @@
   "equinox/UI/Design/SettingsComponents.swift": {
     "mtime": 1785075115.4674718,
     "ast_hash": "998b48163cf46b5ddd78aa9bd5581c85",
-    "semantic_hash": ""
+    "semantic_hash": "998b48163cf46b5ddd78aa9bd5581c85"
   },
   "equinox/UI/Design/SizeMetrics.swift": {
     "mtime": 1785074984.8476968,
     "ast_hash": "05251d8817400bfdd97266061335b3f3",
-    "semantic_hash": ""
+    "semantic_hash": "05251d8817400bfdd97266061335b3f3"
   },
   "equinox/UI/Events/EventDetailComponents.swift": {
     "mtime": 1785075115.4700491,
     "ast_hash": "342aa1f812a0fb8ce0d5cdd6d055de96",
-    "semantic_hash": ""
+    "semantic_hash": "342aa1f812a0fb8ce0d5cdd6d055de96"
   },
   "equinox/UI/Events/EventDetailView.swift": {
     "mtime": 1785075115.4681964,
     "ast_hash": "fa7cb54a80c3709a8be17c03b56d84bb",
-    "semantic_hash": ""
+    "semantic_hash": "fa7cb54a80c3709a8be17c03b56d84bb"
   },
   "equinox/UI/Events/EventRSVPBar.swift": {
     "mtime": 1785075115.470606,
     "ast_hash": "aa3e4bf20e2ab6d054187a7ba4558069",
-    "semantic_hash": ""
+    "semantic_hash": "aa3e4bf20e2ab6d054187a7ba4558069"
   },
   "equinox/UI/Events/JoinURLPresentation.swift": {
     "mtime": 1783244655.4367115,
@@ -547,17 +467,17 @@
   "equinox/UI/Main/AgendaComponents.swift": {
     "mtime": 1785075036.2745152,
     "ast_hash": "a0504d53af6f59fe1614292507da7b80",
-    "semantic_hash": ""
+    "semantic_hash": "a0504d53af6f59fe1614292507da7b80"
   },
   "equinox/UI/Main/AgendaView.swift": {
     "mtime": 1785075036.2748978,
     "ast_hash": "9c0194bfa42d758c105b5e1d91936ddb",
-    "semantic_hash": ""
+    "semantic_hash": "9c0194bfa42d758c105b5e1d91936ddb"
   },
   "equinox/UI/Main/CalendarGridView.swift": {
     "mtime": 1785075036.273809,
     "ast_hash": "8420c26bab3aedfb179c75f976a4337b",
-    "semantic_hash": ""
+    "semantic_hash": "8420c26bab3aedfb179c75f976a4337b"
   },
   "equinox/UI/Main/DayCellView.swift": {
     "mtime": 1783248433.2158406,
@@ -567,17 +487,17 @@
   "equinox/UI/Main/MainPanelView.swift": {
     "mtime": 1785075036.2741354,
     "ast_hash": "867cf66fc0c2c28f992a3e38ac99c288",
-    "semantic_hash": ""
+    "semantic_hash": "867cf66fc0c2c28f992a3e38ac99c288"
   },
   "equinox/UI/Main/PanelCommandBar.swift": {
     "mtime": 1785075036.2734604,
     "ast_hash": "e41ae17b86dfc0943cbc5c61f71d1d19",
-    "semantic_hash": ""
+    "semantic_hash": "e41ae17b86dfc0943cbc5c61f71d1d19"
   },
   "equinox/UI/Main/PanelStateOverlay.swift": {
     "mtime": 1785075036.2752125,
     "ast_hash": "dc0c910cded227e11d2effaca2198bed",
-    "semantic_hash": ""
+    "semantic_hash": "dc0c910cded227e11d2effaca2198bed"
   },
   "equinox/UI/MenuBar/KeyablePanel.swift": {
     "mtime": 1781377812.9770038,
@@ -617,7 +537,7 @@
   "equinox/UI/Settings/AppearancePreview.swift": {
     "mtime": 1785075115.4678144,
     "ast_hash": "b98de4b7603c1cb95c1b60d3d43bcc1a",
-    "semantic_hash": ""
+    "semantic_hash": "b98de4b7603c1cb95c1b60d3d43bcc1a"
   },
   "equinox/UI/Settings/AppearanceSettingsTab.swift": {
     "mtime": 1782997534.4771307,
@@ -639,11 +559,6 @@
     "ast_hash": "0c4e68bddba16611eed31cf85966c20d",
     "semantic_hash": "0c4e68bddba16611eed31cf85966c20d"
   },
-  "equinox/UI/Settings/McpSettingsTab.swift": {
-    "mtime": 1782997376.108613,
-    "ast_hash": "81c51cbbf1365559bb0bd3eb5605c425",
-    "semantic_hash": "81c51cbbf1365559bb0bd3eb5605c425"
-  },
   "equinox/UI/Settings/MenuBarIconPicker.swift": {
     "mtime": 1782997525.1766372,
     "ast_hash": "66d6cf8feb302b9bf77e037bd259f2db",
@@ -655,14 +570,14 @@
     "semantic_hash": "19c991b7c506e9d51b6d86940fb9f13a"
   },
   "equinox/UI/Settings/PrivacySettingsTab.swift": {
-    "mtime": 1783245798.1932516,
-    "ast_hash": "80901c375a1434d1b4de1c5849db8540",
-    "semantic_hash": "80901c375a1434d1b4de1c5849db8540"
+    "mtime": 1785570207.0418944,
+    "ast_hash": "16ca274cc089b8f97500a058f35eb5a3",
+    "semantic_hash": "16ca274cc089b8f97500a058f35eb5a3"
   },
   "equinox/UI/Settings/SettingsView.swift": {
-    "mtime": 1783245767.828534,
-    "ast_hash": "80e66cbc9f03e4f29ba7b5d962af7a81",
-    "semantic_hash": "80e66cbc9f03e4f29ba7b5d962af7a81"
+    "mtime": 1785570207.0407043,
+    "ast_hash": "f56b4c8dfd238a297c66393209b8dc1e",
+    "semantic_hash": "f56b4c8dfd238a297c66393209b8dc1e"
   },
   "equinox/UI/Settings/ShortcutsSettingsTab.swift": {
     "mtime": 1782977199.2331886,
@@ -694,35 +609,10 @@
     "ast_hash": "7d0bd97ff7c93c06dc674823223a0d4d",
     "semantic_hash": "7d0bd97ff7c93c06dc674823223a0d4d"
   },
-  "equinoxTests/AppBridgeEventContractTests.swift": {
-    "mtime": 1782564189.022183,
-    "ast_hash": "549bda34bc24de9647f4e8e6c4c81c87",
-    "semantic_hash": "549bda34bc24de9647f4e8e6c4c81c87"
-  },
-  "equinoxTests/BridgeCommandSyncTests.swift": {
-    "mtime": 1783248348.0437572,
-    "ast_hash": "5e811ddf8276c75d7b7631217689337e",
-    "semantic_hash": "5e811ddf8276c75d7b7631217689337e"
-  },
-  "equinoxTests/BridgeCommandValidationTests.swift": {
-    "mtime": 1783245127.2870228,
-    "ast_hash": "c5c636463b647bf7393bba41b2cd6f3c",
-    "semantic_hash": "c5c636463b647bf7393bba41b2cd6f3c"
-  },
-  "equinoxTests/BridgeDateParsingTests.swift": {
-    "mtime": 1782564189.0469174,
-    "ast_hash": "6ece504f45abaf9147217ae496af40e8",
-    "semantic_hash": "6ece504f45abaf9147217ae496af40e8"
-  },
-  "equinoxTests/BridgeEventFixturesTests.swift": {
-    "mtime": 1783248394.4130497,
-    "ast_hash": "30ea69a6f7846450cd542da01d8668fe",
-    "semantic_hash": "30ea69a6f7846450cd542da01d8668fe"
-  },
   "equinoxTests/CalendarAccessMappingTests.swift": {
-    "mtime": 1785073465.9826841,
-    "ast_hash": "3a480b4aaf5bd1e5b871983a4d58c74c",
-    "semantic_hash": ""
+    "mtime": 1785570242.1309404,
+    "ast_hash": "1bd3e84a6ff695521625fe79d567dc0d",
+    "semantic_hash": "1bd3e84a6ff695521625fe79d567dc0d"
   },
   "equinoxTests/CalendarDateParsingTests.swift": {
     "mtime": 1783246207.177023,
@@ -742,17 +632,17 @@
   "equinoxTests/CalendarNavigationCoordinatorTests.swift": {
     "mtime": 1785073465.9817393,
     "ast_hash": "16eac1bfbaa5184c27ed97236abbb5e9",
-    "semantic_hash": ""
+    "semantic_hash": "16eac1bfbaa5184c27ed97236abbb5e9"
   },
   "equinoxTests/CalendarSelectionServiceTests.swift": {
     "mtime": 1785089581.683198,
     "ast_hash": "fb0b6d85ffe363f0f3efb79de88a5604",
-    "semantic_hash": ""
+    "semantic_hash": "fb0b6d85ffe363f0f3efb79de88a5604"
   },
   "equinoxTests/ColorHexTests.swift": {
-    "mtime": 1783245887.4766233,
-    "ast_hash": "d216add4ca32cc047584f88f9072b184",
-    "semantic_hash": "d216add4ca32cc047584f88f9072b184"
+    "mtime": 1785570242.1316302,
+    "ast_hash": "1a46a1a9a610edf1cf6ee34c63e41b1b",
+    "semantic_hash": "1a46a1a9a610edf1cf6ee34c63e41b1b"
   },
   "equinoxTests/DayEventUniqueCalendarsTests.swift": {
     "mtime": 1783244655.4368458,
@@ -762,7 +652,7 @@
   "equinoxTests/DesignSystemComplianceTests.swift": {
     "mtime": 1785075157.4826741,
     "ast_hash": "e9d10de81be35046884e4190d21bb0f4",
-    "semantic_hash": ""
+    "semantic_hash": "e9d10de81be35046884e4190d21bb0f4"
   },
   "equinoxTests/EventDraftDefaultsTests.swift": {
     "mtime": 1782564189.0470173,
@@ -780,9 +670,9 @@
     "semantic_hash": "cab179b5c05123e65076271e7b1a2ae3"
   },
   "equinoxTests/EventKitCalendarMappingTests.swift": {
-    "mtime": 1783245152.075527,
-    "ast_hash": "d0a5896b7af9d001ab35f7c5ebf1fe4c",
-    "semantic_hash": "d0a5896b7af9d001ab35f7c5ebf1fe4c"
+    "mtime": 1785570242.1319196,
+    "ast_hash": "1af4d16cfe84ad744535f2008dca5f3e",
+    "semantic_hash": "1af4d16cfe84ad744535f2008dca5f3e"
   },
   "equinoxTests/EventLayoutTests.swift": {
     "mtime": 1781374806.5648906,
@@ -790,9 +680,9 @@
     "semantic_hash": "a0fa8958badaab14b04b8ac4805068f2"
   },
   "equinoxTests/EventParticipationTests.swift": {
-    "mtime": 1782564189.0468903,
-    "ast_hash": "5f940d8ad9087766b597b67389ea74a7",
-    "semantic_hash": "5f940d8ad9087766b597b67389ea74a7"
+    "mtime": 1785570242.1312625,
+    "ast_hash": "125190d19468768e77eddcfd92f081c6",
+    "semantic_hash": "125190d19468768e77eddcfd92f081c6"
   },
   "equinoxTests/EventsCoordinatorSyncTests.swift": {
     "mtime": 1783248477.8424816,
@@ -808,11 +698,6 @@
     "mtime": 1783249096.2814739,
     "ast_hash": "ba669e1550005aba14e8905dbe761288",
     "semantic_hash": "ba669e1550005aba14e8905dbe761288"
-  },
-  "equinoxTests/McpSetupTests.swift": {
-    "mtime": 1782976625.2204223,
-    "ast_hash": "195eaf5b2ab37bb6d732123286f2c372",
-    "semantic_hash": "195eaf5b2ab37bb6d732123286f2c372"
   },
   "equinoxTests/MeetingIndicatorTests.swift": {
     "mtime": 1782564189.046998,
@@ -852,7 +737,7 @@
   "equinoxTests/PlaudOAuthPKCETests.swift": {
     "mtime": 1785089530.7006962,
     "ast_hash": "73f20379bc68583417aae4db8cdf55df",
-    "semantic_hash": ""
+    "semantic_hash": "73f20379bc68583417aae4db8cdf55df"
   },
   "equinoxTests/PlaudTimestampTests.swift": {
     "mtime": 1781441949.9489245,
@@ -860,244 +745,14 @@
     "semantic_hash": "93436b45293f8d2c869ac992752ce6e5"
   },
   "equinoxTests/PreferencesStoreTests.swift": {
-    "mtime": 1785089199.6015608,
-    "ast_hash": "84fff91d773c196b08faaa76a4f0b086",
-    "semantic_hash": ""
-  },
-  "mcp/package.json": {
-    "mtime": 1785070614.5193515,
-    "ast_hash": "8a7a6af7753632299a1570e41ba1e921",
-    "semantic_hash": ""
-  },
-  "mcp/src/analytics/schedule.ts": {
-    "mtime": 1783011340.3672957,
-    "ast_hash": "b964ce38be89b73fe039fbc7d98ad296",
-    "semantic_hash": "b964ce38be89b73fe039fbc7d98ad296"
-  },
-  "mcp/src/bridge.ts": {
-    "mtime": 1783248388.9915109,
-    "ast_hash": "23b01e63c619a375358685458d7f75f3",
-    "semantic_hash": "23b01e63c619a375358685458d7f75f3"
-  },
-  "mcp/src/bridgeCommandValidation.ts": {
-    "mtime": 1783248368.0117657,
-    "ast_hash": "9e972ff936548e28577b2303f1227b72",
-    "semantic_hash": "9e972ff936548e28577b2303f1227b72"
-  },
-  "mcp/src/bridgeCommands.ts": {
-    "mtime": 1783248388.6833308,
-    "ast_hash": "6884fbd08c1974a2c73c4947dd884f4f",
-    "semantic_hash": "6884fbd08c1974a2c73c4947dd884f4f"
-  },
-  "mcp/src/bridgeFallback.ts": {
-    "mtime": 1783011286.4693155,
-    "ast_hash": "e23e2c388fd2d5b31d4e0edc9b497ded",
-    "semantic_hash": "e23e2c388fd2d5b31d4e0edc9b497ded"
-  },
-  "mcp/src/bridgeValidation.ts": {
-    "mtime": 1783011480.5960932,
-    "ast_hash": "1f2e8faf049fc694da338321ecf2748c",
-    "semantic_hash": "1f2e8faf049fc694da338321ecf2748c"
-  },
-  "mcp/src/plaud.ts": {
-    "mtime": 1783011342.00114,
-    "ast_hash": "732caf78ae87852dc7f64959919336c2",
-    "semantic_hash": "732caf78ae87852dc7f64959919336c2"
-  },
-  "mcp/src/prompts.ts": {
-    "mtime": 1781464860.5176978,
-    "ast_hash": "eb0514d31ad73b998a4c662762e207e0",
-    "semantic_hash": "eb0514d31ad73b998a4c662762e207e0"
-  },
-  "mcp/src/resources.ts": {
-    "mtime": 1783244655.4367368,
-    "ast_hash": "49bab0c95621289a0d03ef5a661023b3",
-    "semantic_hash": "49bab0c95621289a0d03ef5a661023b3"
-  },
-  "mcp/src/schemas/calendars.ts": {
-    "mtime": 1781424636.0021124,
-    "ast_hash": "726a82857c08a7057ce6549d3e7ccdee",
-    "semantic_hash": "726a82857c08a7057ce6549d3e7ccdee"
-  },
-  "mcp/src/schemas/dates.ts": {
-    "mtime": 1783245803.3729138,
-    "ast_hash": "9e06aee835fdc060ac91355f993f9a99",
-    "semantic_hash": "9e06aee835fdc060ac91355f993f9a99"
-  },
-  "mcp/src/schemas/events.ts": {
-    "mtime": 1783245866.4295301,
-    "ast_hash": "b38e736184afcf3078141cd59150f185",
-    "semantic_hash": "b38e736184afcf3078141cd59150f185"
-  },
-  "mcp/src/schemas/generated/bridgeEventKeys.ts": {
-    "mtime": 1785089640.2817774,
-    "ast_hash": "747dc0e375b74a18cee7524dd42fffc9",
-    "semantic_hash": "747dc0e375b74a18cee7524dd42fffc9"
-  },
-  "mcp/src/schemas/index.ts": {
-    "mtime": 1783011384.5633454,
-    "ast_hash": "e3b5a5517f0c14135fdb043722c38757",
-    "semantic_hash": "e3b5a5517f0c14135fdb043722c38757"
-  },
-  "mcp/src/schemas/outputs.ts": {
-    "mtime": 1783244655.4368343,
-    "ast_hash": "403df078eec795901ea810d7a1cf499c",
-    "semantic_hash": "403df078eec795901ea810d7a1cf499c"
-  },
-  "mcp/src/schemas/resourceSchemas.ts": {
-    "mtime": 1783244655.4367297,
-    "ast_hash": "1b2417100807eb13693470f02f613b02",
-    "semantic_hash": "1b2417100807eb13693470f02f613b02"
-  },
-  "mcp/src/schemas/toolInputs.ts": {
-    "mtime": 1783245812.2353768,
-    "ast_hash": "0f363fa14af8d3d9def4ec983f983af3",
-    "semantic_hash": "0f363fa14af8d3d9def4ec983f983af3"
-  },
-  "mcp/src/server.ts": {
-    "mtime": 1783011382.6857884,
-    "ast_hash": "dbd041c6d3c49028df43cb0afabde9bf",
-    "semantic_hash": "dbd041c6d3c49028df43cb0afabde9bf"
-  },
-  "mcp/src/toolErrors.ts": {
-    "mtime": 1783011294.489497,
-    "ast_hash": "722df186539e24547d53cd2339b0afd7",
-    "semantic_hash": "722df186539e24547d53cd2339b0afd7"
-  },
-  "mcp/src/toolResponse.ts": {
-    "mtime": 1781424634.6363246,
-    "ast_hash": "c293e3cedcfa4971f3884c0e959f68b3",
-    "semantic_hash": "c293e3cedcfa4971f3884c0e959f68b3"
-  },
-  "mcp/src/tools/calendars.ts": {
-    "mtime": 1783011351.3998928,
-    "ast_hash": "e7ccbb613ed53c67feef61988002a015",
-    "semantic_hash": "e7ccbb613ed53c67feef61988002a015"
-  },
-  "mcp/src/tools/eventBridgeFetch.ts": {
-    "mtime": 1783245068.5733254,
-    "ast_hash": "f28ef7aea41fa3e4ed75468f43fe8ae7",
-    "semantic_hash": "f28ef7aea41fa3e4ed75468f43fe8ae7"
-  },
-  "mcp/src/tools/events.ts": {
-    "mtime": 1783245948.080279,
-    "ast_hash": "775c9e82dc257e65bf355d02b6e9fd63",
-    "semantic_hash": "775c9e82dc257e65bf355d02b6e9fd63"
-  },
-  "mcp/src/tools/index.ts": {
-    "mtime": 1783011377.7912712,
-    "ast_hash": "c88fdd94b4066a5d15f87b3a0912cbbe",
-    "semantic_hash": "c88fdd94b4066a5d15f87b3a0912cbbe"
-  },
-  "mcp/src/tools/plaud.ts": {
-    "mtime": 1783011376.683699,
-    "ast_hash": "b3996001fd4665cfbfba181070eb9931",
-    "semantic_hash": "b3996001fd4665cfbfba181070eb9931"
-  },
-  "mcp/src/tools/registry.ts": {
-    "mtime": 1781464289.9434745,
-    "ast_hash": "4288bec61a457e9b0fbbcfbbad88132e",
-    "semantic_hash": "4288bec61a457e9b0fbbcfbbad88132e"
-  },
-  "mcp/src/types.ts": {
-    "mtime": 1781425971.5665863,
-    "ast_hash": "f655f47f4ef526bed67b05daa7b3bded",
-    "semantic_hash": "f655f47f4ef526bed67b05daa7b3bded"
-  },
-  "mcp/test/analytics.test.ts": {
-    "mtime": 1783011420.7081501,
-    "ast_hash": "7a61054f35fbd13bf47ac6394c181edf",
-    "semantic_hash": "7a61054f35fbd13bf47ac6394c181edf"
-  },
-  "mcp/test/bridge.test.ts": {
-    "mtime": 1783245146.5261488,
-    "ast_hash": "daecde927010930b7839761ef4cc1743",
-    "semantic_hash": "daecde927010930b7839761ef4cc1743"
-  },
-  "mcp/test/bridgeCommands.test.ts": {
-    "mtime": 1783248385.9964318,
-    "ast_hash": "3728bb5f499ab7bdd17dda3fa55bd0b2",
-    "semantic_hash": "3728bb5f499ab7bdd17dda3fa55bd0b2"
-  },
-  "mcp/test/bridgeFallback.test.ts": {
-    "mtime": 1783011408.1958096,
-    "ast_hash": "985ed212bb9a91aa932d5b284d7f261e",
-    "semantic_hash": "985ed212bb9a91aa932d5b284d7f261e"
-  },
-  "mcp/test/bridgeValidation.test.ts": {
-    "mtime": 1783011413.8587964,
-    "ast_hash": "4441511909012285b9116eb5ee1c6d3a",
-    "semantic_hash": "4441511909012285b9116eb5ee1c6d3a"
-  },
-  "mcp/test/eventBridgeFetch.test.ts": {
-    "mtime": 1783248482.1748083,
-    "ast_hash": "cedb97c3484c7f5c66fbe8b5a2526a3e",
-    "semantic_hash": "cedb97c3484c7f5c66fbe8b5a2526a3e"
-  },
-  "mcp/test/fixtures/bridge-events.json": {
-    "mtime": 1782564189.0469303,
-    "ast_hash": "00d9f098b60e84251be6cd407cfce10d",
-    "semantic_hash": "00d9f098b60e84251be6cd407cfce10d"
-  },
-  "mcp/test/plaud.test.ts": {
-    "mtime": 1783011446.3967369,
-    "ast_hash": "eaf4a085f88e907185df36a24987f8f4",
-    "semantic_hash": "eaf4a085f88e907185df36a24987f8f4"
-  },
-  "mcp/test/registry.test.ts": {
-    "mtime": 1781429103.9575317,
-    "ast_hash": "8ded92627affe4a12b53b2b9a39e41a8",
-    "semantic_hash": "8ded92627affe4a12b53b2b9a39e41a8"
-  },
-  "mcp/test/resourceSchemas.test.ts": {
-    "mtime": 1783248383.514838,
-    "ast_hash": "d350e948b804010c21a8be78f39b9a07",
-    "semantic_hash": "d350e948b804010c21a8be78f39b9a07"
-  },
-  "mcp/test/schemas.test.ts": {
-    "mtime": 1783248355.0326886,
-    "ast_hash": "f9eaf57092d7bb9db76d99368052819e",
-    "semantic_hash": "f9eaf57092d7bb9db76d99368052819e"
-  },
-  "mcp/test/toolContracts.test.ts": {
-    "mtime": 1783245145.1594489,
-    "ast_hash": "cc75c3fce4f11f422be86b943164252c",
-    "semantic_hash": "cc75c3fce4f11f422be86b943164252c"
-  },
-  "mcp/tsconfig.json": {
-    "mtime": 1781351191.0088007,
-    "ast_hash": "dda6e3d6f349def1f0f96e13cb5323a8",
-    "semantic_hash": "dda6e3d6f349def1f0f96e13cb5323a8"
-  },
-  "mcp/vitest.config.ts": {
-    "mtime": 1781351191.2122376,
-    "ast_hash": "de7def1c041bb65b1bcb4bb34ff6f172",
-    "semantic_hash": "de7def1c041bb65b1bcb4bb34ff6f172"
+    "mtime": 1785570242.1322181,
+    "ast_hash": "8196fe554fc0757f015bcf469fcf7b5a",
+    "semantic_hash": "8196fe554fc0757f015bcf469fcf7b5a"
   },
   "run.sh": {
-    "mtime": 1782545419.0466752,
-    "ast_hash": "abd63cfbdb944f3d10491cc428d2fe72",
-    "semantic_hash": "abd63cfbdb944f3d10491cc428d2fe72"
-  },
-  "scripts/build-mcp.sh": {
-    "mtime": 1783245152.4551938,
-    "ast_hash": "97ce6c1a693572ae51ffa6d3237e2042",
-    "semantic_hash": "97ce6c1a693572ae51ffa6d3237e2042"
-  },
-  "scripts/embed-mcp-in-app.sh": {
-    "mtime": 1781736027.30004,
-    "ast_hash": "fb2a6518d7fb197a917703001fbe1981",
-    "semantic_hash": "fb2a6518d7fb197a917703001fbe1981"
-  },
-  "scripts/gen-bridge-schemas.sh": {
-    "mtime": 1783248305.1866813,
-    "ast_hash": "53f838530a060f0154b649d2f362abb8",
-    "semantic_hash": "53f838530a060f0154b649d2f362abb8"
-  },
-  "scripts/gen-mcp-tool-names.sh": {
-    "mtime": 1781429379.2252576,
-    "ast_hash": "b1ed9fc836cf79a47453148e56c53c05",
-    "semantic_hash": "b1ed9fc836cf79a47453148e56c53c05"
+    "mtime": 1785570524.0963361,
+    "ast_hash": "b42ca0a51dc83e6ef96ca3d71c81ad5f",
+    "semantic_hash": "b42ca0a51dc83e6ef96ca3d71c81ad5f"
   },
   "scripts/regenerate-design-assets.py": {
     "mtime": 1782971560.855757,
@@ -1120,18 +775,18 @@
     "semantic_hash": "7fb07d1914e6abd3c5d442980153eff1"
   },
   "AGENTS.md": {
-    "mtime": 1785072807.9558437,
-    "ast_hash": "2c3d9e1ff8bac024fb9ae551d38a4457",
+    "mtime": 1785570877.1029131,
+    "ast_hash": "03ac3d4b69afc8ff50c8614f989b5893",
     "semantic_hash": ""
   },
   "ARCHITECTURE.md": {
-    "mtime": 1783245937.6745718,
-    "ast_hash": "4a0f863f265a1c624796aaec496dd7aa",
-    "semantic_hash": "4a0f863f265a1c624796aaec496dd7aa"
+    "mtime": 1785570684.0502598,
+    "ast_hash": "3cb02f08261de1e8f4c3d8692cdc33e7",
+    "semantic_hash": ""
   },
   "BUILD.md": {
-    "mtime": 1785072807.9548442,
-    "ast_hash": "1369242115c90989bb43988050f8e82e",
+    "mtime": 1785570636.8534937,
+    "ast_hash": "ac926bb5e5e61df158bcca4dd72bf883",
     "semantic_hash": ""
   },
   "LICENSE.txt": {
@@ -1140,38 +795,23 @@
     "semantic_hash": "46c1c1c7966043c6adf17f83490a2e6c"
   },
   "README.md": {
-    "mtime": 1781465616.1284568,
-    "ast_hash": "2a13988168c5940f2d331698b7127c2f",
-    "semantic_hash": "2a13988168c5940f2d331698b7127c2f"
-  },
-  "bridge/BRIDGE.md": {
-    "mtime": 1783011467.4652522,
-    "ast_hash": "c943e847dc1536adb0596d5473434ed2",
-    "semantic_hash": "c943e847dc1536adb0596d5473434ed2"
+    "mtime": 1785570597.7715364,
+    "ast_hash": "ed532bcbd68500777445314a4d12d286",
+    "semantic_hash": ""
   },
   "equinox/_translations/README.txt": {
-    "mtime": 1781465584.246377,
-    "ast_hash": "325ea9d18a915b3deb318d22ea7ac19b",
-    "semantic_hash": "325ea9d18a915b3deb318d22ea7ac19b"
-  },
-  "mcp/MCP.md": {
-    "mtime": 1783245165.8146043,
-    "ast_hash": "710b80137699cbf961be0438d964cc59",
-    "semantic_hash": "710b80137699cbf961be0438d964cc59"
+    "mtime": 1785570924.859041,
+    "ast_hash": "ea1632d5f4ca2f1b59d1f46ac6b796d1",
+    "semantic_hash": ""
   },
   "equinox/Services/Platform/SecureRandomBytes.swift": {
     "mtime": 1785089581.6824355,
     "ast_hash": "05beb7d5678531350c72c2ab95fa2565",
-    "semantic_hash": ""
+    "semantic_hash": "05beb7d5678531350c72c2ab95fa2565"
   },
   "equinox/Services/Plaud/PlaudOAuthConfiguration.swift": {
     "mtime": 1785088943.1425812,
     "ast_hash": "115266b87da138f6207573816cfd67f2",
-    "semantic_hash": ""
-  },
-  "equinoxTests/McpAppBridgeServerTests.swift": {
-    "mtime": 1785089499.4083173,
-    "ast_hash": "b18a7bf1fde44f9f525b00df854d126f",
-    "semantic_hash": ""
+    "semantic_hash": "115266b87da138f6207573816cfd67f2"
   }
 }

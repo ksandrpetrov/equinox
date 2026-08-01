@@ -12,7 +12,6 @@ set -e
 
 GREEN="\033[0;32m"
 RED="\033[0;31m"
-YELLOW="\033[1;33m"
 NC="\033[0m" # No Color
 
 # Always run from the project root (directory of this script).
@@ -21,7 +20,6 @@ load_xcodebuild_local_settings "Local.xcconfig"
 
 DERIVED_DATA="build/DerivedData"
 APP_PATH="${DERIVED_DATA}/Build/Products/Release/equinox.app"
-BRIDGE_PATH="${DERIVED_DATA}/Build/Products/Release/equinox-bridge"
 
 echo "${GREEN}Building equinox (Release)...${NC}"
 xcodebuild \
@@ -35,22 +33,6 @@ xcodebuild \
 if [ ! -d "${APP_PATH}" ]; then
     echo "${RED}Build did not produce ${APP_PATH}${NC}"
     exit 1
-fi
-
-if [ ! -x "${BRIDGE_PATH}" ]; then
-    echo "${GREEN}Building equinox-bridge (Release)...${NC}"
-    xcodebuild \
-        -project equinox.xcodeproj \
-        -scheme equinox-bridge \
-        -configuration Release \
-        -derivedDataPath "${DERIVED_DATA}" \
-        build \
-        "${XCODEBUILD_LOCAL_SETTINGS[@]}"
-fi
-
-if [ ! -f "mcp/dist/server.js" ]; then
-    echo "${YELLOW}MCP server not built. Building MCP stack...${NC}"
-    ./scripts/build-mcp.sh
 fi
 
 echo "${GREEN}Launching equinox...${NC}"

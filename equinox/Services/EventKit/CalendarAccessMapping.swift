@@ -28,11 +28,6 @@ enum CalendarAccessMapping {
         }
     }
 
-    static func bridgeAuthorizationStatus() -> (label: String, granted: Bool) {
-        let kind = accessKind(for: EKEventStore.authorizationStatus(for: .event))
-        return (bridgeLabel(for: kind), kind == .fullAccess)
-    }
-
     static func guiAccessStatus() -> CalendarAccessStatus {
         guiStatus(for: accessKind(for: EKEventStore.authorizationStatus(for: .event)))
     }
@@ -50,27 +45,6 @@ enum CalendarAccessMapping {
         case .unknown:
             return .notDetermined
         }
-    }
-
-    static func bridgeLabel(for kind: AccessKind) -> String {
-        switch kind {
-        case .fullAccess:
-            return "full_access"
-        case .writeOnly:
-            return "write_only"
-        case .notDetermined:
-            return "not_determined"
-        case .restricted:
-            return "restricted"
-        case .denied:
-            return "denied"
-        case .unknown:
-            return "unknown"
-        }
-    }
-
-    static func bridgeLabel(for status: EKAuthorizationStatus) -> String {
-        bridgeLabel(for: accessKind(for: status))
     }
 }
 

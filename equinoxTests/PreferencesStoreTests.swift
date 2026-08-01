@@ -30,7 +30,6 @@ final class PreferencesStoreTests: XCTestCase {
             ("calendarRowCount", kCalendarNumRows),
             ("showMonthBoundaries", kShowMonthBoundaries),
             ("agendaHeightRatio", kAgendaHeightRatio),
-            ("isMcpEnabled", kMcpEnabled),
             ("isPlaudEnabled", kPlaudEnabled),
             ("hasSeenShortcutTip", kHasSeenShortcutTip),
         ]

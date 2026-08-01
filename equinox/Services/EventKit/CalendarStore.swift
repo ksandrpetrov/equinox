@@ -106,7 +106,7 @@ actor CalendarStore {
         guard ekCalendar.allowsContentModifications else {
             throw CalendarStoreError.readOnlyCalendar
         }
-        guard BridgeCommandValidation.endIsAfterStart(start: draft.startDate, end: draft.endDate) else {
+        guard draft.endDate > draft.startDate else {
             throw CalendarStoreError.endDateBeforeStart
         }
 

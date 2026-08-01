@@ -28,44 +28,20 @@
 		A2BAAADA0CCA4971A1201CDE /* UI/Main/DayCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44FCB3CA1B3432E91849D32 /* UI/Main/DayCellView.swift */; };
 		ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */; };
 		AF001A1B2C3D4E5F6012345 /* Core/AgendaFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF001A1B2C3D4E5F6012346 /* Core/AgendaFocus.swift */; };
-		ABEC001A1B2C3D4E5F6012345 /* Core/AppBridgeEventContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEC001A1B2C3D4E5F6012346 /* Core/AppBridgeEventContract.swift */; };
-		ABECT001A1B2C3D4E5F6012345 /* AppBridgeEventContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABECT001A1B2C3D4E5F6012346 /* AppBridgeEventContractTests.swift */; };
 		MPT001A1B2C3D4E5F6012345 /* MeetingProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */; };
-		BEFT001A1B2C3D4E5F6012345 /* BridgeEventFixturesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */; };
 		CNCT001A1B2C3D4E5F6012345 /* CalendarNavigationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNCT001A1B2C3D4E5F6012346 /* CalendarNavigationCoordinatorTests.swift */; };
 		CDPT001A1B2C3D4E5F6012345 /* CalendarDateParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDPT001A1B2C3D4E5F6012346 /* CalendarDateParsingTests.swift */; };
 		CSST001A1B2C3D4E5F6012345 /* CalendarSelectionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSST001A1B2C3D4E5F6012346 /* CalendarSelectionServiceTests.swift */; };
-		BCST001A1B2C3D4E5F6012345 /* BridgeCommandSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCST001A1B2C3D4E5F6012346 /* BridgeCommandSyncTests.swift */; };
 		LICT001A1B2C3D4E5F6012345 /* LoadingIndicatorControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = LICT001A1B2C3D4E5F6012346 /* LoadingIndicatorControllerTests.swift */; };
 		PALT001A1B2C3D4E5F6012345 /* PanelAgendaLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PALT001A1B2C3D4E5F6012346 /* PanelAgendaLayoutTests.swift */; };
 		PPST001A1B2C3D4E5F6012345 /* PanelPresentationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PPST001A1B2C3D4E5F6012346 /* PanelPresentationStateTests.swift */; };
 		ECST001A1B2C3D4E5F6012345 /* EventsCoordinatorSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECST001A1B2C3D4E5F6012346 /* EventsCoordinatorSyncTests.swift */; };
-		BCVT001A1B2C3D4E5F6012345 /* BridgeCommandValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCVT001A1B2C3D4E5F6012346 /* BridgeCommandValidationTests.swift */; };
-		BCVT002A1B2C3D4E5F6012345 /* Services/EventKit/BridgeCommandValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCV001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeCommandValidation.swift */; };
 		CHXT001A1B2C3D4E5F6012345 /* ColorHexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHXT001A1B2C3D4E5F6012346 /* ColorHexTests.swift */; };
-		BDPT001A1B2C3D4E5F6012345 /* BridgeDateParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */; };
-		BDPTS001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */; };
 		ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */; };
 		AFT001A1B2C3D4E5F6012345 /* AgendaFocusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFT001A1B2C3D4E5F6012346 /* AgendaFocusTests.swift */; };
 		AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */; };
 		B2C3D4E501234567890ABCF5 /* UI/Settings/MenuBarIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */; };
 		B2C3D4E501234567890ABCF7 /* UI/Settings/CalendarsSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E501234567890ABCF8 /* UI/Settings/CalendarsSettingsSection.swift */; };
-		BRG001A1B2C3D4E5F6012345 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = BRG001A1B2C3D4E5F6012346 /* main.swift */; };
-		BRG002A1B2C3D4E5F6012345 /* EventKitBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BRG002A1B2C3D4E5F6012346 /* EventKitBridge.swift */; };
-		BRGBCN001A1B2C3D4E5F6012345 /* Core/Generated/BridgeCommandNames.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCN001A1B2C3D4E5F6012346 /* Core/Generated/BridgeCommandNames.generated.swift */; };
-		BRG003A1B2C3D4E5F6012345 /* BridgeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BRG003A1B2C3D4E5F6012346 /* BridgeModels.swift */; };
-		BRG004A1B2C3D4E5F6012345 /* Core/JoinURLDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E005A1B2C3D4E5F6012346 /* Core/JoinURLDetection.swift */; };
-		BRGMP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */; };
-		BRGBEM001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeEventMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */; };
-		BRG005A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */; };
-		BRG006A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */; };
-		BRG007A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */; };
-		BRGBDP001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */; };
-		BRGCAM001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarAccessMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarAccessMapping.swift */; };
-		BRGCAS001A1B2C3D4E5F6012345 /* Core/CalendarAccessStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAS001A1B2C3D4E5F6012346 /* Core/CalendarAccessStatus.swift */; };
-		BRGEEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */; };
-		BRGEKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */; };
-		BRGEKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */; };
 		C029101F32D74115BDE35C1D /* App/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C1DCC2A9FE4B8B804C4770 /* App/AppState.swift */; };
 		C3D4E5F601234567890ABD01 /* UI/Main/PanelCommandBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */; };
 		C3D4E5F601234567890ABD07 /* UI/Settings/CalendarsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */; };
@@ -114,37 +90,22 @@
 		EKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */; };
 		EKM001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */; };
 		EKMT001A1B2C3D4E5F6012345 /* EventKitCalendarMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */; };
-		BDP001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */; };
 		EKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */; };
-		EKMGU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation+GUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMGU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation+GUI.swift */; };
 		NJR001A1B2C3D4E5F6012345 /* Services/EventKit/NativeJoinURLResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */; };
 		EVC001A1B2C3D4E5F6012345 /* App/EventsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */; };
 		CNC001A1B2C3D4E5F6012345 /* App/CalendarNavigationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNC001A1B2C3D4E5F6012346 /* App/CalendarNavigationCoordinator.swift */; };
-		BCV001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeCommandValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCV001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeCommandValidation.swift */; };
 		CHX001A1B2C3D4E5F6012345 /* Core/ColorHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHX001A1B2C3D4E5F6012346 /* Core/ColorHex.swift */; };
-		BCN001A1B2C3D4E5F6012345 /* Core/Generated/BridgeCommandNames.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCN001A1B2C3D4E5F6012346 /* Core/Generated/BridgeCommandNames.generated.swift */; };
-		BEF001A1B2C3D4E5F6012345 /* Core/Generated/BridgeEventFieldKeys.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF001A1B2C3D4E5F6012346 /* Core/Generated/BridgeEventFieldKeys.generated.swift */; };
-		BRGBCV001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeCommandValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCV001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeCommandValidation.swift */; };
-		BRGCHX001A1B2C3D4E5F6012345 /* Core/ColorHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHX001A1B2C3D4E5F6012346 /* Core/ColorHex.swift */; };
 		LIC001A1B2C3D4E5F6012345 /* App/LoadingIndicatorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */; };
 		EFCO001A1B2C3D4E5F6012345 /* App/EventFetchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */; };
-		MCP001A1B2C3D4E5F6012345 /* App/McpCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP001A1B2C3D4E5F6012346 /* App/McpCoordinator.swift */; };
 		ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */; };
 		FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */; };
 		KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */; };
 		KSM001A1B2C3D4E5F6012345 /* Services/Platform/KeyboardShortcutMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */; };
 		KSN001A1B2C3D4E5F6012345 /* App/KeyboardShortcutNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = KSN001A1B2C3D4E5F6012346 /* App/KeyboardShortcutNames.swift */; };
 		KYP001A1B2C3D4E5F6012345 /* UI/MenuBar/KeyablePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */; };
-		MCP003A1B2C3D4E5F6012345 /* Services/Platform/McpSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP003A1B2C3D4E5F6012346 /* Services/Platform/McpSetup.swift */; };
-		MTC001A1B2C3D4E5F6012345 /* Services/Platform/McpToolCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTC001A1B2C3D4E5F6012346 /* Services/Platform/McpToolCatalog.swift */; };
-		MCP002A1B2C3D4E5F6012345 /* UI/Settings/McpSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */; };
 		DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */; };
-		MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */; };
-		MCP013A1B2C3D4E5F6012345 /* Services/Platform/McpAppBridgeServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */; };
-		MABST01A1B2C3D4E5F6012345 /* McpAppBridgeServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MABST01A1B2C3D4E5F6012346 /* McpAppBridgeServerTests.swift */; };
 		MOD001A1B2C3D4E5F6012345 /* UI/Design/ModalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */; };
 		MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */; };
-		MTN001A1B2C3D4E5F6012345 /* Services/Platform/McpToolNames.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */; };
 		MTT001A1B2C3D4E5F6012345 /* MeetingIndicatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTT001A1B2C3D4E5F6012346 /* MeetingIndicatorTests.swift */; };
 		EFC001A1B2C3D4E5F6012345 /* Services/EventKit/EventFetchCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC001A1B2C3D4E5F6012346 /* Services/EventKit/EventFetchCache.swift */; };
 		CSSVC001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSSVC001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionService.swift */; };
@@ -196,13 +157,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		MCP010A1B2C3D4E5F6012345 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9242A5541A82A136005AA4B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BRG020A1B2C3D4E5F6012345;
-			remoteInfo = "equinox-bridge";
-		};
 		T0E030A1B2C3D4E5F6012345 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9242A5541A82A136005AA4B3 /* Project object */;
@@ -257,8 +211,6 @@
 		A8BA8E6CEB1F48A18F12291C /* UI/Settings/AboutSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/AboutSettingsTab.swift; sourceTree = "<group>"; };
 		ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AgendaDisplayRange.swift; sourceTree = "<group>"; };
 		AF001A1B2C3D4E5F6012346 /* Core/AgendaFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AgendaFocus.swift; sourceTree = "<group>"; };
-		ABEC001A1B2C3D4E5F6012346 /* Core/AppBridgeEventContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/AppBridgeEventContract.swift; sourceTree = "<group>"; };
-		ABECT001A1B2C3D4E5F6012346 /* AppBridgeEventContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBridgeEventContractTests.swift; sourceTree = "<group>"; };
 		ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaDisplayRangeTests.swift; sourceTree = "<group>"; };
 		AFT001A1B2C3D4E5F6012346 /* AgendaFocusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaFocusTests.swift; sourceTree = "<group>"; };
 		AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaSectionsTests.swift; sourceTree = "<group>"; };
@@ -267,11 +219,6 @@
 		B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/MenuBarIconPicker.swift; sourceTree = "<group>"; };
 		B2C3D4E501234567890ABCF8 /* UI/Settings/CalendarsSettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/CalendarsSettingsSection.swift; sourceTree = "<group>"; };
 		B4C1DCC2A9FE4B8B804C4770 /* App/AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppState.swift; sourceTree = "<group>"; };
-		BRG001A1B2C3D4E5F6012346 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		BRG002A1B2C3D4E5F6012346 /* EventKitBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitBridge.swift; sourceTree = "<group>"; };
-		BRG003A1B2C3D4E5F6012346 /* BridgeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeModels.swift; sourceTree = "<group>"; };
-		BRG005A1B2C3D4E5F6012346 /* equinox-bridge.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "equinox-bridge.entitlements"; sourceTree = "<group>"; };
-		BRG050A1B2C3D4E5F6012346 /* equinox-bridge */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "equinox-bridge"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/PanelCommandBar.swift; sourceTree = "<group>"; };
 		C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/CalendarsSettingsTab.swift; sourceTree = "<group>"; };
 		C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/ShortcutsSettingsTab.swift; sourceTree = "<group>"; };
@@ -290,21 +237,16 @@
 		ALTT001A1B2C3D4E5F6012346 /* AgendaLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgendaLayoutTests.swift; sourceTree = "<group>"; };
 		D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/EventDraftDefaults.swift; sourceTree = "<group>"; };
 		MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingProvider.swift; sourceTree = "<group>"; };
-		BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/BridgeEventMapping.swift; sourceTree = "<group>"; };
 		DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/DayEventBuilder.swift; sourceTree = "<group>"; };
 		MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingProviderTests.swift; sourceTree = "<group>"; };
-		BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeEventFixturesTests.swift; sourceTree = "<group>"; };
 		CNCT001A1B2C3D4E5F6012346 /* CalendarNavigationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarNavigationCoordinatorTests.swift; sourceTree = "<group>"; };
 		CDPT001A1B2C3D4E5F6012346 /* CalendarDateParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDateParsingTests.swift; sourceTree = "<group>"; };
 		CSST001A1B2C3D4E5F6012346 /* CalendarSelectionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSelectionServiceTests.swift; sourceTree = "<group>"; };
-		BCST001A1B2C3D4E5F6012346 /* BridgeCommandSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeCommandSyncTests.swift; sourceTree = "<group>"; };
 		LICT001A1B2C3D4E5F6012346 /* LoadingIndicatorControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIndicatorControllerTests.swift; sourceTree = "<group>"; };
 		PALT001A1B2C3D4E5F6012346 /* PanelAgendaLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelAgendaLayoutTests.swift; sourceTree = "<group>"; };
 		PPST001A1B2C3D4E5F6012346 /* PanelPresentationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelPresentationStateTests.swift; sourceTree = "<group>"; };
 		ECST001A1B2C3D4E5F6012346 /* EventsCoordinatorSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsCoordinatorSyncTests.swift; sourceTree = "<group>"; };
-		BCVT001A1B2C3D4E5F6012346 /* BridgeCommandValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeCommandValidationTests.swift; sourceTree = "<group>"; };
 		CHXT001A1B2C3D4E5F6012346 /* ColorHexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorHexTests.swift; sourceTree = "<group>"; };
-		BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeDateParsingTests.swift; sourceTree = "<group>"; };
 		D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/DayEventMapping.swift; sourceTree = "<group>"; };
 		D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/CalendarStore.swift; sourceTree = "<group>"; };
 		D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/DateFormatters.swift; sourceTree = "<group>"; };
@@ -332,33 +274,20 @@
 		EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitEventExtensions.swift; sourceTree = "<group>"; };
 		EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitCalendarMapping.swift; sourceTree = "<group>"; };
 		EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventKitCalendarMappingTests.swift; sourceTree = "<group>"; };
-		BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/BridgeDateParsing.swift; sourceTree = "<group>"; };
-		EKMGU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation+GUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/EventKit/EventKitMutation+GUI.swift"; sourceTree = "<group>"; };
 		EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventKitMutation.swift; sourceTree = "<group>"; };
 		EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/EventsCoordinator.swift; sourceTree = "<group>"; };
 		CNC001A1B2C3D4E5F6012346 /* App/CalendarNavigationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CalendarNavigationCoordinator.swift; sourceTree = "<group>"; };
-		BCV001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeCommandValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/BridgeCommandValidation.swift; sourceTree = "<group>"; };
 		CHX001A1B2C3D4E5F6012346 /* Core/ColorHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/ColorHex.swift; sourceTree = "<group>"; };
-		BCN001A1B2C3D4E5F6012346 /* Core/Generated/BridgeCommandNames.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Generated/BridgeCommandNames.generated.swift; sourceTree = "<group>"; };
-		BEF001A1B2C3D4E5F6012346 /* Core/Generated/BridgeEventFieldKeys.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Generated/BridgeEventFieldKeys.generated.swift; sourceTree = "<group>"; };
 		LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/LoadingIndicatorController.swift; sourceTree = "<group>"; };
 		EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/EventFetchCoordinator.swift; sourceTree = "<group>"; };
-		MCP001A1B2C3D4E5F6012346 /* App/McpCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/McpCoordinator.swift; sourceTree = "<group>"; };
 		ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AgendaScrollCoordinator.swift; sourceTree = "<group>"; };
 		FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/SettingsView.swift; sourceTree = "<group>"; };
 		KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/KeyboardShortcutMigration.swift; sourceTree = "<group>"; };
 		KSN001A1B2C3D4E5F6012346 /* App/KeyboardShortcutNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/KeyboardShortcutNames.swift; sourceTree = "<group>"; };
 		KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/KeyablePanel.swift; sourceTree = "<group>"; };
-		MCP003A1B2C3D4E5F6012346 /* Services/Platform/McpSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpSetup.swift; sourceTree = "<group>"; };
-		MTC001A1B2C3D4E5F6012346 /* Services/Platform/McpToolCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpToolCatalog.swift; sourceTree = "<group>"; };
-		MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/McpSettingsTab.swift; sourceTree = "<group>"; };
 		DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemComplianceTests.swift; sourceTree = "<group>"; };
-		MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McpSetupTests.swift; sourceTree = "<group>"; };
-		MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpAppBridgeServer.swift; sourceTree = "<group>"; };
-		MABST01A1B2C3D4E5F6012346 /* McpAppBridgeServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McpAppBridgeServerTests.swift; sourceTree = "<group>"; };
 		MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/ModalComponents.swift; sourceTree = "<group>"; };
 		MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingIndicator.swift; sourceTree = "<group>"; };
-		MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpToolNames.generated.swift; sourceTree = "<group>"; };
 		MTT001A1B2C3D4E5F6012346 /* MeetingIndicatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingIndicatorTests.swift; sourceTree = "<group>"; };
 		EFC001A1B2C3D4E5F6012346 /* Services/EventKit/EventFetchCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/EventFetchCache.swift; sourceTree = "<group>"; };
 		CSSVC001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/CalendarSelectionService.swift; sourceTree = "<group>"; };
@@ -423,13 +352,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BRG040A1B2C3D4E5F6012345 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		T0E070A1B2C3D4E5F6012345 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -454,7 +376,6 @@
 				CNC001A1B2C3D4E5F6012346 /* App/CalendarNavigationCoordinator.swift */,
 				LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */,
 				EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */,
-				MCP001A1B2C3D4E5F6012346 /* App/McpCoordinator.swift */,
 				ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */,
 				PLM001A1B2C3D4E5F6012346 /* App/PanelLayoutMetrics.swift */,
 				PLC001A1B2C3D4E5F6012346 /* App/PlaudCoordinator.swift */,
@@ -465,13 +386,10 @@
 				AGL001A1B2C3D4E5F6012346 /* Core/AgendaLayout.swift */,
 				DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */,
 				CHX001A1B2C3D4E5F6012346 /* Core/ColorHex.swift */,
-				BCN001A1B2C3D4E5F6012346 /* Core/Generated/BridgeCommandNames.generated.swift */,
-				BEF001A1B2C3D4E5F6012346 /* Core/Generated/BridgeEventFieldKeys.generated.swift */,
 				DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */,
 				DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */,
 				ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */,
 				AF001A1B2C3D4E5F6012346 /* Core/AgendaFocus.swift */,
-				ABEC001A1B2C3D4E5F6012346 /* Core/AppBridgeEventContract.swift */,
 				EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */,
 				MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */,
 				MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */,
@@ -489,12 +407,8 @@
 				CAM001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarAccessMapping.swift */,
 				CAS001A1B2C3D4E5F6012346 /* Core/CalendarAccessStatus.swift */,
 				EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */,
-				EKMGU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation+GUI.swift */,
-				BDP001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeDateParsing.swift */,
-				BCV001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeCommandValidation.swift */,
 				NED001A1B2C3D4E5F6012346 /* Services/EventKit/NewEventDraft.swift */,
 				EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */,
-				BEM001A1B2C3D4E5F6012346 /* Services/EventKit/BridgeEventMapping.swift */,
 				DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */,
 				EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */,
 				NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */,
@@ -510,10 +424,6 @@
 				A1B2C3D401234567890ABCD8 /* Services/Platform/LaunchAtLogin.swift */,
 				SMU002A1B2C3D4E5F6012346 /* UI/Design/SizeMetrics.swift */,
 				328F6CA845EE41999E852970 /* Services/PreferencesStore.swift */,
-				MCP003A1B2C3D4E5F6012346 /* Services/Platform/McpSetup.swift */,
-				MTC001A1B2C3D4E5F6012346 /* Services/Platform/McpToolCatalog.swift */,
-				MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */,
-				MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */,
 				PLD012A1B2C3D4E5F6012346 /* Services/Plaud/PlaudMatchCache.swift */,
 				PLD025A1B2C3D4E5F6012346 /* Services/Plaud/PlaudRecordingsStore.swift */,
 				PLD014A1B2C3D4E5F6012346 /* Services/Plaud/PlaudLiveClient.swift */,
@@ -554,7 +464,6 @@
 				2A62397CD381406ABD6477C5 /* UI/Settings/AppearanceSettingsTab.swift */,
 				C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */,
 				PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */,
-				MCP004A1B2C3D4E5F6012346 /* UI/Settings/McpSettingsTab.swift */,
 				PLD018A1B2C3D4E5F6012346 /* UI/Settings/PlaudSettingsTab.swift */,
 				A8BA8E6CEB1F48A18F12291C /* UI/Settings/AboutSettingsTab.swift */,
 				B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */,
@@ -575,7 +484,6 @@
 			isa = PBXGroup;
 			children = (
 				9242A55E1A82A136005AA4B3 /* equinox */,
-				BRG070A1B2C3D4E5F6012347 /* bridge */,
 				T0E010A1B2C3D4E5F6012347 /* equinoxTests */,
 				9242A55D1A82A136005AA4B3 /* Products */,
 				PRJCFG001A82A136005AA4B3 /* Project.xcconfig */,
@@ -587,7 +495,6 @@
 			isa = PBXGroup;
 			children = (
 				9242A55C1A82A136005AA4B3 /* equinox.app */,
-				BRG050A1B2C3D4E5F6012346 /* equinox-bridge */,
 				T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */,
 			);
 			name = Products;
@@ -615,17 +522,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		BRG070A1B2C3D4E5F6012347 /* bridge */ = {
-			isa = PBXGroup;
-			children = (
-				BRG001A1B2C3D4E5F6012346 /* main.swift */,
-				BRG002A1B2C3D4E5F6012346 /* EventKitBridge.swift */,
-				BRG003A1B2C3D4E5F6012346 /* BridgeModels.swift */,
-				BRG005A1B2C3D4E5F6012346 /* equinox-bridge.entitlements */,
-			);
-			path = bridge;
-			sourceTree = "<group>";
-		};
 		T0E010A1B2C3D4E5F6012347 /* equinoxTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -647,27 +543,20 @@
 				T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */,
 				T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */,
 				DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */,
-				MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */,
 				PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */,
 				PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */,
-				MABST01A1B2C3D4E5F6012346 /* McpAppBridgeServerTests.swift */,
 				EDD001A1B2C3D4E5F6012346 /* EventDraftDefaultsTests.swift */,
 				CAMT001A1B2C3D4E5F6012346 /* CalendarAccessMappingTests.swift */,
 				PST001A1B2C3D4E5F6012346 /* PreferencesStoreTests.swift */,
-				ABECT001A1B2C3D4E5F6012346 /* AppBridgeEventContractTests.swift */,
 				MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */,
-				BEFT001A1B2C3D4E5F6012346 /* BridgeEventFixturesTests.swift */,
 				CNCT001A1B2C3D4E5F6012346 /* CalendarNavigationCoordinatorTests.swift */,
 				CDPT001A1B2C3D4E5F6012346 /* CalendarDateParsingTests.swift */,
 				CSST001A1B2C3D4E5F6012346 /* CalendarSelectionServiceTests.swift */,
-				BCST001A1B2C3D4E5F6012346 /* BridgeCommandSyncTests.swift */,
 				LICT001A1B2C3D4E5F6012346 /* LoadingIndicatorControllerTests.swift */,
 				PALT001A1B2C3D4E5F6012346 /* PanelAgendaLayoutTests.swift */,
 				PPST001A1B2C3D4E5F6012346 /* PanelPresentationStateTests.swift */,
 				ECST001A1B2C3D4E5F6012346 /* EventsCoordinatorSyncTests.swift */,
-				BCVT001A1B2C3D4E5F6012346 /* BridgeCommandValidationTests.swift */,
 				CHXT001A1B2C3D4E5F6012346 /* ColorHexTests.swift */,
-				BDPT001A1B2C3D4E5F6012346 /* BridgeDateParsingTests.swift */,
 			);
 			path = equinoxTests;
 			sourceTree = "<group>";
@@ -684,12 +573,10 @@
 				9242A55A1A82A136005AA4B3 /* Resources */,
 				9252DF361AFD3557007B079F /* CopyFiles */,
 				9291F8AB2AE2126B00E80F14 /* CopyFiles */,
-				MCP012A1B2C3D4E5F6012345 /* Embed MCP */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				MCP011A1B2C3D4E5F6012345 /* PBXTargetDependency */,
 			);
 			name = equinox;
 			packageProductDependencies = (
@@ -698,22 +585,6 @@
 			productName = Moon;
 			productReference = 9242A55C1A82A136005AA4B3 /* equinox.app */;
 			productType = "com.apple.product-type.application";
-		};
-		BRG020A1B2C3D4E5F6012345 /* equinox-bridge */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BRG060A1B2C3D4E5F6012345 /* Build configuration list for PBXNativeTarget "equinox-bridge" */;
-			buildPhases = (
-				BRG030A1B2C3D4E5F6012345 /* Sources */,
-				BRG040A1B2C3D4E5F6012345 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "equinox-bridge";
-			productName = "equinox-bridge";
-			productReference = BRG050A1B2C3D4E5F6012346 /* equinox-bridge */;
-			productType = "com.apple.product-type.tool";
 		};
 		T0E020A1B2C3D4E5F6012345 /* equinoxTests */ = {
 			isa = PBXNativeTarget;
@@ -750,9 +621,6 @@
 							};
 						};
 					};
-					BRG020A1B2C3D4E5F6012345 = {
-						CreatedOnToolsVersion = 2620;
-					};
 					T0E020A1B2C3D4E5F6012345 = {
 						CreatedOnToolsVersion = 2620;
 						TestTargetID = 9242A55B1A82A136005AA4B3;
@@ -777,7 +645,6 @@
 			projectRoot = "";
 			targets = (
 				9242A55B1A82A136005AA4B3 /* equinox */,
-				BRG020A1B2C3D4E5F6012345 /* equinox-bridge */,
 				T0E020A1B2C3D4E5F6012345 /* equinoxTests */,
 			);
 		};
@@ -797,27 +664,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		MCP012A1B2C3D4E5F6012345 /* Embed MCP */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/mcp/dist/server.js",
-				"$(BUILT_PRODUCTS_DIR)/equinox-bridge",
-			);
-			name = "Embed MCP";
-			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(CONTENTS_FOLDER_PATH)/Resources/mcp/dist/server.js",
-				"$(BUILT_PRODUCTS_DIR)/$(CONTENTS_FOLDER_PATH)/Resources/equinox-bridge",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/scripts/embed-mcp-in-app.sh\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		9242A5581A82A136005AA4B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -826,7 +672,6 @@
 				A1B2C3D401234567890ABCD3 /* App/Constants.swift in Sources */,
 				STB001A1B2C3D4E5F6012345 /* App/SettingsTab.swift in Sources */,
 				EKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */,
-				EKMGU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation+GUI.swift in Sources */,
 				NED001A1B2C3D4E5F6012345 /* Services/EventKit/NewEventDraft.swift in Sources */,
 				EEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */,
 				PPC001A1B2C3D4E5F6012345 /* App/PanelPresentationState.swift in Sources */,
@@ -834,7 +679,6 @@
 				CNC001A1B2C3D4E5F6012345 /* App/CalendarNavigationCoordinator.swift in Sources */,
 				LIC001A1B2C3D4E5F6012345 /* App/LoadingIndicatorController.swift in Sources */,
 				EFCO001A1B2C3D4E5F6012345 /* App/EventFetchCoordinator.swift in Sources */,
-				MCP001A1B2C3D4E5F6012345 /* App/McpCoordinator.swift in Sources */,
 				ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */,
 				PLM001A1B2C3D4E5F6012345 /* App/PanelLayoutMetrics.swift in Sources */,
 				D0E001A1B2C3D4E5F6012345 /* Core/CalendarDate.swift in Sources */,
@@ -843,13 +687,10 @@
 				AGL001A1B2C3D4E5F6012345 /* Core/AgendaLayout.swift in Sources */,
 				DE001A1B2C3D4E5F6012345 /* Core/DayEvent.swift in Sources */,
 				CHX001A1B2C3D4E5F6012345 /* Core/ColorHex.swift in Sources */,
-				BCN001A1B2C3D4E5F6012345 /* Core/Generated/BridgeCommandNames.generated.swift in Sources */,
-				BEF001A1B2C3D4E5F6012345 /* Core/Generated/BridgeEventFieldKeys.generated.swift in Sources */,
 				DDC001A1B2C3D4E5F6012345 /* Core/DayEventUniqueCalendars.swift in Sources */,
 				DE002A1B2C3D4E5F6012345 /* Core/AgendaSections.swift in Sources */,
 				ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */,
 				AF001A1B2C3D4E5F6012345 /* Core/AgendaFocus.swift in Sources */,
-				ABEC001A1B2C3D4E5F6012345 /* Core/AppBridgeEventContract.swift in Sources */,
 				EFR001A1B2C3D4E5F6012345 /* Core/EventFetchRange.swift in Sources */,
 				MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */,
 				CLI001A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */,
@@ -864,7 +705,6 @@
 				URL001A1B2C3D4E5F6012345 /* Services/Platform/URLOpener.swift in Sources */,
 				SRB001A1B2C3D4E5F6012345 /* Services/Platform/SecureRandomBytes.swift in Sources */,
 				D0E003A1B2C3D4E5F6012345 /* Services/EventKit/CalendarStore.swift in Sources */,
-				BCV001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeCommandValidation.swift in Sources */,
 				EFC001A1B2C3D4E5F6012345 /* Services/EventKit/EventFetchCache.swift in Sources */,
 				CSSVC001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionService.swift in Sources */,
 				CAM001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarAccessMapping.swift in Sources */,
@@ -885,10 +725,6 @@
 				C029101F32D74115BDE35C1D /* App/AppState.swift in Sources */,
 				26345BB4077546858ED91E33 /* UI/Design/SizeMetrics.swift in Sources */,
 				6572A0BA3F5D47239DEFBD5D /* Services/PreferencesStore.swift in Sources */,
-				MCP003A1B2C3D4E5F6012345 /* Services/Platform/McpSetup.swift in Sources */,
-				MTC001A1B2C3D4E5F6012345 /* Services/Platform/McpToolCatalog.swift in Sources */,
-				MCP013A1B2C3D4E5F6012345 /* Services/Platform/McpAppBridgeServer.swift in Sources */,
-				MTN001A1B2C3D4E5F6012345 /* Services/Platform/McpToolNames.generated.swift in Sources */,
 				PLD001A1B2C3D4E5F6012345 /* Core/PlaudEventMatching.swift in Sources */,
 				PLD010A1B2C3D4E5F6012345 /* Core/PlaudOAuthPKCE.swift in Sources */,
 				PLD002A1B2C3D4E5F6012345 /* Services/Plaud/PlaudMatchCache.swift in Sources */,
@@ -933,7 +769,6 @@
 				96A0A7ECBC124CD696E33EA2 /* UI/Settings/AppearanceSettingsTab.swift in Sources */,
 				C3D4E5F601234567890ABD09 /* UI/Settings/ShortcutsSettingsTab.swift in Sources */,
 				PRV001A1B2C3D4E5F6012345 /* UI/Settings/PrivacySettingsTab.swift in Sources */,
-				MCP002A1B2C3D4E5F6012345 /* UI/Settings/McpSettingsTab.swift in Sources */,
 				69438ABDD27442EABE893584 /* UI/Settings/AboutSettingsTab.swift in Sources */,
 				B2C3D4E501234567890ABCF5 /* UI/Settings/MenuBarIconPicker.swift in Sources */,
 				C3D4E5F601234567890ABD0B /* UI/Settings/WeekendHighlightPicker.swift in Sources */,
@@ -945,31 +780,6 @@
 				PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */,
 				PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */,
 				FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BRG030A1B2C3D4E5F6012345 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				BRG001A1B2C3D4E5F6012345 /* main.swift in Sources */,
-				BRG002A1B2C3D4E5F6012345 /* EventKitBridge.swift in Sources */,
-				BRGBCN001A1B2C3D4E5F6012345 /* Core/Generated/BridgeCommandNames.generated.swift in Sources */,
-				BRG003A1B2C3D4E5F6012345 /* BridgeModels.swift in Sources */,
-				BRG004A1B2C3D4E5F6012345 /* Core/JoinURLDetection.swift in Sources */,
-				BRGMP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */,
-				BRG005A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */,
-				BRG006A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */,
-				BRG007A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */,
-				BRGBDP001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */,
-				BRGEKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */,
-				BRGCAM001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarAccessMapping.swift in Sources */,
-				BRGCAS001A1B2C3D4E5F6012345 /* Core/CalendarAccessStatus.swift in Sources */,
-				BRGEEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */,
-				BRGBEM001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeEventMapping.swift in Sources */,
-				BRGEKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */,
-				BRGBCV001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeCommandValidation.swift in Sources */,
-				BRGCHX001A1B2C3D4E5F6012345 /* Core/ColorHex.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -995,39 +805,26 @@
 				T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */,
 				T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */,
 				DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */,
-				MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */,
-				MABST01A1B2C3D4E5F6012345 /* McpAppBridgeServerTests.swift in Sources */,
 				PLD009A1B2C3D4E5F6012345 /* PlaudEventMatchingTests.swift in Sources */,
 				PLD012A1B2C3D4E5F6012345 /* PlaudOAuthPKCETests.swift in Sources */,
 				EDD001A1B2C3D4E5F6012345 /* EventDraftDefaultsTests.swift in Sources */,
 				CAMT001A1B2C3D4E5F6012345 /* CalendarAccessMappingTests.swift in Sources */,
 				PST001A1B2C3D4E5F6012345 /* PreferencesStoreTests.swift in Sources */,
-				ABECT001A1B2C3D4E5F6012345 /* AppBridgeEventContractTests.swift in Sources */,
 				MPT001A1B2C3D4E5F6012345 /* MeetingProviderTests.swift in Sources */,
-				BEFT001A1B2C3D4E5F6012345 /* BridgeEventFixturesTests.swift in Sources */,
 				CNCT001A1B2C3D4E5F6012345 /* CalendarNavigationCoordinatorTests.swift in Sources */,
 				CDPT001A1B2C3D4E5F6012345 /* CalendarDateParsingTests.swift in Sources */,
 				CSST001A1B2C3D4E5F6012345 /* CalendarSelectionServiceTests.swift in Sources */,
-				BCST001A1B2C3D4E5F6012345 /* BridgeCommandSyncTests.swift in Sources */,
 				LICT001A1B2C3D4E5F6012345 /* LoadingIndicatorControllerTests.swift in Sources */,
 				PALT001A1B2C3D4E5F6012345 /* PanelAgendaLayoutTests.swift in Sources */,
 				PPST001A1B2C3D4E5F6012345 /* PanelPresentationStateTests.swift in Sources */,
 				ECST001A1B2C3D4E5F6012345 /* EventsCoordinatorSyncTests.swift in Sources */,
-				BCVT001A1B2C3D4E5F6012345 /* BridgeCommandValidationTests.swift in Sources */,
 				CHXT001A1B2C3D4E5F6012345 /* ColorHexTests.swift in Sources */,
-				BDPT001A1B2C3D4E5F6012345 /* BridgeDateParsingTests.swift in Sources */,
-				BDPTS001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeDateParsing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		MCP011A1B2C3D4E5F6012345 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BRG020A1B2C3D4E5F6012345 /* equinox-bridge */;
-			targetProxy = MCP010A1B2C3D4E5F6012345 /* PBXContainerItemProxy */;
-		};
 		T0E040A1B2C3D4E5F6012345 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9242A55B1A82A136005AA4B3 /* equinox */;
@@ -1255,51 +1052,6 @@
 			};
 			name = Release;
 		};
-		BRG061A1B2C3D4E5F6012345 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 92CF00001A82A136005AA4B3 /* Local.xcconfig */;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
-				CODE_SIGN_ENTITLEMENTS = "bridge/equinox-bridge.entitlements";
-				CODE_SIGN_STYLE = Automatic;
-				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
-				DEAD_CODE_STRIPPING = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
-				INFOPLIST_KEY_NSCalendarsUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.equinox-bridge";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-			};
-			name = Debug;
-		};
-		BRG062A1B2C3D4E5F6012345 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 92CF00001A82A136005AA4B3 /* Local.xcconfig */;
-			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
-				CODE_SIGN_ENTITLEMENTS = "bridge/equinox-bridge.entitlements";
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
-				DEAD_CODE_STRIPPING = YES;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
-				INFOPLIST_KEY_NSCalendarsUsageDescription = "Equinox MCP bridge reads your calendars when you ask an AI assistant to inspect or manage events.";
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.equinox-bridge";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-			};
-			name = Release;
-		};
 		T0E051A1B2C3D4E5F6012345 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1355,15 +1107,6 @@
 			buildConfigurations = (
 				9242A57A1A82A136005AA4B3 /* Debug */,
 				9242A57B1A82A136005AA4B3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		BRG060A1B2C3D4E5F6012345 /* Build configuration list for PBXNativeTarget "equinox-bridge" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BRG061A1B2C3D4E5F6012345 /* Debug */,
-				BRG062A1B2C3D4E5F6012345 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

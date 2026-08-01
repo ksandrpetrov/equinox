@@ -1,15 +1,10 @@
 import EventKit
 import Foundation
 
-/// Shared EventKit calendar mapping for `CalendarStore` and `EventKitBridge`.
-/// Intentionally not in `Core/` — depends on EventKit.
+/// EventKit calendar mapping for the app. Intentionally not in `Core/` because it depends on EventKit.
 enum EventKitCalendarMapping {
     static func colorHex(_ cgColor: CGColor) -> String {
         ColorHex.hex(from: cgColor) ?? "#808080"
-    }
-
-    static func colorHexOrGray(_ cgColor: CGColor?) -> String {
-        ColorHex.hexOrGray(cgColor)
     }
 
     static func rgbComponents(from cgColor: CGColor) -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
@@ -47,9 +42,5 @@ enum EventKitCalendarMapping {
                 store.calendars(for: .event).map { calendarListItem(from: $0) }
             )
         )
-    }
-
-    static func displayableCalendars(from store: EKEventStore) -> [EKCalendar] {
-        displayableCalendarItems(from: store).compactMap { store.calendar(withIdentifier: $0.id) }
     }
 }

@@ -1,10 +1,7 @@
 import EventKit
 import Foundation
 
-/// Raw EKEvent field extraction shared by `DayEventMapping` (GUI) and
-/// `EventKitBridge.mapEvent` (CLI) so both pull the same fields and stay in sync.
-/// Calendar color and join-URL handling stay in each consumer because their
-/// representations differ (RGBA components vs hex string, native rewrite vs web-only).
+/// Raw EKEvent field extraction shared by the app's event mapping and layout paths.
 struct EventKitEventFields: Sendable {
     let eventIdentifier: String?
     let calendarItemIdentifier: String

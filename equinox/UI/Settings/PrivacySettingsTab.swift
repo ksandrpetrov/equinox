@@ -37,16 +37,6 @@ struct PrivacySettingsTab: View {
 
                     SettingsDivider()
 
-                    SettingsFooter(
-                        text: String(
-                            localized: "MCP calendar tools use Equinox while it is running, so macOS applies the Equinox Calendar permission.",
-                            comment: "Bridge TCC note"
-                        )
-                    )
-                    .padding(.vertical, EquinoxDesign.spacingSM)
-
-                    SettingsDivider()
-
                     HStack(spacing: EquinoxDesign.spacingMD) {
                         Button(String(localized: "Request Access", comment: "")) {
                             appState.requestCalendarAccessIfNeeded()

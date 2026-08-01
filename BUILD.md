@@ -1,25 +1,21 @@
 # Сборка и запуск
 
-Руководство по локальной разработке, запуску приложения, настройке Calendar MCP и release-сборке equinox.
+Руководство по локальной разработке, запуску, тестированию и release-сборке equinox.
 
 ## Что собирается
 
-В репозитории три рабочих части:
+В репозитории два Xcode target:
 
 | Часть | Что даёт пользователю |
 |-------|------------------------|
 | `equinox.app` | menu bar календарь: месячная сетка, agenda, создание/удаление событий, RSVP, join meeting, настройки, Plaud-интеграция |
-| `equinox-bridge` | headless EventKit CLI для MCP: JSON-команды чтения/создания/обновления/удаления событий |
-| `mcp/dist/server.js` | Calendar MCP для AI-клиентов: 13 инструментов, prompts, resources, аналитика расписания и read-only Plaud-кэш |
-
-Обычный локальный запуск через `./run.sh` поднимает именно приложение. MCP нужен только если вы подключаете Cursor, Codex, Claude Desktop или другой MCP-клиент к календарю.
+| `equinoxTests` | XCTest для чистой логики и сервисных контрактов без живого EventKit |
 
 ## Требования
 
-- Mac на **Apple Silicon** (arm64). Скрипты `run.sh`, `build-mcp.sh` и `scripts/require-arm64.sh` завершаются с ошибкой на Intel.
+- Mac на **Apple Silicon** (arm64). `run.sh` и `scripts/require-arm64.sh` завершаются с ошибкой на Intel.
 - macOS **26.0** или новее.
-- **Xcode** — для сборки `equinox`, `equinox-bridge` и `equinoxTests`.
-- **Node.js** — для MCP-сервера (`mcp/`); нужен при `./scripts/build-mcp.sh` и при работе MCP-клиентов.
+- **Xcode** — для сборки `equinox` и `equinoxTests`.
 
 ## Первичная настройка
 
@@ -37,7 +33,7 @@ cp Local.xcconfig.example Local.xcconfig
 - **Без Apple Developer account** — локальная сборка с Automatic signing.
 - **С аккаунтом** — Manual signing и ваш `DEVELOPMENT_TEAM`.
 
-Локальные скрипты (`./run.sh`, `./scripts/build-mcp.sh`) передают signing-настройки из `Local.xcconfig` в `xcodebuild` как command-line overrides. Это важно: target-level настройки Xcode имеют более высокий приоритет, чем base xcconfig, и без override локальная сборка может выбрать устаревший или отозванный сертификат из Keychain.
+`./run.sh` передаёт signing-настройки из `Local.xcconfig` в `xcodebuild` как command-line overrides. Это важно: target-level настройки Xcode имеют более высокий приоритет, чем base xcconfig, и без override локальная сборка может выбрать устаревший или отозванный сертификат из Keychain.
 
 ## Сборка и запуск GUI
 
@@ -49,9 +45,8 @@ cp Local.xcconfig.example Local.xcconfig
 
 Скрипт:
 1. Собирает `equinox` (Release) в `build/DerivedData`.
-2. При отсутствии bridge-бинаря — собирает `equinox-bridge`.
-3. При отсутствии `mcp/dist/server.js` — запускает `./scripts/build-mcp.sh`.
-4. Перезапускает equinox (`pkill` + `open`).
+2. Проверяет наличие `equinox.app`.
+3. Перезапускает equinox (`pkill` + `open`).
 
 После запуска ищите иконку в строке меню. Приложение покажет календарную панель с месячной сеткой и agenda; настройки открываются из меню панели или системного окна Settings.
 
@@ -91,79 +86,6 @@ xcodebuild \
 
 Тесты Core и Services — в `equinoxTests/`. Живой EventKit в unit-тестах не используется.
 
-### MCP (TypeScript)
-
-```bash
-cd mcp && npm install
-cd mcp && npm run build   # tsc -p tsconfig.json, strict: true
-cd mcp && npm test        # vitest run
-```
-
-## Calendar MCP
-
-MCP даёт AI-клиентам доступ к календарю macOS через Equinox. Основной путь использует запущенное `equinox.app` как локальный proxy к `equinox-bridge`, чтобы macOS применяла Calendar permission самого приложения. Если приложение не запущено, MCP пробует прямой fallback на bridge.
-
-MCP-сервер предоставляет:
-
-- доступ: `get_calendar_access_status`, `request_calendar_access`;
-- календарь и события: `list_calendars`, `list_events`, `get_event`, `create_event`, `update_event`, `delete_event`;
-- аналитику: `analyze_schedule`, `find_conflicts`, `find_free_time`;
-- Plaud read-only: `get_plaud_status`, `list_plaud_recordings`;
-- prompts: `daily_agenda`, `weekly_calendar_review`;
-- resources: `equinox://docs/calendar`, `equinox://schema/event`.
-
-### Полная сборка bridge + MCP
-
-```bash
-./scripts/build-mcp.sh
-```
-
-Скрипт:
-1. Генерирует список имён MCP-инструментов (`scripts/gen-mcp-tool-names.sh`).
-2. Собирает `equinox-bridge` (Release).
-3. Собирает и тестирует MCP (`npm install`, `npm run build`, `npm test`).
-
-Артефакты:
-- Bridge: `build/DerivedData/Build/Products/Release/equinox-bridge`
-- MCP: `mcp/dist/server.js`
-
-### Настройка клиентов
-
-**Через GUI (рекомендуется):**
-
-1. equinox → Settings → MCP.
-2. Проверьте готовность Node.js, bridge и MCP-сервера.
-3. Включите «Auto-configure Cursor and Claude» — equinox запишет сервер `equinox-calendar` в конфиги Cursor и Claude Desktop.
-4. Для Codex скопируйте TOML-сниппет в `~/.codex/config.toml`.
-5. Перезапустите клиент или перезагрузите MCP-серверы и оставьте `equinox.app` запущенным для основного TCC-safe пути.
-
-**Вручную** — JSON-конфиг с `command`, `args` и `env.EQUINOX_BRIDGE_PATH`; пример генерируется на вкладке MCP.
-
-### Разработка MCP
-
-```bash
-cd mcp && npm run dev   # tsx src/server.ts
-```
-
-### TCC
-
-У `equinox.app` и прямого запуска `equinox-bridge` **раздельные** Calendar-разрешения TCC. Когда MCP идёт через app bridge proxy, используется разрешение приложения. При прямом fallback на bridge macOS может показать отдельный системный диалог или заблокировать доступ, если клиент не имеет нужного entitlement.
-
-Подробности — в [mcp/MCP.md](mcp/MCP.md) и [bridge/BRIDGE.md](bridge/BRIDGE.md).
-
-## Сборка только bridge
-
-```bash
-xcodebuild \
-  -project equinox.xcodeproj \
-  -scheme equinox-bridge \
-  -configuration Release \
-  -derivedDataPath build/DerivedData \
-  build
-```
-
-Переменная `EQUINOX_BRIDGE_PATH` указывает MCP на бинарь, если он не в DerivedData по умолчанию.
-
 ## Нотаризация и распространение
 
 Ручной процесс через Xcode:
@@ -182,5 +104,5 @@ xcodebuild \
 ## См. также
 
 - [README.md](README.md) — обзор возможностей
-- [ARCHITECTURE.md](ARCHITECTURE.md) — архитектура и различия app vs bridge
+- [ARCHITECTURE.md](ARCHITECTURE.md) — архитектура приложения
 - [AGENTS.md](AGENTS.md) — правила для разработчиков и AI-агентов

@@ -30,9 +30,4 @@ enum ColorHex {
         guard let rgba = cgColorComponents(cgColor) else { return nil }
         return rgbaToHex(red: rgba.red, green: rgba.green, blue: rgba.blue)
     }
-
-    static func hexOrGray(_ cgColor: CGColor?) -> String {
-        guard let cgColor, let hex = hex(from: cgColor) else { return "#808080" }
-        return hex
-    }
 }
