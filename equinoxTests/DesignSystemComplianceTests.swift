@@ -105,6 +105,83 @@ final class DesignSystemComplianceTests: XCTestCase {
         XCTAssertEqual(EquinoxDesign.StateOpacity.chipForegroundSubtle, 0.85)
     }
 
+    func testToolbarTargetsMeetMacOSMinimumAcrossSizes() {
+        XCTAssertEqual(SizeMetrics.metrics(for: .small).toolbarButtonSize, 28)
+        XCTAssertEqual(SizeMetrics.metrics(for: .medium).toolbarButtonSize, 30)
+        XCTAssertEqual(SizeMetrics.metrics(for: .large).toolbarButtonSize, 32)
+    }
+
+    func testGlassEffectIsLimitedToOuterPanelChrome() throws {
+        let files = try swiftUIFiles(excludingDesign: false)
+        let occurrences = try files.flatMap { path -> [(String, Int)] in
+            try lines(at: path).enumerated().compactMap { index, line in
+                line.contains(".glassEffect(") ? (path, index + 1) : nil
+            }
+        }
+
+        XCTAssertEqual(occurrences.count, 1, "Only the outer panel may use glassEffect: \(occurrences)")
+        XCTAssertTrue(
+            occurrences.first?.0.hasSuffix("/UI/Design/PanelComponents.swift") == true,
+            "glassEffect must be owned by PanelComponents"
+        )
+    }
+
+    func testAgendaActionsRemainSeparateAccessibilityElements() throws {
+        let root = try repoRoot()
+        let agendaPath = root.appendingPathComponent("equinox/UI/Main/AgendaComponents.swift").path
+        let overlayPath = root.appendingPathComponent("equinox/UI/Main/PanelStateOverlay.swift").path
+        let agendaSource = try String(contentsOfFile: agendaPath, encoding: .utf8)
+        let overlaySource = try String(contentsOfFile: overlayPath, encoding: .utf8)
+
+        XCTAssertFalse(agendaSource.contains(".accessibilityElement(children: .combine)"))
+        XCTAssertTrue(overlaySource.contains(".accessibilityElement(children: .contain)"))
+    }
+
+    func testSurfaceTokensUseAdaptiveSystemColors() throws {
+        let root = try repoRoot()
+        let path = root.appendingPathComponent("equinox/UI/Design/DesignTokens.swift").path
+        let source = try String(contentsOfFile: path, encoding: .utf8)
+
+        for removedAsset in ["SurfacePrimary", "SurfaceSecondary", "SurfaceWindow", "SurfaceRaised"] {
+            XCTAssertFalse(source.contains("Color(\"\(removedAsset)\")"))
+        }
+    }
+
+    func testCalendarGridPreservesDayCellAccessibilityElements() throws {
+        let root = try repoRoot()
+        let path = root.appendingPathComponent("equinox/UI/Main/CalendarGridView.swift").path
+        let source = try String(contentsOfFile: path, encoding: .utf8)
+
+        XCTAssertTrue(
+            source.contains(".accessibilityElement(children: .contain)"),
+            "CalendarGridView must keep each DayCellView as a separately labelled accessibility element"
+        )
+    }
+
+    func testRussianAppearanceAndErrorStringsAreLocalized() {
+        let locale = Locale(identifier: "ru")
+        let localized: (String.LocalizationValue) -> String = {
+            String(localized: $0, bundle: .main, locale: locale)
+        }
+
+        XCTAssertEqual(localized("Calendar rows"), "Строки календаря")
+        XCTAssertEqual(localized("Dismiss"), "Закрыть")
+        XCTAssertEqual(localized("Show event details."), "Показать детали события.")
+        XCTAssertEqual(
+            localized("Camera icon when a meeting is starting soon"),
+            "Значок камеры, когда встреча скоро начнётся"
+        )
+        XCTAssertEqual(localized("Could not delete event"), "Не удалось удалить событие.")
+        XCTAssertEqual(
+            localized("End date must be after start date."),
+            "Дата окончания должна быть позже даты начала."
+        )
+        XCTAssertEqual(
+            localized("Open settings from the Equinox menu bar."),
+            "Откройте настройки из строки меню Equinox."
+        )
+    }
+
     private func assertNoOccurrences(
         of substring: String,
         message: String,
@@ -153,15 +230,20 @@ final class DesignSystemComplianceTests: XCTestCase {
 
     private func swiftUIFiles(excludingDesign: Bool) throws -> [String] {
         let root = try repoRoot()
-        let enumerator = FileManager.default.enumerator(
+        guard let enumerator = FileManager.default.enumerator(
             at: root.appendingPathComponent(uiRoot),
             includingPropertiesForKeys: nil
-        )
+        ) else {
+            throw NSError(domain: "DesignSystemComplianceTests", code: 2)
+        }
         var paths: [String] = []
-        while let url = enumerator?.nextObject() as? URL {
+        while let url = enumerator.nextObject() as? URL {
             guard url.pathExtension == "swift" else { continue }
             if excludingDesign, url.path.contains("/Design/") { continue }
             paths.append(url.path)
+        }
+        guard !paths.isEmpty else {
+            throw NSError(domain: "DesignSystemComplianceTests", code: 3)
         }
         return paths.sorted()
     }
@@ -178,6 +260,6 @@ final class DesignSystemComplianceTests: XCTestCase {
         guard url.lastPathComponent == "equinox" else {
             throw NSError(domain: "DesignSystemComplianceTests", code: 1)
         }
-        return url.deletingLastPathComponent()
+        return url
     }
 }

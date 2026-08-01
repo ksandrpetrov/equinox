@@ -1,24 +1,40 @@
 import Foundation
 import Network
-import Security
 
 final class McpAppBridgeServer: @unchecked Sendable {
     private static let stateFileName = "mcp-app-bridge.json"
     private static let tokenFileName = "mcp-app-bridge.token"
     private static let maxRequestBytes = 1_048_576
 
-    private let bridgePath: String
     private let stateURL: URL
     private let token: String
-    private let queue = DispatchQueue(label: "com.equinox.mcp-app-bridge")
+    private let bridgeInvoker: @Sendable (String) -> McpAppBridgeInvocationResult
+    private let networkQueue = DispatchQueue(label: "com.equinox.mcp-app-bridge.network")
+    private let invocationQueue = DispatchQueue(label: "com.equinox.mcp-app-bridge.invocation")
     private var listener: NWListener?
 
-    init?(bridgePath: String) {
-        guard let supportURL = Self.applicationSupportURL(),
-              let token = Self.loadOrCreateToken(in: supportURL) else { return nil }
-        self.bridgePath = bridgePath
+    convenience init?(bridgePath: String) {
+        guard let supportURL = Self.applicationSupportURL() else { return nil }
+        self.init(bridgePath: bridgePath, supportURL: supportURL)
+    }
+
+    init?(
+        bridgePath: String,
+        supportURL: URL,
+        bridgeInvoker: (@Sendable (String) -> McpAppBridgeInvocationResult)? = nil
+    ) {
+        do {
+            try FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
+        } catch {
+            return nil
+        }
+        guard let token = Self.loadOrCreateToken(in: supportURL) else { return nil }
+
         self.stateURL = supportURL.appendingPathComponent(Self.stateFileName)
         self.token = token
+        self.bridgeInvoker = bridgeInvoker ?? { payload in
+            Self.invokeBridge(at: bridgePath, payload: payload)
+        }
     }
 
     func start() {
@@ -52,7 +68,7 @@ final class McpAppBridgeServer: @unchecked Sendable {
                 self?.handle(connection: connection)
             }
 
-            listener.start(queue: queue)
+            listener.start(queue: networkQueue)
         } catch {
             removeState()
         }
@@ -79,7 +95,7 @@ final class McpAppBridgeServer: @unchecked Sendable {
                 break
             }
         }
-        connection.start(queue: queue)
+        connection.start(queue: networkQueue)
     }
 
     private func receiveRequest(on connection: NWConnection, buffer: Data) {
@@ -104,38 +120,73 @@ final class McpAppBridgeServer: @unchecked Sendable {
                 return
             }
 
-            if let request = HTTPBridgeRequest(data: accumulated) {
+            switch HTTPBridgeRequestParser.parse(accumulated) {
+            case .complete(let request):
                 self.process(request, connection: connection)
-                return
+            case .invalid:
+                self.sendJSONError(
+                    code: "invalid_request",
+                    message: "Malformed HTTP request.",
+                    status: 400,
+                    on: connection
+                )
+            case .incomplete:
+                if isComplete {
+                    self.sendJSONError(
+                        code: "invalid_request",
+                        message: "Incomplete HTTP request.",
+                        status: 400,
+                        on: connection
+                    )
+                } else {
+                    self.receiveRequest(on: connection, buffer: accumulated)
+                }
             }
-
-            if isComplete {
-                self.sendJSONError(code: "invalid_request", message: "Incomplete HTTP request.", status: 400, on: connection)
-                return
-            }
-
-            self.receiveRequest(on: connection, buffer: accumulated)
         }
     }
 
     private func process(_ request: HTTPBridgeRequest, connection: NWConnection) {
-        guard request.method == "POST", request.path == "/bridge" else {
-            sendJSONError(code: "not_found", message: "Unknown MCP app bridge endpoint.", status: 404, on: connection)
-            return
+        switch McpAppBridgeRequestEvaluator.evaluate(request, token: token) {
+        case .invoke(let payload):
+            invokeBridge(for: payload, on: connection)
+        case .reject(let error):
+            sendJSONError(
+                code: error.code,
+                message: error.message,
+                status: error.status,
+                on: connection
+            )
         }
-        guard request.authorization == "Bearer \(token)" else {
-            sendJSONError(code: "unauthorized", message: "Invalid MCP app bridge token.", status: 401, on: connection)
-            return
-        }
-        guard let payload = String(data: request.body, encoding: .utf8), !payload.isEmpty else {
-            sendJSONError(code: "invalid_request", message: "Bridge command must be UTF-8 JSON.", status: 400, on: connection)
-            return
-        }
-
-        sendBridgeResponse(for: payload, on: connection)
     }
 
-    private func sendBridgeResponse(for payload: String, on connection: NWConnection) {
+    private func invokeBridge(for payload: String, on connection: NWConnection) {
+        invocationQueue.async { [weak self] in
+            guard let self else {
+                connection.cancel()
+                return
+            }
+            let result = self.bridgeInvoker(payload)
+            self.networkQueue.async { [weak self] in
+                guard let self else {
+                    connection.cancel()
+                    return
+                }
+                switch result {
+                case .success(let output):
+                    self.sendHTTP(status: 200, body: output, on: connection)
+                case .failure(let code, let message):
+                    self.sendJSONError(
+                        code: code,
+                        message: message,
+                        status: 502,
+                        on: connection
+                    )
+                }
+            }
+        }
+    }
+
+    private static func invokeBridge(at bridgePath: String, payload: String) -> McpAppBridgeInvocationResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: bridgePath)
         process.arguments = [payload]
@@ -151,15 +202,14 @@ final class McpAppBridgeServer: @unchecked Sendable {
         do {
             try process.run()
         } catch {
-            sendJSONError(code: "bridge_launch_failed", message: error.localizedDescription, status: 502, on: connection)
-            return
+            return .failure(code: "bridge_launch_failed", message: error.localizedDescription)
         }
 
         let stderrGroup = DispatchGroup()
-        var errorOutput = Data()
+        let errorOutput = ProcessErrorOutput()
         stderrGroup.enter()
         DispatchQueue.global(qos: .utility).async {
-            errorOutput = stderrHandle.readDataToEndOfFile()
+            errorOutput.store(stderrHandle.readDataToEndOfFile())
             stderrGroup.leave()
         }
 
@@ -167,18 +217,15 @@ final class McpAppBridgeServer: @unchecked Sendable {
         stderrGroup.wait()
         process.waitUntilExit()
         guard (process.terminationStatus == 0 || process.terminationStatus == 1), !output.isEmpty else {
-            let message = String(data: errorOutput + output, encoding: .utf8)?
+            let message = String(data: errorOutput.load() + output, encoding: .utf8)?
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            sendJSONError(
+            return .failure(
                 code: "bridge_invocation_failed",
-                message: message?.isEmpty == false ? message! : "equinox-bridge returned empty output.",
-                status: 502,
-                on: connection
+                message: message?.isEmpty == false ? message! : "equinox-bridge returned empty output."
             )
-            return
         }
 
-        sendHTTP(status: 200, body: output, on: connection)
+        return .success(output)
     }
 
     private func writeState(port: NWEndpoint.Port) {
@@ -232,9 +279,7 @@ final class McpAppBridgeServer: @unchecked Sendable {
     private static func applicationSupportURL() -> URL? {
         guard let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first,
               let bundleID = Bundle.main.bundleIdentifier else { return nil }
-        let url = support.appendingPathComponent(bundleID, isDirectory: true)
-        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        return url
+        return support.appendingPathComponent(bundleID, isDirectory: true)
     }
 
     private static func loadOrCreateToken(in supportURL: URL) -> String? {
@@ -245,9 +290,8 @@ final class McpAppBridgeServer: @unchecked Sendable {
             return token
         }
 
-        var bytes = [UInt8](repeating: 0, count: 32)
-        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else { return nil }
-        let token = Data(bytes).base64EncodedString()
+        guard let bytes = try? SecureRandomBytes.generate(count: 32) else { return nil }
+        let token = bytes.base64EncodedString()
         do {
             try token.write(to: tokenURL, atomically: true, encoding: .utf8)
             try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: tokenURL.path)
@@ -258,46 +302,151 @@ final class McpAppBridgeServer: @unchecked Sendable {
     }
 }
 
-private struct HTTPBridgeRequest {
+private final class ProcessErrorOutput: @unchecked Sendable {
+    private let lock = NSLock()
+    private var data = Data()
+
+    func store(_ data: Data) {
+        lock.withLock {
+            self.data = data
+        }
+    }
+
+    func load() -> Data {
+        lock.withLock {
+            data
+        }
+    }
+}
+
+enum McpAppBridgeInvocationResult: Sendable, Equatable {
+    case success(Data)
+    case failure(code: String, message: String)
+}
+
+struct HTTPBridgeRequest: Sendable, Equatable {
     let method: String
     let path: String
     let authorization: String?
     let body: Data
+}
 
-    init?(data: Data) {
+enum HTTPBridgeRequestParseResult: Sendable, Equatable {
+    case incomplete
+    case invalid
+    case complete(HTTPBridgeRequest)
+}
+
+enum HTTPBridgeRequestParser {
+    private static let validHeaderNameCharacters = CharacterSet(
+        charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&'*+-.^_`|~"
+    )
+
+    static func parse(_ data: Data) -> HTTPBridgeRequestParseResult {
         let delimiter = Data("\r\n\r\n".utf8)
-        guard let headerRange = data.range(of: delimiter) else { return nil }
+        guard let headerRange = data.range(of: delimiter) else { return .incomplete }
         let headerEnd = headerRange.lowerBound
         let bodyStart = headerRange.upperBound
-        guard let headerText = String(data: data[..<headerEnd], encoding: .utf8) else { return nil }
+        guard let headerText = String(data: data[..<headerEnd], encoding: .utf8) else {
+            return .invalid
+        }
 
         let lines = headerText.components(separatedBy: "\r\n")
-        guard let requestLine = lines.first else { return nil }
-        let requestParts = requestLine.split(separator: " ", maxSplits: 2).map(String.init)
-        guard requestParts.count >= 2 else { return nil }
+        guard let requestLine = lines.first else { return .invalid }
+        let requestParts = requestLine.components(separatedBy: " ")
+        guard requestParts.count == 3,
+              requestParts.allSatisfy({ !$0.isEmpty }),
+              requestParts[0].unicodeScalars.allSatisfy(validHeaderNameCharacters.contains),
+              requestParts[1].hasPrefix("/"),
+              requestParts[2] == "HTTP/1.1" || requestParts[2] == "HTTP/1.0" else {
+            return .invalid
+        }
 
         var headers: [String: String] = [:]
         for line in lines.dropFirst() {
-            guard let separator = line.firstIndex(of: ":") else { continue }
-            let name = line[..<separator].lowercased()
+            guard let separator = line.firstIndex(of: ":"), separator != line.startIndex else {
+                return .invalid
+            }
+            let name = String(line[..<separator])
+            guard name.unicodeScalars.allSatisfy(validHeaderNameCharacters.contains) else {
+                return .invalid
+            }
+            let normalizedName = name.lowercased()
+            guard headers[normalizedName] == nil else { return .invalid }
             let value = line[line.index(after: separator)...].trimmingCharacters(in: .whitespaces)
-            headers[name] = value
+            headers[normalizedName] = value
         }
 
         guard let contentLengthText = headers["content-length"],
+              !contentLengthText.isEmpty,
+              contentLengthText.allSatisfy(\.isNumber),
               let contentLength = Int(contentLengthText),
-              contentLength >= 0 else { return nil }
+              contentLength >= 0 else {
+            return .invalid
+        }
+        guard contentLength <= Int.max - bodyStart else { return .invalid }
         let bodyEnd = bodyStart + contentLength
-        guard data.count >= bodyEnd else { return nil }
+        guard data.count >= bodyEnd else { return .incomplete }
 
-        method = requestParts[0]
-        path = requestParts[1]
-        authorization = headers["authorization"]
-        body = data[bodyStart..<bodyEnd]
+        return .complete(
+            HTTPBridgeRequest(
+                method: requestParts[0],
+                path: requestParts[1],
+                authorization: headers["authorization"],
+                body: data[bodyStart..<bodyEnd]
+            )
+        )
     }
 }
 
-private enum HTTPBridgeResponseReason {
+struct McpAppBridgeRequestError: Sendable, Equatable {
+    let code: String
+    let message: String
+    let status: Int
+}
+
+enum McpAppBridgeRequestEvaluation: Sendable, Equatable {
+    case invoke(String)
+    case reject(McpAppBridgeRequestError)
+}
+
+enum McpAppBridgeRequestEvaluator {
+    static func evaluate(
+        _ request: HTTPBridgeRequest,
+        token: String
+    ) -> McpAppBridgeRequestEvaluation {
+        guard request.method == "POST", request.path == "/bridge" else {
+            return .reject(
+                McpAppBridgeRequestError(
+                    code: "not_found",
+                    message: "Unknown MCP app bridge endpoint.",
+                    status: 404
+                )
+            )
+        }
+        guard request.authorization == "Bearer \(token)" else {
+            return .reject(
+                McpAppBridgeRequestError(
+                    code: "unauthorized",
+                    message: "Invalid MCP app bridge token.",
+                    status: 401
+                )
+            )
+        }
+        guard let payload = String(data: request.body, encoding: .utf8), !payload.isEmpty else {
+            return .reject(
+                McpAppBridgeRequestError(
+                    code: "invalid_request",
+                    message: "Bridge command must be UTF-8 JSON.",
+                    status: 400
+                )
+            )
+        }
+        return .invoke(payload)
+    }
+}
+
+enum HTTPBridgeResponseReason {
     static func phrase(for status: Int) -> String {
         switch status {
         case 200: return "OK"

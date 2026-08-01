@@ -54,7 +54,6 @@ struct AppearancePreview: View {
             .padding(.horizontal, EquinoxDesign.spacingMD)
             .padding(.vertical, EquinoxDesign.spacingXS)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .equinoxCard(style: .subtle, cornerRadius: SettingsDesign.sectionCornerRadius)
         }
     }
 
@@ -76,7 +75,7 @@ struct AppearancePreview: View {
             Spacer(minLength: 0)
         }
         .padding(.vertical, EquinoxDesign.spacingMicro + 1)
-        .equinoxCard(style: .subtle)
+        .equinoxCard(style: .row)
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .fixedSize(horizontal: false, vertical: true)
     }

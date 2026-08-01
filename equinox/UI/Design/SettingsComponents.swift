@@ -56,11 +56,7 @@ struct SettingsSection<Content: View>: View {
             .padding(.vertical, EquinoxDesign.spacingXS)
             .background {
                 RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
-                    .fill(EquinoxDesign.ColorToken.interactionSubtle)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
-                            .strokeBorder(EquinoxDesign.ColorToken.strongBorder, lineWidth: 1)
-                    }
+                    .fill(EquinoxDesign.ColorToken.surfaceRaised)
             }
         }
     }

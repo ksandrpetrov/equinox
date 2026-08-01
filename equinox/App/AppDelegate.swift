@@ -8,7 +8,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var mcpAppBridgeServer: McpAppBridgeServer?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
-        registerDefaults()
         PreferencesStore.shared.applyTheme()
         SettingsActivationHandler.install()
     }
@@ -42,10 +41,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             _ = appState.navigateToDeepLinkDateString(dateString)
         }
-    }
-
-    private func registerDefaults() {
-        UserDefaults.standard.register(defaults: PreferencesStore.registeredDefaultValues())
     }
 
     private func createApplicationSupportFolder() {

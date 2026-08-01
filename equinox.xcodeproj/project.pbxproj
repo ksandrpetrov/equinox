@@ -141,6 +141,7 @@
 		DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */; };
 		MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */; };
 		MCP013A1B2C3D4E5F6012345 /* Services/Platform/McpAppBridgeServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */; };
+		MABST01A1B2C3D4E5F6012345 /* McpAppBridgeServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MABST01A1B2C3D4E5F6012346 /* McpAppBridgeServerTests.swift */; };
 		MOD001A1B2C3D4E5F6012345 /* UI/Design/ModalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */; };
 		MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */; };
 		MTN001A1B2C3D4E5F6012345 /* Services/Platform/McpToolNames.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */; };
@@ -163,6 +164,7 @@
 		PLD009A1B2C3D4E5F6012345 /* PlaudEventMatchingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */; };
 		PLD010A1B2C3D4E5F6012345 /* Core/PlaudOAuthPKCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD020A1B2C3D4E5F6012346 /* Core/PlaudOAuthPKCE.swift */; };
 		PLD011A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD021A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthClient.swift */; };
+		POCFG01A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = POCFG01A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthConfiguration.swift */; };
 		POM001A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = POM001A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthModels.swift */; };
 		POC001A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthCallbackServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = POC001A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthCallbackServer.swift */; };
 		PLD012A1B2C3D4E5F6012345 /* PlaudOAuthPKCETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */; };
@@ -190,6 +192,7 @@
 		T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */; };
 		T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */; };
 		URL001A1B2C3D4E5F6012345 /* Services/Platform/URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */; };
+		SRB001A1B2C3D4E5F6012345 /* Services/Platform/SecureRandomBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = SRB001A1B2C3D4E5F6012346 /* Services/Platform/SecureRandomBytes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -352,6 +355,7 @@
 		DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemComplianceTests.swift; sourceTree = "<group>"; };
 		MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McpSetupTests.swift; sourceTree = "<group>"; };
 		MCP014A1B2C3D4E5F6012346 /* Services/Platform/McpAppBridgeServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpAppBridgeServer.swift; sourceTree = "<group>"; };
+		MABST01A1B2C3D4E5F6012346 /* McpAppBridgeServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = McpAppBridgeServerTests.swift; sourceTree = "<group>"; };
 		MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/ModalComponents.swift; sourceTree = "<group>"; };
 		MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingIndicator.swift; sourceTree = "<group>"; };
 		MTN001A1B2C3D4E5F6012346 /* Services/Platform/McpToolNames.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/McpToolNames.generated.swift; sourceTree = "<group>"; };
@@ -375,6 +379,7 @@
 		PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaudEventMatchingTests.swift; sourceTree = "<group>"; };
 		PLD020A1B2C3D4E5F6012346 /* Core/PlaudOAuthPKCE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/PlaudOAuthPKCE.swift; sourceTree = "<group>"; };
 		PLD021A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Plaud/PlaudOAuthClient.swift; sourceTree = "<group>"; };
+		POCFG01A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Plaud/PlaudOAuthConfiguration.swift; sourceTree = "<group>"; };
 		POM001A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Plaud/PlaudOAuthModels.swift; sourceTree = "<group>"; };
 		POC001A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthCallbackServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Plaud/PlaudOAuthCallbackServer.swift; sourceTree = "<group>"; };
 		PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaudOAuthPKCETests.swift; sourceTree = "<group>"; };
@@ -406,6 +411,7 @@
 		T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJoinURLTests.swift; sourceTree = "<group>"; };
 		T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = equinoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/URLOpener.swift; sourceTree = "<group>"; };
+		SRB001A1B2C3D4E5F6012346 /* Services/Platform/SecureRandomBytes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/SecureRandomBytes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -476,6 +482,7 @@
 				SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar+EventKit.swift */,
 				EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */,
 				URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */,
+				SRB001A1B2C3D4E5F6012346 /* Services/Platform/SecureRandomBytes.swift */,
 				D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */,
 				EFC001A1B2C3D4E5F6012346 /* Services/EventKit/EventFetchCache.swift */,
 				CSSVC001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionService.swift */,
@@ -511,6 +518,7 @@
 				PLD025A1B2C3D4E5F6012346 /* Services/Plaud/PlaudRecordingsStore.swift */,
 				PLD014A1B2C3D4E5F6012346 /* Services/Plaud/PlaudLiveClient.swift */,
 				PLD021A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthClient.swift */,
+				POCFG01A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthConfiguration.swift */,
 				POM001A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthModels.swift */,
 				POC001A1B2C3D4E5F6012346 /* Services/Plaud/PlaudOAuthCallbackServer.swift */,
 				PLD015A1B2C3D4E5F6012346 /* Services/Platform/KeychainStore.swift */,
@@ -642,6 +650,7 @@
 				MCP006A1B2C3D4E5F6012346 /* McpSetupTests.swift */,
 				PLD019A1B2C3D4E5F6012346 /* PlaudEventMatchingTests.swift */,
 				PLD022A1B2C3D4E5F6012346 /* PlaudOAuthPKCETests.swift */,
+				MABST01A1B2C3D4E5F6012346 /* McpAppBridgeServerTests.swift */,
 				EDD001A1B2C3D4E5F6012346 /* EventDraftDefaultsTests.swift */,
 				CAMT001A1B2C3D4E5F6012346 /* CalendarAccessMappingTests.swift */,
 				PST001A1B2C3D4E5F6012346 /* PreferencesStoreTests.swift */,
@@ -853,6 +862,7 @@
 				EKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */,
 				PLC001A1B2C3D4E5F6012345 /* App/PlaudCoordinator.swift in Sources */,
 				URL001A1B2C3D4E5F6012345 /* Services/Platform/URLOpener.swift in Sources */,
+				SRB001A1B2C3D4E5F6012345 /* Services/Platform/SecureRandomBytes.swift in Sources */,
 				D0E003A1B2C3D4E5F6012345 /* Services/EventKit/CalendarStore.swift in Sources */,
 				BCV001A1B2C3D4E5F6012345 /* Services/EventKit/BridgeCommandValidation.swift in Sources */,
 				EFC001A1B2C3D4E5F6012345 /* Services/EventKit/EventFetchCache.swift in Sources */,
@@ -886,6 +896,7 @@
 				PLD025A1B2C3D4E5F6012345 /* Services/Plaud/PlaudRecordingsStore.swift in Sources */,
 				PLD004A1B2C3D4E5F6012345 /* Services/Plaud/PlaudLiveClient.swift in Sources */,
 				PLD011A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthClient.swift in Sources */,
+				POCFG01A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthConfiguration.swift in Sources */,
 				POM001A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthModels.swift in Sources */,
 				POC001A1B2C3D4E5F6012345 /* Services/Plaud/PlaudOAuthCallbackServer.swift in Sources */,
 				PLD005A1B2C3D4E5F6012345 /* Services/Platform/KeychainStore.swift in Sources */,
@@ -985,6 +996,7 @@
 				T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */,
 				DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */,
 				MCP005A1B2C3D4E5F6012345 /* McpSetupTests.swift in Sources */,
+				MABST01A1B2C3D4E5F6012345 /* McpAppBridgeServerTests.swift in Sources */,
 				PLD009A1B2C3D4E5F6012345 /* PlaudEventMatchingTests.swift in Sources */,
 				PLD012A1B2C3D4E5F6012345 /* PlaudOAuthPKCETests.swift in Sources */,
 				EDD001A1B2C3D4E5F6012345 /* EventDraftDefaultsTests.swift in Sources */,
@@ -1196,7 +1208,7 @@
 				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
-				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -1238,7 +1250,7 @@
 				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
 				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
 				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
-				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -1260,7 +1272,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.equinox-bridge";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -1283,7 +1295,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.equinox-bridge";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -1301,7 +1313,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.equinoxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/equinox.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/equinox";
 			};
@@ -1320,7 +1332,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.equinoxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = targeted;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/equinox.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/equinox";
 			};

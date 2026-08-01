@@ -29,10 +29,6 @@ struct CalendarGridView: View {
                 .transition(EquinoxDesign.monthTransition(forward: appState.events.monthNavigationDirection == .forward))
         }
         .padding(EquinoxDesign.spacingXS)
-        .background {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusMD, style: .continuous)
-                .fill(EquinoxDesign.ColorToken.surfaceSecondary)
-        }
         .focusable()
         .focusEffectDisabled()
         .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .return]) { press in
@@ -48,6 +44,7 @@ struct CalendarGridView: View {
             EquinoxDesign.animation(EquinoxDesign.expandAnimation, reduceMotion: reduceMotion),
             value: appState.events.monthDate.julian
         )
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
         .accessibilityHint(String(localized: "Use arrow keys to move between days", comment: ""))
     }

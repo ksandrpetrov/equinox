@@ -12,11 +12,6 @@ final class CalendarAccessMappingTests: XCTestCase {
         XCTAssertEqual(CalendarAccessMapping.bridgeLabel(for: CalendarAccessMapping.AccessKind.unknown), "unknown")
     }
 
-    func testAccessKindMapsLegacyAuthorizedToFullAccess() {
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.authorized), .fullAccess)
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.fullAccess), .fullAccess)
-    }
-
     func testCalendarAccessStatusFromWriteOnlyIsDenied() {
         XCTAssertEqual(CalendarAccessStatus.from(EKAuthorizationStatus.writeOnly), .denied)
     }
@@ -45,6 +40,7 @@ final class CalendarAccessMappingTests: XCTestCase {
     }
 
     func testAccessKindMapsEventKitStatuses() {
+        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.fullAccess), .fullAccess)
         XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.denied), .denied)
         XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.notDetermined), .notDetermined)
         XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.restricted), .restricted)

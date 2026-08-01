@@ -110,6 +110,7 @@ enum EquinoxCardStyle {
     case secondary
     case subtle
     case raised
+    case row
 }
 
 struct EquinoxCardModifier: ViewModifier {
@@ -126,7 +127,7 @@ struct EquinoxCardModifier: ViewModifier {
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(
-                        isHovered ? EquinoxDesign.ColorToken.interactionHover : EquinoxDesign.ColorToken.hairlineBorder,
+                        borderColor,
                         lineWidth: 1
                     )
             }
@@ -140,7 +141,14 @@ struct EquinoxCardModifier: ViewModifier {
             EquinoxDesign.ColorToken.interactionSubtle
         case .raised:
             EquinoxDesign.ColorToken.surfaceRaised
+        case .row:
+            isHovered ? EquinoxDesign.ColorToken.interactionHover : .clear
         }
+    }
+
+    private var borderColor: Color {
+        if style == .row { return .clear }
+        return isHovered ? EquinoxDesign.ColorToken.interactionHover : EquinoxDesign.ColorToken.hairlineBorder
     }
 }
 
@@ -261,6 +269,7 @@ struct EquinoxBanner: View {
             Image(systemName: iconName)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(foregroundColor)
+                .accessibilityHidden(true)
             Text(message)
                 .font(.footnote)
                 .foregroundStyle(foregroundColor)
@@ -268,7 +277,7 @@ struct EquinoxBanner: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(EquinoxButtonStyle(variant: style == .error ? .prominent : .bordered, size: .small))
+                    .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
             }
         }
         .padding(.horizontal, EquinoxDesign.spacingMD)
@@ -280,7 +289,6 @@ struct EquinoxBanner: View {
             }
         }
         .modifier(CardPresentationModifier(presentation: presentation))
-        .accessibilityElement(children: .combine)
     }
 
     private var iconName: String {
@@ -358,10 +366,6 @@ struct EquinoxJoinButton: View {
                 .font(.title3.weight(.semibold))
                 .symbolRenderingMode(.hierarchical)
                 .frame(width: EquinoxDesign.ControlWidth.joinIcon, height: EquinoxDesign.ControlWidth.joinIcon)
-                .background {
-                    Circle()
-                        .fill(EquinoxDesign.onAccentForeground.opacity(EquinoxDesign.StateOpacity.joinGlassOverlay))
-                }
 
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
                 Text(String(localized: "Join Meeting", comment: ""))
@@ -381,7 +385,6 @@ struct EquinoxJoinButton: View {
         .padding(.horizontal, EquinoxDesign.spacingMD)
         .padding(.vertical, EquinoxDesign.spacingMD)
         .background { joinBackground }
-        .scaleEffect(isHovered && !reduceMotion ? EquinoxDesign.joinHoverScale : 1)
     }
 
     private var compactLabel: some View {
@@ -392,27 +395,10 @@ struct EquinoxJoinButton: View {
             .frame(width: metrics?.toolbarButtonSize ?? EquinoxDesign.toolbarButtonSize,
                    height: metrics?.toolbarButtonSize ?? EquinoxDesign.toolbarButtonSize)
             .background { joinBackground }
-            .scaleEffect(isHovered && !reduceMotion ? EquinoxDesign.joinHoverScale : 1)
     }
 
     private var joinBackground: some View {
         RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        EquinoxDesign.ColorToken.accent,
-                        EquinoxDesign.ColorToken.accent.opacity(isHovered ? 0.82 : 0.92)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .shadow(
-                color: EquinoxDesign.ColorToken.accent.opacity(
-                    isHovered ? EquinoxDesign.ShadowToken.joinHoverOpacity : EquinoxDesign.ShadowToken.joinRestOpacity
-                ),
-                radius: EquinoxDesign.ShadowToken.joinRadius,
-                y: EquinoxDesign.ShadowToken.joinYOffset
-            )
+            .fill(isHovered ? EquinoxDesign.ColorToken.accentStrong : EquinoxDesign.ColorToken.accent)
     }
 }

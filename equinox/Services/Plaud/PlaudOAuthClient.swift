@@ -42,7 +42,7 @@ enum PlaudOAuthClient {
             clearTokens()
         }
 
-        let request = PlaudOAuthPKCE.createAuthorizationRequest()
+        let request = try PlaudOAuthAuthorizationRequestFactory.make()
         let authorizationURL = request.url
         let result = await PlaudOAuthCallbackServer.run(
             expectedState: request.state,
@@ -102,11 +102,13 @@ enum PlaudOAuthClient {
     }
 
     static func validateAccessToken(_ accessToken: String) async throws -> Bool {
-        var request = URLRequest(url: PlaudOAuthPKCE.apiBase.appendingPathComponent("open/third-party/users/current"))
+        var request = URLRequest(
+            url: PlaudOAuthConfiguration.apiBase.appendingPathComponent("open/third-party/users/current")
+        )
         request.httpMethod = "GET"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        PlaudOAuthPKCE.applyBrowserHeaders(to: &request)
+        PlaudOAuthConfiguration.applyBrowserHeaders(to: &request)
 
         let (_, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { return false }
@@ -116,7 +118,7 @@ enum PlaudOAuthClient {
     private static func exchangeCode(_ code: String, codeVerifier: String, state: String) async throws -> PlaudOAuthTokenSet {
         let bodyItems = [
             URLQueryItem(name: "code", value: code),
-            URLQueryItem(name: "redirect_uri", value: PlaudOAuthPKCE.redirectURI),
+            URLQueryItem(name: "redirect_uri", value: PlaudOAuthConfiguration.redirectURI),
             URLQueryItem(name: "code_verifier", value: codeVerifier),
             URLQueryItem(name: "state", value: state),
         ]
@@ -124,13 +126,13 @@ enum PlaudOAuthClient {
         components.queryItems = bodyItems
         let body = components.percentEncodedQuery ?? ""
 
-        var request = URLRequest(url: PlaudOAuthPKCE.tokenURL)
+        var request = URLRequest(url: PlaudOAuthConfiguration.tokenURL)
         request.httpMethod = "POST"
         request.httpBody = Data(body.utf8)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue(basicAuthorizationHeader(), forHTTPHeaderField: "Authorization")
-        PlaudOAuthPKCE.applyBrowserHeaders(to: &request)
+        PlaudOAuthConfiguration.applyBrowserHeaders(to: &request)
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
@@ -145,12 +147,12 @@ enum PlaudOAuthClient {
 
     private static func refreshTokens(refreshToken: String) async throws -> PlaudOAuthTokenSet {
         let body = "refresh_token=\(refreshToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? refreshToken)"
-        var request = URLRequest(url: PlaudOAuthPKCE.refreshURL)
+        var request = URLRequest(url: PlaudOAuthConfiguration.refreshURL)
         request.httpMethod = "POST"
         request.httpBody = Data(body.utf8)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        PlaudOAuthPKCE.applyBrowserHeaders(to: &request)
+        PlaudOAuthConfiguration.applyBrowserHeaders(to: &request)
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
@@ -189,17 +191,17 @@ enum PlaudOAuthClient {
 
     private static func revokeSession(accessToken: String) async {
         var request = URLRequest(
-            url: PlaudOAuthPKCE.apiBase.appendingPathComponent("open/third-party/users/current/revoke")
+            url: PlaudOAuthConfiguration.apiBase.appendingPathComponent("open/third-party/users/current/revoke")
         )
         request.httpMethod = "POST"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        PlaudOAuthPKCE.applyBrowserHeaders(to: &request)
+        PlaudOAuthConfiguration.applyBrowserHeaders(to: &request)
         _ = try? await URLSession.shared.data(for: request)
     }
 
     private static func basicAuthorizationHeader() -> String {
-        let credentials = "\(PlaudOAuthPKCE.clientID):"
+        let credentials = "\(PlaudOAuthConfiguration.clientID):"
         let encoded = Data(credentials.utf8).base64EncodedString()
         return "Basic \(encoded)"
     }

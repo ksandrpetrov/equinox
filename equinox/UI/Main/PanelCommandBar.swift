@@ -4,12 +4,6 @@ struct PanelCommandBar: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
 
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    private var backgroundStyle: BackgroundStyle {
-        BackgroundStyle(rawValue: appState.preferences.backgroundStyle) ?? .glass
-    }
-
     private var monthTitle: String {
         EquinoxFormatters.formatter(key: "month.year") { $0.dateFormat = "MMMM yyyy" }
             .string(from: appState.events.monthDate.date(in: appState.calendar))
@@ -111,8 +105,12 @@ struct PanelCommandBar: View {
         }
         .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.spacingXS)
-        .panelCommandBarBackground(style: backgroundStyle, reduceTransparency: reduceTransparency)
         .frame(height: EquinoxDesign.commandBarHeight)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(EquinoxDesign.ColorToken.separator)
+                .frame(height: 1)
+        }
         .padding(.bottom, EquinoxDesign.spacingXS)
     }
 }

@@ -1,21 +1,25 @@
-import CryptoKit
 import XCTest
 @testable import equinox
 
 final class PlaudOAuthPKCETests: XCTestCase {
-    func testCodeChallengeMatchesSHA256Base64URL() {
-        let verifier = "test-verifier-value"
-        let expectedDigest = SHA256.hash(data: Data(verifier.utf8))
-        let expected = Data(expectedDigest).base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-
-        XCTAssertEqual(PlaudOAuthPKCE.generateCodeChallenge(from: verifier), expected)
+    func testCodeChallengeMatchesRFCPKCEVector() {
+        let verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+        XCTAssertEqual(
+            PlaudOAuthPKCE.generateCodeChallenge(from: verifier),
+            "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+        )
     }
 
-    func testAuthorizationRequestIncludesPKCEParams() {
-        let request = PlaudOAuthPKCE.createAuthorizationRequest()
+    func testAuthorizationRequestFactoryUsesInjectedRandomBytes() throws {
+        let verifierBytes = Data(0..<32)
+        let stateBytes = Data(32..<48)
+        let request = try PlaudOAuthAuthorizationRequestFactory.make { count in
+            switch count {
+            case 32: return verifierBytes
+            case 16: return stateBytes
+            default: XCTFail("Unexpected byte count \(count)"); return Data()
+            }
+        }
         guard let components = URLComponents(url: request.url, resolvingAgainstBaseURL: false),
               let items = components.queryItems else {
             return XCTFail("Missing query items")
@@ -25,8 +29,10 @@ final class PlaudOAuthPKCETests: XCTestCase {
             item.value.map { (item.name, $0) }
         })
 
-        XCTAssertEqual(values["client_id"], PlaudOAuthPKCE.clientID)
-        XCTAssertEqual(values["redirect_uri"], PlaudOAuthPKCE.redirectURI)
+        XCTAssertEqual(request.codeVerifier, PlaudOAuthPKCE.base64URLEncoded(verifierBytes))
+        XCTAssertEqual(request.state, PlaudOAuthPKCE.base64URLEncoded(stateBytes))
+        XCTAssertEqual(values["client_id"], PlaudOAuthConfiguration.clientID)
+        XCTAssertEqual(values["redirect_uri"], PlaudOAuthConfiguration.redirectURI)
         XCTAssertEqual(values["response_type"], "code")
         XCTAssertEqual(values["code_challenge_method"], "S256")
         XCTAssertEqual(values["state"], request.state)
@@ -38,14 +44,82 @@ final class PlaudOAuthPKCETests: XCTestCase {
         XCTAssertFalse(request.state.isEmpty)
     }
 
-    func testApplyBrowserHeadersSetsCloudflareFriendlyFields() {
-        var request = URLRequest(url: PlaudOAuthPKCE.apiBase)
-        PlaudOAuthPKCE.applyBrowserHeaders(to: &request)
+    func testAuthorizationRequestFactoryMapsRandomFailure() {
+        enum TestError: Error { case failed }
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), PlaudOAuthPKCE.browserUserAgent)
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Origin"), PlaudOAuthPKCE.webOrigin)
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Referer"), "\(PlaudOAuthPKCE.webOrigin)/")
+        XCTAssertThrowsError(
+            try PlaudOAuthAuthorizationRequestFactory.make { _ in throw TestError.failed }
+        ) { error in
+            guard case PlaudOAuthError.secureRandomGenerationFailed = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+    }
+
+    func testApplyBrowserHeadersSetsCloudflareFriendlyFields() {
+        var request = URLRequest(url: PlaudOAuthConfiguration.apiBase)
+        PlaudOAuthConfiguration.applyBrowserHeaders(to: &request)
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), PlaudOAuthConfiguration.browserUserAgent)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Origin"), PlaudOAuthConfiguration.webOrigin)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Referer"), "\(PlaudOAuthConfiguration.webOrigin)/")
         XCTAssertTrue(request.value(forHTTPHeaderField: "User-Agent")?.contains("Mozilla/5.0") ?? false)
+    }
+
+    func testCallbackParserAcceptsValidCodeAndState() {
+        XCTAssertEqual(
+            PlaudOAuthCallbackParser.parse(
+                target: "/auth/callback?code=authorization-code&state=expected",
+                expectedState: "expected"
+            ),
+            .authorizationCode("authorization-code")
+        )
+    }
+
+    func testCallbackParserRejectsMismatchedOrMissingState() {
+        XCTAssertEqual(
+            PlaudOAuthCallbackParser.parse(
+                target: "/auth/callback?code=authorization-code&state=wrong",
+                expectedState: "expected"
+            ),
+            .denied("OAuth state mismatch.")
+        )
+        XCTAssertEqual(
+            PlaudOAuthCallbackParser.parse(
+                target: "/auth/callback?code=authorization-code",
+                expectedState: "expected"
+            ),
+            .denied("OAuth state mismatch.")
+        )
+    }
+
+    func testCallbackParserHandlesMissingCodeAndAuthorizationError() {
+        XCTAssertEqual(
+            PlaudOAuthCallbackParser.parse(
+                target: "/auth/callback?state=expected",
+                expectedState: "expected"
+            ),
+            .missingCode
+        )
+        XCTAssertEqual(
+            PlaudOAuthCallbackParser.parse(
+                target: "/auth/callback?error=access_denied",
+                expectedState: "expected"
+            ),
+            .denied("access_denied")
+        )
+    }
+
+    func testCallbackParserRejectsEveryDuplicateQueryParameter() {
+        for parameter in ["code", "state", "error", "other"] {
+            let target =
+                "/auth/callback?code=value&state=expected&\(parameter)=first&\(parameter)=second"
+            XCTAssertEqual(
+                PlaudOAuthCallbackParser.parse(target: target, expectedState: "expected"),
+                .invalid,
+                "Expected duplicate \(parameter) to be rejected"
+            )
+        }
     }
 
     func testTokenSetExpiryUsesMillisecondEpoch() {

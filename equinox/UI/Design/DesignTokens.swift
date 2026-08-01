@@ -45,8 +45,6 @@ enum EquinoxDesign {
     static let expandAnimation = Animation.smooth(duration: 0.22)
 
     static let pressScale: CGFloat = 0.97
-    static let joinHoverScale: CGFloat = 1.01
-
     static let onAccentForeground = Color.white
 
     static func animation(_ animation: Animation, reduceMotion: Bool) -> Animation? {
@@ -64,10 +62,10 @@ enum EquinoxDesign {
     enum ColorToken {
         static let accent = Color("AccentColor")
         static let accentStrong = Color("AccentStrong")
-        static let surfacePrimary = Color("SurfacePrimary")
-        static let surfaceSecondary = Color("SurfaceSecondary")
-        static let surfaceWindow = Color("SurfaceWindow")
-        static let surfaceRaised = Color("SurfaceRaised")
+        static let surfacePrimary = Color(nsColor: .windowBackgroundColor)
+        static let surfaceSecondary = Color(nsColor: .controlBackgroundColor)
+        static let surfaceWindow = Color(nsColor: .windowBackgroundColor)
+        static let surfaceRaised = Color(nsColor: .textBackgroundColor)
         static let weekendTint = Color("WeekendTint")
         static let monthBoundary = Color("MonthBoundary")
         static let semanticRed = Color("SemanticRed")
@@ -82,7 +80,6 @@ enum EquinoxDesign {
         static var accentRing: Color { accent.opacity(0.55) }
 
         static let hairlineBorder = Color.primary.opacity(0.06)
-        static let strongBorder = Color.primary.opacity(0.12)
         static let separator = Color.primary.opacity(0.10)
         static let interactionRest = Color.primary.opacity(0.06)
         static let interactionHover = Color.primary.opacity(0.08)
@@ -103,10 +100,6 @@ enum EquinoxDesign {
         static let sheetRadius: CGFloat = 20
         static let sheetYOffset: CGFloat = 12
 
-        static let joinRestOpacity: Double = 0.22
-        static let joinHoverOpacity: Double = 0.35
-        static let joinRadius: CGFloat = 8
-        static let joinYOffset: CGFloat = 3
     }
 
     enum EventStripe {
@@ -147,7 +140,6 @@ enum EquinoxDesign {
         static let declined: Double = 0.65
         static let declinedEvent: Double = 0.72
         static let declinedTitle: Double = 0.55
-        static let closeDisabled: Double = 0.45
         static let responding: Double = 0.55
         static let notesBody: Double = 0.9
         static let joinSubtitle: Double = 0.85
@@ -157,8 +149,6 @@ enum EquinoxDesign {
         static let weekendHighlight: Double = 0.25
         static let metadataIconBackground: Double = 0.12
         static let cardBackground: Double = 0.72
-        static let barBackground: Double = 0.85
-        static let joinGlassOverlay: Double = 0.18
         static let badgeTint: Double = 0.12
         static let badgeBorder: Double = 0.25
         static let chipForegroundSubtle: Double = 0.85

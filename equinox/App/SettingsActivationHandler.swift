@@ -9,24 +9,23 @@ import SwiftUI
 /// foreground SwiftUI render tree. `SettingsView` is therefore hosted in a dedicated
 /// AppKit window, which is reliable across macOS versions and lets us control focus and
 /// the `.regular`/`.accessory` activation policy explicitly.
+@MainActor
 enum SettingsActivationHandler {
     private static let windowIdentifier = "equinoxSettingsWindow"
-    private nonisolated(unsafe) static var closeObserver: NSObjectProtocol?
+    private static var closeObserver: SettingsWindowCloseObserver?
 
     static func install() {
         guard closeObserver == nil else { return }
-        closeObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.willCloseNotification,
-            object: nil,
-            queue: .main
-        ) { notification in
-            guard let window = notification.object as? NSWindow,
-                  window.identifier?.rawValue == windowIdentifier else { return }
-            NSApp.setActivationPolicy(.accessory)
-        }
+        let observer = SettingsWindowCloseObserver(windowIdentifier: windowIdentifier)
+        NotificationCenter.default.addObserver(
+            observer,
+            selector: #selector(SettingsWindowCloseObserver.windowWillClose(_:)),
+            name: NSWindow.willCloseNotification,
+            object: nil
+        )
+        closeObserver = observer
     }
 
-    @MainActor
     static func openSettings(appState: AppState, initialTab: SettingsTab = .general) {
         appState.panel.settingsInitialTab = initialTab
         NSApp.setActivationPolicy(.regular)
@@ -48,5 +47,20 @@ enum SettingsActivationHandler {
         window.setContentSize(NSSize(width: SettingsDesign.windowMinWidth, height: SettingsDesign.windowMinHeight))
         window.center()
         window.makeKeyAndOrderFront(nil)
+    }
+}
+
+@MainActor
+private final class SettingsWindowCloseObserver: NSObject {
+    private let windowIdentifier: String
+
+    init(windowIdentifier: String) {
+        self.windowIdentifier = windowIdentifier
+    }
+
+    @objc func windowWillClose(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              window.identifier?.rawValue == windowIdentifier else { return }
+        NSApp.setActivationPolicy(.accessory)
     }
 }

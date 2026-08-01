@@ -31,40 +31,6 @@ extension View {
         .clipShape(shape)
     }
 
-    /// Shared glass/solid surface used by secondary panel chrome (e.g. agenda
-    /// section headers). Keeps the material + tint + optional solid fallback
-    /// consistent with `panelBackground` without duplicating the recipe.
-    func equinoxGlassSurface<S: Shape>(
-        _ shape: S,
-        style: BackgroundStyle = .glass,
-        tint: Color = EquinoxDesign.ColorToken.interactionSubtle,
-        solidFill: Color = EquinoxDesign.ColorToken.surfaceSecondary
-    ) -> some View {
-        background {
-            if style == .solid {
-                shape.fill(solidFill)
-            } else {
-                shape
-                    .fill(.regularMaterial)
-                    .overlay { shape.fill(tint) }
-                    .glassEffect(.regular, in: shape)
-            }
-        }
-    }
-
-    func panelCommandBarBackground(style: BackgroundStyle, reduceTransparency: Bool = false) -> some View {
-        let effectiveStyle: BackgroundStyle = (style == .glass && reduceTransparency) ? .solid : style
-        let shape = Capsule(style: .continuous)
-        return background {
-            Group {
-                if effectiveStyle == .solid {
-                    shape.fill(EquinoxDesign.ColorToken.surfaceSecondary)
-                } else {
-                    shape.glassEffect(.regular, in: shape)
-                }
-            }
-        }
-    }
 }
 
 struct PanelButtonStyle: ButtonStyle {
@@ -99,7 +65,7 @@ struct PanelButtonStyle: ButtonStyle {
         }
         if isPressed { return EquinoxDesign.ColorToken.interactionPress }
         if isHovered { return EquinoxDesign.ColorToken.interactionHover }
-        return EquinoxDesign.ColorToken.interactionRest
+        return .clear
     }
 
     private func pressScale(isPressed: Bool) -> CGFloat {

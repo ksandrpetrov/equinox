@@ -80,7 +80,7 @@ actor PlaudLiveClient {
         request.httpMethod = "GET"
         request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        PlaudOAuthPKCE.applyBrowserHeaders(to: &request)
+        PlaudOAuthConfiguration.applyBrowserHeaders(to: &request)
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else {

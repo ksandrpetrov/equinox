@@ -77,12 +77,16 @@ xcodebuild \
 ### Swift (XCTest)
 
 ```bash
+. scripts/xcodebuild-local-settings.sh
+load_xcodebuild_local_settings Local.xcconfig
+
 xcodebuild \
   -project equinox.xcodeproj \
   -scheme equinox \
   -configuration Debug \
   -derivedDataPath build/DerivedData \
-  test
+  test \
+  "${XCODEBUILD_LOCAL_SETTINGS[@]}"
 ```
 
 Тесты Core и Services — в `equinoxTests/`. Живой EventKit в unit-тестах не используется.

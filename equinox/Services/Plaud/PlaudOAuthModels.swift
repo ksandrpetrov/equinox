@@ -25,6 +25,7 @@ struct PlaudOAuthTokenSet: Codable, Sendable, Equatable {
 }
 
 enum PlaudOAuthError: LocalizedError {
+    case secureRandomGenerationFailed
     case callbackPortInUse
     case callbackListenFailed(String)
     case authenticationDenied(String?)
@@ -36,6 +37,11 @@ enum PlaudOAuthError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .secureRandomGenerationFailed:
+            return String(
+                localized: "Could not securely start Plaud sign-in. Try again.",
+                comment: "Plaud OAuth secure random generation error"
+            )
         case .callbackPortInUse:
             return String(
                 localized: "OAuth callback port 8199 is already in use. Stop the other OAuth client and try again.",

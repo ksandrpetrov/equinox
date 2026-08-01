@@ -44,11 +44,13 @@ struct MainPanelView: View {
             PanelCommandBar(appState: appState, metrics: metrics)
 
             if let feedback = appState.panel.panelFeedback {
-                ModalErrorBanner(message: feedback)
+                EquinoxBanner(
+                    message: feedback,
+                    style: .error,
+                    actionTitle: String(localized: "Dismiss", comment: "Panel error dismiss action"),
+                    action: { appState.panel.panelFeedback = nil }
+                )
                     .padding(.bottom, EquinoxDesign.spacingXS)
-                    .onTapGesture {
-                        appState.panel.panelFeedback = nil
-                    }
             }
 
             loadingSlot

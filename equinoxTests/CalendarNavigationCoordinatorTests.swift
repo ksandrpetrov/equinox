@@ -3,16 +3,9 @@ import XCTest
 
 @MainActor
 final class CalendarNavigationCoordinatorTests: XCTestCase {
-    private var preferences: PreferencesStore!
-    private var navigation: CalendarNavigationCoordinator!
-    private var calendar: Calendar!
-
-    override func setUp() {
-        super.setUp()
-        preferences = PreferencesStore.shared
-        calendar = Calendar(identifier: .gregorian)
-        navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences)
-    }
+    private let preferences = PreferencesStore.shared
+    private let calendar = Calendar(identifier: .gregorian)
+    private lazy var navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences)
 
     func testSelectDateInSameMonthDoesNotChangeMonthDate() {
         let initialMonth = navigation.monthDate

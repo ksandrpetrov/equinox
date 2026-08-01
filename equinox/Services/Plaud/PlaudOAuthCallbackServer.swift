@@ -32,6 +32,47 @@ enum PlaudOAuthCallbackServer {
     }
 }
 
+enum PlaudOAuthCallbackParseResult: Equatable {
+    case authorizationCode(String)
+    case denied(String?)
+    case missingCode
+    case invalid
+    case notFound
+}
+
+enum PlaudOAuthCallbackParser {
+    static func parse(target: String, expectedState: String) -> PlaudOAuthCallbackParseResult {
+        guard let components = URLComponents(string: "http://127.0.0.1\(target)") else {
+            return .invalid
+        }
+        guard components.path == "/auth/callback" else {
+            return .notFound
+        }
+
+        var seenParameterNames = Set<String>()
+        var parameters: [String: String] = [:]
+        for item in components.queryItems ?? [] {
+            guard seenParameterNames.insert(item.name).inserted else {
+                return .invalid
+            }
+            if let value = item.value {
+                parameters[item.name] = value
+            }
+        }
+
+        if let error = parameters["error"] {
+            return .denied(error)
+        }
+        guard let code = parameters["code"], !code.isEmpty else {
+            return .missingCode
+        }
+        guard parameters["state"] == expectedState else {
+            return .denied("OAuth state mismatch.")
+        }
+        return .authorizationCode(code)
+    }
+}
+
 private final class CallbackHandler: @unchecked Sendable {
     private let expectedState: String
     private let timeout: TimeInterval
@@ -76,7 +117,7 @@ private final class CallbackHandler: @unchecked Sendable {
             // starts and the browser never opens.
             parameters.requiredLocalEndpoint = NWEndpoint.hostPort(
                 host: .ipv4(.loopback),
-                port: .init(rawValue: UInt16(PlaudOAuthPKCE.callbackPort))!
+                port: .init(rawValue: UInt16(PlaudOAuthConfiguration.callbackPort))!
             )
             listener = try NWListener(using: parameters)
         } catch {
@@ -185,43 +226,42 @@ private final class CallbackHandler: @unchecked Sendable {
         }
 
         let target = String(parts[1])
-        guard target.hasPrefix("/auth/callback") else {
+        switch PlaudOAuthCallbackParser.parse(target: target, expectedState: expectedState) {
+        case .notFound:
             sendResponse(on: connection, statusCode: 404, html: Self.errorHTML(String(localized: "Not found", comment: "Plaud OAuth HTTP 404")))
             connection.cancel()
             return
-        }
-
-        guard let components = URLComponents(string: "http://127.0.0.1\(target)") else {
+        case .invalid:
+            sendResponse(
+                on: connection,
+                statusCode: 400,
+                html: Self.errorHTML(
+                    String(localized: "Invalid OAuth callback.", comment: "Plaud OAuth invalid callback")
+                )
+            )
             connection.cancel()
             return
-        }
-
-        let params = Dictionary(
-            uniqueKeysWithValues: (components.queryItems ?? []).compactMap { item in
-                item.value.map { (item.name, $0) }
+        case .denied(let error):
+            let message: String
+            if error == "OAuth state mismatch." {
+                message = String(localized: "State mismatch.", comment: "Plaud OAuth state mismatch")
+            } else {
+                message = error ?? String(localized: "Authorization failed", comment: "Plaud OAuth error page")
             }
-        )
-
-        if let error = params["error"] {
-            sendResponse(on: connection, statusCode: 400, html: Self.errorHTML(error))
+            sendResponse(on: connection, statusCode: 400, html: Self.errorHTML(message))
             connection.cancel()
             complete(.denied(error))
             return
-        }
-
-        guard let code = params["code"] else {
+        case .missingCode:
             sendResponse(on: connection, statusCode: 200, html: Self.neutralHTML)
             connection.cancel()
             return
+        case .authorizationCode(let code):
+            processAuthorizationCode(code, connection: connection)
         }
+    }
 
-        guard params["state"] == expectedState else {
-            sendResponse(on: connection, statusCode: 400, html: Self.errorHTML(String(localized: "State mismatch.", comment: "Plaud OAuth state mismatch")))
-            connection.cancel()
-            complete(.denied("OAuth state mismatch."))
-            return
-        }
-
+    private func processAuthorizationCode(_ code: String, connection: NWConnection) {
         lock.lock()
         if exchangeStarted {
             let html = exchangeSucceeded ? Self.successHTML : Self.neutralHTML

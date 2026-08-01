@@ -43,11 +43,7 @@ struct EventDetailView: View {
                         ModalErrorBanner(message: actionError)
                     }
 
-                    EventDetailHeroHeader(
-                        event: event,
-                        isCloseDisabled: isDeleting,
-                        onClose: { dismiss() }
-                    )
+                    EventDetailHeroHeader(event: event)
 
                     EventDetailMetadataCard(rows: metadataRows)
 

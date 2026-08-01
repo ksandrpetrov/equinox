@@ -33,6 +33,7 @@ yarn-error.log*
 
 # Editor / IDE
 .idea/
+.codex/hooks.json
 *.swp
 *~
 .vscode/
@@ -40,3 +41,10 @@ yarn-error.log*
 # Env / secrets
 .env
 .env.*
+
+# Graphify local machine state and rebuild cache
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/.vocab.txt
+graphify-out/cost.json
+graphify-out/cache/

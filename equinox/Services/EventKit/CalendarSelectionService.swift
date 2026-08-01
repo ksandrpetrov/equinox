@@ -4,6 +4,11 @@ import Foundation
 /// Calendar list, selection persistence, and valid-calendar resolution for `CalendarStore`.
 struct CalendarSelectionService {
     private(set) var calendarEntriesStorage: [CalendarListEntry] = []
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
 
     var calendarEntries: [CalendarListEntry] {
         calendarEntriesStorage
@@ -26,11 +31,11 @@ struct CalendarSelectionService {
             }
         }
 
-        let storedSelection = CalendarSelectionStorage.loadSelectedIDs()
+        let storedSelection = CalendarSelectionStorage.loadSelectedIDs(from: defaults)
         let selectedCalendars: Set<String>
         if storedSelection.isEmpty, !calendars.isEmpty {
             let allIDs = calendars.map(\.id)
-            CalendarSelectionStorage.saveSelectedIDs(allIDs)
+            CalendarSelectionStorage.saveSelectedIDs(allIDs, to: defaults)
             selectedCalendars = Set(allIDs)
         } else {
             selectedCalendars = Set(storedSelection)
@@ -94,6 +99,6 @@ struct CalendarSelectionService {
             guard case .calendar(let cal) = entry, cal.isSelected else { return nil }
             return cal.id
         }
-        CalendarSelectionStorage.saveSelectedIDs(ids)
+        CalendarSelectionStorage.saveSelectedIDs(ids, to: defaults)
     }
 }

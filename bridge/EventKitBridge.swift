@@ -1,6 +1,23 @@
 import EventKit
 import Foundation
 
+private final class CalendarAccessRequestResult: @unchecked Sendable {
+    private let lock = NSLock()
+    private var granted = false
+
+    func store(_ value: Bool) {
+        lock.lock()
+        granted = value
+        lock.unlock()
+    }
+
+    func load() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return granted
+    }
+}
+
 final class EventKitBridge {
     private let store = EKEventStore()
 
@@ -48,16 +65,18 @@ final class EventKitBridge {
         }
 
         let semaphore = DispatchSemaphore(value: 0)
-        var granted = false
-        let handler: EKEventStoreRequestAccessCompletionHandler = { result, _ in
-            granted = result
+        let result = CalendarAccessRequestResult()
+        store.requestFullAccessToEvents { granted, _ in
+            result.store(granted)
             semaphore.signal()
         }
-        store.requestFullAccessToEvents(completion: handler)
         semaphore.wait()
 
         let status = Self.authorizationStatus()
-        return .success(.accessRequest(AccessRequestData(granted: granted && status.granted, status: status.label)))
+        return .success(.accessRequest(AccessRequestData(
+            granted: result.load() && status.granted,
+            status: status.label
+        )))
     }
 
     private func listCalendars() -> BridgeResponse {

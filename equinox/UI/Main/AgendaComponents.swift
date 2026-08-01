@@ -4,7 +4,6 @@ struct AgendaSectionHeader: View {
     let date: CalendarDate
     let calendar: Calendar
     let metrics: SizeMetrics
-    var backgroundStyle: BackgroundStyle = .glass
 
     var body: some View {
         let nsDate = date.date(in: calendar)
@@ -24,11 +23,12 @@ struct AgendaSectionHeader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.agendaHeaderVerticalPadding)
-        .equinoxGlassSurface(
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous),
-            style: backgroundStyle
-        )
-        .padding(.horizontal, EquinoxDesign.spacingXS)
+        .background(EquinoxDesign.ColorToken.surfacePrimary)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(EquinoxDesign.ColorToken.separator)
+                .frame(height: 1)
+        }
         .padding(.top, EquinoxDesign.spacingXS)
     }
 
@@ -63,59 +63,60 @@ struct AgendaEventCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
-            HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
-                EventStripeView(
-                    color: calendarColor,
-                    verticalPadding: showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro
-                )
+        HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
+            Button {
+                onTap?()
+            } label: {
+                HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
+                    EventStripeView(
+                        color: calendarColor,
+                        verticalPadding: showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro
+                    )
 
-                Group {
-                    if showsSecondaryDetails {
-                        expandedEventContent
-                    } else {
-                        compactEventContent
+                    Group {
+                        if showsSecondaryDetails {
+                            expandedEventContent
+                        } else {
+                            compactEventContent
+                        }
                     }
-                }
-                .padding(.leading, metrics.agendaContentLeadingInset)
-                .padding(.trailing, trailingPadding)
-                .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    onTap?()
-                }
-
-                if let url = event.joinURL {
-                    EquinoxJoinButton(url: url, variant: .compact, metrics: metrics) {
-                        URLOpener.open(url)
-                    }
-                    .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : EquinoxDesign.spacingXS)
-                    .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
-                }
-
-                if let match = plaudMatch {
-                    PanelIconButton(
-                        symbol: "waveform",
-                        help: String(localized: "Open in Plaud", comment: "Plaud agenda button help"),
-                        accessibilityLabel: String(localized: "Open in Plaud", comment: ""),
-                        buttonSize: metrics.toolbarButtonSize
-                    ) {
-                        URLOpener.open(match.webURL)
-                    }
+                    .padding(.leading, metrics.agendaContentLeadingInset)
                     .padding(.trailing, EquinoxDesign.spacingSM)
-                    .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
+                    .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro)
                 }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel(eventAccessibilityLabel)
+            .accessibilityHint(String(localized: "Show event details.", comment: "Agenda event hint"))
+
+            if let url = event.joinURL {
+                EquinoxJoinButton(url: url, variant: .compact, metrics: metrics) {
+                    URLOpener.open(url)
+                }
+                .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : EquinoxDesign.spacingXS)
+                .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
+            }
+
+            if let match = plaudMatch {
+                PanelIconButton(
+                    symbol: "waveform",
+                    help: String(localized: "Open in Plaud", comment: "Plaud agenda button help"),
+                    accessibilityLabel: String(localized: "Open in Plaud", comment: ""),
+                    buttonSize: metrics.toolbarButtonSize
+                ) {
+                    URLOpener.open(match.webURL)
+                }
+                .padding(.trailing, EquinoxDesign.spacingSM)
+                .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
             }
         }
-        .equinoxCard(style: .subtle, isHovered: isHovered)
+        .equinoxCard(style: .row, isHovered: isHovered)
         .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedEvent : 1)
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(eventAccessibilityLabel)
-        .accessibilityHint(String(localized: "Tap to show details.", comment: "Agenda event hint"))
-        .accessibilityAddTraits(.isButton)
     }
 
     @ViewBuilder
@@ -184,13 +185,6 @@ struct AgendaEventCard: View {
                 }
             }
         }
-    }
-
-    private var trailingPadding: CGFloat {
-        if event.joinURL != nil || plaudMatch != nil {
-            return EquinoxDesign.spacingSM
-        }
-        return EquinoxDesign.panelPadding
     }
 
     private var eventAccessibilityLabel: String {

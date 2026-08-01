@@ -47,7 +47,6 @@ struct EventRSVPBar: View {
         }
         .padding(.horizontal, EquinoxDesign.spacingSM - 2)
         .padding(.vertical, EquinoxDesign.spacingSM - 2)
-        .background { barBackground }
     }
 
     private var standardBar: some View {
@@ -58,7 +57,6 @@ struct EventRSVPBar: View {
         }
         .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.spacingSM)
-        .background { barBackground }
     }
 
     private var detailBar: some View {
@@ -68,16 +66,6 @@ struct EventRSVPBar: View {
             detailButton(.declined, symbol: "xmark", label: declineLabel, tint: EquinoxDesign.ColorToken.semanticRed)
         }
         .padding(EquinoxDesign.spacingSM)
-        .background { barBackground }
-    }
-
-    private var barBackground: some View {
-        RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(EquinoxDesign.StateOpacity.barBackground))
-            .overlay {
-                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
-            }
     }
 
     private var acceptLabel: String {

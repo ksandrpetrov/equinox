@@ -2,8 +2,6 @@ import SwiftUI
 
 struct EventDetailHeroHeader: View {
     let event: DayEvent
-    var isCloseDisabled = false
-    var onClose: (() -> Void)?
 
     private var isDeclined: Bool {
         event.participationStatus == .declined
@@ -36,49 +34,7 @@ struct EventDetailHeroHeader: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
-            if let onClose {
-                EventDetailCloseButton(
-                    isDisabled: isCloseDisabled,
-                    action: onClose
-                )
-            }
         }
-        .padding(EquinoxDesign.spacingMD)
-        .background { EventDetailCardBackground() }
-    }
-}
-
-private struct EventDetailCloseButton: View {
-    let isDisabled: Bool
-    let action: () -> Void
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isHovered = false
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: "xmark")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(.secondary)
-                .frame(width: EquinoxDesign.toolbarButtonSize, height: EquinoxDesign.toolbarButtonSize)
-                .background {
-                    Circle()
-                        .fill(
-                            isHovered
-                                ? EquinoxDesign.ColorToken.interactionPress
-                                : EquinoxDesign.ColorToken.interactionRest
-                        )
-                }
-        }
-        .buttonStyle(.plain)
-        .disabled(isDisabled)
-        .opacity(isDisabled ? EquinoxDesign.StateOpacity.closeDisabled : 1)
-        .keyboardShortcut(.cancelAction)
-        .help(String(localized: "Close", comment: "Event detail close button help"))
-        .accessibilityLabel(String(localized: "Close", comment: "Event detail close button"))
-        .onHover { isHovered = $0 }
-        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
     }
 }
 
@@ -253,7 +209,7 @@ struct EventDetailSecondaryActionButton: View {
             }
             .padding(.horizontal, EquinoxDesign.spacingMD)
             .padding(.vertical, EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro)
-            .equinoxCard(style: .subtle, isHovered: isHovered)
+            .equinoxCard(style: .row, isHovered: isHovered)
         }
         .buttonStyle(.plain)
         .onHover { isHovered = $0 }

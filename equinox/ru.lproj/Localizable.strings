@@ -34,6 +34,7 @@
 "Delete…" = "Удалить…";
 "Decline" = "Отклонить";
 "Declined" = "Отклонено";
+"Dismiss" = "Закрыть";
 "Done" = "Готово";
 "End date" = "Дата окончания";
 "End repeat" = "Конец повтора";
@@ -131,6 +132,7 @@
 "Show Details" = "Подробности";
 "Show month boundaries" = "Показывать границы месяца";
 "Highlight days" = "Выделять дни";
+"Calendar rows" = "Строки календаря";
 "Calendar Display" = "Отображение календаря";
 "Customize the calendar grid and agenda" = "Настройка сетки календаря и списка событий";
 "Visible Calendars" = "Видимые календари";
@@ -190,6 +192,7 @@
 "Access Equinox via keyboard shortcut only" = "Доступ к Equinox только через горячую клавишу";
 "Show meeting indicator" = "Показывать индикатор встречи";
 "Dot when a meeting is starting soon" = "Точка, когда встреча скоро начнётся";
+"Camera icon when a meeting is starting soon" = "Значок камеры, когда встреча скоро начнётся";
 "Clock format" = "Формат часов";
 "12-hour" = "12 часов";
 "24-hour" = "24 часа";
@@ -206,9 +209,10 @@
 "Go to Today   T" = "Перейти к сегодня   T";
 "Calendar grid" = "Сетка календаря";
 "Use arrow keys to move between days" = "Стрелки для перемещения между днями";
-"Tap to show details." = "Нажмите для просмотра подробностей.";
+"Show event details." = "Показать детали события.";
 "No writable calendars available. Check Calendar access in Privacy settings." = "Нет доступных календарей для записи. Проверьте доступ в настройках конфиденциальности.";
 "Could not delete the event." = "Не удалось удалить событие.";
+"Could not delete event" = "Не удалось удалить событие.";
 "View on GitHub" = "Открыть на GitHub";
 "%lld events" = "%lld событий";
 /* Plaud integration — event detail & agenda */
@@ -336,6 +340,7 @@
 /* Create event errors */
 "The calendar could not be found." = "Календарь не найден.";
 "This calendar is read-only." = "Этот календарь доступен только для чтения.";
+"End date must be after start date." = "Дата окончания должна быть позже даты начала.";
 /* General settings pickers */
 "First day of week" = "Первый день недели";
 "Event list shows" = "Список событий показывает";
@@ -352,7 +357,9 @@
 "FaceTime" = "FaceTime";
 /* Privacy */
 "App state unavailable." = "Состояние приложения недоступно.";
+"Open settings from the Equinox menu bar." = "Откройте настройки из строки меню Equinox.";
 /* Plaud OAuth */
+"Could not securely start Plaud sign-in. Try again." = "Не удалось безопасно начать вход в Plaud. Повторите попытку.";
 "OAuth callback port 8199 is already in use. Stop the other OAuth client and try again." = "Порт OAuth-callback 8199 уже занят. Остановите другой OAuth-клиент и повторите попытку.";
 "Could not start OAuth callback server: %@" = "Не удалось запустить OAuth-callback сервер: %@";
 "Could not save Plaud credentials because the app signature is invalid or signed with a revoked certificate. Rebuild Equinox with valid local signing and try again." = "Не удалось сохранить учётные данные Plaud: подпись приложения недействительна или сделана отозванным сертификатом. Пересоберите Equinox с корректной локальной подписью и повторите попытку.";
@@ -364,6 +371,7 @@
 "This page can be closed." = "Эту страницу можно закрыть.";
 "Authorization failed" = "Ошибка авторизации";
 "Not found" = "Не найдено";
+"Invalid OAuth callback." = "Некорректный OAuth-callback.";
 "State mismatch." = "Несовпадение state.";
 /* App & settings tabs */
 "Equinox" = "Equinox";

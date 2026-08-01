@@ -14,7 +14,7 @@ enum BridgeDateParsing {
         return formatter
     }()
 
-    private nonisolated(unsafe) static let dayFormatter: DateFormatter = {
+    private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.locale = Locale(identifier: "en_US_POSIX")

@@ -81,7 +81,7 @@ struct PanelStateOverlay: View {
                         .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
                 }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 
     private func errorBanner(_ message: String) -> some View {

@@ -16,10 +16,6 @@ struct AgendaView: View {
     @State private var sectionHeaderHeight: CGFloat = 0
 
     private var prefs: PreferencesStore { appState.preferences }
-    private var backgroundStyle: BackgroundStyle {
-        BackgroundStyle(rawValue: prefs.backgroundStyle) ?? .glass
-    }
-
     var body: some View {
         let sections = agendaSections
         Group {
@@ -67,8 +63,7 @@ struct AgendaView: View {
                                 AgendaSectionHeader(
                                     date: section.date,
                                     calendar: appState.calendar,
-                                    metrics: metrics,
-                                    backgroundStyle: backgroundStyle
+                                    metrics: metrics
                                 )
                                 .id(AgendaScrollTarget.day(julian: section.date.julian))
                                 .background {
