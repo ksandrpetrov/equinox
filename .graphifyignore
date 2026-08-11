@@ -1,6 +1,0 @@
-# Graphify's own Codex integration is tooling, not Equinox source material.
-.codex/
-
-# Raster branding variants do not describe code or architecture.
-equinox/Images.xcassets/
-scripts/assets/
