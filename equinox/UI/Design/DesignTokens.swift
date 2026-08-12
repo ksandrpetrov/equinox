@@ -31,7 +31,6 @@ enum EquinoxDesign {
     static let emptyStateIconSize: CGFloat = 32
 
     static let settingsSidebarWidth: CGFloat = 220
-    static let settingsDetailMinWidth: CGFloat = 480
     static let settingsSectionCornerRadius: CGFloat = 12
     static let settingsSectionSpacing: CGFloat = 20
     static let settingsDetailPadding: CGFloat = 20
