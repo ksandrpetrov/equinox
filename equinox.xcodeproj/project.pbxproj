@@ -582,7 +582,7 @@
 			packageProductDependencies = (
 				KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */,
 			);
-			productName = Moon;
+			productName = equinox;
 			productReference = 9242A55C1A82A136005AA4B3 /* equinox.app */;
 			productType = "com.apple.product-type.application";
 		};
