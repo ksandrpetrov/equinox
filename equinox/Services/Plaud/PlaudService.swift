@@ -45,9 +45,6 @@ actor PlaudService {
 
         do {
             try await reloadCatalog()
-            if force {
-                cache.clearNegatives()
-            }
             lastError = nil
         } catch {
             lastError = error.localizedDescription
@@ -72,7 +69,7 @@ actor PlaudService {
             source: .manual,
             matchedAt: Date()
         )
-        cache.storePositive(key: key, match: cached, fingerprint: catalogFingerprint)
+        cache.storePositive(key: key, match: cached)
 
         return PlaudEventMatch(
             fileID: fileID,
@@ -97,7 +94,7 @@ actor PlaudService {
         let fingerprint = PlaudRecordingsStore.fingerprint(for: fetched)
 
         if fingerprint != catalogFingerprint {
-            cache.invalidateAutoMatches(keepingManual: true, newFingerprint: fingerprint)
+            cache.invalidateAutoMatches()
             catalogFingerprint = fingerprint
         }
 
@@ -166,10 +163,10 @@ actor PlaudService {
                     source: .auto,
                     matchedAt: Date()
                 )
-                cache.storePositive(key: key, match: cached, fingerprint: catalogFingerprint)
+                cache.storePositive(key: key, match: cached)
                 results[key] = match
             } else {
-                cache.storeNegative(key: key, fingerprint: catalogFingerprint)
+                cache.clearAutoMatch(key: key)
             }
         }
 

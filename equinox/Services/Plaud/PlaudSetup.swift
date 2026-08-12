@@ -5,7 +5,6 @@ struct PlaudSetup: Equatable, Sendable {
     var recordCount: Int
     var lastRefreshAt: Date?
     var cachePositiveCount: Int
-    var cacheNegativeCount: Int
     var cacheManualCount: Int
     var lastError: String?
     var hasKeychainOAuth: Bool
@@ -18,10 +17,10 @@ enum PlaudConfigurator {
         enabled: Bool,
         recordCount: Int = 0,
         lastRefreshAt: Date? = nil,
-        cacheStats: (positive: Int, negative: Int, manual: Int)? = nil,
+        cacheStats: (positive: Int, manual: Int)? = nil,
         lastError: String? = nil
     ) -> PlaudSetup {
-        let stats = cacheStats ?? (positive: 0, negative: 0, manual: 0)
+        let stats = cacheStats ?? (positive: 0, manual: 0)
         let keychainTokens = PlaudOAuthClient.loadTokens()
 
         return PlaudSetup(
@@ -29,7 +28,6 @@ enum PlaudConfigurator {
             recordCount: recordCount,
             lastRefreshAt: lastRefreshAt,
             cachePositiveCount: stats.positive,
-            cacheNegativeCount: stats.negative,
             cacheManualCount: stats.manual,
             lastError: lastError,
             hasKeychainOAuth: keychainTokens != nil,
@@ -42,7 +40,7 @@ enum PlaudConfigurator {
     static func buildSetupFromPreferences(
         recordCount: Int = 0,
         lastRefreshAt: Date? = nil,
-        cacheStats: (positive: Int, negative: Int, manual: Int)? = nil,
+        cacheStats: (positive: Int, manual: Int)? = nil,
         lastError: String? = nil
     ) -> PlaudSetup {
         buildSetup(

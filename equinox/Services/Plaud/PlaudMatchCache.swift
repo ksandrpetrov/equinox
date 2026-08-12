@@ -9,16 +9,9 @@ struct PlaudCachedMatch: Codable, Sendable, Equatable {
     var webURL: URL? { URL(string: webURLString) }
 }
 
-struct PlaudCachedNegative: Codable, Sendable, Equatable {
-    let checkedAt: Date
-    let indexFingerprint: String
-}
-
 private struct PlaudMatchCacheFile: Codable {
     let v: Int
-    var indexFingerprint: String
     var matches: [String: PlaudCachedMatch]
-    var negatives: [String: PlaudCachedNegative]
 }
 
 final class PlaudMatchCache: @unchecked Sendable {
@@ -29,78 +22,43 @@ final class PlaudMatchCache: @unchecked Sendable {
     init(fileURL: URL? = nil) {
         let resolved = fileURL ?? Self.defaultFileURL()
         self.fileURL = resolved
-        if let loaded = Self.load(from: resolved) {
-            data = loaded
-        } else {
-            data = PlaudMatchCacheFile(v: 1, indexFingerprint: "", matches: [:], negatives: [:])
-        }
-    }
-
-    func indexFingerprint() -> String {
-        lock.withLock { data.indexFingerprint }
+        data = Self.load(from: resolved) ?? PlaudMatchCacheFile(v: 1, matches: [:])
     }
 
     func positiveMatch(for key: String) -> PlaudCachedMatch? {
         lock.withLock { data.matches[key] }
     }
 
-    func isNegative(for key: String, fingerprint: String) -> Bool {
-        lock.withLock {
-            guard let negative = data.negatives[key] else { return false }
-            return negative.indexFingerprint == fingerprint
-        }
-    }
-
-    func storePositive(
-        key: String,
-        match: PlaudCachedMatch,
-        fingerprint: String
-    ) {
+    func storePositive(key: String, match: PlaudCachedMatch) {
         lock.withLock {
             data.matches[key] = match
-            data.negatives.removeValue(forKey: key)
-            data.indexFingerprint = fingerprint
             persistLocked()
         }
     }
 
-    func storeNegative(key: String, fingerprint: String) {
+    /// Drops a stale auto-match so the event can be matched again; manual links are never touched.
+    func clearAutoMatch(key: String) {
         lock.withLock {
-            data.negatives[key] = PlaudCachedNegative(checkedAt: Date(), indexFingerprint: fingerprint)
-            if data.matches[key]?.source != .manual {
-                data.matches.removeValue(forKey: key)
-            }
-            data.indexFingerprint = fingerprint
+            guard let existing = data.matches[key], existing.source != .manual else { return }
+            data.matches.removeValue(forKey: key)
             persistLocked()
         }
     }
 
-    func invalidateAutoMatches(keepingManual: Bool, newFingerprint: String) {
+    /// Drops every auto-match after the Plaud catalog changed, keeping manual links.
+    func invalidateAutoMatches() {
         lock.withLock {
-            if keepingManual {
-                data.matches = data.matches.filter { $0.value.source == .manual }
-            } else {
-                data.matches = [:]
-            }
-            data.negatives = [:]
-            data.indexFingerprint = newFingerprint
+            let kept = data.matches.filter { $0.value.source == .manual }
+            guard kept.count != data.matches.count else { return }
+            data.matches = kept
             persistLocked()
         }
     }
 
-    /// Clears cached "no match" decisions so events can be matched again after reconnect or manual refresh.
-    func clearNegatives() {
-        lock.withLock {
-            guard !data.negatives.isEmpty else { return }
-            data.negatives = [:]
-            persistLocked()
-        }
-    }
-
-    func stats() -> (positive: Int, negative: Int, manual: Int) {
+    func stats() -> (positive: Int, manual: Int) {
         lock.withLock {
             let manual = data.matches.values.filter { $0.source == .manual }.count
-            return (data.matches.count, data.negatives.count, manual)
+            return (data.matches.count, manual)
         }
     }
 

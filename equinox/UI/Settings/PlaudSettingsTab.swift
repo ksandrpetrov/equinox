@@ -172,11 +172,6 @@ struct PlaudSettingsTab: View {
                     label: String(localized: "Cached links", comment: ""),
                     value: "\(setup.cachePositiveCount) (\(setup.cacheManualCount) manual)"
                 )
-                SettingsDivider()
-                statusRow(
-                    label: String(localized: "No-recording cache", comment: ""),
-                    value: "\(setup.cacheNegativeCount)"
-                )
             }
 
             if let statusMessage {
