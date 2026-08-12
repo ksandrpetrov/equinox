@@ -7,13 +7,10 @@ enum EquinoxDesign {
     static let spacingMD: CGFloat = 12
     static let spacingLG: CGFloat = 16
     static let spacingXL: CGFloat = 20
-    static let spacingXXL: CGFloat = 32
 
     static let radiusSM: CGFloat = 8
-    static let radiusMD: CGFloat = 10
     static let radiusLG: CGFloat = 14
     static let chipRadius: CGFloat = 4
-    static let capsuleRadius: CGFloat = 999
 
     static let panelCornerRadius: CGFloat = 14
     static let panelPadding: CGFloat = 16
@@ -109,7 +106,6 @@ enum EquinoxDesign {
     }
 
     enum ChipMetrics {
-        static let dotSize: CGFloat = 6
         static let detailDotSize: CGFloat = 7
         static let spacing: CGFloat = 4
         static let horizontalPadding: CGFloat = 6
@@ -156,8 +152,6 @@ enum EquinoxDesign {
         static let warningBannerTint: Double = 0.08
     }
 
-    static func panelTitleFont() -> Font { .title2.weight(.semibold) }
-
     static func weekdayHeaderFont() -> Font {
         .caption2.weight(.semibold)
     }
@@ -198,10 +192,6 @@ enum EquinoxDesign {
 
     static func monoTimeFont(size: CGFloat = 12) -> Font {
         .system(size: size, weight: .medium, design: .monospaced)
-    }
-
-    static func codeFont(_ style: Font.TextStyle = .caption) -> Font {
-        .system(style, design: .monospaced)
     }
 
     static func aboutTitleFont() -> Font { .largeTitle.bold() }
@@ -245,7 +235,6 @@ enum ModalDesign {
 
 enum SettingsDesign {
     static var sidebarWidth: CGFloat { EquinoxDesign.settingsSidebarWidth }
-    static var detailMinWidth: CGFloat { EquinoxDesign.settingsDetailMinWidth }
     static var sectionCornerRadius: CGFloat { EquinoxDesign.settingsSectionCornerRadius }
     static var sectionSpacing: CGFloat { EquinoxDesign.settingsSectionSpacing }
     static var sectionHeaderBottomPadding: CGFloat { EquinoxDesign.spacingSM - 2 }

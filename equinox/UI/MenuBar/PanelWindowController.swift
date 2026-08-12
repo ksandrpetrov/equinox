@@ -50,12 +50,6 @@ final class PanelWindowController {
         appState.panel.isPanelVisible = false
     }
 
-    func refreshIfVisible(statusItem: NSStatusItem) {
-        guard appState.panel.isPanelVisible else { return }
-        updatePanelAgendaMaxHeight(statusItem: statusItem)
-        applyGeometry(statusItem: statusItem, resize: true, reposition: true)
-    }
-
     func handleSizePreferenceChanged(statusItem: NSStatusItem) {
         updatePanelAgendaMaxHeight(statusItem: statusItem)
         applyGeometry(statusItem: statusItem, resize: true, reposition: appState.panel.isPanelVisible)

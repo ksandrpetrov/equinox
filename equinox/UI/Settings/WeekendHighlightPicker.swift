@@ -5,7 +5,7 @@ struct WeekendHighlightPicker: View {
 
     private var dowLabels: [String] {
         let formatter = DateFormatter()
-        formatter.locale = appLocale
+        formatter.locale = EquinoxFormatters.appLocale
         let symbols = formatter.shortWeekdaySymbols ?? ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
         return symbols
     }

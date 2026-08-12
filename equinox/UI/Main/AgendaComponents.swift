@@ -205,7 +205,7 @@ struct AgendaEventCard: View {
         let now = Date()
         guard Calendar.autoupdatingCurrent.isDateInToday(event.startDate) else { return nil }
         if event.startDate <= now && event.endDate > now {
-            return EquinoxFormatters.relativeTimeDuringEvent(from: now)
+            return EquinoxFormatters.relativeTimeDuringEvent()
         }
         if event.startDate > now {
             return EquinoxFormatters.relativeTime(until: event.startDate, from: now)

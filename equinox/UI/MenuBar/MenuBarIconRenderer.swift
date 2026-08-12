@@ -98,7 +98,7 @@ enum MenuBarIconRenderer {
     @MainActor
     static func iconText(prefs: PreferencesStore, calendar: Calendar, today: CalendarDate) -> String {
         if prefs.showMonthInIcon || prefs.showDayOfWeekInIcon {
-            let locale = appLocale
+            let locale = EquinoxFormatters.appLocale
             var template = "d"
             if prefs.showMonthInIcon { template += "MMM" }
             if prefs.showDayOfWeekInIcon { template += "EEE" }

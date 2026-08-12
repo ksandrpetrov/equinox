@@ -11,8 +11,6 @@ struct PlaudSetup: Equatable, Sendable {
     var hasKeychainOAuth: Bool
     var keychainOAuthExpiresAt: Date?
     var keychainOAuthHasRefresh: Bool
-
-    var isReady: Bool { isEnabled && hasKeychainOAuth }
 }
 
 enum PlaudConfigurator {

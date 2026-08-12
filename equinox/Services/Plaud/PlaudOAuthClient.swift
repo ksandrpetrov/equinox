@@ -23,10 +23,6 @@ enum PlaudOAuthClient {
         KeychainStore.delete(account: keychainAccount)
     }
 
-    static func keychainTokenData() -> Data? {
-        KeychainStore.load(account: keychainAccount)
-    }
-
     static func decodeTokens(from data: Data) -> PlaudOAuthTokenSet? {
         guard let tokenSet = try? JSONDecoder().decode(PlaudOAuthTokenSet.self, from: data),
               !tokenSet.access_token.isEmpty else { return nil }

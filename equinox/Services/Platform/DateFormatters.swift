@@ -57,10 +57,7 @@ enum EquinoxFormatters {
     }
 
     static func weekdaySymbols() -> [String] {
-        let formatter = formatter(key: "weekday.veryShort") { _ in }
-        return formatter.veryShortWeekdaySymbols
-            ?? formatter.shortWeekdaySymbols
-            ?? ["В", "П", "В", "С", "Ч", "П", "С"]
+        formatter(key: "weekday.veryShort") { _ in }.veryShortWeekdaySymbols
     }
 
     static func relativeTime(until eventStart: Date, from now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> String? {
@@ -76,9 +73,7 @@ enum EquinoxFormatters {
         return String(format: String(localized: "in %lld h", comment: "Relative event time hours"), hours)
     }
 
-    static func relativeTimeDuringEvent(from now: Date = Date()) -> String {
+    static func relativeTimeDuringEvent() -> String {
         String(localized: "Now", comment: "Event happening now")
     }
 }
-
-var appLocale: Locale { EquinoxFormatters.appLocale }

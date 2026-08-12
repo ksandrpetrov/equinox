@@ -18,7 +18,7 @@ final class StatusItemController: NSObject {
         self.appState = appState
         self.panelController = PanelWindowController(appState: appState)
         super.init()
-        iconDateFormatter.locale = appLocale
+        iconDateFormatter.locale = EquinoxFormatters.appLocale
     }
 
     func setup() {
@@ -147,10 +147,6 @@ final class StatusItemController: NSObject {
         }
         statusItemMoveWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: workItem)
-    }
-
-    func refreshPanelIfVisible() {
-        panelController.refreshIfVisible(statusItem: statusItem)
     }
 
     private func handleSizePreferenceChanged() {
