@@ -86,6 +86,28 @@ xcodebuild \
 
 Тесты Core и Services — в `equinoxTests/`. Живой EventKit в unit-тестах не используется.
 
+## Локализация
+
+Базовый язык — английский: строки задаются прямо в коде через `String(localized:comment:)`. Перевод один — русский, в `equinox/ru.lproj/Localizable.strings` (плюс `InfoPlist.strings` для описаний доступа).
+
+Чтобы добавить или обновить переводы:
+
+1. Откройте проект в Xcode и выберите **Editor → Export For Localization…** — получится `.xliff` на каждую локаль.
+2. Отредактируйте `.xliff` (например, в Counterparts Lite).
+3. Вернитесь в Xcode и выберите **Editor → Import Localizations…**
+
+Экспортированные `.xliff` — промежуточный артефакт, в репозиторий они не коммитятся; источник правды — `.strings` в `ru.lproj`.
+
+## Ресурсы приложения
+
+`AppIcon` и `AppLogo` в `equinox/Images.xcassets` не рисуются вручную, а генерируются из `scripts/assets/equinox-mark.png`:
+
+```bash
+swift scripts/regenerate-design-assets.swift
+```
+
+Скрипт перезаписывает все размеры appiconset, оба масштаба `AppLogo` и его `Contents.json`. Запускайте его после замены исходного марка, а не правьте PNG'и по отдельности.
+
 ## Нотаризация и распространение
 
 Ручной процесс через Xcode:

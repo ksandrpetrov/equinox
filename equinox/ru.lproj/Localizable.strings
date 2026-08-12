@@ -53,9 +53,7 @@
 "General" = "Основные";
 "Glass" = "Стекло";
 "Going" = "Пойду";
-"Icon style" = "Стиль значка";
 "Join Meeting" = "Присоединиться к встрече";
-"Join meeting" = "Присоединиться к встрече";
 "Keyboard shortcut" = "Горячая клавиша";
 "Large" = "Большой";
 "Launch at login" = "Запускать при входе";
@@ -168,7 +166,6 @@
 "Retry" = "Повторить";
 "Loading events" = "Загрузка событий";
 "New Event   ⌘N · Go to Today   T · Pin Equinox   P" = "Новое событие   ⌘N · Перейти к сегодня   T · Закрепить Equinox   P";
-"⌘N New Event · T Today · P Pin" = "⌘N Новое событие · T Сегодня · P Закрепить";
 "Dismiss shortcut tip" = "Скрыть подсказку";
 "Calendar access is required to load events." = "Для загрузки событий требуется доступ к календарю.";
 /* Panel */
@@ -190,7 +187,6 @@
 "Hide menu bar icon" = "Скрыть иконку в строке меню";
 "Access Equinox via keyboard shortcut only" = "Доступ к Equinox только через горячую клавишу";
 "Show meeting indicator" = "Показывать индикатор встречи";
-"Dot when a meeting is starting soon" = "Точка, когда встреча скоро начнётся";
 "Camera icon when a meeting is starting soon" = "Значок камеры, когда встреча скоро начнётся";
 "Clock format" = "Формат часов";
 "12-hour" = "12 часов";
@@ -210,7 +206,6 @@
 "Use arrow keys to move between days" = "Стрелки для перемещения между днями";
 "Show event details." = "Показать детали события.";
 "No writable calendars available. Check Calendar access in Privacy settings." = "Нет доступных календарей для записи. Проверьте доступ в настройках конфиденциальности.";
-"Could not delete the event." = "Не удалось удалить событие.";
 "Could not delete event" = "Не удалось удалить событие.";
 "View on GitHub" = "Открыть на GitHub";
 "%lld events" = "%lld событий";
@@ -248,7 +243,6 @@
 "Recordings" = "Записи";
 "Last refreshed" = "Последнее обновление";
 "Cached links" = "Кэшированные ссылки";
-"No-recording cache" = "Кэш отсутствия записей";
 "Token expires" = "Токен истекает";
 "Token refresh" = "Обновление токена";
 "available" = "доступно";

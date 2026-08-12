@@ -50,7 +50,7 @@
 
 - `DesignTokens.swift`, `PanelComponents`, `SettingsComponents`
 - Размеры S/M/L через `SizeMetrics` — не хардкодить пиксели
-- Строки — `String(localized:comment:)`; есть `ru.lproj` и `_translations/`
+- Строки — `String(localized:comment:)`; перевод — `ru.lproj` (workflow в [BUILD.md](BUILD.md))
 
 ---
 
