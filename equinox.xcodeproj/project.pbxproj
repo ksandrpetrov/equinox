@@ -100,7 +100,6 @@
 		ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */; };
 		FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */; };
 		KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */; };
-		KSM001A1B2C3D4E5F6012345 /* Services/Platform/KeyboardShortcutMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */; };
 		KSN001A1B2C3D4E5F6012345 /* App/KeyboardShortcutNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = KSN001A1B2C3D4E5F6012346 /* App/KeyboardShortcutNames.swift */; };
 		KYP001A1B2C3D4E5F6012345 /* UI/MenuBar/KeyablePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */; };
 		DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */; };
@@ -282,7 +281,6 @@
 		EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/EventFetchCoordinator.swift; sourceTree = "<group>"; };
 		ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AgendaScrollCoordinator.swift; sourceTree = "<group>"; };
 		FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Settings/SettingsView.swift; sourceTree = "<group>"; };
-		KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/KeyboardShortcutMigration.swift; sourceTree = "<group>"; };
 		KSN001A1B2C3D4E5F6012346 /* App/KeyboardShortcutNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/KeyboardShortcutNames.swift; sourceTree = "<group>"; };
 		KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/MenuBar/KeyablePanel.swift; sourceTree = "<group>"; };
 		DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemComplianceTests.swift; sourceTree = "<group>"; };
@@ -434,7 +432,6 @@
 				PLD015A1B2C3D4E5F6012346 /* Services/Platform/KeychainStore.swift */,
 				PLD016A1B2C3D4E5F6012346 /* Services/Plaud/PlaudSetup.swift */,
 				PLD017A1B2C3D4E5F6012346 /* Services/Plaud/PlaudService.swift */,
-				KSM001A1B2C3D4E5F6012346 /* Services/Platform/KeyboardShortcutMigration.swift */,
 				A11Y001A1B2C3D4E5F6012346 /* UI/Design/AccessibilityHelpers.swift */,
 				D0E008A1B2C3D4E5F6012346 /* UI/Design/DesignTokens.swift */,
 				PAL001A1B2C3D4E5F6012346 /* UI/Design/PanelAgendaLayout.swift */,
@@ -739,7 +736,6 @@
 				PLD006A1B2C3D4E5F6012345 /* Services/Plaud/PlaudSetup.swift in Sources */,
 				PLD007A1B2C3D4E5F6012345 /* Services/Plaud/PlaudService.swift in Sources */,
 				PLD008A1B2C3D4E5F6012345 /* UI/Settings/PlaudSettingsTab.swift in Sources */,
-				KSM001A1B2C3D4E5F6012345 /* Services/Platform/KeyboardShortcutMigration.swift in Sources */,
 				A11Y001A1B2C3D4E5F6012345 /* UI/Design/AccessibilityHelpers.swift in Sources */,
 				D0E008A1B2C3D4E5F6012345 /* UI/Design/DesignTokens.swift in Sources */,
 				PAL001A1B2C3D4E5F6012345 /* UI/Design/PanelAgendaLayout.swift in Sources */,

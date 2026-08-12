@@ -18,7 +18,7 @@ let kShowMeetingIndicator = "ShowMeetingIndicator"
 let kClockFormat = "ClockFormat"
 let kHideIcon = "HideIcon"
 let kShowLocation = "ShowLocation"
-/// Legacy UserDefaults key — literal `"kShowEventDots"` (with prefix) must not change; existing installs rely on it.
+/// The literal key carries its own `k` prefix. Renaming it resets the setting for existing installs.
 let kShowEventDots = "kShowEventDots"
 let kShowDaysWithNoEventsInAgenda = "ShowDaysWithNoEventsInAgenda"
 let kAgendaHeightRatio = "AgendaHeightRatio"
@@ -26,7 +26,6 @@ let kShowMonthBoundaries = "ShowMonthBoundaries"
 let kSelectedCalendars = "SelectedCalendars"
 let kPlaudEnabled = "PlaudEnabled"
 let kHasSeenShortcutTip = "HasSeenShortcutTip"
-let kKeyboardShortcutsMigrationFromMASShortcut = "KeyboardShortcutsMigrationFromMASShortcut"
 
 let kThemePreference = "ThemePreference"
 let kBackgroundStyle = "BackgroundStyle"

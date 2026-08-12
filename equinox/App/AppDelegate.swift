@@ -1,5 +1,4 @@
 import AppKit
-import KeyboardShortcuts
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -15,7 +14,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         createApplicationSupportFolder()
 
         appState = AppState()
-        KeyboardShortcutMigration.migrateIfNeeded()
         statusItemController = StatusItemController(appState: appState)
         statusItemController?.setup()
         appState.requestCalendarAccessIfNeeded()
