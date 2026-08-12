@@ -15,7 +15,7 @@ equinox — календарь для macOS в строке меню. Он по�
 - **Фильтрация календарей** — выбор календарей по источникам, с учётом read-only календарей.
 - **Popover или pinned panel** — панель открывается по клику на menu bar icon или закрепляется как плавающее окно; состояние pinned восстанавливается после перезапуска.
 - **Keyboard-first действия** — глобальный shortcut, `T` для Today, `Cmd+N` для нового события, `P` для pin/unpin, `Cmd+,` для настроек.
-- **Join meeting** — распознаёт Zoom, Microsoft Teams и Amazon Chime в URL, location и notes; в GUI может открывать нативное приложение, если оно установлено.
+- **Join meeting** — распознаёт ссылку на встречу в URL, location и notes: Zoom, Microsoft Teams, Amazon Chime, Google Meet, Webex, VK Calls, FaceTime и ряд других (GoToMeeting, RingCentral, BigBlueButton, Jitsi, Senfcall, Workplace). Нативное приложение вместо браузера открывается для Zoom, Teams и Chime, если оно установлено.
 
 Редактирование существующего события в GUI намеренно не поддерживается.
 
@@ -93,6 +93,8 @@ scripts/        — вспомогательные скрипты сборки �
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Слои, потоки данных и Plaud |
 | [AGENTS.md](AGENTS.md) | Правила для AI-агентов и разработчиков |
 
-## Лицензия
+## Лицензия и происхождение
 
-Проект распространяется по лицензии MIT. Полный текст — в [LICENSE.txt](LICENSE.txt).
+equinox вырос из [Itsycal](https://github.com/sfsam/Itsycal) — menu bar календаря Sanjay Madan. От оригинала осталась лицензия; код полностью переписан на Swift 6 / SwiftUI.
+
+Проект распространяется по лицензии MIT, © 2016 Sanjay Madan. Полный текст — в [LICENSE.txt](LICENSE.txt).

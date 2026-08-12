@@ -70,7 +70,7 @@
 |--------|-----------------|
 | Сетка/даты | `Core/MonthGrid.swift`, `Core/CalendarDate.swift`, `equinoxTests/MonthGridTests.swift` |
 | События/лейаут | `Core/EventLayout.swift`, `Services/EventKit/CalendarStore.swift` |
-| Meeting URLs | `Core/JoinURLDetection.swift`, `equinoxTests/JoinURLDetectionTests.swift` |
+| Meeting URLs | `Core/MeetingProvider.swift` (реестр провайдеров), `Core/JoinURLDetection.swift`, `equinoxTests/JoinURLDetectionTests.swift` |
 | UI панели | `UI/Main/`, `UI/Design/DesignTokens.swift` |
 | Настройки | `UI/Settings/`, `Services/PreferencesStore.swift`, `App/Constants.swift` |
 | Menu bar | `UI/MenuBar/StatusItemController.swift`, `MenuBarIconRenderer.swift` |
@@ -151,8 +151,8 @@ cp Local.xcconfig.example Local.xcconfig
 | Pin vs popover | `StatusItemController`, `kPanelPinned` |
 | Menu bar icon | `MenuBarIconRenderer`, настройки icon type |
 | Meeting indicator | `kShowMeetingIndicator` |
-| Global shortcut | `KeyboardShortcuts` (миграция с MASShortcut), `KeyboardShortcutMigration` |
-| Join meeting | `JoinURLDetection`, `NativeJoinURL` |
+| Global shortcut | `KeyboardShortcuts`, `KeyboardShortcutNames`, `ShortcutsSettingsTab` |
+| Join meeting | `MeetingProviderRegistry`, `JoinURLDetection`, `NativeJoinURL` — новый провайдер добавляется только в реестр |
 | Plaud auto/manual match | `PlaudCoordinator`, `PlaudService`, `PlaudMatchCache` |
 | Plaud OAuth | `PlaudSettingsTab`, `PlaudOAuthClient`, `Core/PlaudOAuthPKCE` |
 | Privacy / TCC | `PrivacySettingsTab`, `AppDelegate` |
@@ -193,7 +193,7 @@ xcodebuild -project equinox.xcodeproj -scheme equinox -configuration Debug \
 | `equinox/UI/*` | `./run.sh` + UI чеклист (раздел 6) |
 | `project.pbxproj` | diff **без** `DEVELOPMENT_TEAM` |
 
-**Нет в проекте:** SwiftLint, ESLint, pre-commit, CI build/test (только signing guard), XCUITest. Не отмечать [x] без реального запуска.
+**Нет в проекте:** SwiftLint, ESLint, pre-commit, CI, XCUITest. Единственный автоматический контроль — `equinoxTests/DesignSystemComplianceTests.swift` (запрещает хардкод цветов, размеров шрифта и opacity вне `UI/Design/`), и он гоняется только вместе с остальными тестами. Не отмечать [x] без реального запуска.
 
 ---
 

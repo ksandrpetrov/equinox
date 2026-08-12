@@ -35,7 +35,7 @@ flowchart TB
 | Слой | Путь | Ответственность |
 |------|------|-----------------|
 | App | `equinox/App/` | Жизненный цикл, `AppState`, `EventsCoordinator`, `PanelPresentationState`, `PlaudCoordinator`, константы, defaults |
-| Core | `equinox/Core/` | Даты, сетка, лейаут, распознавание join URL, RSVP mapping, Plaud matching, Plaud PKCE/timestamp parsing |
+| Core | `equinox/Core/` | Даты, сетка, лейаут, реестр meeting-провайдеров и распознавание join URL, RSVP mapping, Plaud matching, Plaud PKCE/timestamp parsing |
 | Services | `equinox/Services/` | Шлюз к EventKit (`CalendarStore`), настройки, Plaud service/cache/OAuth, платформенные хелперы и EventKit-маппинг |
 | UI | `equinox/UI/` | SwiftUI-презентация; получает `AppState` + `SizeMetrics`; не ходит в EventKit напрямую |
 

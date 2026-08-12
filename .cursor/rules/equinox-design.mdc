@@ -1,73 +1,79 @@
 ---
-description: Equinox brand & design system — use whenever building or styling any Equinox UI, marketing, prototype, or asset. Native-macOS menu-bar calendar aesthetic.
+description: Equinox brand & design system — use whenever building or styling any Equinox UI. Native-macOS menu-bar calendar aesthetic, SwiftUI + AppKit.
 globs:
 alwaysApply: false
 ---
 
 # Equinox Design System
 
-Equinox is a native **macOS menu-bar calendar app**. Its design language is precise, restrained, and native-macOS: a celestial mark, glass panels floating over a dark desktop, cool blue-grey surfaces, and **one** deliberate brand-blue accent. Build everything to feel like it shipped in the app.
+Equinox is a native **macOS menu-bar calendar app** (SwiftUI + AppKit, no web layer). Its design language is precise, restrained, and native-macOS: a celestial mark, glass panels floating over the desktop, adaptive system surfaces, and **one** deliberate brand-blue accent.
 
-When this repo includes the Equinox design-system files, prefer them as the source of truth:
-- Link `styles.css` (it `@import`s `tokens/*.css`) — gives every CSS custom property below.
-- Mount React primitives from the compiled bundle: `<script src="…/_ds_bundle.js">` then `const { Button, DayCell, … } = window.EquinoxDesignSystem_262896`.
-- Read `readme.md` for the full guide; each component has a sibling `.d.ts` + `.prompt.md`.
+**Source of truth is the code, not this file.** Read these before styling anything:
 
-If the tokens aren't present, hard-code the values in this file.
+| What | Where |
+|------|-------|
+| Every token — spacing, radii, colors, fonts, opacities, shadows | `equinox/UI/Design/DesignTokens.swift` |
+| S/M/L sizing (cell, panel, sheet, toolbar) | `equinox/UI/Design/SizeMetrics.swift` |
+| Buttons, cards, badges, chips, banners, join CTA | `equinox/UI/Design/EquinoxComponents.swift` |
+| Panel chrome, glass, toolbar buttons | `equinox/UI/Design/PanelComponents.swift` |
+| Settings sections, rows, pickers, footers | `equinox/UI/Design/SettingsComponents.swift` |
+| Sheets, error banners, confirm dialogs | `equinox/UI/Design/ModalComponents.swift` |
+| Accessibility labels & helpers | `equinox/UI/Design/AccessibilityHelpers.swift` |
+
+`equinoxTests/DesignSystemComplianceTests.swift` enforces much of this — it fails the build on raw `Color.primary.opacity(…)`, `.font(.system(size:))`, bare `.white`/`.black`, magic `.opacity(0.…)` literals outside `Design/`, and on more than one `.glassEffect(`. Add a token instead of a literal.
+
+The values below document intent. Where they disagree with the Swift files, the Swift files win.
 
 ---
 
 ## Color (light · dark)
 
-**Accent — exactly one.** `--accent` `#3373F2` · `#598CFF`. Carries today's circle, selection ring, primary buttons, the join CTA, relative-time cues. Hover → `--accent-strong` `#1F5FE0` · `#6F9BFF`. Selection fill `--accent-soft` (accent @15–18%); selected outline `--accent-ring` (accent @55%). Never introduce a second brand color.
+**Accent — exactly one.** `AccentColor` `#3373F2` · `#598CFF`. Carries today's circle, selection ring, primary buttons, the join CTA, relative-time cues. Hover → `AccentStrong` `#1F5FE0` · `#6F9BFF`. Selection fill `accentSoft` (accent @16%); selected outline `accentRing` (accent @55%). Never introduce a second brand color.
 
-**Surfaces — cool blue-grey, blue channel highest.**
-- window `#ECECEE` · `#1E1F22`
-- panel `#E9EBF0` · `#26292B`
-- secondary `#D5D7DE` · `#303338`
-- weekend tint `#DBE0EB` · `#424752`
-- raised (fields) `#FFFFFF` · `#2C2E33`
+**Surfaces are adaptive system colors, not fixed hex.** `ColorToken.surfacePrimary`/`surfaceWindow` → `.windowBackgroundColor`, `surfaceSecondary` → `.controlBackgroundColor`, `surfaceRaised` (fields) → `.textBackgroundColor`. They track the system appearance for free — do not replace them with literals or asset colors.
 
-**Ink (macOS label opacities, on the surface).** primary 85% · secondary 50/55% · tertiary 26/25% · quaternary 10%. Use `rgba(0,0,0,a)` light / `rgba(255,255,255,a)` dark.
+Asset colors exist only where AppKit has no equivalent: `WeekendTint` `#DBE0EB` · `#424752`, `MonthBoundary` `#808C99` · `#99A6B2`.
 
-**Hairlines & fills (primary-ink opacities).** hairline border 6%, strong border 12%, separator 10%; interaction fills rest 6% → hover 8% → press 10%, subtle 4%.
+**Ink.** Use `Color.primary` / `.secondary` and the `StateOpacity` tokens on top — never `rgba` equivalents or bare `.white`/`.black` (the menu-bar renderer is the one exception, via `MenuBarDesign.previewInk*`/`templateInk`).
 
-**Semantic = Apple system.** red `#FF3B30`·`#FF453A`, orange `#FF9500`·`#FF9F0A`, green `#34C759`·`#30D158`, blue `#007AFF`·`#0A84FF`, plus purple/pink/teal/indigo/brown/graphite/mint for per-calendar event dots. **RSVP:** accepted→green, tentative→orange, declined→red.
+**Hairlines & fills** (primary-ink opacities, all in `ColorToken`): `hairlineBorder` 6%, `separator` 10%, `interactionSubtle` 4% → `interactionRest` 6% → `interactionHover` 8% → `interactionPress` 10%.
+
+**Semantic = Apple system.** `SemanticRed` `#FF3B30`·`#FF453A`, `SemanticOrange` `#FF9500`·`#FF9F0A`, `SemanticGreen` `#34C759`·`#30D158`, `SemanticBlue` `#007AFF`·`#0A84FF`; aliased as `warning`/`success`/`error`. Per-calendar event dots come from EventKit calendar colors via `DayEventColors`. **RSVP:** accepted→green, tentative→orange, declined→red (`ParticipationChipStyle`).
 
 ---
 
 ## Typography — Apple system faces
 
-- `--font-sans` SF Pro → `-apple-system, BlinkMacSystemFont, system-ui, …` (UI)
-- `--font-rounded` SF Pro Rounded → `ui-rounded, …` (day numerals — tabular)
-- `--font-mono` SF Mono → `ui-monospace, SFMono-Regular, Menlo, …` (times, week numbers — tabular)
+SF Pro for UI, **SF Pro Rounded** for day numerals (`dayNumeralFont`), **SF Mono** for times and week numbers (`monoTimeFont`). All via system font APIs — no font files ship.
 
-Compact scale (it's a menu-bar surface): large-title 26 · title 22 · **title2 17 semibold** (panel month header) · title3 15 · headline/body 13 · callout 12 · subheadline 11 · footnote/caption 10 · micro 7. Weights 400/500/600/700. Uppercase weekday headers get `letter-spacing: 0.04em`.
+Sizes are not hard-coded at call sites: base size comes from `SizeMetrics.fontSize` (S 11 · M 13 · L 15) and the helpers derive from it — `calendarTitleFont`, `agendaSectionTitleFont` (+1), `agendaSectionSubtitleFont` (−1), `microFont` (7), `weekdayHeaderFont` (caption2 semibold), `panelIconFont`, `emptyStateIconFont`, `aboutTitleFont`. Uppercase weekday headers get `weekdayHeaderTracking` (4% of font size).
 
-> ⚠️ Fonts are Apple system keywords — real SF on macOS, platform-sans fallback elsewhere. No webfont files ship. Don't substitute a different family without asking; for pixel-faithful off-Mac rendering, supply licensed SF `@font-face` files.
+Reach for a semantic style (`.headline`, `.caption`) or one of these helpers. Never `.font(.system(size:))` in a feature view — the compliance test rejects it.
 
 ---
 
 ## Geometry, depth, motion
 
-- **Spacing** 4pt scale: 4 / 8 / 12 / 16 / 20 / 24 / 32. Panel padding 16.
-- **Radii — continuous (squircle) corners.** controls 8 · cards 10 · panel & sheets 14 · chip 4 · capsule 999. Day cell 8.
-- **Materials.** Panel & sheets use `regularMaterial`: `backdrop-filter: saturate(180%) blur(20px)` + inset hairline. Transparency only on floating chrome (panel, command bar, agenda headers) — never dense content. Solid fallback = opaque panel surface.
-- **Cards = hairline border (6%) + low fill (4%)**, not a heavy shadow.
-- **Elevation (cool).** panel `0 4px 12px rgba(0,0,0,.12)` glass / `.06` solid · sheet `0 12px 40px rgba(0,0,0,.22)` · join button accent glow `0 3px 8px rgba(51,115,242,.22)`.
-- **Motion — two springs.** snappy `cubic-bezier(.22,1,.36,1)` ~200ms (hover, selection); smooth `cubic-bezier(.4,0,.2,1)` ~220ms (expand/disclose). Press scales to 0.97; join button lifts to 1.01. Always gate on `prefers-reduced-motion`.
-- **States.** hover fill 4→8% · press 10% · row hairline fades in on hover · selected = accent tint + 55% ring · disabled = 0.5 opacity.
+- **Spacing** (`EquinoxDesign`): `spacingMicro` 2 · `spacingXS` 4 · `spacingSM` 8 · `spacingMD` 12 · `spacingLG` 16 · `spacingXL` 20. Panel padding 16.
+- **Radii — continuous (squircle) corners.** `radiusSM` 8 · `cardRadius` 10 · `radiusLG` / `panelCornerRadius` 14 · `chipRadius` 4 · `cellRadius` 8.
+- **Sizing is per S/M/L** — take it from `SizeMetrics`, never hard-code pixels: cell 30/36/40, panel & sheet width 340/380/420, toolbar button 28/30/32.
+- **Materials.** Only the outer panel calls `.glassEffect(`, and it lives in `PanelComponents`. Transparency belongs to floating chrome — never to dense content. Solid fallback = opaque panel surface (`BackgroundStyle.solid`).
+- **Cards = hairline border (6%) + low fill**, not a heavy shadow — `equinoxCard(_:)`.
+- **Elevation** (`ShadowToken`): panel opacity .12 glass / .06 solid, radius 12, y 4 · sheet opacity .22, radius 20, y 12.
+- **Motion — two springs.** `hoverAnimation` `.snappy(0.2)` (hover, selection); `expandAnimation` `.smooth(0.22)` (expand/disclose). `pressScale` 0.97. Always wrap in `EquinoxDesign.animation(_:reduceMotion:)` — a bare `.animation(EquinoxDesign.hoverAnimation` fails the compliance test.
+- **States** (`StateOpacity`): `disabled` 0.5 · `declined` 0.65 · `weekendHighlight` 0.25 · `selectionTint` 0.16 · `selectionBorder` 0.35. Selected = accent tint + 55% ring.
 
-**Signature element — the DayCell:** today is a filled accent circle with a white SF-Rounded numeral; selection is an accent ring over a soft fill; events show as up to three overlapping calendar-colored dots (+N overflow).
+**Signature element — the DayCell** (`UI/Main/DayCellView.swift`): today is a filled accent circle with a white SF-Rounded numeral; selection is an accent ring over a soft fill; events show as calendar-colored dots; month boundaries as thin `MonthBoundary` edges.
 
 ---
 
 ## Content & voice
 
-Terse, functional, native-macOS — labels and short imperatives, no personality, no marketing.
+Terse, functional, native-macOS — labels and short imperatives, no personality, no marketing. Every user-facing string goes through `String(localized:comment:)` and needs a matching entry in `equinox/ru.lproj/Localizable.strings`.
+
 - **Title Case** for actions/menus/buttons: *New Event · Go to Today · Join Meeting · Link Plaud recording…* **Sentence case** for subtitles: *"Open Equinox when you sign in."*
 - Surface **keyboard shortcuts inline** with padded spacing: *"New Event   ⌘N"*, *"Go to Today   T"*, *"Pin Equinox   P"*.
-- **24-hour time**, en-dash range *"09:00 – 10:00"*; short relative cues *"in 10 min" / "now"*. Section headers: *Today / Tomorrow*, else *"Nov 18"* + short weekday.
+- Time formatting comes from `EquinoxFormatters` — en-dash range *"09:00 – 10:00"*, short relative cues *"in 10 min" / "Now"*. Section headers: *Today / Tomorrow*, else *"Nov 18"* + short weekday.
 - RSVP: *Accept · Maybe · Decline*; pending shows a *Respond* badge.
 - Empty states quiet: *"No upcoming events."* Errors direct & actionable: *"No writable calendars available. Check Calendar access in Privacy settings."*
 - `…` marks actions that open more UI. **No emoji. No exclamation marks. No adjectives.**
@@ -76,24 +82,30 @@ Terse, functional, native-macOS — labels and short imperatives, no personality
 
 ## Iconography
 
-App uses **Apple SF Symbols**, hierarchical ~1.5–2px stroke (chevron.left/right, calendar, plus, pin/pin.fill, ellipsis, xmark, clock, mappin, video.fill, person.2.fill, waveform, gearshape, paintpalette). Menu-bar date badge is a **template image** in three styles (minimal filled-knockout / classic stroked / compact plain), optionally prefixed by a meeting-camera glyph. Provider glyphs: Zoom→video, Teams→person.2, Chime→phone.
+**Apple SF Symbols only** (chevron.left/right, calendar, plus, pin/pin.fill, ellipsis, xmark, clock, mappin, video.fill, person.2.fill, waveform, gearshape, paintpalette). Meeting-provider glyphs are declared once per provider in `Core/MeetingProvider.swift` (`systemImage`) — add them there, not at the call site.
 
-> ⚠️ SF Symbols are proprietary and can't ship to the web. Substitute **Lucide** (nearest stroke match) — the design system draws them inline in `components/core/Icon.jsx` (no CDN). Use Lucide for any web target; keep SF Symbols only in Mac-native code.
+The menu-bar date badge is **drawn in code** by `UI/MenuBar/MenuBarIconRenderer.swift` as a template image in three styles (`MenuBarIconStyle`: minimal filled-knockout / classic stroked / compact plain), optionally prefixed by a meeting-camera glyph. There are no menu-bar image assets — the compliance test rejects references to the removed `menubaricon`, `meetSolid`, `meetOutline`.
+
+`AppIcon` and `AppLogo` are generated from `scripts/assets/equinox-mark.png` by `scripts/regenerate-design-assets.swift` — regenerate, don't hand-edit the PNGs.
 
 ---
 
-## Components (React, via `window.EquinoxDesignSystem_262896`)
+## Components
 
-- **core** — `Icon`, `Button` (prominent / bordered / plain / destructive; regular/small), `IconButton` (square toolbar, `selected` ring), `Card` (secondary/subtle/raised), `Badge`, `Chip` (calendar dot + label), `Toggle`, `Segmented`.
-- **calendar** — `DayCell` (today/selected/dots/boundaries), `EventCard` (agenda row: spine + mono time + title + inline join), `AgendaHeader`, `MenuBarPill`.
-- **events** — `RSVPBar` (Accept/Maybe/Decline), `JoinButton` (accent-gradient meeting CTA), `MetadataRow` (icon-circle + label/value), `StatusChip`, `Banner` (error/warning).
+Compose from these; don't re-implement them.
 
-One prominent button per view. Compose kits from these primitives — don't re-implement them.
+- **Core** (`EquinoxComponents.swift`) — `EquinoxButtonStyle` (`EquinoxButtonVariant` prominent / bordered / plain / destructive × `EquinoxButtonSize` regular / small), `equinoxCard(_:)` with `EquinoxCardStyle`, `EquinoxBadge`, `EquinoxChip` (calendar dot + label), `EquinoxBanner` (`EquinoxBannerStyle`), `EquinoxJoinButton`, `EventDetailCardBackground`.
+- **Panel** (`PanelComponents.swift`) — `PanelButtonStyle`, `PanelIconButton`, `PanelIconMenuButton`, `PanelButtonGroup`, and the panel background/glass modifiers.
+- **Settings** (`SettingsComponents.swift`) — `SettingsDetailScaffold`, `SettingsSection`, `SettingsRow`, `SettingsDivider`, `SettingsFooter`, `SettingsSegmentedPicker`, `SettingsSidebarLabel`, plus `SettingsLabeledToggle` from `AccessibilityHelpers.swift`.
+- **Modals** (`ModalComponents.swift`) — `ModalSheetScaffold`, `ModalErrorBanner`, `ModalConfirmDialog`.
+- **Calendar & events** — `EventStripeView`, `DayEventColors`, `SelectableCalendarColors`, `ParticipationChipStyle`.
+
+One prominent button per view.
 
 ---
 
 ## Do / Don't
 
-**Do:** one accent; cool blue-grey glass; continuous corners; hairline-on-low-fill cards; SF type with rounded numerals + mono times; Title-Case terse copy; snappy/smooth motion; respect light & dark via `:root[data-theme="dark"]`.
+**Do:** one accent; adaptive system surfaces; continuous corners; hairline-on-low-fill cards; SF type with rounded numerals + mono times; sizes from `SizeMetrics`; Title-Case terse copy; motion gated on reduce-motion; light/dark/system via `ThemePreference`.
 
-**Don't:** add a second brand color; use gradients on content (only the dark celestial desktop + the join button); use emoji; use heavy drop shadows; use generic fonts (Inter/Roboto); write chatty marketing copy; hand-roll SF Symbols as emoji or crude SVG — use the Lucide set.
+**Don't:** add a second brand color; hard-code pixels, hex, opacities, or font sizes in feature views; use gradients on content (only the join button); use emoji; use heavy drop shadows; use non-system fonts; call `.glassEffect(` outside `PanelComponents`; touch `EKEventStore` from a view; write chatty marketing copy.
