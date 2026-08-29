@@ -29,7 +29,7 @@ enum EventKitCalendarMapping {
             title: calendar.title,
             sourceTitle: calendar.source.title,
             sourceIdentifier: calendar.source.sourceIdentifier,
-            colorHex: calendar.cgColor.map { colorHex($0) },
+            colorHex: colorHex(calendar.cgColor ?? CGColor(gray: 0.5, alpha: 1)),
             allowsContentModifications: calendar.allowsContentModifications,
             isSubscribed: calendar.isSubscribed,
             type: calendarTypeLabel(calendar.type)
@@ -37,10 +37,8 @@ enum EventKitCalendarMapping {
     }
 
     static func displayableCalendarItems(from store: EKEventStore) -> [CalendarListItem] {
-        CalendarListing.filterDisplayableCalendars(
-            CalendarListing.sortCalendarsForDisplay(
-                store.calendars(for: .event).map { calendarListItem(from: $0) }
-            )
+        CalendarListing.sortCalendarsForDisplay(
+            store.calendars(for: .event).map { calendarListItem(from: $0) }
         )
     }
 }

@@ -20,6 +20,10 @@ final class CalendarDateParsingTests: XCTestCase {
         XCTAssertNil(CalendarDateParsing.parseDayString("2026-13-01"))
         XCTAssertNil(CalendarDateParsing.parseDayString("2026-00-15"))
         XCTAssertNil(CalendarDateParsing.parseDayString("2026-06-32"))
+        XCTAssertNil(CalendarDateParsing.parseDayString("2026-02-29"))
+        XCTAssertNil(CalendarDateParsing.parseDayString("2026-02-30"))
+        XCTAssertNil(CalendarDateParsing.parseDayString("1582-12-31"))
+        XCTAssertNil(CalendarDateParsing.parseDayString("3334-01-01"))
     }
 
     func testRejectsMalformedStrings() {

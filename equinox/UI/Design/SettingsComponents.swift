@@ -2,9 +2,16 @@ import SwiftUI
 
 enum SettingsSearchFilter {
     static func matches(searchText: String, keywords: String...) -> Bool {
-        guard !searchText.isEmpty else { return true }
-        let query = searchText.lowercased()
-        return keywords.contains { $0.lowercased().contains(query) || query.contains($0.lowercased()) }
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return true }
+        return keywords
+            .flatMap { keyword in
+                [keyword, Bundle.main.localizedString(forKey: keyword, value: keyword, table: nil)]
+            }
+            .contains { candidate in
+                candidate.localizedCaseInsensitiveContains(query) ||
+                    query.localizedCaseInsensitiveContains(candidate)
+            }
     }
 }
 
@@ -57,6 +64,10 @@ struct SettingsSection<Content: View>: View {
             .background {
                 RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
                     .fill(EquinoxDesign.ColorToken.surfaceRaised)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
+                            .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
+                    }
             }
         }
     }
@@ -64,11 +75,17 @@ struct SettingsSection<Content: View>: View {
 
 struct SettingsFooter: View {
     let text: String
+    var style: Style = .secondary
+
+    enum Style {
+        case secondary
+        case error
+    }
 
     var body: some View {
         Text(text)
             .font(.footnote)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(style == .error ? EquinoxDesign.ColorToken.semanticRed : Color.secondary)
             .fixedSize(horizontal: false, vertical: true)
     }
 }

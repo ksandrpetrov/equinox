@@ -95,6 +95,19 @@ enum MenuBarIconRenderer {
         return image
     }
 
+    /// Keeps the status item reachable when both the date badge and clock are disabled.
+    @MainActor
+    static func hiddenDateFallbackImage(scale: CGFloat) -> NSImage? {
+        let view = Image(systemName: "calendar")
+            .font(MenuBarDesign.meetingIconFont())
+            .symbolRenderingMode(.monochrome)
+            .foregroundStyle(MenuBarDesign.templateInk)
+            .frame(height: MenuBarDesign.barHeight)
+        guard let image = rasterize(view, colorScheme: .light, scale: scale) else { return nil }
+        image.isTemplate = true
+        return image
+    }
+
     @MainActor
     static func iconText(prefs: PreferencesStore, calendar: Calendar, today: CalendarDate) -> String {
         if prefs.showMonthInIcon || prefs.showDayOfWeekInIcon {

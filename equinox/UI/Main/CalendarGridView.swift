@@ -5,6 +5,7 @@ struct CalendarGridView: View {
     let metrics: SizeMetrics
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @FocusState private var isGridFocused: Bool
 
     private var prefs: PreferencesStore { appState.preferences }
     private var numRows: Int { prefs.calendarRowCount }
@@ -29,13 +30,22 @@ struct CalendarGridView: View {
                 .transition(EquinoxDesign.monthTransition(forward: appState.events.monthNavigationDirection == .forward))
         }
         .padding(EquinoxDesign.spacingXS)
+        .overlay {
+            RoundedRectangle(cornerRadius: EquinoxDesign.radiusLG, style: .continuous)
+                .strokeBorder(
+                    isGridFocused ? EquinoxDesign.ColorToken.accentRing : .clear,
+                    lineWidth: 1
+                )
+        }
         .focusable()
+        .focused($isGridFocused)
         .focusEffectDisabled()
         .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .return]) { press in
             handleKeyPress(press)
         }
         .onAppear {
             appState.events.refreshVisibleGridRange()
+            isGridFocused = true
         }
         .onChange(of: numRows) { _, _ in
             appState.events.refreshVisibleGridRange()
@@ -52,7 +62,7 @@ struct CalendarGridView: View {
     private var weekdayHeaderRow: some View {
         HStack(spacing: 0) {
             if prefs.showWeeks {
-                Color.clear.frame(width: metrics.weekColumnWidth)
+                weekNumberHeader
             }
             ForEach(Array(dowSymbols.enumerated()), id: \.offset) { index, symbol in
                 Text(symbol.uppercased())
@@ -69,19 +79,14 @@ struct CalendarGridView: View {
             ForEach(0..<numRows, id: \.self) { row in
                 HStack(spacing: 0) {
                     if prefs.showWeeks {
-                        let mondayCol = columnForWeekday(startDOW: prefs.weekStartWeekday, dow: 1)
-                        let weekDate = gridDates[row * 7 + mondayCol]
-                        Text("\(CalendarDate.weekOfYear(year: weekDate.year, monthIndex: weekDate.monthIndex, day: weekDate.day))")
-                            .font(EquinoxDesign.monoTimeFont(size: metrics.fontSize - 1))
-                            .foregroundStyle(.tertiary)
-                            .contentTransition(.numericText())
-                            .frame(width: metrics.weekColumnWidth)
+                        weekNumberCell(row: row)
                     }
                     ForEach(0..<7, id: \.self) { col in
                         let index = row * 7 + col
                         let date = gridDates[index]
+                        let events = appState.events.events(for: date)
                         let dots: [Color]? = prefs.showEventDots
-                            ? DayEvent.makeSwiftUIDotColors(for: appState.events.events(for: date))
+                            ? DayEvent.makeSwiftUIDotColors(for: events)
                             : nil
                         let (boundaryStart, boundaryEnd) = monthBoundaryFlags(for: date, col: col, row: row)
                         DayCellView(
@@ -93,6 +98,7 @@ struct CalendarGridView: View {
                             isHighlighted: prefs.isWeekdayHighlighted(col, weekStartWeekday: prefs.weekStartWeekday),
                             isMonthBoundaryStart: boundaryStart,
                             isMonthBoundaryEnd: boundaryEnd,
+                            eventCount: events.count,
                             dotColors: dots,
                             metrics: metrics,
                             calendar: appState.calendar,
@@ -109,6 +115,59 @@ struct CalendarGridView: View {
         }
     }
 
+    private var weekNumberHeader: some View {
+        Text("#")
+            .font(EquinoxDesign.weekdayHeaderFont())
+            .foregroundStyle(.tertiary)
+            .frame(width: metrics.weekColumnWidth)
+            .overlay(alignment: .trailing) {
+                Rectangle()
+                    .fill(EquinoxDesign.ColorToken.separator)
+                    .frame(width: EquinoxDesign.monthBoundaryWidth)
+            }
+            .accessibilityLabel(String(localized: "Week number", comment: "Calendar week column header"))
+    }
+
+    private func weekNumberCell(row: Int) -> some View {
+        let mondayColumn = columnForWeekday(startDOW: prefs.weekStartWeekday, dow: 1)
+        let weekDate = gridDates[row * 7 + mondayColumn]
+        let weekNumber = CalendarDate.weekOfYear(
+            year: weekDate.year,
+            monthIndex: weekDate.monthIndex,
+            day: weekDate.day
+        )
+        let rowDates = gridDates[(row * 7)..<(row * 7 + 7)]
+        let isSelectedWeek = rowDates.contains(appState.events.selectedDate)
+
+        return Text("\(weekNumber)")
+            .font(EquinoxDesign.weekNumberFont(size: metrics.fontSize))
+            .foregroundStyle(
+                isSelectedWeek
+                    ? EquinoxDesign.ColorToken.action
+                    : EquinoxDesign.ColorToken.weekdayDimmed
+            )
+            .contentTransition(.numericText())
+            .frame(width: metrics.weekColumnWidth, height: metrics.cellSize)
+            .background {
+                if isSelectedWeek {
+                    RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
+                        .fill(EquinoxDesign.ColorToken.accentSoft)
+                        .padding(EquinoxDesign.spacingMicro)
+                }
+            }
+            .overlay(alignment: .trailing) {
+                Rectangle()
+                    .fill(EquinoxDesign.ColorToken.separator)
+                    .frame(width: EquinoxDesign.monthBoundaryWidth)
+            }
+            .accessibilityLabel(
+                String(
+                    format: String(localized: "Week %lld", comment: "Calendar week number"),
+                    Int64(weekNumber)
+                )
+            )
+    }
+
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
         let current = appState.events.selectedDate
         let next: CalendarDate?
@@ -122,11 +181,13 @@ struct CalendarGridView: View {
         case .downArrow:
             next = current.addingDays(7)
         case .return:
+            appState.panel.newEventInitialDate = current
+            appState.panel.isNewEventSheetPresented = true
             return .handled
         default:
             return .ignored
         }
-        if let next {
+        if let next, next.isValid {
             appState.selectDate(next)
             return .handled
         }

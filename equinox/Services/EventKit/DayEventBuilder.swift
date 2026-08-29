@@ -40,8 +40,7 @@ enum DayEventBuilder {
             let layoutInput = EventLayoutInput(
                 startDate: fields.startDate,
                 endDate: fields.endDate,
-                isAllDay: fields.isAllDay,
-                calendarTitle: fields.calendarTitle
+                isAllDay: fields.isAllDay
             )
             let slots = layoutEventDaySlots(
                 event: layoutInput,
@@ -89,13 +88,17 @@ enum DayEventBuilder {
                         isEventAllDay: lhs.isEventAllDay,
                         isSlotAllDay: lhs.isSlotAllDay,
                         calendarTitle: lhs.calendarTitle,
-                        startDate: lhs.startDate
+                        startDate: lhs.startDate,
+                        title: lhs.title,
+                        stableIdentifier: lhs.id
                     ),
                     EventSortKey(
                         isEventAllDay: rhs.isEventAllDay,
                         isSlotAllDay: rhs.isSlotAllDay,
                         calendarTitle: rhs.calendarTitle,
-                        startDate: rhs.startDate
+                        startDate: rhs.startDate,
+                        title: rhs.title,
+                        stableIdentifier: rhs.id
                     )
                 )
             }

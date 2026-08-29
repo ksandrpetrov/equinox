@@ -1,6 +1,47 @@
 import Foundation
 
 enum EventDraftDefaults {
+    static func normalizedDates(
+        calendar: Calendar,
+        start: Date,
+        end: Date,
+        isAllDay: Bool
+    ) -> (start: Date, end: Date)? {
+        guard isAllDay else {
+            return end > start ? (start, end) : nil
+        }
+
+        let startDay = calendar.startOfDay(for: start)
+        let inclusiveEndDay = calendar.startOfDay(for: end)
+        guard inclusiveEndDay >= startDay,
+              let exclusiveEnd = calendar.date(byAdding: .day, value: 1, to: inclusiveEndDay) else {
+            return nil
+        }
+        return (startDay, exclusiveEnd)
+    }
+
+    static func absoluteURL(from value: String) -> URL? {
+        guard let url = URL(string: value), let scheme = url.scheme, !scheme.isEmpty else { return nil }
+        if scheme.lowercased() == "http" || scheme.lowercased() == "https" {
+            guard url.host() != nil else { return nil }
+        }
+        return url
+    }
+
+    static func normalizedRecurrenceEnd(
+        calendar: Calendar,
+        eventStart: Date,
+        selectedEnd: Date
+    ) -> Date? {
+        let eventStartDay = calendar.startOfDay(for: eventStart)
+        let selectedEndDay = calendar.startOfDay(for: selectedEnd)
+        guard selectedEndDay >= eventStartDay,
+              let followingDay = calendar.date(byAdding: .day, value: 1, to: selectedEndDay) else {
+            return nil
+        }
+        return followingDay.addingTimeInterval(-1)
+    }
+
     static func defaultStartAndEnd(
         calendar: Calendar,
         initialDate: CalendarDate?
@@ -49,5 +90,19 @@ enum EventDraftDefaults {
         let offsets: [TimeInterval] = [.infinity, 0, -300, -600, -900, -1800, -3600, -7200, -86400, -172800]
         guard index > 0, index < offsets.count, offsets[index] != .infinity else { return nil }
         return offsets[index]
+    }
+
+    static func preferredCalendarIdentifier(
+        currentIdentifier: String,
+        defaultIdentifier: String?,
+        availableIdentifiers: [String]
+    ) -> String {
+        if availableIdentifiers.contains(currentIdentifier) {
+            return currentIdentifier
+        }
+        if let defaultIdentifier, availableIdentifiers.contains(defaultIdentifier) {
+            return defaultIdentifier
+        }
+        return availableIdentifiers.first ?? ""
     }
 }

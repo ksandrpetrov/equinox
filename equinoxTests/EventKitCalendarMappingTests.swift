@@ -3,7 +3,10 @@ import XCTest
 
 final class EventKitCalendarMappingTests: XCTestCase {
     func testColorHexFormatsSRGB() {
-        let color = CGColor(red: 1, green: 0.5, blue: 0, alpha: 1)
+        let color = CGColor(
+            colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+            components: [1, 0.5, 0, 1]
+        )!
         XCTAssertEqual(EventKitCalendarMapping.colorHex(color), "#FF8000")
     }
 

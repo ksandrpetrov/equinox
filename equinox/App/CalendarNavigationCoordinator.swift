@@ -26,6 +26,14 @@ final class CalendarNavigationCoordinator {
         case backward
     }
 
+    var canGoToPreviousMonth: Bool {
+        monthDate.year > CalendarDate.minYear || monthDate.monthIndex > 0
+    }
+
+    var canGoToNextMonth: Bool {
+        monthDate.year < CalendarDate.maxYear || monthDate.monthIndex < 11
+    }
+
     init(calendar: Calendar, preferences: PreferencesStore) {
         self.calendar = calendar
         self.preferences = preferences
@@ -50,6 +58,7 @@ final class CalendarNavigationCoordinator {
         let newToday = CalendarDate.today(calendar: calendar)
         let monthChanged = newToday.monthIndex != monthDate.monthIndex || newToday.year != monthDate.year
 
+        updateNavigationDirection(toward: newToday)
         todayDate = newToday
         monthDate = newToday
         selectedDate = newToday
@@ -60,11 +69,13 @@ final class CalendarNavigationCoordinator {
     }
 
     func goToPreviousMonth() {
+        guard canGoToPreviousMonth else { return }
         monthNavigationDirection = .backward
         selectDate(selectedDate.addingMonthsPreservingDay(-1, calendar: calendar))
     }
 
     func goToNextMonth() {
+        guard canGoToNextMonth else { return }
         monthNavigationDirection = .forward
         selectDate(selectedDate.addingMonthsPreservingDay(1, calendar: calendar))
     }
@@ -88,7 +99,10 @@ final class CalendarNavigationCoordinator {
     /// Recomputes the visible grid range from `monthDate` + preferences and notifies the owner.
     func refreshVisibleGridRange() {
         let gridDates = visibleGridDates
-        guard let first = gridDates.first, let last = gridDates.last else { return }
+        guard let rawFirst = gridDates.first, let rawLast = gridDates.last else { return }
+        let first = max(rawFirst, CalendarDate.minimumSupported)
+        let last = min(rawLast, CalendarDate.maximumSupported)
+        guard first <= last else { return }
         onVisibleGridRangeChanged(first, last)
     }
 
@@ -102,6 +116,7 @@ final class CalendarNavigationCoordinator {
     }
 
     private func applySelection(_ date: CalendarDate, scrollAgenda: Bool) {
+        guard date.isValid else { return }
         let newMonthDate = CalendarDate(year: date.year, monthIndex: date.monthIndex, day: 1)
         let monthChanged = date.monthIndex != monthDate.monthIndex || date.year != monthDate.year
         let selectionChanged = selectedDate != date
@@ -118,11 +133,17 @@ final class CalendarNavigationCoordinator {
             selectedDate = date
         }
         if monthDateChanged {
+            updateNavigationDirection(toward: newMonthDate)
             monthDate = newMonthDate
             refreshVisibleGridRange()
         }
         if scrollAgenda {
             requestAgendaScroll()
         }
+    }
+
+    private func updateNavigationDirection(toward date: CalendarDate) {
+        guard date.year != monthDate.year || date.monthIndex != monthDate.monthIndex else { return }
+        monthNavigationDirection = date < monthDate ? .backward : .forward
     }
 }

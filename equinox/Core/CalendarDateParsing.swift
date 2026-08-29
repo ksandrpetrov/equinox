@@ -14,11 +14,6 @@ enum CalendarDateParsing {
             return nil
         }
         let candidate = CalendarDate(year: year, monthIndex: month - 1, day: day)
-        guard candidate.year == year,
-              candidate.monthIndex == month - 1,
-              candidate.day == day else {
-            return nil
-        }
-        return candidate
+        return candidate.isValid ? candidate : nil
     }
 }

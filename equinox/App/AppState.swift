@@ -1,10 +1,11 @@
 import AppKit
+import KeyboardShortcuts
 import SwiftUI
 
 /// Composition root for the menu bar panel.
-/// - Mutations (create/delete/RSVP/calendar access) → call facade methods on `AppState`.
+/// - Mutations (create/delete/calendar access) → call facade methods on `AppState`.
 /// - Reads and SwiftUI bindings (`monthDate`, `eventsByDate`, loading flags) → `appState.events`,
-///   `appState.panel`, or `appState.plaud` coordinators directly (`@Observable` pattern).
+///   or `appState.panel` coordinators directly (`@Observable` pattern).
 @Observable
 @MainActor
 final class AppState {
@@ -12,7 +13,6 @@ final class AppState {
     let panel = PanelPresentationState()
     let layout = PanelLayoutMetrics()
     let events: EventsCoordinator
-    let plaud: PlaudCoordinator
 
     var calendar: Calendar { events.calendar }
 
@@ -52,6 +52,26 @@ final class AppState {
         await events.updateSelectedCalendar(identifier: identifier, selected: selected)
     }
 
+    func resetPreferencesToDefaults() async -> String? {
+        let wasPinned = isPinned
+        preferences.resetToDefaults()
+        UserDefaults.standard.set(false, forKey: kPinnedPanelVisible)
+        KeyboardShortcuts.reset(.togglePanel)
+        if wasPinned != isPinned {
+            panel.onPinStateChanged?()
+        }
+        await events.resetCalendarSelection()
+        do {
+            try LaunchAtLogin.setEnabled(false)
+            return nil
+        } catch {
+            return String(
+                format: String(localized: "Could not update Launch at Login: %@", comment: "Launch at login error"),
+                error.localizedDescription
+            )
+        }
+    }
+
     func selectDate(_ date: CalendarDate) {
         events.selectDate(date)
     }
@@ -69,16 +89,24 @@ final class AppState {
         await events.createEvent(from: draft)
     }
 
-    func deleteEvent(identifier: String) async -> String? {
-        let result = await events.deleteEvent(identifier: identifier)
+    func deleteEvent(identifier: String, occurrenceStartDate: Date) async -> String? {
+        let result = await events.deleteEvent(
+            identifier: identifier,
+            occurrenceStartDate: occurrenceStartDate
+        )
         if result == nil {
-            clearSelectedEventIfDeleted(identifier: identifier)
+            clearSelectedEventIfDeleted(
+                identifier: identifier,
+                occurrenceStartDate: occurrenceStartDate
+            )
         }
         return result
     }
 
-    private func clearSelectedEventIfDeleted(identifier: String) {
-        if panel.selectedEvent?.eventIdentifier == identifier {
+    private func clearSelectedEventIfDeleted(identifier: String, occurrenceStartDate: Date) {
+        if panel.selectedEvent?.eventIdentifier == identifier,
+           panel.selectedEvent?.startDate == occurrenceStartDate {
+            panel.isEventDetailPresented = false
             panel.selectedEvent = nil
         }
     }
@@ -117,30 +145,18 @@ final class AppState {
             preferences: preferences
         )
 
-        plaud = PlaudCoordinator(
-            preferences: preferences,
-            calendar: calendar,
-            matchableEvents: { [events] start, end in
-                await events.matchableEvents(from: start, to: end)
-            },
-            eventsByDate: { [events] in events.eventsByDate },
-            calendarAccessStatus: { [events] in events.calendarAccessStatus },
-            isPlaudEnabled: { [preferences] in preferences.isPlaudEnabled }
-        )
-
         events.registerExternalChangeHandler { [weak self] in
             Task { @MainActor in
                 self?.events.retryFetchEvents()
             }
         }
 
-        events.onPlaudDataChanged = { [plaud] in
-            plaud.refreshMatchesIfNeeded()
-            plaud.matchHistoryIfNeeded()
-        }
-
         events.isPanelVisible = { [weak self] in
             self?.panel.isPanelVisible == true
+        }
+
+        events.onEventsSnapshotChanged = { [weak self] in
+            self?.refreshSelectedEventFromSnapshot()
         }
 
         Task { await events.refreshCalendarAccessStatus() }
@@ -159,26 +175,18 @@ final class AppState {
         )
     }
 
-    /// Cross-coordinator action: applies RSVP via `events`, then keeps the detail sheet's
-    /// `panel.selectedEvent` pointing at the refreshed event.
-    func respondToInvitation(event: DayEvent, status: EventParticipationStatus) async -> String? {
-        let result = await events.respondToInvitation(event: event, status: status)
-        if result == nil {
-            refreshSelectedEvent(matching: event)
+    private func refreshSelectedEventFromSnapshot() {
+        guard let selectedEvent = panel.selectedEvent else { return }
+        let refreshedEvent = events.eventsByDate.values
+            .lazy
+            .joined()
+            .first { $0.representsSameOccurrence(as: selectedEvent) }
+        if let refreshedEvent {
+            panel.selectedEvent = refreshedEvent
+        } else {
+            panel.isEventDetailPresented = false
+            panel.selectedEvent = nil
         }
-        return result
     }
 
-    private func refreshSelectedEvent(matching event: DayEvent) {
-        guard let eventID = event.eventIdentifier else { return }
-        guard panel.selectedEvent?.eventIdentifier == eventID else { return }
-        for dayEvents in events.eventsByDate.values {
-            if let updated = dayEvents.first(where: {
-                $0.eventIdentifier == eventID && $0.startDate == event.startDate
-            }) {
-                panel.selectedEvent = updated
-                return
-            }
-        }
-    }
 }

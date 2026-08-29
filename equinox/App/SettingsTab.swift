@@ -6,6 +6,5 @@ enum SettingsTab: Hashable, CaseIterable {
     case appearance
     case privacy
     case shortcuts
-    case plaud
     case about
 }

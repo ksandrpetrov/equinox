@@ -2,7 +2,6 @@ import Foundation
 
 enum PanelAgendaLayout {
     static let agendaMaxHeightFallback: CGFloat = 220
-    static let agendaMaxHeightFloor: CGFloat = 120
     static let screenVisibleHeightFraction: CGFloat = 0.85
 
     static func maxHeight(
@@ -17,6 +16,7 @@ enum PanelAgendaLayout {
         let splitHeight = EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro
         let padding = EquinoxDesign.panelPadding * 2
         let fixed = commandBarHeight + gridHeight + splitHeight + padding + EquinoxDesign.spacingLG
-        return max(agendaMaxHeightFloor, min(EquinoxDesign.panelAgendaMaxHeight, maxPanel - fixed))
+        let availableHeight = max(0, maxPanel - fixed)
+        return min(EquinoxDesign.panelAgendaMaxHeight, availableHeight)
     }
 }

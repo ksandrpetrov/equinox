@@ -65,6 +65,32 @@ final class MeetingProviderTests: XCTestCase {
         XCTAssertEqual(MeetingProviderRegistry.match(for: url)?.id, "zoom")
     }
 
+    func testProviderMatchingRejectsDeceptiveHostsAndQueryParameters() {
+        XCTAssertNil(MeetingProviderRegistry.match(for: URL(string: "https://zoom.us.evil.example/j/123")!))
+        XCTAssertNil(MeetingProviderRegistry.match(for: URL(string: "https://evil.example/?next=https://zoom.us/j/123")!))
+        XCTAssertEqual(
+            MeetingProviderRegistry.match(for: URL(string: "https://us02web.zoom.us/j/123")!)?.id,
+            "zoom"
+        )
+    }
+
+    func testNativeRewriteOnlyUsesSupportedWebMeetingShapes() {
+        let zoom = URL(string: "https://us02web.zoom.us/j/123?pwd=secret")!
+        XCTAssertEqual(
+            NativeJoinURL.nativeURLString(from: zoom),
+            "zoommtg://zoom.us/join?confno=123&pwd=secret"
+        )
+
+        let personalRoom = URL(string: "https://zoom.us/my/alex")!
+        XCTAssertNil(NativeJoinURL.nativeURLString(from: personalRoom))
+        XCTAssertNil(NativeJoinURL.nativeScheme(for: personalRoom))
+
+        let bookingPage = URL(string: "https://youcanbook.me/zoom/alex")!
+        XCTAssertEqual(MeetingProviderRegistry.match(for: bookingPage)?.id, "zoom")
+        XCTAssertNil(NativeJoinURL.nativeURLString(from: bookingPage))
+        XCTAssertNil(NativeJoinURL.nativeScheme(for: bookingPage))
+    }
+
     func testNativeSchemeURLsMatchTheirProvider() {
         let zoom = URL(string: "zoommtg://zoom.us/join?confno=1")!
         let teams = URL(string: "msteams://teams.microsoft.com/l/meetup-join/x")!
@@ -72,6 +98,12 @@ final class MeetingProviderTests: XCTestCase {
         XCTAssertEqual(MeetingProviderRegistry.match(for: zoom)?.id, "zoom")
         XCTAssertEqual(MeetingProviderRegistry.match(for: teams)?.id, "teams")
         XCTAssertEqual(MeetingProviderRegistry.match(for: chime)?.id, "chime")
+    }
+
+    func testNativeSchemeMatchingRejectsUnexpectedHostsAndPaths() {
+        XCTAssertNil(MeetingProviderRegistry.match(for: URL(string: "zoommtg://evil.example/join?confno=1")!))
+        XCTAssertNil(MeetingProviderRegistry.match(for: URL(string: "msteams://teams.microsoft.com/other")!))
+        XCTAssertNil(MeetingProviderRegistry.match(for: URL(string: "chime://evil.example?pin=1")!))
     }
 
     func testOtherCategoryProvidersMatchGenericLabel() {
@@ -87,13 +119,14 @@ final class MeetingProviderTests: XCTestCase {
         XCTAssertEqual(Set(ids).count, ids.count)
     }
 
-    func testProvidersWithNativeSchemeExposeScheme() {
-        for provider in MeetingProviderRegistry.all where provider.nativeScheme != nil {
-            XCTAssertFalse(provider.nativeScheme!.isEmpty)
-            let sample = URL(string: provider.detectionSubstrings.first { $0.hasPrefix("http") } ?? "https://example.com")!
-            if let matched = MeetingProviderRegistry.match(for: sample), matched.id == provider.id {
-                XCTAssertEqual(NativeJoinURL.nativeScheme(for: sample), provider.nativeScheme)
-            }
+    func testSupportedNativeMeetingURLsExposeScheme() {
+        let cases: [(String, String)] = [
+            ("https://zoom.us/j/123", "zoommtg://"),
+            ("https://teams.microsoft.com/l/meetup-join/abc", "msteams://"),
+            ("https://chime.aws/abc", "chime://"),
+        ]
+        for (link, expectedScheme) in cases {
+            XCTAssertEqual(NativeJoinURL.nativeScheme(for: URL(string: link)!), expectedScheme)
         }
     }
 }

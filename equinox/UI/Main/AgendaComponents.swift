@@ -4,6 +4,8 @@ struct AgendaSectionHeader: View {
     let date: CalendarDate
     let calendar: Calendar
     let metrics: SizeMetrics
+    let eventCount: Int
+    let isSelected: Bool
 
     var body: some View {
         let nsDate = date.date(in: calendar)
@@ -11,25 +13,55 @@ struct AgendaSectionHeader: View {
         let isTomorrow = calendar.isDateInTomorrow(nsDate)
 
         HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
+            Circle()
+                .fill(dateMarkerColor(isToday: isToday))
+                .frame(
+                    width: EquinoxDesign.agendaDateMarkerSize,
+                    height: EquinoxDesign.agendaDateMarkerSize
+                )
+                .accessibilityHidden(true)
             Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
                 .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
-                .foregroundStyle(isToday ? EquinoxDesign.ColorToken.accent : .secondary)
+                .foregroundStyle(isToday ? EquinoxDesign.ColorToken.present : .secondary)
             if !isToday && !isTomorrow {
                 Text(EquinoxFormatters.shortWeekday(nsDate))
                     .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
                     .foregroundStyle(.tertiary)
             }
+            Spacer(minLength: 0)
+            if eventCount > 0 {
+                Text("\(eventCount)")
+                    .font(EquinoxDesign.agendaEventCountFont())
+                    .foregroundStyle(
+                        isSelected
+                            ? EquinoxDesign.ColorToken.action
+                            : EquinoxDesign.ColorToken.weekdayDimmed
+                    )
+                    .frame(minWidth: EquinoxDesign.agendaEventCountMinWidth, alignment: .trailing)
+                    .accessibilityLabel(
+                        String(
+                            format: String(localized: "%lld events", comment: "Agenda section event count"),
+                            Int64(eventCount)
+                        )
+                    )
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.agendaHeaderVerticalPadding)
-        .background(EquinoxDesign.ColorToken.surfacePrimary)
+        .background(EquinoxDesign.ColorToken.surfaceRaised)
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(EquinoxDesign.ColorToken.separator)
                 .frame(height: 1)
         }
         .padding(.top, EquinoxDesign.spacingXS)
+    }
+
+    private func dateMarkerColor(isToday: Bool) -> Color {
+        if isToday { return EquinoxDesign.ColorToken.present }
+        if isSelected { return EquinoxDesign.ColorToken.action }
+        return EquinoxDesign.ColorToken.separator
     }
 
     private func agendaSectionTitle(isToday: Bool, isTomorrow: Bool, nsDate: Date) -> String {
@@ -43,7 +75,7 @@ struct AgendaEventCard: View {
     let event: DayEvent
     let metrics: SizeMetrics
     let showLocation: Bool
-    var plaudMatch: PlaudEventMatch? = nil
+    let now: Date
     var onTap: (() -> Void)? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -95,26 +127,14 @@ struct AgendaEventCard: View {
                 EquinoxJoinButton(url: url, variant: .compact, metrics: metrics) {
                     URLOpener.open(url)
                 }
-                .padding(.trailing, plaudMatch == nil ? EquinoxDesign.spacingSM : EquinoxDesign.spacingXS)
-                .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
-            }
-
-            if let match = plaudMatch {
-                PanelIconButton(
-                    symbol: "waveform",
-                    help: String(localized: "Open in Plaud", comment: "Plaud agenda button help"),
-                    accessibilityLabel: String(localized: "Open in Plaud", comment: ""),
-                    buttonSize: metrics.toolbarButtonSize
-                ) {
-                    URLOpener.open(match.webURL)
-                }
                 .padding(.trailing, EquinoxDesign.spacingSM)
                 .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
             }
         }
-        .equinoxCard(style: .row, isHovered: isHovered)
+        .equinoxCard(style: isHappeningNow ? .activeTimeline : .timeline, isHovered: isHovered)
         .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedEvent : 1)
         .padding(.horizontal, EquinoxDesign.spacingXS)
+        .help(event.calendarTitle)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
     }
@@ -130,41 +150,24 @@ struct AgendaEventCard: View {
                 .lineLimit(1)
                 .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
             Spacer(minLength: EquinoxDesign.spacingXS)
-            if event.showsRSVPControls,
-               event.participationStatus?.needsResponse == true {
-                EventRSVPRespondBadge()
-            }
-            if let relative = relativeTimeString {
-                Text(relative)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(EquinoxDesign.ColorToken.accent)
-            }
+            relativeTimeLabel
         }
     }
 
     @ViewBuilder
     private var expandedEventContent: some View {
-        VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
-            HStack(alignment: .firstTextBaseline) {
+        VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
+            HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
                 Text(timeRangeString)
                     .font(EquinoxDesign.monoTimeFont(size: max(10, metrics.fontSize - 2)))
                     .foregroundStyle(.secondary)
+                Text(event.title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+                    .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
                 Spacer(minLength: EquinoxDesign.spacingXS)
-                if event.showsRSVPControls,
-                   event.participationStatus?.needsResponse == true {
-                    EventRSVPRespondBadge()
-                }
-                if let relative = relativeTimeString {
-                    Text(relative)
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(EquinoxDesign.ColorToken.accent)
-                }
+                relativeTimeLabel
             }
-
-            Text(event.title)
-                .font(.body.weight(.medium))
-                .lineLimit(2)
-                .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
 
             if showLocation || !event.calendarTitle.isEmpty {
                 HStack(spacing: EquinoxDesign.spacingXS) {
@@ -175,8 +178,10 @@ struct AgendaEventCard: View {
                             .lineLimit(1)
                     }
                     if !event.calendarTitle.isEmpty {
-                        Text("·")
-                            .foregroundStyle(.tertiary)
+                        if showLocation, let location = event.location, !location.isEmpty {
+                            Text("·")
+                                .foregroundStyle(.tertiary)
+                        }
                         Text(event.calendarTitle)
                             .font(.caption)
                             .foregroundStyle(.tertiary)
@@ -189,6 +194,12 @@ struct AgendaEventCard: View {
 
     private var eventAccessibilityLabel: String {
         var parts = [event.title, timeRangeString]
+        if !event.calendarTitle.isEmpty {
+            parts.append(event.calendarTitle)
+        }
+        if showLocation, let location = event.location, !location.isEmpty {
+            parts.append(location)
+        }
         if let status = event.participationStatus {
             parts.append(status.detailStatusLabel)
         }
@@ -202,14 +213,30 @@ struct AgendaEventCard: View {
 
     private var relativeTimeString: String? {
         guard !event.isEventAllDay else { return nil }
-        let now = Date()
-        guard Calendar.autoupdatingCurrent.isDateInToday(event.startDate) else { return nil }
-        if event.startDate <= now && event.endDate > now {
+        if isHappeningNow {
             return EquinoxFormatters.relativeTimeDuringEvent()
         }
-        if event.startDate > now {
+        if event.startDate > now,
+           Calendar.autoupdatingCurrent.isDate(event.startDate, inSameDayAs: now) {
             return EquinoxFormatters.relativeTime(until: event.startDate, from: now)
         }
         return nil
+    }
+
+    private var isHappeningNow: Bool {
+        event.startDate <= now && event.endDate > now
+    }
+
+    @ViewBuilder
+    private var relativeTimeLabel: some View {
+        if let relative = relativeTimeString {
+            if isHappeningNow {
+                EquinoxBadge(text: relative, tint: EquinoxDesign.ColorToken.present)
+            } else {
+                Text(relative)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(EquinoxDesign.ColorToken.action)
+            }
+        }
     }
 }

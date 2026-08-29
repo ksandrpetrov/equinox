@@ -11,7 +11,7 @@ struct PanelCommandBar: View {
 
     var body: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
-            PanelButtonGroup(spacing: EquinoxDesign.spacingMicro) {
+            PanelButtonGroup(spacing: EquinoxDesign.spacingMicro, showsBackground: true) {
                 PanelIconButton(
                     symbol: "chevron.left",
                     help: String(localized: "Previous month", comment: ""),
@@ -19,6 +19,7 @@ struct PanelCommandBar: View {
                 ) {
                     appState.goToPreviousMonth()
                 }
+                .disabled(!appState.events.canGoToPreviousMonth)
                 PanelIconButton(
                     symbol: "chevron.right",
                     help: String(localized: "Next month", comment: ""),
@@ -26,42 +27,40 @@ struct PanelCommandBar: View {
                 ) {
                     appState.goToNextMonth()
                 }
+                .disabled(!appState.events.canGoToNextMonth)
             }
 
             Text(monthTitle)
                 .font(EquinoxDesign.calendarTitleFont(size: metrics.calendarTitleFontSize))
                 .lineLimit(1)
                 .truncationMode(.middle)
+                .minimumScaleFactor(0.85)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
                 .accessibilityAddTraits(.isHeader)
 
             PanelButtonGroup(spacing: EquinoxDesign.spacingXS) {
-                PanelIconButton(
-                    symbol: "calendar.circle",
+                PanelDateButton(
+                    day: appState.events.todayDate.day,
                     help: String(localized: "Go to Today   T", comment: ""),
                     accessibilityLabel: String(localized: "Go to Today", comment: ""),
+                    isSelected: appState.events.selectedDate == appState.events.todayDate,
                     buttonSize: metrics.toolbarButtonSize
                 ) {
                     appState.goToToday()
                 }
-                .keyboardShortcut("t")
+                .keyboardShortcut("t", modifiers: [])
 
-                Button {
+                PanelIconButton(
+                    symbol: "plus",
+                    help: String(localized: "New Event   ⌘N", comment: ""),
+                    accessibilityLabel: String(localized: "New Event", comment: ""),
+                    isProminent: true,
+                    buttonSize: metrics.toolbarButtonSize
+                ) {
                     appState.panel.newEventInitialDate = appState.events.selectedDate
                     appState.panel.isNewEventSheetPresented = true
-                } label: {
-                    HStack(spacing: EquinoxDesign.spacingXS) {
-                        Image(systemName: "plus")
-                            .font(.caption.weight(.bold))
-                        Text(String(localized: "New Event", comment: ""))
-                            .font(.caption.weight(.semibold))
-                    }
-                    .padding(.horizontal, EquinoxDesign.spacingSM)
-                    .padding(.vertical, EquinoxDesign.spacingXS)
                 }
-                .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
-                .help(String(localized: "New Event   ⌘N", comment: ""))
-                .accessibilityLabel(String(localized: "New Event", comment: ""))
                 .keyboardShortcut("n", modifiers: .command)
 
                 PanelIconButton(
@@ -78,7 +77,7 @@ struct PanelCommandBar: View {
                     appState.togglePinnedState()
                 }
                 .sensoryFeedback(.selection, trigger: appState.isPinned)
-                .keyboardShortcut("p")
+                .keyboardShortcut("p", modifiers: [])
 
                 PanelIconMenuButton(
                     symbol: "ellipsis",
@@ -89,7 +88,12 @@ struct PanelCommandBar: View {
                     Button(String(localized: "Go to Today", comment: "")) {
                         appState.goToToday()
                     }
-                    .keyboardShortcut("t")
+                    .keyboardShortcut("t", modifiers: [])
+                    Divider()
+                    Toggle(
+                        String(localized: "Show agenda", comment: "Agenda visibility setting"),
+                        isOn: showsAgendaBinding
+                    )
                     Divider()
                     Button(String(localized: "Preferences…", comment: "")) {
                         SettingsActivationHandler.openSettings(appState: appState)
@@ -103,14 +107,29 @@ struct PanelCommandBar: View {
                 }
             }
         }
-        .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.spacingXS)
         .frame(height: EquinoxDesign.commandBarHeight)
         .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(EquinoxDesign.ColorToken.separator)
-                .frame(height: 1)
+            ZStack {
+                Rectangle()
+                    .fill(EquinoxDesign.ColorToken.separator)
+                    .frame(height: 1)
+                if appState.events.shouldShowLoadingIndicator {
+                    ProgressView()
+                        .progressViewStyle(.linear)
+                        .controlSize(.mini)
+                        .tint(EquinoxDesign.ColorToken.action)
+                        .accessibilityLabel(String(localized: "Loading events", comment: ""))
+                }
+            }
         }
         .padding(.bottom, EquinoxDesign.spacingXS)
+    }
+
+    private var showsAgendaBinding: Binding<Bool> {
+        Binding(
+            get: { appState.preferences.showsAgenda },
+            set: { appState.preferences.showsAgenda = $0 }
+        )
     }
 }

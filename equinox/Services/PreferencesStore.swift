@@ -9,7 +9,12 @@ final class PreferencesStore {
     private var isLoading = true
 
     var isPanelPinned = false { didSet { persist(isPanelPinned, forKey: kPanelPinned) } }
-    var showEventDays = 7 { didSet { persist(showEventDays, forKey: kShowEventDays) } }
+    var showsAgenda = true {
+        didSet {
+            persist(showsAgenda, forKey: kShowAgenda)
+            if !isLoading { notifyVisibleGridPreferencesChanged() }
+        }
+    }
     var weekStartWeekday: Int = 0 {
         didSet {
             persist(weekStartWeekday, forKey: kWeekStartDOW)
@@ -87,13 +92,12 @@ final class PreferencesStore {
     var showMonthBoundaries = true {
         didSet { persist(showMonthBoundaries, forKey: kShowMonthBoundaries) }
     }
-    var agendaHeightRatio = 0.35 {
+    var agendaHeightRatio = AgendaLayout.defaultHeightRatio {
         didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) }
     }
-    var isPlaudEnabled = false { didSet { persist(isPlaudEnabled, forKey: kPlaudEnabled) } }
     var hasSeenShortcutTip = false { didSet { persist(hasSeenShortcutTip, forKey: kHasSeenShortcutTip) } }
 
-    /// Called when `weekStartWeekday` or `calendarRowCount` changes (grid fetch range must refresh).
+    /// Called when agenda visibility or grid range preferences change (fetch range must refresh).
     var onVisibleGridPreferencesChanged: (() -> Void)?
 
     init(
@@ -125,17 +129,16 @@ final class PreferencesStore {
         min(max(value, MenuBarIconStyle.clampedRange.lowerBound), MenuBarIconStyle.clampedRange.upperBound)
     }
 
-    private static func clampedShowEventDays(_ value: Int) -> Int {
-        return min(max(value, 0), 9)
-    }
-
     private static func clampedCalendarNumRows(_ rows: Int) -> Int {
         min(max(rows == 0 ? 6 : rows, 6), 10)
     }
 
     private static func clampedAgendaHeightRatio(_ ratio: Double) -> Double {
-        guard ratio.isFinite, ratio != 0 else { return 0.35 }
-        return min(max(ratio, 0.15), 0.65)
+        guard ratio.isFinite, ratio != 0 else { return AgendaLayout.defaultHeightRatio }
+        return min(
+            max(ratio, AgendaLayout.minimumHeightRatio),
+            AgendaLayout.maximumHeightRatio
+        )
     }
 
     @MainActor
@@ -159,6 +162,7 @@ final class PreferencesStore {
         Task { @MainActor in applyTheme() }
         notificationCenter.post(name: kEquinoxSizePreferenceChanged, object: nil)
         notifyMenuBarAppearanceChanged()
+        notifyVisibleGridPreferencesChanged()
     }
 
     nonisolated static func registeredDefaultValues() -> [String: Any] {
@@ -168,7 +172,7 @@ final class PreferencesStore {
             kPanelPinned: false,
             kShowWeeks: false,
             kHighlightedDOWs: kDefaultHighlightedDOWs,
-            kShowEventDays: 7,
+            kShowAgenda: true,
             kWeekStartDOW: weekStart,
             kShowMonthInIcon: false,
             kShowDayOfWeekInIcon: false,
@@ -179,19 +183,18 @@ final class PreferencesStore {
             kHideIcon: false,
             kShowLocation: false,
             kShowMonthBoundaries: true,
-            kAgendaHeightRatio: 0.35,
+            kAgendaHeightRatio: AgendaLayout.defaultHeightRatio,
             kHasSeenShortcutTip: false,
             kShowMeetingIndicator: false,
             kMenuBarIconType: 0,
             kShowDaysWithNoEventsInAgenda: false,
-            kPlaudEnabled: false,
             kCalendarNumRows: 6,
         ]
     }
 
     private func loadFromDefaults() {
         isPanelPinned = defaults.bool(forKey: kPanelPinned)
-        showEventDays = normalizedInteger(forKey: kShowEventDays, using: Self.clampedShowEventDays)
+        showsAgenda = defaults.bool(forKey: kShowAgenda)
         weekStartWeekday = normalizedInteger(forKey: kWeekStartDOW) { min(max($0, 0), 6) }
         highlightedWeekdays = normalizedInteger(forKey: kHighlightedDOWs) { $0 & 0x7F }
         showWeeks = defaults.bool(forKey: kShowWeeks)
@@ -219,7 +222,6 @@ final class PreferencesStore {
             forKey: kAgendaHeightRatio,
             using: Self.clampedAgendaHeightRatio
         )
-        isPlaudEnabled = defaults.bool(forKey: kPlaudEnabled)
         hasSeenShortcutTip = defaults.bool(forKey: kHasSeenShortcutTip)
     }
 

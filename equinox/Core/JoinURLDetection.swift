@@ -6,8 +6,6 @@ enum JoinURLDetection {
         types: NSTextCheckingResult.CheckingType.link.rawValue
     )
 
-    private static let meetingPatterns = MeetingProviderRegistry.allDetectionSubstrings
-
     static func detectJoinURL(location: String?, url: String?, notes: String?) -> URL? {
         if let location, let found = detectJoinURL(in: location) { return found }
         if let url, let found = detectJoinURL(in: url) { return found }
@@ -24,8 +22,7 @@ enum JoinURLDetection {
             range: NSRange(location: 0, length: text.utf16.count)
         ) { result, _, stop in
             guard let result, let url = result.url else { return }
-            let link = url.absoluteString.lowercased()
-            if meetingPatterns.contains(where: { link.contains($0.lowercased()) }) {
+            if MeetingProviderRegistry.match(for: url) != nil {
                 found = url
                 stop.pointee = true
             }

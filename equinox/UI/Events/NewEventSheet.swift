@@ -21,7 +21,7 @@ struct NewEventSheet: View {
     @State private var recurrenceEndIndex = 0
     @State private var recurrenceEndDate = Date()
     @State private var alertIndex = 0
-    @State private var selectedCalendarIndex = 0
+    @State private var selectedCalendarIdentifier = ""
     @State private var showLocationSection = false
     @State private var showRepeatSection = false
     @State private var showAlertSection = false
@@ -77,7 +77,14 @@ struct NewEventSheet: View {
         }
         .onAppear {
             applySmartDefaults()
+            reconcileSelectedCalendar()
             focusedField = .title
+        }
+        .onChange(of: modifiableCalendarIdentifiers) { _, _ in
+            reconcileSelectedCalendar()
+        }
+        .onChange(of: appState.events.defaultCalendarIdentifierForNewEvents) { _, _ in
+            reconcileSelectedCalendar()
         }
     }
 
@@ -107,15 +114,15 @@ struct NewEventSheet: View {
 
             Section(String(localized: "Calendar", comment: "")) {
                 if hasModifiableCalendars {
-                    Picker(String(localized: "Calendar", comment: ""), selection: $selectedCalendarIndex) {
-                        ForEach(modifiableCalendars.indices, id: \.self) { i in
+                    Picker(String(localized: "Calendar", comment: ""), selection: $selectedCalendarIdentifier) {
+                        ForEach(modifiableCalendars) { calendar in
                             HStack {
                                 Circle()
-                                    .fill(modifiableCalendars[i].swiftUIColor)
+                                    .fill(calendar.swiftUIColor)
                                     .frame(width: EquinoxDesign.ControlWidth.calendarColorDot, height: EquinoxDesign.ControlWidth.calendarColorDot)
-                                Text(modifiableCalendars[i].title)
+                                Text(calendar.title)
                             }
-                            .tag(i)
+                            .tag(calendar.id)
                         }
                     }
                 } else {
@@ -180,6 +187,18 @@ struct NewEventSheet: View {
         }
     }
 
+    private var modifiableCalendarIdentifiers: [String] {
+        modifiableCalendars.map(\.id)
+    }
+
+    private func reconcileSelectedCalendar() {
+        selectedCalendarIdentifier = EventDraftDefaults.preferredCalendarIdentifier(
+            currentIdentifier: selectedCalendarIdentifier,
+            defaultIdentifier: appState.events.defaultCalendarIdentifierForNewEvents,
+            availableIdentifiers: modifiableCalendarIdentifiers
+        )
+    }
+
     private func applySmartDefaults() {
         let defaults = appState.smartDefaultEventDates()
         startDate = defaults.start
@@ -188,34 +207,69 @@ struct NewEventSheet: View {
 
     private func save() {
         guard !isSaving else { return }
-        guard selectedCalendarIndex < modifiableCalendars.count else { return }
-        guard endDate > startDate else {
+        guard let calendar = modifiableCalendars.first(where: { $0.id == selectedCalendarIdentifier }) else {
+            saveError = String(localized: "The calendar could not be found.", comment: "Create event error")
+            return
+        }
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else {
+            saveError = String(localized: "Enter an event title.", comment: "Create event title validation error")
+            return
+        }
+        guard let normalizedDates = EventDraftDefaults.normalizedDates(
+            calendar: appState.calendar,
+            start: startDate,
+            end: endDate,
+            isAllDay: isAllDay
+        ) else {
             saveError = String(localized: "End date must be after start date.", comment: "Create event validation error")
             return
         }
-        let calendar = modifiableCalendars[selectedCalendarIndex]
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let eventURL: URL?
+        if trimmedURL.isEmpty {
+            eventURL = nil
+        } else if let validURL = EventDraftDefaults.absoluteURL(from: trimmedURL) {
+            eventURL = validURL
+        } else {
+            saveError = String(localized: "Enter a valid URL including its scheme.", comment: "Create event URL validation error")
+            return
+        }
 
         var recurrence: RecurrenceDraft?
         if recurrenceIndex > 0 {
+            let recurrenceEnd: Date
+            if recurrenceEndIndex == 1 {
+                guard let normalizedEnd = EventDraftDefaults.normalizedRecurrenceEnd(
+                    calendar: appState.calendar,
+                    eventStart: normalizedDates.start,
+                    selectedEnd: recurrenceEndDate
+                ) else {
+                    saveError = String(localized: "Repeat end date cannot be before event start.", comment: "Create event recurrence validation error")
+                    return
+                }
+                recurrenceEnd = normalizedEnd
+            } else {
+                recurrenceEnd = recurrenceEndDate
+            }
             recurrence = EventDraftDefaults.recurrenceDraft(
                 fromIndex: recurrenceIndex,
                 endDateIndex: recurrenceEndIndex,
-                endDate: recurrenceEndDate
+                endDate: recurrenceEnd
             )
         }
 
         let alertOffset = EventDraftDefaults.alertOffset(forPickerIndex: alertIndex)
 
         let draft = NewEventDraft(
-            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+            title: trimmedTitle,
             location: location.trimmingCharacters(in: .whitespacesAndNewlines),
-            url: trimmedURL.isEmpty ? nil : URL(string: trimmedURL),
+            url: eventURL,
             notes: trimmedNotes.isEmpty ? nil : trimmedNotes,
             isAllDay: isAllDay,
-            startDate: startDate,
-            endDate: endDate,
+            startDate: normalizedDates.start,
+            endDate: normalizedDates.end,
             calendarIdentifier: calendar.id,
             recurrence: recurrence,
             alertOffset: alertOffset

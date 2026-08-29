@@ -5,7 +5,6 @@ struct EventFetchCache {
     struct FetchPlan: Equatable {
         let fetchStart: CalendarDate
         let fetchEnd: CalendarDate
-        let isRefetch: Bool
     }
 
     var eventsForDate: [Date: [DayEvent]] = [:]
@@ -25,12 +24,13 @@ struct EventFetchCache {
         previouslyFetchedJulians = IndexSet()
         eventsForDate = [:]
         selectedCalendarEventsByDate = [:]
+        lastFetchError = nil
     }
 
     /// Plans an inclusive calendar-day fetch without changing the last successful snapshot.
     func prepareFetchRange(first: CalendarDate, last: CalendarDate, refetch: Bool) -> FetchPlan? {
         if refetch {
-            return FetchPlan(fetchStart: first, fetchEnd: last, isRefetch: true)
+            return FetchPlan(fetchStart: first, fetchEnd: last)
         }
 
         let dateRange = first.julian..<(last.julian + 1)
@@ -52,7 +52,7 @@ struct EventFetchCache {
             fetchEnd = CalendarDate(julian: lastJulian)
         }
 
-        return FetchPlan(fetchStart: fetchStart, fetchEnd: fetchEnd, isRefetch: false)
+        return FetchPlan(fetchStart: fetchStart, fetchEnd: fetchEnd)
     }
 
     mutating func commitFetch(
@@ -60,19 +60,14 @@ struct EventFetchCache {
         plan: FetchPlan,
         calendar: Calendar
     ) {
-        if plan.isRefetch {
-            eventsForDate = newEventsForDate
-            previouslyFetchedJulians = IndexSet()
-        } else {
-            let datesToReplace = eventsForDate.keys.filter { date in
-                let calendarDate = CalendarDate(date: date, calendar: calendar)
-                return calendarDate >= plan.fetchStart && calendarDate <= plan.fetchEnd
-            }
-            for date in datesToReplace {
-                eventsForDate.removeValue(forKey: date)
-            }
-            eventsForDate.merge(newEventsForDate) { _, new in new }
+        let datesToReplace = eventsForDate.keys.filter { date in
+            let calendarDate = CalendarDate(date: date, calendar: calendar)
+            return calendarDate >= plan.fetchStart && calendarDate <= plan.fetchEnd
         }
+        for date in datesToReplace {
+            eventsForDate.removeValue(forKey: date)
+        }
+        eventsForDate.merge(newEventsForDate) { _, new in new }
 
         previouslyFetchedJulians.insert(
             integersIn: plan.fetchStart.julian..<(plan.fetchEnd.julian + 1)
@@ -91,5 +86,25 @@ struct EventFetchCache {
             }
         }
         selectedCalendarEventsByDate = filtered
+    }
+
+    mutating func retainEvents(
+        inside ranges: [(first: CalendarDate, last: CalendarDate)],
+        calendar: Calendar
+    ) {
+        eventsForDate = eventsForDate.filter { date, _ in
+            let calendarDate = CalendarDate(date: date, calendar: calendar)
+            return ranges.contains { calendarDate >= $0.first && calendarDate <= $0.last }
+        }
+        selectedCalendarEventsByDate = selectedCalendarEventsByDate.filter { date, _ in
+            let calendarDate = CalendarDate(date: date, calendar: calendar)
+            return ranges.contains { calendarDate >= $0.first && calendarDate <= $0.last }
+        }
+        previouslyFetchedJulians = IndexSet()
+        for range in ranges where range.first <= range.last {
+            previouslyFetchedJulians.insert(
+                integersIn: range.first.julian..<(range.last.julian + 1)
+            )
+        }
     }
 }

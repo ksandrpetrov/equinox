@@ -25,25 +25,24 @@ flowchart TB
 | Поверхность | Пользовательские возможности |
 |-------------|------------------------------|
 | Menu bar panel | Месячная сетка, agenda, выбор дня, навигация по месяцам, Today, popover/pinned panel |
-| Event sheets | Создание события с датой/временем, all-day, календарём, location, URL, notes, recurrence и alert; просмотр деталей; удаление writable событий; RSVP |
-| Settings | General, Calendars, Appearance, Privacy, Shortcuts, Plaud, About |
+| Event sheets | Создание события с датой/временем, all-day, календарём, location, URL, notes, recurrence и alert; просмотр деталей; удаление writable событий; read-only RSVP-статус |
+| Settings | General, Calendars, Appearance, Privacy, Shortcuts, About |
 | Menu bar icon | Дата/день недели/месяц/часы, скрытая иконка, meeting indicator |
-| Plaud | OAuth, refresh локального каталога, auto-match прошедших встреч, manual link, Open in Plaud |
 
 ## Слои
 
 | Слой | Путь | Ответственность |
 |------|------|-----------------|
-| App | `equinox/App/` | Жизненный цикл, `AppState`, `EventsCoordinator`, `PanelPresentationState`, `PlaudCoordinator`, константы, defaults |
-| Core | `equinox/Core/` | Даты, сетка, лейаут, реестр meeting-провайдеров и распознавание join URL, RSVP mapping, Plaud matching, Plaud PKCE/timestamp parsing |
-| Services | `equinox/Services/` | Шлюз к EventKit (`CalendarStore`), настройки, Plaud service/cache/OAuth, платформенные хелперы и EventKit-маппинг |
+| App | `equinox/App/` | Жизненный цикл, `AppState`, `EventsCoordinator`, `PanelPresentationState`, константы, defaults |
+| Core | `equinox/Core/` | Даты, сетка, лейаут, реестр meeting-провайдеров и распознавание join URL, RSVP status mapping |
+| Services | `equinox/Services/` | Шлюз к EventKit (`CalendarStore`), настройки, платформенные хелперы и EventKit-маппинг |
 | UI | `equinox/UI/` | SwiftUI-презентация; получает `AppState` + `SizeMetrics`; не ходит в EventKit напрямую |
 
 **Правило:** UI никогда не обращается к `EKEventStore` напрямую. Минимальная версия macOS — **26.0**; доступ к календарю использует только full-access API EventKit (`.fullAccess`, `requestFullAccessToEvents`).
 
 ## Состояние и уведомления
 
-- `AppState` — `@Observable @MainActor`; composition root: `EventsCoordinator`, `PanelPresentationState`, `PanelLayoutMetrics`, `PlaudCoordinator`
+- `AppState` — `@Observable @MainActor`; composition root: `EventsCoordinator`, `PanelPresentationState`, `PanelLayoutMetrics`
 - `PreferencesStore.shared` — персистентные настройки (`k*`-ключи в `Constants.swift`)
 - `CalendarStore` — `actor`; единственный шлюз к EventKit
 - Синхронизация событий: `EventsCoordinator.syncFromCalendarStore()` подтягивает снимки из `CalendarStore` после fetch/мутации/смены выбора календарей/выдачи доступа и внешних изменений EventKit (без NotificationCenter)
@@ -57,10 +56,9 @@ flowchart TB
 
 | Действие | Куда обращаться |
 |----------|----------------|
-| Мутации: create/delete event, RSVP, calendar selection, navigate+present | `AppState` facade (`createEvent`, `deleteEvent`, `selectDate`, `goToToday`, …) |
+| Мутации: create/delete event, calendar selection, navigate+present | `AppState` facade (`createEvent`, `deleteEvent`, `selectDate`, `goToToday`, …) |
 | Чтение/биндинг: `monthDate`, `selectedDate`, `eventsByDate`, loading flags | `appState.events` (`EventsCoordinator`) |
 | Pin/popover, panel chrome | `appState.panel` (`PanelPresentationState`) |
-| Plaud status, recordings, match UI | `appState.plaud` (`PlaudCoordinator`) |
 | Персистентные настройки | `appState.preferences` (`PreferencesStore.shared`) |
 
 Навигация по датам/месяцам вынесена в `CalendarNavigationCoordinator`; `EventsCoordinator` делегирует и re-export'ит flat API (`monthDate`, `selectDate`, …) без изменения call sites.
@@ -69,50 +67,17 @@ flowchart TB
 
 **Создание события (GUI):** `NewEventSheet` → `NewEventDraft` → `AppState.createEvent` → `CalendarStore.createEvent` → EventKit
 
-**Загрузка событий:** видимый диапазон сетки/agenda → `AppState.updateVisibleRange` → `CalendarStore.fetchEvents` → `EventsCoordinator.syncFromCalendarStore()` подтягивает снимки `DayEvent`
+**Загрузка событий:** видимый диапазон сетки/agenda → `EventsCoordinator.updateVisibleRange` / `updateAgendaVisibleRange` → `EventFetchCoordinator` → `CalendarStore.fetchEvents` → `EventsCoordinator.syncFromCalendarStore()` подтягивает снимки `DayEvent`
 
-**RSVP (GUI):** `EventDetailView` → `EventRSVPBar` → `AppState.setParticipationStatus` → `EventsCoordinator` → `CalendarStore.setParticipationStatus` → EventKit (KVC `participationStatus`; только приглашения с участниками)
+**RSVP (GUI):** статус текущего пользователя читается из публичного `EKParticipant.participantStatus` и показывается без возможности изменения. EventKit не предоставляет публичный API для ответа на приглашение.
 
 **Удаление события (GUI):** `EventDetailView` → `AppState.deleteEvent` → `CalendarStore.deleteEvent` (span: `thisEvent`)
 
 **Deep link:** `equinox://date/yyyy-MM-dd` → `AppDelegate.application(_:open:)` → `AppState` навигация на дату
 
-## Подсистема Plaud
-
-Интеграция с Plaud (записи встреч) — отдельная подсистема GUI.
-
-```mermaid
-flowchart TB
-    UI[PlaudSettingsTab / EventDetailView]
-    Coordinator[PlaudCoordinator @MainActor @Observable]
-    Service[PlaudService actor]
-    Live[PlaudLiveClient]
-    Store[PlaudRecordingsStore]
-    Cache[PlaudMatchCache]
-    OAuth[PlaudOAuthClient]
-    CoreMatch[Core/PlaudEventMatching]
-    CorePKCE[Core/PlaudOAuthPKCE]
-
-    UI --> Coordinator
-    Coordinator --> Service
-    Service --> Live
-    Service --> Store
-    Service --> Cache
-    Service --> OAuth
-    Service --> CoreMatch
-    OAuth --> CorePKCE
-```
-
-- **Coordinator** — UI-facing состояние в `equinox/App/PlaudCoordinator.swift`: ссылки на события, refresh/history match, OAuth для settings
-- **Service (actor)** — оркестрация match, cache, OAuth tokens, live API
-- **Core** — чистая логика match (`PlaudEventMatching`), PKCE (`PlaudOAuthPKCE`), timestamp parsing (`PlaudTimestamp`)
-- **Настройки:** вкладка Plaud (`PlaudSettingsTab`), флаг `kPlaudEnabled` в `PreferencesStore`
-- **Хранилище:** локальные JSON-снимки каталога записей и match cache в Application Support; OAuth tokens — в Keychain
-- **Privacy:** вкладка `PrivacySettingsTab` — статус Calendar TCC для приложения
-
 ## Settings tabs
 
-General, Calendars, Appearance, **Privacy**, Shortcuts, **Plaud**, About — см. `SettingsTab` в `equinox/App/SettingsTab.swift`.
+General, Calendars, Appearance, **Privacy**, Shortcuts, About — см. `SettingsTab` в `equinox/App/SettingsTab.swift`.
 
 ## Тесты
 

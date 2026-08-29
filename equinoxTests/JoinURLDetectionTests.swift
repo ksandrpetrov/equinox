@@ -31,6 +31,11 @@ final class JoinURLDetectionTests: XCTestCase {
         XCTAssertNil(url)
     }
 
+    func testDeceptiveMeetingTextDoesNotProduceJoinAction() {
+        XCTAssertNil(JoinURLDetection.detectJoinURL(in: "https://evil.example/?next=https://zoom.us/j/123"))
+        XCTAssertNil(JoinURLDetection.detectJoinURL(in: "https://zoom.us.evil.example/j/123"))
+    }
+
     func testPriorityLocationBeforeNotes() {
         let url = JoinURLDetection.detectJoinURL(
             location: "https://meet.google.com/abc-defg-hij",
@@ -88,6 +93,35 @@ final class JoinURLDetectionTests: XCTestCase {
         let notes = "Dial-in info\nhttps://zoom.us/j/123456789\nPassword: 1234"
         let display = JoinURLPresentation.notesForDisplay(notes: notes, excludingJoinURL: joinURL)
         XCTAssertEqual(display, "Dial-in info\nPassword: 1234")
+    }
+
+    func testSourceJoinURLKeepsWebURLWhenActionUsesNativeScheme() {
+        let webURL = URL(string: "https://zoom.us/j/123456789")!
+        let nativeURL = URL(string: "zoommtg://zoom.us/join?confno=123456789")!
+        let notes = "\(webURL.absoluteString)"
+
+        let source = JoinURLPresentation.sourceJoinURL(
+            location: nil,
+            eventURL: nil,
+            notes: notes,
+            fallback: nativeURL
+        )
+
+        XCTAssertEqual(source, webURL)
+        XCTAssertNil(JoinURLPresentation.notesForDisplay(notes: notes, excludingJoinURL: source))
+    }
+
+    func testSupplementalEventURLHidesMeetingURLButKeepsIndependentLink() {
+        let joinURL = URL(string: "https://zoom.us/j/123456789")!
+        let documentURL = URL(string: "https://example.com/agenda")!
+
+        XCTAssertNil(
+            JoinURLPresentation.supplementalEventURL(eventURL: joinURL, sourceJoinURL: joinURL)
+        )
+        XCTAssertEqual(
+            JoinURLPresentation.supplementalEventURL(eventURL: documentURL, sourceJoinURL: joinURL),
+            documentURL
+        )
     }
 
     func testDetectZoomGovURL() {
@@ -207,6 +241,8 @@ final class JoinURLDetectionTests: XCTestCase {
         if substring.hasPrefix("chime://") {
             return "chime://meeting?pin=abc"
         }
-        return "Join at https://\(substring)123456789"
+        let suffix = substring.hasSuffix("/") || substring.hasSuffix(".") ? "room" : ""
+        let path = substring.contains("/") ? substring + suffix : substring + "/room"
+        return "Join at https://\(path)"
     }
 }

@@ -54,6 +54,23 @@ final class MeetingIndicatorTests: XCTestCase {
         ))
     }
 
+    func testHidesIndicatorForDeclinedMeeting() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let calendar = Calendar(identifier: .gregorian)
+        let event = sampleEvent(
+            start: now.addingTimeInterval(10 * 60),
+            end: now.addingTimeInterval(40 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123"),
+            participationStatus: .declined
+        )
+
+        XCTAssertFalse(MeetingIndicator.shouldShow(
+            eventsByDate: [CalendarDate(date: now, calendar: calendar): [event]],
+            now: now,
+            calendar: calendar
+        ))
+    }
+
     func testHidesIndicatorWhenMeetingStartsAfterLookaheadWindow() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         let calendar = Calendar(identifier: .gregorian)
@@ -110,7 +127,8 @@ final class MeetingIndicatorTests: XCTestCase {
         start: Date,
         end: Date,
         joinURL: URL?,
-        isEventAllDay: Bool = false
+        isEventAllDay: Bool = false,
+        participationStatus: EventParticipationStatus? = nil
     ) -> DayEvent {
         DayEvent(
             id: "test",
@@ -123,8 +141,6 @@ final class MeetingIndicatorTests: XCTestCase {
             startDate: start,
             endDate: end,
             isEventAllDay: isEventAllDay,
-            isFirstDayOfSpan: true,
-            isLastDayOfSpan: true,
             isSlotAllDay: false,
             joinURL: joinURL,
             calendarIdentifier: "cal-1",
@@ -134,8 +150,7 @@ final class MeetingIndicatorTests: XCTestCase {
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
             allowsContentModifications: true,
-            hasAttendees: false,
-            participationStatus: nil
+            participationStatus: participationStatus
         )
     }
 }

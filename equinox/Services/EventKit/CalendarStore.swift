@@ -59,10 +59,22 @@ actor CalendarStore {
         calendarSelection.calendarEntries
     }
 
+    func defaultCalendarIdentifierForNewEvents() -> String? {
+        guard let calendar = store.defaultCalendarForNewEvents,
+              calendar.allowsContentModifications else { return nil }
+        return calendar.calendarIdentifier
+    }
+
     func requestCalendarAccessIfNeeded() async -> Bool {
-        if hasCalendarAccess {
+        switch accessStatus() {
+        case .authorized:
             prepareStore()
             return true
+        case .denied, .restricted:
+            fetchCache.clearEvents()
+            return false
+        case .notDetermined:
+            break
         }
 
         let granted = await withCheckedContinuation { continuation in
@@ -80,7 +92,31 @@ actor CalendarStore {
     }
 
     func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async -> Bool {
-        await fetchEventsWithStartDate(first, endDate: last, refetch: refetch)
+        let primarySucceeded = await fetchEventsWithStartDate(
+            first,
+            endDate: last,
+            refetch: refetch
+        )
+        guard primarySucceeded else { return false }
+
+        let today = CalendarDate.today(calendar: calendar)
+        let meetingMonitorLast = min(today.addingDays(1), CalendarDate.maximumSupported)
+        var retainedRanges = [(first: first, last: last)]
+        if today < first || meetingMonitorLast > last {
+            let todaySucceeded = await fetchEventsWithStartDate(
+                today,
+                endDate: meetingMonitorLast,
+                refetch: refetch,
+                preparesStoreOnRefetch: false
+            )
+            guard todaySucceeded else { return false }
+            retainedRanges.append((first: today, last: meetingMonitorLast))
+        }
+        if refetch {
+            fetchCache.retainEvents(inside: retainedRanges, calendar: calendar)
+            applyCalendarFilter()
+        }
+        return true
     }
 
     func refetchAll(first: CalendarDate, last: CalendarDate) async -> Bool {
@@ -104,12 +140,14 @@ actor CalendarStore {
         try store.save(event, span: .thisEvent, commit: true)
     }
 
-    func deleteEvent(identifier: String) throws {
-        guard let event = store.event(withIdentifier: identifier) else {
+    func deleteEvent(identifier: String, occurrenceStartDate: Date) throws {
+        guard let event = eventOccurrence(
+            identifier: identifier,
+            occurrenceStartDate: occurrenceStartDate
+        ) else {
             throw CalendarStoreError.eventNotFound
         }
         if EventParticipationMapping.isDeclinedParticipation(
-            hasAttendees: event.hasAttendees,
             eventKitRawValue: event.equinoxParticipationRawValue
         ) {
             throw CalendarStoreError.eventNotFound
@@ -120,23 +158,18 @@ actor CalendarStore {
         try store.remove(event, span: .thisEvent, commit: true)
     }
 
-    func setParticipationStatus(_ status: EventParticipationStatus, for eventID: String) throws {
-        guard let event = store.event(withIdentifier: eventID) else {
-            throw CalendarParticipationError.eventNotFound
-        }
-        guard event.hasAttendees else {
-            throw CalendarParticipationError.notAnInvitation
-        }
-        do {
-            try EventParticipationAccessor.apply(status, to: event)
-        } catch {
-            throw CalendarParticipationError.kvoFailed
-        }
-        try store.save(event, span: .thisEvent, commit: true)
-    }
-
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
         calendarSelection.updateSelectedCalendar(identifier: identifier, selected: selected)
+        applyCalendarFilter()
+    }
+
+    func resetCalendarSelection() {
+        calendarSelection = CalendarSelectionService()
+        guard hasCalendarAccess else {
+            applyCalendarFilter()
+            return
+        }
+        prepareStore()
         applyCalendarFilter()
     }
 
@@ -152,10 +185,30 @@ actor CalendarStore {
         store.refreshSourcesIfNecessary()
     }
 
+    private func eventOccurrence(identifier: String, occurrenceStartDate: Date) -> EKEvent? {
+        if let directMatch = store.event(withIdentifier: identifier),
+           directMatch.startDate == occurrenceStartDate {
+            return directMatch
+        }
+
+        // EventKit documents `event(withIdentifier:)` as returning the first matching
+        // occurrence. Query around the captured start date so deleting a recurring event
+        // removes the occurrence the user actually selected.
+        let predicate = store.predicateForEvents(
+            withStart: occurrenceStartDate.addingTimeInterval(-1),
+            end: occurrenceStartDate.addingTimeInterval(1),
+            calendars: nil
+        )
+        return store.events(matching: predicate).first {
+            $0.eventIdentifier == identifier && $0.startDate == occurrenceStartDate
+        }
+    }
+
     private func fetchEventsWithStartDate(
         _ startDate: CalendarDate,
         endDate: CalendarDate,
-        refetch: Bool
+        refetch: Bool,
+        preparesStoreOnRefetch: Bool = true
     ) async -> Bool {
         guard hasCalendarAccess else {
             fetchCache.clearEvents()
@@ -163,8 +216,8 @@ actor CalendarStore {
             return false
         }
 
-        if refetch {
-            calendarSelection.refresh(from: store)
+        if refetch, preparesStoreOnRefetch {
+            prepareStore()
         }
 
         guard let fetchRange = fetchCache.prepareFetchRange(first: startDate, last: endDate, refetch: refetch) else {
@@ -175,6 +228,11 @@ actor CalendarStore {
         let rangeStart = fetchRange.fetchStart.date(in: calendar)
         let rangeEnd = fetchRange.fetchEnd.addingDays(1).date(in: calendar)
         let cals = calendarSelection.validCalendars(from: store)
+        guard !cals.isEmpty else {
+            fetchCache.commitFetch([:], plan: fetchRange, calendar: calendar)
+            applyCalendarFilter()
+            return true
+        }
         let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
         let events = store.events(matching: predicate)
         let sources = events.map(DayEventSource.extract(from:))
@@ -196,40 +254,6 @@ actor CalendarStore {
         fetchCache.applyCalendarFilter(selectedCalendarIDs: calendarSelection.selectedCalendarIDs())
     }
 
-    /// Returns selected-calendar events across an arbitrary span without mutating the display
-    /// cache. Plaud matching uses this so links resolve for meetings outside the visible range.
-    /// One `DayEvent` per underlying event (deduplicated across multi-day slots).
-    func matchableEvents(from start: Date, to end: Date) async -> [DayEvent] {
-        guard hasCalendarAccess, start < end else { return [] }
-        let cals = calendarSelection.validCalendars(from: store)
-        guard !cals.isEmpty else { return [] }
-
-        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: cals)
-        let events = store.events(matching: predicate)
-        let sources = events.map(DayEventSource.extract(from:))
-        let byDate = await DayEventBuilder.buildDayEvents(
-            from: sources,
-            rangeStart: start,
-            rangeEnd: end,
-            calendar: calendar,
-            resolveNativeJoinURL: { [isNativeAppInstalled] url in
-                await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
-            }
-        )
-
-        var seen = Set<String>()
-        var result: [DayEvent] = []
-        for dayEvents in byDate.values {
-            for event in dayEvents {
-                guard let eventID = event.eventIdentifier else { continue }
-                let key = "\(eventID)|\(event.startDate.timeIntervalSince1970)"
-                if seen.insert(key).inserted {
-                    result.append(event)
-                }
-            }
-        }
-        return result
-    }
 }
 
 private final class ExternalChangeDispatcher: @unchecked Sendable {
@@ -274,23 +298,6 @@ enum CalendarStoreError: Error, LocalizedError {
             return String(localized: "This calendar is read-only.", comment: "Create event error")
         case .endDateBeforeStart:
             return String(localized: "End date must be after start date.", comment: "Create event validation error")
-        }
-    }
-}
-
-enum CalendarParticipationError: Error, LocalizedError {
-    case eventNotFound
-    case notAnInvitation
-    case kvoFailed
-
-    var errorDescription: String? {
-        switch self {
-        case .eventNotFound:
-            return String(localized: "The event could not be found.", comment: "RSVP error")
-        case .notAnInvitation:
-            return String(localized: "This event is not a meeting invitation.", comment: "RSVP error")
-        case .kvoFailed:
-            return String(localized: "Could not update response", comment: "RSVP failure title")
         }
     }
 }

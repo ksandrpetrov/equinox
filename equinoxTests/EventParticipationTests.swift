@@ -11,43 +11,27 @@ final class EventParticipationTests: XCTestCase {
         }
     }
 
-    func testNeedsResponse() {
-        XCTAssertTrue(EventParticipationStatus.pending.needsResponse)
-        XCTAssertTrue(EventParticipationStatus.unknown.needsResponse)
-        XCTAssertFalse(EventParticipationStatus.accepted.needsResponse)
-        XCTAssertFalse(EventParticipationStatus.tentative.needsResponse)
-        XCTAssertFalse(EventParticipationStatus.declined.needsResponse)
-    }
-
-    func testStatusWithoutAttendeesReturnsNil() {
-        XCTAssertNil(EventParticipationMapping.status(hasAttendees: false, eventKitRawValue: 2))
-    }
-
-    func testStatusWithAttendeesAndNilRawValueIsUnknown() {
-        XCTAssertEqual(
-            EventParticipationMapping.status(hasAttendees: true, eventKitRawValue: nil),
-            .unknown
-        )
+    func testMissingCurrentUserStatusReturnsNil() {
+        XCTAssertNil(EventParticipationMapping.status(eventKitRawValue: nil))
     }
 
     func testStatusWithAttendeesMapsRawValue() {
         XCTAssertEqual(
-            EventParticipationMapping.status(hasAttendees: true, eventKitRawValue: 4),
+            EventParticipationMapping.status(eventKitRawValue: 4),
             .tentative
         )
     }
 
     func testUnknownRawValueFallsBackToUnknown() {
         XCTAssertEqual(
-            EventParticipationMapping.status(hasAttendees: true, eventKitRawValue: 99),
+            EventParticipationMapping.status(eventKitRawValue: 99),
             .unknown
         )
     }
 
     func testIsDeclinedParticipation() {
-        XCTAssertTrue(EventParticipationMapping.isDeclinedParticipation(hasAttendees: true, eventKitRawValue: 3))
-        XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(hasAttendees: true, eventKitRawValue: 2))
-        XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(hasAttendees: false, eventKitRawValue: 3))
-        XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(hasAttendees: true, eventKitRawValue: nil))
+        XCTAssertTrue(EventParticipationMapping.isDeclinedParticipation(eventKitRawValue: 3))
+        XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(eventKitRawValue: 2))
+        XCTAssertFalse(EventParticipationMapping.isDeclinedParticipation(eventKitRawValue: nil))
     }
 }

@@ -13,16 +13,6 @@ final class CalendarListingTests: XCTestCase {
         XCTAssertEqual(sorted.map(\.id), ["a", "b", "w"])
     }
 
-    func testFilterDisplayableCalendarsRemovesMissingColor() {
-        let items = [
-            CalendarListItem(id: "a", title: "A", sourceTitle: "S", sourceIdentifier: "s", colorHex: "#fff", allowsContentModifications: true, isSubscribed: false, type: "local"),
-            CalendarListItem(id: "b", title: "B", sourceTitle: "S", sourceIdentifier: "s", colorHex: nil, allowsContentModifications: true, isSubscribed: false, type: "local"),
-        ]
-
-        let filtered = CalendarListing.filterDisplayableCalendars(items)
-        XCTAssertEqual(filtered.map(\.id), ["a"])
-    }
-
     func testFilterEntriesPreservesSourceHeaders() {
         let entries: [CalendarListEntry] = [
             .source("Google"),
@@ -44,9 +34,9 @@ final class CalendarListingTests: XCTestCase {
         XCTAssertEqual(CalendarListEntryFiltering.filter(entries, query: "   "), entries)
     }
 
-    func testFilterEntriesNoMatchReturnsOriginalList() {
+    func testFilterEntriesNoMatchReturnsEmptyList() {
         let entries = sampleGroupedEntries()
-        XCTAssertEqual(CalendarListEntryFiltering.filter(entries, query: "nonexistent"), entries)
+        XCTAssertEqual(CalendarListEntryFiltering.filter(entries, query: "nonexistent"), [])
     }
 
     func testFilterEntriesIsCaseInsensitive() {
@@ -80,6 +70,16 @@ final class CalendarListingTests: XCTestCase {
         XCTAssertEqual(sorted.map(\.sourceTitle), ["Google", "iCloud"])
     }
 
+    func testSortCalendarsIsStableForDuplicateSourceAndCalendarTitles() {
+        let items = [
+            CalendarListItem(id: "z", title: "Work", sourceTitle: "Google", sourceIdentifier: "account-b", colorHex: "#fff", allowsContentModifications: true, isSubscribed: false, type: "caldav"),
+            CalendarListItem(id: "b", title: "Work", sourceTitle: "Google", sourceIdentifier: "account-a", colorHex: "#fff", allowsContentModifications: true, isSubscribed: false, type: "caldav"),
+            CalendarListItem(id: "a", title: "Work", sourceTitle: "Google", sourceIdentifier: "account-a", colorHex: "#fff", allowsContentModifications: true, isSubscribed: false, type: "caldav"),
+        ]
+
+        XCTAssertEqual(CalendarListing.sortCalendarsForDisplay(items).map(\.id), ["a", "b", "z"])
+    }
+
     func testFilterEntriesOmitsSourceWithNoMatchingCalendars() {
         let entries: [CalendarListEntry] = [
             .source("Google"),
@@ -88,7 +88,35 @@ final class CalendarListingTests: XCTestCase {
             .calendar(SelectableCalendar(id: "home", title: "Home", sourceTitle: "iCloud", isSelected: true, colorRed: 0, colorGreen: 0, colorBlue: 1, colorAlpha: 1, allowsContentModifications: true)),
         ]
         let filtered = CalendarListEntryFiltering.filter(entries, query: "work")
-        XCTAssertEqual(filtered, entries)
+        XCTAssertEqual(filtered, [])
+    }
+
+    func testFilterEntriesMatchesSourceTitle() {
+        let entries = sampleGroupedEntries()
+        let filtered = CalendarListEntryFiltering.filter(entries, query: "icloud")
+
+        XCTAssertEqual(filtered.count, 2)
+        if case .source(let source) = filtered[0] {
+            XCTAssertEqual(source, "iCloud")
+        } else {
+            XCTFail("Expected source header")
+        }
+    }
+
+    func testFilterEntriesDoesNotDropCalendarWithoutSourceHeader() {
+        let calendar = SelectableCalendar(
+            id: "local",
+            title: "Local",
+            sourceTitle: "",
+            isSelected: true,
+            colorRed: 1,
+            colorGreen: 0,
+            colorBlue: 0,
+            colorAlpha: 1,
+            allowsContentModifications: true
+        )
+
+        XCTAssertEqual(CalendarListEntryFiltering.filter([.calendar(calendar)], query: "local"), [.calendar(calendar)])
     }
 
     private func sampleGroupedEntries() -> [CalendarListEntry] {

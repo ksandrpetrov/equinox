@@ -12,7 +12,7 @@ final class PreferencesStoreTests: XCTestCase {
 
         let persistedKeys: [(String, String)] = [
             ("isPanelPinned", kPanelPinned),
-            ("showEventDays", kShowEventDays),
+            ("showsAgenda", kShowAgenda),
             ("weekStartWeekday", kWeekStartDOW),
             ("highlightedWeekdays", kHighlightedDOWs),
             ("showWeeks", kShowWeeks),
@@ -30,7 +30,6 @@ final class PreferencesStoreTests: XCTestCase {
             ("calendarRowCount", kCalendarNumRows),
             ("showMonthBoundaries", kShowMonthBoundaries),
             ("agendaHeightRatio", kAgendaHeightRatio),
-            ("isPlaudEnabled", kPlaudEnabled),
             ("hasSeenShortcutTip", kHasSeenShortcutTip),
         ]
 
@@ -63,7 +62,7 @@ final class PreferencesStoreTests: XCTestCase {
             let registered = PreferencesStore.registeredDefaultValues()
 
             XCTAssertEqual(store.isPanelPinned, registered[kPanelPinned] as? Bool)
-            XCTAssertEqual(store.showEventDays, registered[kShowEventDays] as? Int)
+            XCTAssertEqual(store.showsAgenda, registered[kShowAgenda] as? Bool)
             XCTAssertEqual(store.weekStartWeekday, registered[kWeekStartDOW] as? Int)
             XCTAssertEqual(store.highlightedWeekdays, registered[kHighlightedDOWs] as? Int)
             XCTAssertEqual(store.themePreference, ThemePreference.system.rawValue)
@@ -94,7 +93,6 @@ final class PreferencesStoreTests: XCTestCase {
             defaults.set(99, forKey: kSizePreference)
             defaults.set(99, forKey: kBackgroundStyle)
             defaults.set(99, forKey: kMenuBarIconType)
-            defaults.set(99, forKey: kShowEventDays)
             defaults.set(2, forKey: kCalendarNumRows)
             defaults.set(0.9, forKey: kAgendaHeightRatio)
 
@@ -107,7 +105,6 @@ final class PreferencesStoreTests: XCTestCase {
                 (kSizePreference, store.sizePreference, SizePreference.medium.rawValue),
                 (kBackgroundStyle, store.backgroundStyle, BackgroundStyle.glass.rawValue),
                 (kMenuBarIconType, store.menuBarIconType, MenuBarIconStyle.clampedRange.upperBound),
-                (kShowEventDays, store.showEventDays, 9),
                 (kCalendarNumRows, store.calendarRowCount, 6),
             ]
             for (key, actual, expected) in expectedValues {
@@ -116,6 +113,17 @@ final class PreferencesStoreTests: XCTestCase {
             }
             XCTAssertEqual(store.agendaHeightRatio, 0.65)
             XCTAssertEqual(defaults.double(forKey: kAgendaHeightRatio), 0.65)
+        }
+    }
+
+    func testLegacyAgendaDayCountMigratesToVisibility() {
+        withIsolatedDefaults { defaults in
+            defaults.set(0, forKey: kShowAgenda)
+            XCTAssertFalse(PreferencesStore(defaults: defaults).showsAgenda)
+        }
+        withIsolatedDefaults { defaults in
+            defaults.set(7, forKey: kShowAgenda)
+            XCTAssertTrue(PreferencesStore(defaults: defaults).showsAgenda)
         }
     }
 
@@ -177,6 +185,22 @@ final class PreferencesStoreTests: XCTestCase {
 
             store.resetToDefaults()
             XCTAssertEqual(counter.counts, .init(size: 2, menu: 2))
+        }
+    }
+
+    func testResetNotifiesVisibleGridOwnerAfterLoadingDefaults() {
+        withIsolatedDefaults { defaults in
+            let store = PreferencesStore(defaults: defaults)
+            var updateCount = 0
+            store.onVisibleGridPreferencesChanged = { updateCount += 1 }
+            store.weekStartWeekday = (store.weekStartWeekday + 1) % 7
+            XCTAssertEqual(updateCount, 1)
+            store.showsAgenda.toggle()
+            XCTAssertEqual(updateCount, 2)
+
+            store.resetToDefaults()
+
+            XCTAssertEqual(updateCount, 3)
         }
     }
 

@@ -45,6 +45,12 @@ final class CalendarDateTests: XCTestCase {
 
     func testWeekOfYear() {
         XCTAssertEqual(CalendarDate.weekOfYear(year: 2024, monthIndex: 0, day: 1), 1)
+        XCTAssertEqual(CalendarDate.weekOfYear(year: 2021, monthIndex: 0, day: 1), 53)
+        XCTAssertEqual(CalendarDate.weekOfYear(year: 2020, monthIndex: 11, day: 31), 53)
+        XCTAssertEqual(CalendarDate.weekOfYear(year: 2021, monthIndex: 0, day: 4), 1)
+        XCTAssertEqual(CalendarDate.weekOfYear(year: 2024, monthIndex: 11, day: 31), 1)
+        XCTAssertEqual(CalendarDate.weeksInYear(2020), 53)
+        XCTAssertEqual(CalendarDate.weeksInYear(2021), 52)
     }
 
     func testCompareDates() {

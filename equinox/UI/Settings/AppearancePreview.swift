@@ -45,7 +45,7 @@ struct AppearancePreview: View {
                 HStack(spacing: EquinoxDesign.spacingSM) {
                     previewDayCell(day: 12, isToday: false, isSelected: false, inMonth: false)
                     previewDayCell(day: 13, isToday: true, isSelected: false, inMonth: true)
-                    previewDayCell(day: 14, isToday: false, isSelected: true, inMonth: true)
+                    previewDayCell(day: 14, isToday: false, isSelected: true, inMonth: true, eventCount: 5)
                     previewDayCell(day: 15, isToday: false, isSelected: false, inMonth: true)
                 }
 
@@ -68,6 +68,11 @@ struct AppearancePreview: View {
                 Text(String(localized: "Team standup", comment: "Appearance preview sample event"))
                     .font(.caption.weight(.medium))
                     .lineLimit(1)
+                Spacer(minLength: EquinoxDesign.spacingXS)
+                EquinoxBadge(
+                    text: String(localized: "Now", comment: "Event happening now"),
+                    tint: EquinoxDesign.ColorToken.present
+                )
             }
             .padding(.leading, previewMetrics.agendaContentLeadingInset)
             .padding(.trailing, EquinoxDesign.spacingSM)
@@ -75,12 +80,18 @@ struct AppearancePreview: View {
             Spacer(minLength: 0)
         }
         .padding(.vertical, EquinoxDesign.spacingMicro + 1)
-        .equinoxCard(style: .row)
+        .equinoxCard(style: .activeTimeline)
         .padding(.horizontal, EquinoxDesign.spacingXS)
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func previewDayCell(day: Int, isToday: Bool, isSelected: Bool, inMonth: Bool) -> some View {
+    private func previewDayCell(
+        day: Int,
+        isToday: Bool,
+        isSelected: Bool,
+        inMonth: Bool,
+        eventCount: Int = 1
+    ) -> some View {
         DayCellView(
             date: CalendarDate(year: previewMonth.year, monthIndex: previewMonth.monthIndex, day: day),
             isToday: isToday,
@@ -89,6 +100,7 @@ struct AppearancePreview: View {
             isHighlighted: false,
             isMonthBoundaryStart: false,
             isMonthBoundaryEnd: false,
+            eventCount: eventCount,
             dotColors: prefs.showEventDots ? [EquinoxDesign.ColorToken.accent] : nil,
             metrics: previewMetrics,
             calendar: previewCalendar,

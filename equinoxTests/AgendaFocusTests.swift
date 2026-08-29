@@ -45,6 +45,23 @@ final class AgendaFocusTests: XCTestCase {
         XCTAssertEqual(AgendaFocus.focusEventID(in: [allDay, upcoming], now: now), "upcoming")
     }
 
+    func testIgnoresDeclinedEvents() {
+        let declined = makeEvent(
+            id: "declined",
+            start: now.addingTimeInterval(900),
+            end: now.addingTimeInterval(1_800),
+            participationStatus: .declined
+        )
+        let accepted = makeEvent(
+            id: "accepted",
+            start: now.addingTimeInterval(3_600),
+            end: now.addingTimeInterval(4_500),
+            participationStatus: .accepted
+        )
+
+        XCTAssertEqual(AgendaFocus.focusEventID(in: [declined, accepted], now: now), "accepted")
+    }
+
     func testPrefersEarlierOngoingWhenOverlapping() {
         let first = makeEvent(id: "first", start: now.addingTimeInterval(-1800), end: now.addingTimeInterval(1800))
         let second = makeEvent(id: "second", start: now.addingTimeInterval(-900), end: now.addingTimeInterval(900))
@@ -116,7 +133,8 @@ final class AgendaFocusTests: XCTestCase {
         id: String,
         start: Date,
         end: Date,
-        isEventAllDay: Bool = false
+        isEventAllDay: Bool = false,
+        participationStatus: EventParticipationStatus? = nil
     ) -> DayEvent {
         DayEvent(
             id: id,
@@ -129,8 +147,6 @@ final class AgendaFocusTests: XCTestCase {
             startDate: start,
             endDate: end,
             isEventAllDay: isEventAllDay,
-            isFirstDayOfSpan: true,
-            isLastDayOfSpan: true,
             isSlotAllDay: false,
             joinURL: nil,
             calendarIdentifier: "cal-1",
@@ -140,8 +156,7 @@ final class AgendaFocusTests: XCTestCase {
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
             allowsContentModifications: true,
-            hasAttendees: false,
-            participationStatus: nil
+            participationStatus: participationStatus
         )
     }
 

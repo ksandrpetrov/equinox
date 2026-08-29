@@ -3,24 +3,28 @@ import SwiftUI
 private struct PendingDeleteEvent: Identifiable {
     let id: String
     let eventIdentifier: String
+    let occurrenceStartDate: Date
     let title: String
 }
 
 enum AgendaContentState: Equatable {
     case hidden
     case loading
+    case empty
     case content
 
     static func resolve(
         accessStatus: CalendarAccessStatus,
         hasCompletedInitialLoad: Bool,
-        hasFetchError: Bool
+        hasFetchError: Bool,
+        hasVisibleEvents: Bool,
+        hasSelectedCalendars: Bool = true
     ) -> AgendaContentState {
-        guard accessStatus == .authorized || accessStatus == .notDetermined else {
+        guard accessStatus == .authorized, hasSelectedCalendars else {
             return .hidden
         }
         if hasCompletedInitialLoad {
-            return .content
+            return hasVisibleEvents ? .content : .empty
         }
         return hasFetchError ? .hidden : .loading
     }
@@ -37,6 +41,7 @@ struct AgendaView: View {
 
     private var prefs: PreferencesStore { appState.preferences }
     var body: some View {
+        let displayRange = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
         let sections = agendaSections
         Group {
             switch contentState {
@@ -44,11 +49,12 @@ struct AgendaView: View {
                 Color.clear
             case .loading:
                 loadingAgenda
-            case .content where sections.isEmpty:
+            case .empty:
                 emptyAgenda
             case .content:
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: EquinoxDesign.spacingXS, pinnedViews: [.sectionHeaders]) {
+                        agendaBoundaryMarker(displayRange.first)
                         ForEach(sections, id: \.date) { section in
                             Section {
                             if section.events.isEmpty
@@ -60,7 +66,7 @@ struct AgendaView: View {
                                         event: event,
                                         metrics: metrics,
                                         showLocation: prefs.showLocation,
-                                        plaudMatch: appState.plaud.link(for: event),
+                                        now: appState.events.currentTime,
                                         onTap: {
                                             appState.panel.selectedEvent = event
                                             appState.panel.isEventDetailPresented = true
@@ -72,11 +78,12 @@ struct AgendaView: View {
                                             appState.panel.selectedEvent = event
                                             appState.panel.isEventDetailPresented = true
                                         }
-                                        if event.allowsContentModifications, let eventIdentifier = event.eventIdentifier {
+                                        if event.allowsDeletion, let eventIdentifier = event.eventIdentifier {
                                             Button(String(localized: "Delete…", comment: ""), role: .destructive) {
                                                 pendingDelete = PendingDeleteEvent(
                                                     id: event.id,
                                                     eventIdentifier: eventIdentifier,
+                                                    occurrenceStartDate: event.startDate,
                                                     title: event.title
                                                 )
                                             }
@@ -88,7 +95,9 @@ struct AgendaView: View {
                                 AgendaSectionHeader(
                                     date: section.date,
                                     calendar: appState.calendar,
-                                    metrics: metrics
+                                    metrics: metrics,
+                                    eventCount: section.events.count,
+                                    isSelected: section.date == appState.events.selectedDate
                                 )
                                 .id(AgendaScrollTarget.day(julian: section.date.julian))
                                 .background {
@@ -101,6 +110,7 @@ struct AgendaView: View {
                                 }
                             }
                         }
+                        agendaBoundaryMarker(displayRange.last)
                     }
                     .scrollTargetLayout()
                 }
@@ -108,14 +118,6 @@ struct AgendaView: View {
                 .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
                 .onPreferenceChange(AgendaSectionHeaderHeightKey.self) { height in
                     sectionHeaderHeight = height
-                }
-                .onAppear {
-                    scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
-                    scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
-                    scrollCoordinator.scrollToFocus(events: appState.events)
-                }
-                .onChange(of: appState.events.agendaScrollToken) { _, _ in
-                    scrollCoordinator.scrollToFocus(events: appState.events)
                 }
                 .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
                     scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, events: appState.events)
@@ -127,7 +129,23 @@ struct AgendaView: View {
                 }
             }
         }
-        .frame(height: height)
+        .frame(height: contentHeight)
+        .padding(.top, contentState == .hidden ? 0 : EquinoxDesign.spacingSM)
+        .onAppear {
+            scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
+            scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
+            if contentState == .content {
+                scrollCoordinator.scrollToFocus(events: appState.events)
+            }
+        }
+        .onChange(of: contentState) { _, state in
+            if state == .content {
+                scrollCoordinator.scrollToFocus(events: appState.events)
+            }
+        }
+        .onChange(of: appState.events.agendaScrollToken) { _, _ in
+            scrollCoordinator.scrollToFocus(events: appState.events)
+        }
         .sheet(item: $pendingDelete) { pending in
             ModalConfirmDialog(
                 title: String(localized: "Delete event?", comment: "Delete event confirmation title"),
@@ -135,10 +153,14 @@ struct AgendaView: View {
                 confirmTitle: String(localized: "Delete", comment: ""),
                 onConfirm: {
                     let eventIdentifier = pending.eventIdentifier
+                    let occurrenceStartDate = pending.occurrenceStartDate
                     pendingDelete = nil
                     Task {
                         appState.panel.panelFeedback = nil
-                        if let error = await appState.deleteEvent(identifier: eventIdentifier) {
+                        if let error = await appState.deleteEvent(
+                            identifier: eventIdentifier,
+                            occurrenceStartDate: occurrenceStartDate
+                        ) {
                             appState.panel.panelFeedback = error
                         }
                     }
@@ -149,10 +171,6 @@ struct AgendaView: View {
             )
             .equinoxSheetPresentation()
         }
-        .onChange(of: prefs.showEventDays) { _, _ in
-            scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate, force: true)
-            scrollCoordinator.scrollToFocus(events: appState.events)
-        }
     }
 
     private var agendaScrollAnchor: UnitPoint {
@@ -161,6 +179,13 @@ struct AgendaView: View {
             return UnitPoint(x: 0.5, y: min(0.5, agendaHeaderClearance / height))
         }
         return .top
+    }
+
+    private func agendaBoundaryMarker(_ date: CalendarDate) -> some View {
+        Color.clear
+            .frame(height: EquinoxDesign.spacingMicro)
+            .id(AgendaScrollTarget.boundary(julian: date.julian))
+            .accessibilityHidden(true)
     }
 
     private var agendaHeaderClearance: CGFloat {
@@ -188,31 +213,55 @@ struct AgendaView: View {
     }
 
     private var loadingAgenda: some View {
-        HStack(spacing: EquinoxDesign.spacingSM) {
-            ProgressView()
-                .controlSize(.small)
-            Text(String(localized: "Loading events", comment: "Agenda initial loading state"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
+        Text(String(localized: "Loading events", comment: "Agenda initial loading state"))
+            .font(.caption)
+            .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var emptyAgenda: some View {
-        VStack(spacing: EquinoxDesign.spacingMD) {
-            Image(systemName: "calendar.badge.clock")
-                .font(EquinoxDesign.emptyStateIconFont())
-                .foregroundStyle(.tertiary)
-            Text(String(localized: "No upcoming events.", comment: "Agenda empty list"))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Button {
-                appState.panel.newEventInitialDate = appState.events.selectedDate
-                appState.panel.isNewEventSheetPresented = true
-            } label: {
-                Text(String(localized: "New Event", comment: "Empty agenda CTA"))
+        VStack(spacing: 0) {
+            AgendaSectionHeader(
+                date: appState.events.selectedDate,
+                calendar: appState.calendar,
+                metrics: metrics,
+                eventCount: 0,
+                isSelected: true
+            )
+
+            VStack(spacing: EquinoxDesign.spacingMD) {
+                Image(systemName: "calendar.badge.clock")
+                    .font(EquinoxDesign.emptyStateIconFont())
+                    .foregroundStyle(.tertiary)
+                Text(String(localized: "No events", comment: "Agenda empty day"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Button {
+                    appState.panel.newEventInitialDate = appState.events.selectedDate
+                    appState.panel.isNewEventSheetPresented = true
+                } label: {
+                    Text(String(localized: "New Event", comment: "Empty agenda CTA"))
+                }
+                .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
+
+                Button(String(localized: "Look Further", comment: "Extend empty agenda range")) {
+                    let range = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
+                    scrollCoordinator.extendRangeIfNeeded(
+                        for: range.last,
+                        anchor: appState.events.todayDate
+                    )
+                    scrollCoordinator.commitAgendaToCoordinator(
+                        appState.events,
+                        anchor: appState.events.todayDate
+                    )
+                }
+                .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
+                .disabled(
+                    scrollCoordinator.displayRange(anchor: appState.events.todayDate).last
+                        == CalendarDate.maximumSupported
+                )
             }
-            .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -232,8 +281,14 @@ struct AgendaView: View {
         AgendaContentState.resolve(
             accessStatus: appState.events.calendarAccessStatus,
             hasCompletedInitialLoad: appState.events.hasCompletedInitialEventLoad,
-            hasFetchError: appState.events.lastFetchError != nil
+            hasFetchError: appState.events.lastFetchError != nil,
+            hasVisibleEvents: agendaSections.contains { !$0.events.isEmpty },
+            hasSelectedCalendars: appState.events.hasSelectedCalendars
         )
+    }
+
+    private var contentHeight: CGFloat {
+        contentState == .hidden ? 0 : height
     }
 }
 

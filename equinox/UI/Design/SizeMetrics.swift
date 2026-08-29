@@ -11,7 +11,6 @@ struct SizeMetrics {
     let sheetWidth: CGFloat
     let toolbarButtonSize: CGFloat
     let weekColumnWidth: CGFloat
-    let loadingIndicatorHeight: CGFloat
 
     /// Leading inset for agenda event content, aligned to the event stripe edge.
     var agendaContentLeadingInset: CGFloat {
@@ -25,19 +24,19 @@ struct SizeMetrics {
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaEventLeadingMargin: 8,
                                panelWidth: 340, sheetWidth: 340, toolbarButtonSize: 28,
-                               weekColumnWidth: 24, loadingIndicatorHeight: 14)
+                               weekColumnWidth: 24)
         case .medium:
             return SizeMetrics(fontSize: 13, calendarTitleFontSize: 15, cellSize: 36,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaEventLeadingMargin: 10,
                                panelWidth: 380, sheetWidth: 380, toolbarButtonSize: 30,
-                               weekColumnWidth: 24, loadingIndicatorHeight: 14)
+                               weekColumnWidth: 24)
         case .large:
             return SizeMetrics(fontSize: 15, calendarTitleFontSize: 17, cellSize: 40,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4.5,
                                agendaEventLeadingMargin: 12,
                                panelWidth: 420, sheetWidth: 420, toolbarButtonSize: 32,
-                               weekColumnWidth: 24, loadingIndicatorHeight: 14)
+                               weekColumnWidth: 24)
         }
     }
 }

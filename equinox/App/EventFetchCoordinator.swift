@@ -18,8 +18,12 @@ final class EventFetchCoordinator {
             preparesCalendarAccess: Bool,
             completion: CheckedContinuation<Bool, Never>?
         ) {
-            first = min(first, range.first)
-            last = max(last, range.last)
+            let merged = EventFetchRange.coalesced(
+                current: (first: first, last: last),
+                incoming: range
+            )
+            first = merged.first
+            last = merged.last
             self.refetch = self.refetch || refetch
             self.preparesCalendarAccess = self.preparesCalendarAccess || preparesCalendarAccess
             if let completion {

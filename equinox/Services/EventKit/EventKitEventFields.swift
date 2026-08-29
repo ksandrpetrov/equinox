@@ -16,7 +16,6 @@ struct EventKitEventFields: Sendable {
     let calendarIdentifier: String
     let calendarTitle: String
     let allowsContentModifications: Bool
-    let hasAttendees: Bool
     let participationRawValue: Int?
 
     static func extract(from event: EKEvent) -> EventKitEventFields {
@@ -34,7 +33,6 @@ struct EventKitEventFields: Sendable {
             calendarIdentifier: event.calendar.calendarIdentifier,
             calendarTitle: event.calendar.title,
             allowsContentModifications: event.calendar.allowsContentModifications,
-            hasAttendees: event.hasAttendees,
             participationRawValue: event.equinoxParticipationRawValue
         )
     }

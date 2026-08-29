@@ -39,7 +39,10 @@ struct AppearanceSettingsTab: View {
 
     @ViewBuilder
     private var settingsSections: some View {
-            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Menu Bar", "icon", "month", "meeting", "clock", "hide") {
+            if SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "Menu Bar", "Menu Bar Icon", "Hide date icon", "Show meeting indicator", "Clock format"
+            ) {
                 SettingsSection(String(localized: "Menu Bar", comment: "")) {
                     VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
                         Text(String(localized: "Menu Bar Icon", comment: "Settings section: menu bar icon"))
@@ -66,8 +69,8 @@ struct AppearanceSettingsTab: View {
                     subtitle: String(localized: "Additional menu bar options", comment: "")
                 ) {
                     SettingsLabeledToggle(
-                        title: String(localized: "Hide menu bar icon", comment: ""),
-                        subtitle: String(localized: "Access Equinox via keyboard shortcut only", comment: ""),
+                        title: String(localized: "Hide date icon", comment: "Menu bar hidden date setting"),
+                        subtitle: String(localized: "Keep the clock and meeting indicator when enabled", comment: "Menu bar hidden date setting"),
                         isOn: $prefs.isIconHidden
                     )
                     SettingsDivider()
@@ -89,7 +92,11 @@ struct AppearanceSettingsTab: View {
                 }
             }
 
-            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "dots", "week", "weekend", "boundary", "location", "events", "hover") {
+            if SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "Calendar Display", "Show event dots", "Show calendar weeks", "Show event location",
+                    "Show days with no events", "Show month boundaries", "Calendar rows", "Highlight days"
+            ) {
                 SettingsSection(
                     String(localized: "Calendar Display", comment: "Settings calendar display section"),
                     subtitle: String(localized: "Customize the calendar grid and agenda", comment: "")
@@ -193,8 +200,16 @@ struct AppearanceSettingsTab: View {
     }
 
     private var hasVisibleSections: Bool {
-        SettingsSearchFilter.matches(searchText: searchText, keywords: "Menu Bar", "icon", "month", "meeting", "clock", "hide")
-            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "dots", "week", "weekend", "boundary", "location", "events", "hover")
+        SettingsSearchFilter.matches(searchText: searchText, keywords: "Preview", "Appearance")
+            || SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "Menu Bar", "Menu Bar Icon", "Hide date icon", "Show meeting indicator", "Clock format"
+            )
+            || SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "Calendar Display", "Show event dots", "Show calendar weeks", "Show event location",
+                    "Show days with no events", "Show month boundaries", "Calendar rows", "Highlight days"
+            )
             || SettingsSearchFilter.matches(searchText: searchText, keywords: "Theme", "Appearance", "Background", "Size", "Glass", "Light", "Dark")
     }
 

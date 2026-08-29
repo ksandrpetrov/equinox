@@ -47,4 +47,36 @@ final class EventFetchRangeTests: XCTestCase {
         XCTAssertEqual(range.first, gridFirst)
         XCTAssertEqual(range.last, gridLast)
     }
+
+    func testNearbyPendingRangesAreCoalesced() {
+        let current = (
+            first: CalendarDate(year: 2026, monthIndex: 5, day: 1),
+            last: CalendarDate(year: 2026, monthIndex: 5, day: 30)
+        )
+        let incoming = (
+            first: CalendarDate(year: 2026, monthIndex: 4, day: 20),
+            last: CalendarDate(year: 2026, monthIndex: 6, day: 10)
+        )
+
+        let result = EventFetchRange.coalesced(current: current, incoming: incoming)
+
+        XCTAssertEqual(result.first, incoming.first)
+        XCTAssertEqual(result.last, incoming.last)
+    }
+
+    func testFarPendingRangeSupersedesStaleRange() {
+        let current = (
+            first: CalendarDate(year: 2026, monthIndex: 5, day: 1),
+            last: CalendarDate(year: 2026, monthIndex: 5, day: 30)
+        )
+        let incoming = (
+            first: CalendarDate(year: 3333, monthIndex: 10, day: 1),
+            last: CalendarDate.maximumSupported
+        )
+
+        let result = EventFetchRange.coalesced(current: current, incoming: incoming)
+
+        XCTAssertEqual(result.first, incoming.first)
+        XCTAssertEqual(result.last, incoming.last)
+    }
 }

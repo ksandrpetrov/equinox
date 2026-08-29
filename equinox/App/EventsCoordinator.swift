@@ -10,7 +10,7 @@ final class EventsCoordinator {
     private let navigation: CalendarNavigationCoordinator
 
     var onMeetingIndicatorChanged: () -> Void = {}
-    var onPlaudDataChanged: () -> Void = {}
+    var onEventsSnapshotChanged: () -> Void = {}
     var isPanelVisible: () -> Bool = { false } {
         didSet { navigation.isPanelVisible = isPanelVisible }
     }
@@ -30,11 +30,10 @@ final class EventsCoordinator {
         set { navigation.todayDate = newValue }
     }
 
-    var firstVisibleDate: CalendarDate = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-    var lastVisibleDate: CalendarDate = CalendarDate(year: 1583, monthIndex: 0, day: 1)
-
     var eventsByDate: [CalendarDate: [DayEvent]] = [:]
     var calendarEntries: [CalendarListEntry] = []
+    var defaultCalendarIdentifierForNewEvents: String?
+    var currentTime = Date()
 
     var shouldShowMeetingIndicator = false
     var isFetchingEvents = false
@@ -48,6 +47,14 @@ final class EventsCoordinator {
     var monthNavigationDirection: CalendarNavigationCoordinator.MonthNavigationDirection {
         navigation.monthNavigationDirection
     }
+    var canGoToPreviousMonth: Bool { navigation.canGoToPreviousMonth }
+    var canGoToNextMonth: Bool { navigation.canGoToNextMonth }
+    var hasCalendars: Bool {
+        calendarEntries.contains { entry in
+            if case .calendar = entry { return true }
+            return false
+        }
+    }
 
     var visibleGridDates: [CalendarDate] {
         navigation.visibleGridDates
@@ -55,6 +62,8 @@ final class EventsCoordinator {
 
     private var agendaVisibleFirst: CalendarDate?
     private var agendaVisibleLast: CalendarDate?
+    private var visibleGridRange: (first: CalendarDate, last: CalendarDate)?
+    private var currentFetchRange: (first: CalendarDate, last: CalendarDate)?
 
     init(
         calendar: Calendar,
@@ -68,6 +77,7 @@ final class EventsCoordinator {
         self.navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences)
 
         navigation.onVisibleGridRangeChanged = { [weak self] first, last in
+            self?.reanchorAgendaRangeForCurrentSelectionIfNeeded()
             self?.updateVisibleRange(first: first, last: last)
         }
 
@@ -106,8 +116,12 @@ final class EventsCoordinator {
         calendarAccessStatus = await calendarStore.accessStatus()
         if !calendarAccessStatus.isAuthorized {
             eventsByDate = [:]
+            calendarEntries = []
+            defaultCalendarIdentifierForNewEvents = nil
+            hasSelectedCalendars = false
             hasCompletedInitialEventLoad = false
             updateMeetingIndicator()
+            onEventsSnapshotChanged()
         }
     }
 
@@ -123,18 +137,22 @@ final class EventsCoordinator {
         calendarAccessStatus = await calendarStore.accessStatus()
         if calendarAccessStatus.isAuthorized {
             eventsByDate = await calendarStore.selectedCalendarEvents()
+            calendarEntries = await calendarStore.calendarEntries()
+            defaultCalendarIdentifierForNewEvents = await calendarStore.defaultCalendarIdentifierForNewEvents()
+            hasSelectedCalendars = await calendarStore.hasSelectedCalendars()
         } else {
             eventsByDate = [:]
+            calendarEntries = []
+            defaultCalendarIdentifierForNewEvents = nil
+            hasSelectedCalendars = false
             hasCompletedInitialEventLoad = false
         }
-        calendarEntries = await calendarStore.calendarEntries()
-        hasSelectedCalendars = await calendarStore.hasSelectedCalendars()
         lastFetchError = await calendarStore.lastFetchError
         if markInitialLoadComplete, calendarAccessStatus.isAuthorized {
             hasCompletedInitialEventLoad = true
         }
         updateMeetingIndicator()
-        onPlaudDataChanged()
+        onEventsSnapshotChanged()
         maybeRefocusAgendaAfterFetch()
     }
 
@@ -165,8 +183,8 @@ final class EventsCoordinator {
         EventFetchRange.range(
             coveringGridFrom: gridFirst,
             through: gridLast,
-            agendaFirst: agendaVisibleFirst,
-            agendaLast: agendaVisibleLast
+            agendaFirst: preferences.showsAgenda ? agendaVisibleFirst : nil,
+            agendaLast: preferences.showsAgenda ? agendaVisibleLast : nil
         )
     }
 
@@ -186,7 +204,7 @@ final class EventsCoordinator {
     }
 
     func goToToday() {
-        navigation.goToToday(isInitialVisibleRange: firstVisibleDate == lastVisibleDate)
+        navigation.goToToday(isInitialVisibleRange: visibleGridRange == nil)
     }
 
     func goToPreviousMonth() {
@@ -209,18 +227,30 @@ final class EventsCoordinator {
         eventsByDate[date] ?? []
     }
 
-    func updateMeetingIndicator() {
+    func updateMeetingIndicator(now: Date = Date()) {
         shouldShowMeetingIndicator = MeetingIndicator.shouldShow(
             eventsByDate: eventsByDate,
-            now: Date(),
+            now: now,
             calendar: calendar
         )
         onMeetingIndicatorChanged()
     }
 
     func refreshTodayAndMeetingIndicator() {
+        currentTime = Date()
+        let previousToday = navigation.todayDate
         navigation.refreshTodayIfNeeded()
-        updateMeetingIndicator()
+        if navigation.todayDate != previousToday {
+            retryFetchEvents()
+        }
+        updateMeetingIndicator(now: currentTime)
+    }
+
+    func refreshAfterSignificantTimeChange() {
+        currentTime = Date()
+        navigation.refreshTodayIfNeeded()
+        retryFetchEvents()
+        updateMeetingIndicator(now: currentTime)
     }
 
     func createEvent(from draft: NewEventDraft) async -> String? {
@@ -233,9 +263,12 @@ final class EventsCoordinator {
         }
     }
 
-    func deleteEvent(identifier: String) async -> String? {
+    func deleteEvent(identifier: String, occurrenceStartDate: Date) async -> String? {
         do {
-            try await calendarStore.deleteEvent(identifier: identifier)
+            try await calendarStore.deleteEvent(
+                identifier: identifier,
+                occurrenceStartDate: occurrenceStartDate
+            )
             _ = await reloadCurrentEvents()
             return nil
         } catch {
@@ -245,38 +278,33 @@ final class EventsCoordinator {
 
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
         await calendarStore.updateSelectedCalendar(identifier: identifier, selected: selected)
-        await syncFromCalendarStore()
-    }
-
-    func respondToInvitation(event: DayEvent, status: EventParticipationStatus) async -> String? {
-        guard let eventID = event.eventIdentifier else {
-            return String(localized: "Could not update response", comment: "RSVP failure title")
-        }
-        do {
-            try await calendarStore.setParticipationStatus(status, for: eventID)
+        if selected {
             _ = await reloadCurrentEvents()
-            return nil
-        } catch {
-            return error.localizedDescription
+        } else {
+            await syncFromCalendarStore()
         }
     }
 
-    func matchableEvents(from start: Date, to end: Date) async -> [DayEvent] {
-        await calendarStore.matchableEvents(from: start, to: end)
+    func resetCalendarSelection() async {
+        await calendarStore.resetCalendarSelection()
+        _ = await reloadCurrentEvents()
     }
 
     private func applyFetchRange(coveringGridFrom gridFirst: CalendarDate, through gridLast: CalendarDate) {
+        visibleGridRange = (gridFirst, gridLast)
         let range = fetchRange(coveringGridFrom: gridFirst, through: gridLast)
-        firstVisibleDate = range.first
-        lastVisibleDate = range.last
+        currentFetchRange = range
         fetchCoordinator.scheduleFetch(range: range)
     }
 
     private func applyAgendaFetchExtensionIfNeeded() {
-        let range = fetchRange(coveringGridFrom: firstVisibleDate, through: lastVisibleDate)
-        guard range.first != firstVisibleDate || range.last != lastVisibleDate else { return }
-        firstVisibleDate = range.first
-        lastVisibleDate = range.last
+        guard let visibleGridRange else { return }
+        let range = fetchRange(
+            coveringGridFrom: visibleGridRange.first,
+            through: visibleGridRange.last
+        )
+        guard !sameRange(range, currentFetchRange) else { return }
+        currentFetchRange = range
         fetchCoordinator.scheduleFetch(range: range)
     }
 
@@ -288,14 +316,38 @@ final class EventsCoordinator {
     }
 
     private func updateCurrentFetchRange() -> (first: CalendarDate, last: CalendarDate) {
-        guard let gridFirst = visibleGridDates.first,
-              let gridLast = visibleGridDates.last else {
-            return (firstVisibleDate, lastVisibleDate)
+        reanchorAgendaRangeForCurrentSelectionIfNeeded()
+        guard let rawGridFirst = visibleGridDates.first,
+              let rawGridLast = visibleGridDates.last else {
+            return currentFetchRange ?? (
+                CalendarDate.minimumSupported,
+                CalendarDate.minimumSupported
+            )
         }
+        let gridFirst = max(rawGridFirst, CalendarDate.minimumSupported)
+        let gridLast = min(rawGridLast, CalendarDate.maximumSupported)
+        visibleGridRange = (gridFirst, gridLast)
         let range = fetchRange(coveringGridFrom: gridFirst, through: gridLast)
-        firstVisibleDate = range.first
-        lastVisibleDate = range.last
+        currentFetchRange = range
         return range
+    }
+
+    private func reanchorAgendaRangeForCurrentSelectionIfNeeded() {
+        guard let agendaVisibleFirst, let agendaVisibleLast else { return }
+        let adjusted = AgendaDisplayRange.rangeCovering(
+            date: navigation.selectedDate,
+            first: agendaVisibleFirst,
+            last: agendaVisibleLast
+        )
+        self.agendaVisibleFirst = adjusted.first
+        self.agendaVisibleLast = adjusted.last
+    }
+
+    private func sameRange(
+        _ lhs: (first: CalendarDate, last: CalendarDate),
+        _ rhs: (first: CalendarDate, last: CalendarDate)?
+    ) -> Bool {
+        lhs.first == rhs?.first && lhs.last == rhs?.last
     }
 
     private func maybeRefocusAgendaAfterFetch() {

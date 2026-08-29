@@ -22,9 +22,12 @@ enum EquinoxDesign {
 
     static let cellRadius: CGFloat = 8
     static let cardRadius: CGFloat = 10
+    static let monthBoundaryWidth: CGFloat = 0.5
 
     static let agendaHeaderTitleSpacing: CGFloat = spacingSM - 2
     static let agendaHeaderVerticalPadding: CGFloat = spacingSM - 3
+    static let agendaDateMarkerSize: CGFloat = 8
+    static let agendaEventCountMinWidth: CGFloat = 18
     static let commandBarHeight: CGFloat = 40
     static var toolbarButtonSize: CGFloat { SizeMetrics.metrics(for: .medium).toolbarButtonSize }
 
@@ -41,7 +44,8 @@ enum EquinoxDesign {
     static let expandAnimation = Animation.smooth(duration: 0.22)
 
     static let pressScale: CGFloat = 0.97
-    static let onAccentForeground = Color.white
+    static let onAccentForeground = Color("OnAccentForeground")
+    static var onSolarForeground: Color { ColorToken.surfaceWindow }
 
     static func animation(_ animation: Animation, reduceMotion: Bool) -> Animation? {
         reduceMotion ? nil : animation
@@ -58,6 +62,10 @@ enum EquinoxDesign {
     enum ColorToken {
         static let accent = Color("AccentColor")
         static let accentStrong = Color("AccentStrong")
+        static let solar = Color("SolarAccent")
+        static var action: Color { accent }
+        static var actionStrong: Color { accentStrong }
+        static var present: Color { solar }
         static let surfacePrimary = Color(nsColor: .windowBackgroundColor)
         static let surfaceSecondary = Color(nsColor: .controlBackgroundColor)
         static let surfaceWindow = Color(nsColor: .windowBackgroundColor)
@@ -135,7 +143,6 @@ enum EquinoxDesign {
         static let declined: Double = 0.65
         static let declinedEvent: Double = 0.72
         static let declinedTitle: Double = 0.55
-        static let responding: Double = 0.55
         static let notesBody: Double = 0.9
         static let joinSubtitle: Double = 0.85
         static let selectionTint: Double = 0.16
@@ -149,10 +156,17 @@ enum EquinoxDesign {
         static let chipForegroundSubtle: Double = 0.85
         static let weekdayDimmed: Double = 0.7
         static let warningBannerTint: Double = 0.08
+        static let currentEventBackground: Double = 0.10
+        static let currentEventBorder: Double = 0.32
+        static let monthBoundary: Double = 0.55
     }
 
     static func weekdayHeaderFont() -> Font {
         .caption2.weight(.semibold)
+    }
+
+    static func weekNumberFont(size: CGFloat) -> Font {
+        .system(size: size - 2, weight: .medium, design: .monospaced)
     }
 
     static func weekdayHeaderTracking(fontSize: CGFloat = 10) -> CGFloat {
@@ -164,7 +178,7 @@ enum EquinoxDesign {
     }
 
     static func calendarTitleFont(size: CGFloat) -> Font {
-        .system(size: size, weight: .semibold)
+        .system(size: size, weight: .semibold, design: .rounded)
     }
 
     static func agendaSectionTitleFont(size: CGFloat) -> Font {
@@ -187,6 +201,10 @@ enum EquinoxDesign {
 
     static func panelIconFont(isSelected: Bool) -> Font {
         .system(size: 13, weight: isSelected ? .semibold : .medium)
+    }
+
+    static func agendaEventCountFont() -> Font {
+        .caption2.monospacedDigit().weight(.semibold)
     }
 
     static func monoTimeFont(size: CGFloat = 12) -> Font {

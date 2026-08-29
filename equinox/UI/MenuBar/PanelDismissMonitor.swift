@@ -58,6 +58,7 @@ final class PanelDismissMonitor {
         guard outsideClickMonitor == nil else { return }
         outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] _ in
             Task { @MainActor in
+                guard self?.isModalSheetPresented?() != true else { return }
                 self?.onOutsideClick?()
             }
         }

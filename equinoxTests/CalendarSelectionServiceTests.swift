@@ -32,7 +32,56 @@ final class CalendarSelectionServiceTests: XCTestCase {
 
     func testCalendarSelectionStorageRoundTrip() {
         CalendarSelectionStorage.saveSelectedIDs(["cal-a", "cal-b"], to: defaults)
+        XCTAssertTrue(CalendarSelectionStorage.hasStoredSelection(in: defaults))
         XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), ["cal-a", "cal-b"])
+    }
+
+    func testExplicitEmptySelectionIsDifferentFromMissingPreference() {
+        CalendarSelectionStorage.saveSelectedIDs([], to: defaults)
+
+        XCTAssertTrue(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+        XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), [])
+
+        CalendarSelectionStorage.clearSelection(from: defaults)
+        XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+    }
+
+    func testTemporarilyEmptyStoreDoesNotCreateSelectNonePreference() {
+        XCTAssertFalse(
+            CalendarSelectionService.shouldPersistSelection(
+                discoveredCalendarCount: 0
+            )
+        )
+        XCTAssertFalse(
+            CalendarSelectionService.shouldPersistSelection(
+                discoveredCalendarCount: 0
+            )
+        )
+        XCTAssertTrue(
+            CalendarSelectionService.shouldPersistSelection(
+                discoveredCalendarCount: 1
+            )
+        )
+    }
+
+    func testPersistedSelectionKeepsCalendarsMissingFromTransientDiscovery() {
+        let ids = CalendarSelectionService.selectionIDsToPersist(
+            selectedDiscoveredIDs: ["cal-a"],
+            discoveredIDs: ["cal-a", "cal-b"],
+            storedSelectedIDs: ["cal-a", "cal-missing"]
+        )
+
+        XCTAssertEqual(ids, ["cal-a", "cal-missing"])
+    }
+
+    func testDeselectedDiscoveredCalendarIsNotRestoredFromStoredSelection() {
+        let ids = CalendarSelectionService.selectionIDsToPersist(
+            selectedDiscoveredIDs: [],
+            discoveredIDs: ["cal-a"],
+            storedSelectedIDs: ["cal-a"]
+        )
+
+        XCTAssertTrue(ids.isEmpty)
     }
 
     func testCalendarSelectionStorageClearRemovesSelection() {

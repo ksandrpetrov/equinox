@@ -24,6 +24,17 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
         XCTAssertEqual(navigation.monthDate.year, target.year)
     }
 
+    func testSelectionUpdatesMonthTransitionDirection() {
+        navigation.monthDate = CalendarDate(year: 2026, monthIndex: 5, day: 1)
+        navigation.selectedDate = CalendarDate(year: 2026, monthIndex: 5, day: 14)
+
+        navigation.selectDate(CalendarDate(year: 2026, monthIndex: 4, day: 14))
+        XCTAssertEqual(navigation.monthNavigationDirection, .backward)
+
+        navigation.selectDate(CalendarDate(year: 2027, monthIndex: 0, day: 14))
+        XCTAssertEqual(navigation.monthNavigationDirection, .forward)
+    }
+
     func testSyncSelectionFromAgendaScrollDoesNotBumpScrollToken() {
         let tokenBefore = navigation.agendaScrollToken
         let target = navigation.selectedDate.addingDays(1)
@@ -47,6 +58,34 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
     func testGoToNextMonthSetsForwardDirection() {
         navigation.goToNextMonth()
         XCTAssertEqual(navigation.monthNavigationDirection, .forward)
+    }
+
+    func testNavigationDoesNotLeaveSupportedDateRange() {
+        navigation.monthDate = CalendarDate(year: CalendarDate.minYear, monthIndex: 0, day: 1)
+        navigation.selectedDate = CalendarDate.minimumSupported
+        XCTAssertFalse(navigation.canGoToPreviousMonth)
+        navigation.goToPreviousMonth()
+        XCTAssertEqual(navigation.selectedDate, CalendarDate.minimumSupported)
+
+        navigation.monthDate = CalendarDate(year: CalendarDate.maxYear, monthIndex: 11, day: 1)
+        navigation.selectedDate = CalendarDate.maximumSupported
+        XCTAssertFalse(navigation.canGoToNextMonth)
+        navigation.goToNextMonth()
+        XCTAssertEqual(navigation.selectedDate, CalendarDate.maximumSupported)
+
+        navigation.selectDate(CalendarDate(year: CalendarDate.maxYear + 1, monthIndex: 0, day: 1))
+        XCTAssertEqual(navigation.selectedDate, CalendarDate.maximumSupported)
+    }
+
+    func testVisibleFetchRangeClampsAdjacentGridDaysAtBoundary() {
+        navigation.monthDate = CalendarDate.minimumSupported
+        var fetchedRange: (CalendarDate, CalendarDate)?
+        navigation.onVisibleGridRangeChanged = { fetchedRange = ($0, $1) }
+
+        navigation.refreshVisibleGridRange()
+
+        XCTAssertEqual(fetchedRange?.0, CalendarDate.minimumSupported)
+        XCTAssertTrue(fetchedRange?.1.isValid == true)
     }
 
     func testRefreshVisibleGridRangeNotifiesOwner() {

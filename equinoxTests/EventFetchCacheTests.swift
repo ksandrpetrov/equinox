@@ -17,8 +17,6 @@ final class EventFetchCacheTests: XCTestCase {
             startDate: dayStart,
             endDate: dayStart.addingTimeInterval(3600),
             isEventAllDay: false,
-            isFirstDayOfSpan: true,
-            isLastDayOfSpan: true,
             isSlotAllDay: false,
             joinURL: nil,
             calendarIdentifier: calendarID,
@@ -28,7 +26,6 @@ final class EventFetchCacheTests: XCTestCase {
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
             allowsContentModifications: true,
-            hasAttendees: false,
             participationStatus: nil
         )
     }
@@ -101,6 +98,53 @@ final class EventFetchCacheTests: XCTestCase {
         XCTAssertEqual(cache.eventsForDate[dayStart]?.map(\.calendarIdentifier), ["new"])
     }
 
+    func testRefetchPreservesCachedEventsOutsideRequestedRange() {
+        var cache = EventFetchCache()
+        let first = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let distant = CalendarDate(year: 2027, monthIndex: 5, day: 10)
+        let initialPlan = cache.prepareFetchRange(first: first, last: distant, refetch: false)!
+        cache.commitFetch(
+            [
+                first.date(in: calendar): [makeEvent(calendarID: "first", on: first)],
+                distant.date(in: calendar): [makeEvent(calendarID: "distant", on: distant)],
+            ],
+            plan: initialPlan,
+            calendar: calendar
+        )
+
+        let refetchPlan = cache.prepareFetchRange(first: distant, last: distant, refetch: true)!
+        cache.commitFetch([:], plan: refetchPlan, calendar: calendar)
+
+        XCTAssertNotNil(cache.eventsForDate[first.date(in: calendar)])
+        XCTAssertNil(cache.eventsForDate[distant.date(in: calendar)])
+    }
+
+    func testRetainEventsKeepsPrimaryAndTodayRangesOnly() {
+        var cache = EventFetchCache()
+        let today = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let primary = CalendarDate(year: 2027, monthIndex: 5, day: 10)
+        let stale = CalendarDate(year: 2025, monthIndex: 5, day: 10)
+        let plan = cache.prepareFetchRange(first: stale, last: primary, refetch: false)!
+        cache.commitFetch(
+            [today, primary, stale].reduce(into: [Date: [DayEvent]]()) { result, date in
+                result[date.date(in: calendar)] = [makeEvent(calendarID: "\(date.julian)", on: date)]
+            },
+            plan: plan,
+            calendar: calendar
+        )
+
+        cache.retainEvents(
+            inside: [(first: primary, last: primary), (first: today, last: today)],
+            calendar: calendar
+        )
+
+        XCTAssertNotNil(cache.eventsForDate[today.date(in: calendar)])
+        XCTAssertNotNil(cache.eventsForDate[primary.date(in: calendar)])
+        XCTAssertNil(cache.eventsForDate[stale.date(in: calendar)])
+        XCTAssertNil(cache.prepareFetchRange(first: today, last: today, refetch: false))
+        XCTAssertNotNil(cache.prepareFetchRange(first: stale, last: stale, refetch: false))
+    }
+
     func testApplyCalendarFilterKeepsOnlySelectedCalendars() {
         var cache = EventFetchCache()
         let date = CalendarDate(year: 2026, monthIndex: 5, day: 10)
@@ -132,5 +176,14 @@ final class EventFetchCacheTests: XCTestCase {
 
         let result = cache.selectedCalendarEvents(calendar: calendar)
         XCTAssertEqual(result.keys.sorted { $0.julian < $1.julian }, [date])
+    }
+
+    func testClearEventsAlsoClearsStaleFetchError() {
+        var cache = EventFetchCache()
+        cache.lastFetchError = "stale"
+
+        cache.clearEvents()
+
+        XCTAssertNil(cache.lastFetchError)
     }
 }

@@ -46,7 +46,7 @@ enum DayEventMapping {
         let components = calendarColorComponents
         let syntheticID: String
         if let eventID = fields.eventIdentifier {
-            syntheticID = "\(dayKey.timeIntervalSince1970)-\(eventID)"
+            syntheticID = "\(dayKey.timeIntervalSince1970)-\(eventID)-\(fields.startDate.timeIntervalSince1970)"
         } else {
             syntheticID = "\(dayKey.timeIntervalSince1970)-\(fields.calendarItemIdentifier)-\(fields.startDate.timeIntervalSince1970)"
         }
@@ -61,8 +61,6 @@ enum DayEventMapping {
             startDate: fields.startDate,
             endDate: fields.endDate,
             isEventAllDay: fields.isAllDay,
-            isFirstDayOfSpan: slot.isFirstDayOfSpan,
-            isLastDayOfSpan: slot.isLastDayOfSpan,
             isSlotAllDay: slot.displaysAsAllDay,
             joinURL: joinURL,
             calendarIdentifier: fields.calendarIdentifier,
@@ -72,11 +70,7 @@ enum DayEventMapping {
             calendarColorBlue: components.blue,
             calendarColorAlpha: components.alpha,
             allowsContentModifications: fields.allowsContentModifications,
-            hasAttendees: fields.hasAttendees,
-            participationStatus: EventParticipationMapping.status(
-                hasAttendees: fields.hasAttendees,
-                eventKitRawValue: fields.participationRawValue
-            )
+            participationStatus: EventParticipationMapping.status(eventKitRawValue: fields.participationRawValue)
         )
     }
 }

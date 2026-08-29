@@ -35,6 +35,7 @@ extension View {
 
 struct PanelButtonStyle: ButtonStyle {
     var isSelected: Bool = false
+    var isProminent: Bool = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
@@ -47,7 +48,7 @@ struct PanelButtonStyle: ButtonStyle {
                     .fill(backgroundColor(isPressed: configuration.isPressed))
             )
             .overlay {
-                if isSelected {
+                if isSelected && !isProminent {
                     RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
                         .strokeBorder(EquinoxDesign.ColorToken.accentRing, lineWidth: 1)
                 }
@@ -60,6 +61,11 @@ struct PanelButtonStyle: ButtonStyle {
     }
 
     private func backgroundColor(isPressed: Bool) -> Color {
+        if isProminent {
+            return isPressed || isHovered
+                ? EquinoxDesign.ColorToken.actionStrong
+                : EquinoxDesign.ColorToken.action
+        }
         if isSelected {
             return EquinoxDesign.ColorToken.accentSoft
         }
@@ -79,14 +85,20 @@ struct PanelIconButton: View {
     var help: String = ""
     var accessibilityLabel: String = ""
     var isSelected: Bool = false
+    var isProminent: Bool = false
     var buttonSize: CGFloat = EquinoxDesign.toolbarButtonSize
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            panelIconLabel(symbol: symbol, isSelected: isSelected, buttonSize: buttonSize)
+            panelIconLabel(
+                symbol: symbol,
+                isSelected: isSelected,
+                isProminent: isProminent,
+                buttonSize: buttonSize
+            )
         }
-        .buttonStyle(PanelButtonStyle(isSelected: isSelected))
+        .buttonStyle(PanelButtonStyle(isSelected: isSelected, isProminent: isProminent))
         .help(help)
         .panelAccessibilityLabel(
             accessibilityLabel.isEmpty ? help : accessibilityLabel,
@@ -118,26 +130,76 @@ struct PanelIconMenuButton<MenuContent: View>: View {
     }
 }
 
+struct PanelDateButton: View {
+    let day: Int
+    var help: String = ""
+    var accessibilityLabel: String = ""
+    var isSelected = false
+    var buttonSize: CGFloat = EquinoxDesign.toolbarButtonSize
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
+                    .strokeBorder(
+                        EquinoxDesign.ColorToken.present,
+                        lineWidth: 1
+                    )
+                    .frame(width: buttonSize * 0.62, height: buttonSize * 0.62)
+                Text("\(day)")
+                    .font(.system(size: buttonSize * 0.3, weight: .bold, design: .rounded))
+                    .foregroundStyle(EquinoxDesign.ColorToken.present)
+                    .contentTransition(.numericText())
+            }
+            .frame(width: buttonSize, height: buttonSize)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PanelButtonStyle(isSelected: isSelected))
+        .help(help)
+        .panelAccessibilityLabel(
+            accessibilityLabel.isEmpty ? help : accessibilityLabel,
+            hint: help
+        )
+    }
+}
+
 private func panelIconLabel(
     symbol: String,
     isSelected: Bool = false,
+    isProminent: Bool = false,
     buttonSize: CGFloat
 ) -> some View {
     Image(systemName: symbol)
         .font(EquinoxDesign.panelIconFont(isSelected: isSelected))
         .symbolRenderingMode(.hierarchical)
-        .foregroundStyle(isSelected ? EquinoxDesign.ColorToken.accent : Color.primary)
+        .foregroundStyle(
+            isProminent
+                ? EquinoxDesign.onAccentForeground
+                : (isSelected ? EquinoxDesign.ColorToken.action : Color.primary)
+        )
         .frame(width: buttonSize, height: buttonSize)
         .contentShape(Rectangle())
 }
 
 struct PanelButtonGroup<Content: View>: View {
     var spacing: CGFloat = EquinoxDesign.spacingXS
+    var showsBackground = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         HStack(spacing: spacing) {
             content()
+        }
+        .background {
+            if showsBackground {
+                RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
+                    .fill(EquinoxDesign.ColorToken.interactionSubtle)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
+                            .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
+                    }
+            }
         }
     }
 }

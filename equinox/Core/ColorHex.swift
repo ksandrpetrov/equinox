@@ -11,23 +11,66 @@ enum ColorHex {
     }
 
     static func rgbaToHex(red: CGFloat, green: CGFloat, blue: CGFloat) -> String {
-        let r = Int(round(red * 255))
-        let g = Int(round(green * 255))
-        let b = Int(round(blue * 255))
+        let r = byte(from: red)
+        let g = byte(from: green)
+        let b = byte(from: blue)
         return String(format: "#%02X%02X%02X", r, g, b)
     }
 
     static func cgColorComponents(_ cgColor: CGColor) -> RGBA? {
-        guard let components = cgColor.components, !components.isEmpty else { return nil }
-        let red = components[0]
-        let green = components.count > 1 ? components[1] : red
-        let blue = components.count > 2 ? components[2] : red
-        let alpha = components.count > 3 ? components[3] : 1
-        return RGBA(red: red, green: green, blue: blue, alpha: alpha)
+        if let components = cgColor.components, components.count == 2 {
+            let white = clamped(components[0])
+            return RGBA(
+                red: white,
+                green: white,
+                blue: white,
+                alpha: clamped(components[1])
+            )
+        }
+
+        if let components = cgColor.components,
+           components.count >= 3,
+           isSRGB(cgColor.colorSpace) {
+            return rgba(from: components)
+        }
+
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let converted = cgColor.converted(
+                to: colorSpace,
+                intent: .defaultIntent,
+                options: nil
+              ),
+              let components = converted.components,
+              components.count >= 3 else {
+            return nil
+        }
+        return rgba(from: components)
+    }
+
+    private static func rgba(from components: [CGFloat]) -> RGBA {
+        return RGBA(
+            red: clamped(components[0]),
+            green: clamped(components[1]),
+            blue: clamped(components[2]),
+            alpha: clamped(components.count > 3 ? components[3] : 1)
+        )
+    }
+
+    private static func isSRGB(_ colorSpace: CGColorSpace?) -> Bool {
+        guard let name = colorSpace?.name else { return false }
+        return name == CGColorSpace.sRGB || name == CGColorSpace.extendedSRGB
     }
 
     static func hex(from cgColor: CGColor) -> String? {
         guard let rgba = cgColorComponents(cgColor) else { return nil }
         return rgbaToHex(red: rgba.red, green: rgba.green, blue: rgba.blue)
+    }
+
+    private static func byte(from component: CGFloat) -> Int {
+        Int(round(clamped(component) * 255))
+    }
+
+    private static func clamped(_ component: CGFloat) -> CGFloat {
+        min(max(component, 0), 1)
     }
 }

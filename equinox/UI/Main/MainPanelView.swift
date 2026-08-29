@@ -11,15 +11,25 @@ struct MainPanelView: View {
         BackgroundStyle(rawValue: appState.preferences.backgroundStyle) ?? .glass
     }
 
-    private var showAgenda: Bool {
-        appState.preferences.showEventDays > 0
-    }
-
     private var computedAgendaHeight: CGFloat {
-        guard showAgenda else { return 0 }
+        guard appState.preferences.showsAgenda else { return 0 }
         return AgendaLayout.agendaHeight(
             maxHeight: appState.layout.panelAgendaMaxHeight,
             heightRatio: appState.preferences.agendaHeightRatio
+        )
+    }
+
+    private var panelLayoutState: PanelLayoutState {
+        PanelLayoutState(
+            showsAgenda: appState.preferences.showsAgenda,
+            calendarRowCount: appState.preferences.calendarRowCount,
+            agendaHeightRatio: appState.preferences.agendaHeightRatio,
+            panelFeedback: appState.panel.panelFeedback,
+            accessStatus: appState.events.calendarAccessStatus.rawValue,
+            fetchError: appState.events.lastFetchError,
+            hasCalendars: appState.events.hasCalendars,
+            hasSelectedCalendars: appState.events.hasSelectedCalendars,
+            hasSeenShortcutTip: appState.preferences.hasSeenShortcutTip
         )
     }
 
@@ -35,7 +45,10 @@ struct MainPanelView: View {
                 if let event = appState.panel.selectedEvent {
                     EventDetailView(appState: appState, event: event, metrics: metrics)
                         .equinoxSheetPresentation()
-                }
+                    }
+            }
+            .onChange(of: panelLayoutState) { _, _ in
+                appState.layout.invalidatePanelSize()
             }
     }
 
@@ -53,41 +66,21 @@ struct MainPanelView: View {
                     .padding(.bottom, EquinoxDesign.spacingXS)
             }
 
-            loadingSlot
-
             PanelStateOverlay(appState: appState)
                 .padding(.bottom, EquinoxDesign.spacingXS)
 
             CalendarGridView(appState: appState, metrics: metrics)
                 .fixedSize(horizontal: false, vertical: true)
 
-            if showAgenda {
+            if appState.preferences.showsAgenda {
                 AgendaView(
                     appState: appState,
                     metrics: metrics,
                     height: computedAgendaHeight
                 )
-                .padding(.top, EquinoxDesign.spacingSM)
             }
         }
         .padding(EquinoxDesign.panelPadding)
-        .onAppear {
-            appState.plaud.refreshMatchesIfNeeded()
-        }
-    }
-
-    private var loadingSlot: some View {
-        HStack {
-            Spacer(minLength: 0)
-            ProgressView()
-                .controlSize(.small)
-                .opacity(appState.events.shouldShowLoadingIndicator ? 1 : 0)
-                .accessibilityHidden(!appState.events.shouldShowLoadingIndicator)
-                .accessibilityLabel(String(localized: "Loading events", comment: ""))
-            Spacer(minLength: 0)
-        }
-        .frame(height: metrics.loadingIndicatorHeight)
-        .padding(.bottom, EquinoxDesign.spacingXS)
     }
 
     private func modalSheetBinding(_ keyPath: ReferenceWritableKeyPath<AppState, Bool>) -> Binding<Bool> {
@@ -102,4 +95,16 @@ struct MainPanelView: View {
             }
         )
     }
+}
+
+private struct PanelLayoutState: Equatable {
+    let showsAgenda: Bool
+    let calendarRowCount: Int
+    let agendaHeightRatio: Double
+    let panelFeedback: String?
+    let accessStatus: Int
+    let fetchError: String?
+    let hasCalendars: Bool
+    let hasSelectedCalendars: Bool
+    let hasSeenShortcutTip: Bool
 }

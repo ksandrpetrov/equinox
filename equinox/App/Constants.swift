@@ -4,7 +4,9 @@ let kPanelPinned = "PanelPinned"
 let kCalendarNumRows = "CalendarNumRows"
 /// Whether the pinned floating panel was on screen at last quit, so it can be restored on next launch.
 let kPinnedPanelVisible = "PinnedPanelVisible"
-let kShowEventDays = "ShowEventDays"
+/// Legacy persisted literal: older versions stored an integer day count here.
+/// `UserDefaults.bool(forKey:)` intentionally migrates `0`/positive values to the agenda toggle.
+let kShowAgenda = "ShowEventDays"
 let kShowWeeks = "ShowWeeks"
 let kWeekStartDOW = "WeekStartDOW"
 let kHighlightedDOWs = "HighlightedDOWs"
@@ -24,7 +26,6 @@ let kShowDaysWithNoEventsInAgenda = "ShowDaysWithNoEventsInAgenda"
 let kAgendaHeightRatio = "AgendaHeightRatio"
 let kShowMonthBoundaries = "ShowMonthBoundaries"
 let kSelectedCalendars = "SelectedCalendars"
-let kPlaudEnabled = "PlaudEnabled"
 let kHasSeenShortcutTip = "HasSeenShortcutTip"
 
 let kThemePreference = "ThemePreference"

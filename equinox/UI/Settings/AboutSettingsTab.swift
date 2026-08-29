@@ -1,7 +1,28 @@
 import SwiftUI
 
 struct AboutSettingsTab: View {
+    var searchText: String = ""
+
     var body: some View {
+        Group {
+            if SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "About", "Equinox", "Version", "MIT License", "View on GitHub"
+            ) {
+                aboutContent
+            } else {
+                ContentUnavailableView(
+                    String(localized: "No Results", comment: "Settings search empty"),
+                    systemImage: "magnifyingglass",
+                    description: Text(String(localized: "Try a different search term.", comment: ""))
+                )
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationTitle(String(localized: "About", comment: "About prefs tab label"))
+    }
+
+    private var aboutContent: some View {
         VStack(spacing: EquinoxDesign.spacingLG) {
             Spacer()
 
@@ -36,6 +57,5 @@ struct AboutSettingsTab: View {
         .padding(EquinoxDesign.spacingXL + EquinoxDesign.spacingMD)
         .padding(.top, 1)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle(String(localized: "About", comment: "About prefs tab label"))
     }
 }

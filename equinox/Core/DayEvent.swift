@@ -11,8 +11,6 @@ struct DayEvent: Identifiable, Sendable, Equatable {
     let startDate: Date
     let endDate: Date
     let isEventAllDay: Bool
-    let isFirstDayOfSpan: Bool
-    let isLastDayOfSpan: Bool
     let isSlotAllDay: Bool
     let joinURL: URL?
     let calendarIdentifier: String
@@ -22,10 +20,18 @@ struct DayEvent: Identifiable, Sendable, Equatable {
     let calendarColorBlue: CGFloat
     let calendarColorAlpha: CGFloat
     let allowsContentModifications: Bool
-    let hasAttendees: Bool
     let participationStatus: EventParticipationStatus?
 
-    var displaysAsAllDay: Bool { isSlotAllDay }
+    var allowsDeletion: Bool {
+        eventIdentifier != nil && allowsContentModifications && participationStatus != .declined
+    }
 
-    var showsRSVPControls: Bool { hasAttendees }
+    func representsSameOccurrence(as other: DayEvent) -> Bool {
+        if let eventIdentifier, let otherIdentifier = other.eventIdentifier {
+            return eventIdentifier == otherIdentifier && startDate == other.startDate
+        }
+        return calendarItemIdentifier == other.calendarItemIdentifier
+            && startDate == other.startDate
+    }
+
 }

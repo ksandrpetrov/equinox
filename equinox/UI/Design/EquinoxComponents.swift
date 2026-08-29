@@ -111,6 +111,8 @@ enum EquinoxCardStyle {
     case subtle
     case raised
     case row
+    case timeline
+    case activeTimeline
 }
 
 struct EquinoxCardModifier: ViewModifier {
@@ -142,12 +144,24 @@ struct EquinoxCardModifier: ViewModifier {
         case .raised:
             EquinoxDesign.ColorToken.surfaceRaised
         case .row:
+            isHovered ? EquinoxDesign.ColorToken.interactionHover : EquinoxDesign.ColorToken.interactionSubtle
+        case .timeline:
             isHovered ? EquinoxDesign.ColorToken.interactionHover : .clear
+        case .activeTimeline:
+            EquinoxDesign.ColorToken.present.opacity(EquinoxDesign.StateOpacity.currentEventBackground)
         }
     }
 
     private var borderColor: Color {
-        if style == .row { return .clear }
+        if style == .row {
+            return isHovered ? EquinoxDesign.ColorToken.separator : EquinoxDesign.ColorToken.hairlineBorder
+        }
+        if style == .timeline {
+            return isHovered ? EquinoxDesign.ColorToken.separator : .clear
+        }
+        if style == .activeTimeline {
+            return EquinoxDesign.ColorToken.present.opacity(EquinoxDesign.StateOpacity.currentEventBorder)
+        }
         return isHovered ? EquinoxDesign.ColorToken.interactionHover : EquinoxDesign.ColorToken.hairlineBorder
     }
 }

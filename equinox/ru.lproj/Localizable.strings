@@ -1,7 +1,5 @@
-"1 day" = "1 день";
 "1 day before" = "За 1 день";
 "1 hour before" = "За 1 час";
-"2 days" = "2 дня";
 "2 days before" = "За 2 дня";
 "2 hours before" = "За 2 часа";
 "5 minutes before" = "За 5 минут";
@@ -10,7 +8,6 @@
 "30 minutes before" = "За 30 минут";
 /* About prefs tab label */
 "About" = "О Equinox";
-"Accept" = "Принять";
 "Add" = "Добавить";
 "Alert" = "Напоминание";
 "All-day" = "Весь день";
@@ -22,17 +19,12 @@
 "Calendar" = "Календарь";
 "Calendars" = "Календари";
 "Cancel" = "Отменить";
-"Copy" = "Копировать";
-"Close" = "Закрыть";
-"Could not update response" = "Не удалось обновить ответ";
 /* Dark theme name */
 "Dark" = "Тёмная";
-"Date" = "Дата";
 "Date & Time" = "Дата и время";
 "Delete" = "Удалить";
 "Delete event?" = "Удалить событие?";
 "Delete…" = "Удалить…";
-"Decline" = "Отклонить";
 "Declined" = "Отклонено";
 "Dismiss" = "Закрыть";
 "Done" = "Готово";
@@ -41,7 +33,6 @@
 "Ends" = "Окончание";
 "Event" = "Событие";
 "Event Details" = "Детали события";
-"Event list shows:" = "Список событий показывает:";
 "Every 2 Weeks" = "Каждые 2 недели";
 "Every Day" = "Каждый день";
 "Every Month" = "Каждый месяц";
@@ -54,6 +45,7 @@
 "Glass" = "Стекло";
 "Going" = "Пойду";
 "Join Meeting" = "Присоединиться к встрече";
+"Open Link" = "Открыть ссылку";
 "Keyboard shortcut" = "Горячая клавиша";
 "Large" = "Большой";
 "Launch at login" = "Запускать при входе";
@@ -71,14 +63,13 @@
 "New Event   ⌘N" = "Новое событие   ⌘N";
 "Next month" = "Следующий месяц";
 "No events" = "Нет событий";
-"No upcoming events." = "Нет предстоящих событий.";
+"Look Further" = "Искать дальше";
 /* Alert none
    Repeat none */
 "None" = "Нет";
 "Notes" = "Заметки";
 "On date" = "По дате";
 "Options" = "Параметры";
-"or" = "или";
 /* Calendar source/account name from EventKit */
 "Other" = "Другое";
 "Pin Equinox" = "Закрепить Equinox";
@@ -89,10 +80,11 @@
 "Previous month" = "Предыдущий месяц";
 "Quit Equinox" = "Завершить Equinox";
 "Repeat" = "Повтор";
-"Respond" = "Ответить";
 "Saturday" = "Суббота";
 "Shortcuts" = "Горячие клавиши";
 "Show calendar weeks" = "Показывать номера недель";
+"Week number" = "Номер недели";
+"Week %lld" = "Неделя %lld";
 "Show day of week in icon" = "Показывать день недели в значке";
 "Show days with no events" = "Показывать дни без событий";
 "Show event dots" = "Показывать точки событий";
@@ -107,7 +99,6 @@
 /* System theme name */
 "System" = "Системная";
 "The event could not be found." = "Событие не найдено.";
-"This event is not a meeting invitation." = "Это событие не является приглашением на встречу.";
 "Theme" = "Тема";
 "Thursday" = "Четверг";
 "Title" = "Название";
@@ -120,9 +111,6 @@
 "You haven't responded yet" = "Вы ещё не ответили";
 "You responded maybe" = "Вы ответили «Возможно»";
 "You're going" = "Вы идёте";
-/* Spanning event ends */
-"day" = "день";
-"days" = "дней";
 "Tomorrow" = "Завтра";
 "Now" = "Сейчас";
 "in %lld min" = "через %lld мин";
@@ -143,6 +131,8 @@
 "Preview" = "Предпросмотр";
 "Team standup" = "Командный стендап";
 "Open Equinox when you sign in" = "Открывать Equinox при входе в систему";
+"Allow Equinox in System Settings → General → Login Items." = "Разрешите Equinox в Системных настройках → Основные → Объекты входа.";
+"Could not update Launch at Login: %@" = "Не удалось изменить запуск при входе: %@";
 "Location & URL" = "Место и URL";
 "Unpin Equinox" = "Открепить Equinox";
 "Selected" = "Выбрано";
@@ -184,8 +174,8 @@
 /* Menu bar advanced */
 "Menu Bar (Advanced)" = "Строка меню (дополнительно)";
 "Additional menu bar options" = "Дополнительные параметры строки меню";
-"Hide menu bar icon" = "Скрыть иконку в строке меню";
-"Access Equinox via keyboard shortcut only" = "Доступ к Equinox только через горячую клавишу";
+"Hide date icon" = "Скрыть значок даты";
+"Keep the clock and meeting indicator when enabled" = "Оставить часы и индикатор встречи, если они включены";
 "Show meeting indicator" = "Показывать индикатор встречи";
 "Camera icon when a meeting is starting soon" = "Значок камеры, когда встреча скоро начнётся";
 "Clock format" = "Формат часов";
@@ -209,63 +199,24 @@
 "Could not delete event" = "Не удалось удалить событие.";
 "View on GitHub" = "Открыть на GitHub";
 "%lld events" = "%lld событий";
-/* Plaud integration — event detail & agenda */
-"Open in Plaud" = "Открыть в Plaud";
-"Recording available" = "Запись доступна";
-"Save Link" = "Сохранить ссылку";
-"Link Plaud recording…" = "Привязать запись Plaud…";
-"Paste a Plaud URL like https://web.plaud.ai/file/…" = "Вставьте ссылку Plaud вида https://web.plaud.ai/file/…";
-/* Plaud integration — errors */
-"This event has no stable identifier." = "У этого события нет постоянного идентификатора.";
-"Plaud live credentials not found." = "Учётные данные Plaud не найдены.";
-"Plaud live session expired or invalid." = "Сессия Plaud истекла или недействительна.";
-"Plaud API returned an unexpected response." = "API Plaud вернул неожиданный ответ.";
-"Plaud sign-in was denied: %@" = "Во входе в Plaud отказано: %@";
-"Plaud sign-in was denied." = "Во входе в Plaud отказано.";
-"Plaud sign-in timed out after 2 minutes." = "Время ожидания входа в Plaud истекло через 2 минуты.";
-"Plaud token exchange failed: %@" = "Не удалось обменять токен Plaud: %@";
-"Plaud token refresh failed: %@" = "Не удалось обновить токен Plaud: %@";
-"Already signed in to Plaud. Disconnect first to switch accounts." = "Вы уже вошли в Plaud. Сначала отключитесь, чтобы сменить аккаунт.";
-/* Plaud integration — settings */
-"Refresh Now" = "Обновить сейчас";
-"Plaud Integration" = "Интеграция с Plaud";
-"Match past calendar meetings with Plaud recordings and open them in the browser." = "Сопоставляйте прошедшие встречи с записями Plaud и открывайте их в браузере.";
-"Enable Plaud integration" = "Включить интеграцию с Plaud";
-"Past meetings can show an Open in Plaud button." = "У прошедших встреч может появляться кнопка «Открыть в Plaud».";
-"Turn on to link calendar events with Plaud recordings." = "Включите, чтобы связывать события календаря с записями Plaud.";
-"Connect your Plaud account below to fetch recordings." = "Подключите аккаунт Plaud ниже, чтобы загрузить записи.";
-"Plaud Account" = "Аккаунт Plaud";
-"Sign in with your Plaud account to fetch recordings directly from Plaud." = "Войдите в аккаунт Plaud, чтобы загружать записи напрямую из Plaud.";
-"Account" = "Аккаунт";
-"Not connected" = "Не подключено";
-"Connected" = "Подключено";
-"Status" = "Статус";
-"Recordings" = "Записи";
-"Last refreshed" = "Последнее обновление";
-"Cached links" = "Кэшированные ссылки";
-"Token expires" = "Токен истекает";
-"Token refresh" = "Обновление токена";
-"available" = "доступно";
-"Connect Plaud…" = "Подключить Plaud…";
-"Disconnect" = "Отключить";
-"Plaud account connected." = "Аккаунт Plaud подключён.";
-"Plaud account is already connected. Disconnect first to switch accounts." = "Аккаунт Plaud уже подключён. Сначала отключитесь, чтобы сменить аккаунт.";
-"Waiting for Plaud sign-in in your browser…" = "Ожидание входа в Plaud в браузере…";
-"Plaud account disconnected." = "Аккаунт Plaud отключён.";
-"Plaud catalog refreshed." = "Каталог Plaud обновлён.";
 /* Event detail & modals */
-"Your response" = "Ваш ответ";
 "When" = "Когда";
 "Attendance" = "Участники";
 "Confirm" = "Подтвердить";
-"https://web.plaud.ai/file/…" = "https://web.plaud.ai/file/…";
 /* Create event errors */
 "The calendar could not be found." = "Календарь не найден.";
 "This calendar is read-only." = "Этот календарь доступен только для чтения.";
 "End date must be after start date." = "Дата окончания должна быть позже даты начала.";
-/* General settings pickers */
+"Enter an event title." = "Введите название события.";
+"Enter a valid URL including its scheme." = "Введите корректный URL со схемой, например https://.";
+"Repeat end date cannot be before event start." = "Дата окончания повтора не может быть раньше начала события.";
+/* General settings */
 "First day of week" = "Первый день недели";
-"Event list shows" = "Список событий показывает";
+"Show agenda" = "Показывать список событий";
+"Show the event timeline below the calendar" = "Показывать ленту событий под календарём";
+"Loading calendars" = "Загрузка календарей";
+"No calendars available" = "Нет доступных календарей";
+"No event calendars were found." = "Календари событий не найдены.";
 /* Panel */
 "Unpin Equinox   P" = "Открепить Equinox   P";
 /* Meeting providers */
@@ -279,24 +230,29 @@
 "FaceTime" = "FaceTime";
 /* Privacy */
 "App state unavailable." = "Состояние приложения недоступно.";
-"Open settings from the Equinox menu bar." = "Откройте настройки из строки меню Equinox.";
-/* Plaud OAuth */
-"Could not securely start Plaud sign-in. Try again." = "Не удалось безопасно начать вход в Plaud. Повторите попытку.";
-"OAuth callback port 8199 is already in use. Stop the other OAuth client and try again." = "Порт OAuth-callback 8199 уже занят. Остановите другой OAuth-клиент и повторите попытку.";
-"Could not start OAuth callback server: %@" = "Не удалось запустить OAuth-callback сервер: %@";
-"Could not save Plaud credentials because the app signature is invalid or signed with a revoked certificate. Rebuild Equinox with valid local signing and try again." = "Не удалось сохранить учётные данные Plaud: подпись приложения недействительна или сделана отозванным сертификатом. Пересоберите Equinox с корректной локальной подписью и повторите попытку.";
-"Could not save Plaud credentials (Keychain error %@: %@)." = "Не удалось сохранить учётные данные Plaud (ошибка Keychain %@: %@).";
-"Could not save Plaud credentials (Keychain error %@)." = "Не удалось сохранить учётные данные Plaud (ошибка Keychain %@).";
-"Authorization successful!" = "Авторизация успешна!";
-"You can close this tab." = "Можно закрыть эту вкладку.";
-"Continue authorization in the original window." = "Продолжите авторизацию в исходном окне.";
-"This page can be closed." = "Эту страницу можно закрыть.";
-"Authorization failed" = "Ошибка авторизации";
-"Not found" = "Не найдено";
-"Invalid OAuth callback." = "Некорректный OAuth-callback.";
-"State mismatch." = "Несовпадение state.";
+/* Calendar access guidance */
+"Calendar access is off. Enable Full Access in System Settings." = "Доступ к календарям выключен. Включите полный доступ в системных настройках.";
+"Calendar access is restricted by system policy." = "Доступ к календарям ограничен системной политикой.";
+"Full calendar access is enabled." = "Полный доступ к календарям включён.";
+"macOS will ask you to grant Full Access." = "macOS запросит полный доступ к календарям.";
+"Enable Full Access for Equinox in System Settings." = "Включите полный доступ для Equinox в системных настройках.";
+"Access is restricted by system policy and cannot be requested here." = "Доступ ограничен системной политикой, запросить его здесь нельзя.";
+/* Shortcut recorder */
+"Click to record a shortcut" = "Нажмите, чтобы записать сочетание клавиш";
+"Clear shortcut" = "Очистить сочетание клавиш";
+"Record Shortcut" = "Записать сочетание";
+"Press shortcut…" = "Нажмите сочетание…";
+"Use Command, Control, or Option with a key, or choose a function key." = "Используйте Command, Control или Option вместе с клавишей либо выберите функциональную клавишу.";
+"This shortcut is already used by macOS." = "Это сочетание уже используется macOS.";
+"This shortcut is already used by “%@”." = "Это сочетание уже используется командой «%@».";
+/* Additional RSVP statuses */
+"Delegated" = "Передано";
+"Completed" = "Завершено";
+"In progress" = "В процессе";
+"You delegated this invitation" = "Вы передали это приглашение";
+"Participation completed" = "Участие завершено";
+"Participation in progress" = "Участие в процессе";
 /* App & settings tabs */
 "Equinox" = "Equinox";
-"Plaud" = "Plaud";
 /* Appearance preview */
 "09:00 – 10:00" = "09:00 – 10:00";

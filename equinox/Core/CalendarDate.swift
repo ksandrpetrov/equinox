@@ -9,6 +9,8 @@ struct CalendarDate: Equatable, Hashable, Sendable {
     static let noJulian = -1
     static let minYear = 1583
     static let maxYear = 3333
+    static let minimumSupported = CalendarDate(year: minYear, monthIndex: 0, day: 1)
+    static let maximumSupported = CalendarDate(year: maxYear, monthIndex: 11, day: 31)
 
     init(year: Int, monthIndex: Int, day: Int) {
         self.year = year
@@ -113,8 +115,8 @@ struct CalendarDate: Equatable, Hashable, Sendable {
     }
 
     static func weeksInYear(_ year: Int) -> Int {
-        let jan1DOW = (2 + year + 4 + year / 4 - year / 100 + year / 400) % 7
-        if jan1DOW == 4 || (jan1DOW == 3 && isLeapYear(year)) {
+        let januaryFirstISOWeekday = isoWeekday(year: year, monthIndex: 0, day: 1)
+        if januaryFirstISOWeekday == 4 || (januaryFirstISOWeekday == 3 && isLeapYear(year)) {
             return 53
         }
         return 52
@@ -125,7 +127,8 @@ struct CalendarDate: Equatable, Hashable, Sendable {
         if monthIndex > 1 && isLeapYear(year) {
             dayOfYear += 1
         }
-        let week = (dayOfYear + 9) / 7
+        let weekday = isoWeekday(year: year, monthIndex: monthIndex, day: day)
+        let week = (dayOfYear - weekday + 10) / 7
         if week > weeksInYear(year) {
             return 1
         }
@@ -133,6 +136,11 @@ struct CalendarDate: Equatable, Hashable, Sendable {
             return weeksInYear(year - 1)
         }
         return week
+    }
+
+    private static func isoWeekday(year: Int, monthIndex: Int, day: Int) -> Int {
+        // `makeJulian % 7` is Monday-based for the proleptic Gregorian calendar.
+        makeJulian(year: year, monthIndex: monthIndex, day: day) % 7 + 1
     }
 
     static func makeJulian(year: Int, monthIndex: Int, day: Int) -> Int {

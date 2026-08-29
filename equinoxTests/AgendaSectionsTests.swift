@@ -2,10 +2,10 @@ import XCTest
 @testable import equinox
 
 final class AgendaSectionsTests: XCTestCase {
-    private func makeEvent(on date: CalendarDate) -> DayEvent {
+    private func makeEvent(on date: CalendarDate, eventIdentifier: String? = "evt") -> DayEvent {
         DayEvent(
             id: "e-\(date.julian)",
-            eventIdentifier: "evt-\(date.julian)",
+            eventIdentifier: eventIdentifier,
             calendarItemIdentifier: "ci-1",
             title: "Event",
             location: nil,
@@ -14,8 +14,6 @@ final class AgendaSectionsTests: XCTestCase {
             startDate: date.date(in: .autoupdatingCurrent),
             endDate: date.date(in: .autoupdatingCurrent),
             isEventAllDay: false,
-            isFirstDayOfSpan: true,
-            isLastDayOfSpan: true,
             isSlotAllDay: false,
             joinURL: nil,
             calendarIdentifier: "cal-1",
@@ -25,8 +23,38 @@ final class AgendaSectionsTests: XCTestCase {
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
             allowsContentModifications: true,
-            hasAttendees: false,
             participationStatus: nil
+        )
+    }
+
+    func testDeletionRequiresPersistedEventIdentifier() {
+        let date = CalendarDate(year: 2026, monthIndex: 5, day: 14)
+
+        XCTAssertTrue(makeEvent(on: date).allowsDeletion)
+        XCTAssertFalse(makeEvent(on: date, eventIdentifier: nil).allowsDeletion)
+    }
+
+    func testOccurrenceIdentityUsesEventIDAndStableFallback() {
+        let date = CalendarDate(year: 2026, monthIndex: 5, day: 14)
+        XCTAssertTrue(
+            makeEvent(on: date, eventIdentifier: "event-a")
+                .representsSameOccurrence(as: makeEvent(on: date, eventIdentifier: "event-a"))
+        )
+        XCTAssertFalse(
+            makeEvent(on: date, eventIdentifier: "event-a")
+                .representsSameOccurrence(as: makeEvent(on: date, eventIdentifier: "event-b"))
+        )
+        XCTAssertFalse(
+            makeEvent(on: date, eventIdentifier: "event-a")
+                .representsSameOccurrence(as: makeEvent(on: date.addingDays(1), eventIdentifier: "event-a"))
+        )
+        XCTAssertTrue(
+            makeEvent(on: date, eventIdentifier: nil)
+                .representsSameOccurrence(as: makeEvent(on: date, eventIdentifier: nil))
+        )
+        XCTAssertFalse(
+            makeEvent(on: date, eventIdentifier: nil)
+                .representsSameOccurrence(as: makeEvent(on: date.addingDays(1), eventIdentifier: nil))
         )
     }
 

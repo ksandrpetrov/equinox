@@ -71,10 +71,9 @@ Reach for a semantic style (`.headline`, `.caption`) or one of these helpers. Ne
 
 Terse, functional, native-macOS — labels and short imperatives, no personality, no marketing. Every user-facing string goes through `String(localized:comment:)` and needs a matching entry in `equinox/ru.lproj/Localizable.strings`.
 
-- **Title Case** for actions/menus/buttons: *New Event · Go to Today · Join Meeting · Link Plaud recording…* **Sentence case** for subtitles: *"Open Equinox when you sign in."*
+- **Title Case** for actions/menus/buttons: *New Event · Go to Today · Join Meeting* **Sentence case** for subtitles: *"Open Equinox when you sign in."*
 - Surface **keyboard shortcuts inline** with padded spacing: *"New Event   ⌘N"*, *"Go to Today   T"*, *"Pin Equinox   P"*.
 - Time formatting comes from `EquinoxFormatters` — en-dash range *"09:00 – 10:00"*, short relative cues *"in 10 min" / "Now"*. Section headers: *Today / Tomorrow*, else *"Nov 18"* + short weekday.
-- RSVP: *Accept · Maybe · Decline*; pending shows a *Respond* badge.
 - Empty states quiet: *"No upcoming events."* Errors direct & actionable: *"No writable calendars available. Check Calendar access in Privacy settings."*
 - `…` marks actions that open more UI. **No emoji. No exclamation marks. No adjectives.**
 
@@ -82,7 +81,7 @@ Terse, functional, native-macOS — labels and short imperatives, no personality
 
 ## Iconography
 
-**Apple SF Symbols only** (chevron.left/right, calendar, plus, pin/pin.fill, ellipsis, xmark, clock, mappin, video.fill, person.2.fill, waveform, gearshape, paintpalette). Meeting-provider glyphs are declared once per provider in `Core/MeetingProvider.swift` (`systemImage`) — add them there, not at the call site.
+**Apple SF Symbols only** (chevron.left/right, calendar, plus, pin/pin.fill, ellipsis, xmark, clock, mappin, video.fill, person.2.fill, gearshape, paintpalette). Meeting-provider glyphs are declared once per provider in `Core/MeetingProvider.swift` (`systemImage`) — add them there, not at the call site.
 
 The menu-bar date badge is **drawn in code** by `UI/MenuBar/MenuBarIconRenderer.swift` as a template image in three styles (`MenuBarIconStyle`: minimal filled-knockout / classic stroked / compact plain), optionally prefixed by a meeting-camera glyph. There are no menu-bar image assets — the compliance test rejects references to the removed `menubaricon`, `meetSolid`, `meetOutline`.
 

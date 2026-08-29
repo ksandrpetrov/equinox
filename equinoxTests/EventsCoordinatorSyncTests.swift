@@ -10,7 +10,7 @@ final class EventsCoordinatorSyncTests: XCTestCase {
         let source = try String(contentsOf: sourceURL, encoding: .utf8)
         let reloadCount = source.components(separatedBy: "_ = await reloadCurrentEvents()").count - 1
 
-        XCTAssertEqual(reloadCount, 3, "create, delete, and RSVP must reload through the fetch queue")
+        XCTAssertEqual(reloadCount, 4, "create, delete, selection-on, and reset must reload through the fetch queue")
     }
 }
 
@@ -140,25 +140,52 @@ final class EventFetchCoordinatorTests: XCTestCase {
 }
 
 final class AgendaContentStateTests: XCTestCase {
+    func testAgendaStaysHiddenUntilCalendarAccessIsAuthorized() {
+        XCTAssertEqual(
+            AgendaContentState.resolve(
+                accessStatus: .notDetermined,
+                hasCompletedInitialLoad: false,
+                hasFetchError: false,
+                hasVisibleEvents: false
+            ),
+            .hidden
+        )
+    }
+
+    func testAgendaHidesWhenNoCalendarsAreSelected() {
+        XCTAssertEqual(
+            AgendaContentState.resolve(
+                accessStatus: .authorized,
+                hasCompletedInitialLoad: true,
+                hasFetchError: false,
+                hasVisibleEvents: true,
+                hasSelectedCalendars: false
+            ),
+            .hidden
+        )
+    }
+
     func testInitialAuthorizedAgendaShowsLoadingInsteadOfEmptyContent() {
         XCTAssertEqual(
             AgendaContentState.resolve(
                 accessStatus: .authorized,
                 hasCompletedInitialLoad: false,
-                hasFetchError: false
+                hasFetchError: false,
+                hasVisibleEvents: false
             ),
             .loading
         )
     }
 
-    func testSuccessfulEmptyFetchCanShowEmptyContent() {
+    func testSuccessfulEmptyFetchShowsEmptyState() {
         XCTAssertEqual(
             AgendaContentState.resolve(
                 accessStatus: .authorized,
                 hasCompletedInitialLoad: true,
-                hasFetchError: false
+                hasFetchError: false,
+                hasVisibleEvents: false
             ),
-            .content
+            .empty
         )
     }
 
@@ -167,7 +194,8 @@ final class AgendaContentStateTests: XCTestCase {
             AgendaContentState.resolve(
                 accessStatus: .authorized,
                 hasCompletedInitialLoad: true,
-                hasFetchError: true
+                hasFetchError: true,
+                hasVisibleEvents: true
             ),
             .content
         )
@@ -178,7 +206,8 @@ final class AgendaContentStateTests: XCTestCase {
             AgendaContentState.resolve(
                 accessStatus: .authorized,
                 hasCompletedInitialLoad: false,
-                hasFetchError: true
+                hasFetchError: true,
+                hasVisibleEvents: false
             ),
             .hidden
         )
@@ -189,9 +218,34 @@ final class AgendaContentStateTests: XCTestCase {
             AgendaContentState.resolve(
                 accessStatus: .denied,
                 hasCompletedInitialLoad: true,
-                hasFetchError: false
+                hasFetchError: false,
+                hasVisibleEvents: true
             ),
             .hidden
         )
+    }
+}
+
+final class DateFormattersTests: XCTestCase {
+    func testRelativeTimeNeverShowsZeroMinutes() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let eventStart = now.addingTimeInterval(15)
+        let expected = String(
+            format: String(localized: "in %lld min", comment: "Relative event time"),
+            1
+        )
+
+        XCTAssertEqual(
+            EquinoxFormatters.relativeTime(until: eventStart, from: now),
+            expected
+        )
+    }
+
+    func testCachedFormattersUseAutoupdatingSystemTimeZone() {
+        let formatter = EquinoxFormatters.formatter(key: "test.autoupdating-time-zone") {
+            $0.timeStyle = .short
+        }
+
+        XCTAssertEqual(formatter.timeZone.identifier, TimeZone.autoupdatingCurrent.identifier)
     }
 }

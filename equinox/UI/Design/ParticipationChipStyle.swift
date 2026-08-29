@@ -7,6 +7,9 @@ extension EventParticipationStatus {
         case .accepted: EquinoxDesign.ColorToken.semanticGreen
         case .tentative: EquinoxDesign.ColorToken.semanticOrange
         case .declined: EquinoxDesign.ColorToken.semanticRed
+        case .delegated: EquinoxDesign.ColorToken.semanticBlue
+        case .completed: EquinoxDesign.ColorToken.semanticGreen
+        case .inProcess: EquinoxDesign.ColorToken.semanticOrange
         }
     }
 

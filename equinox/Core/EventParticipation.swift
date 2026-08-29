@@ -6,15 +6,9 @@ enum EventParticipationStatus: Int, Sendable, Equatable, CaseIterable {
     case accepted = 2
     case declined = 3
     case tentative = 4
-
-    var needsResponse: Bool {
-        switch self {
-        case .pending, .unknown:
-            return true
-        case .accepted, .declined, .tentative:
-            return false
-        }
-    }
+    case delegated = 5
+    case completed = 6
+    case inProcess = 7
 
     var localizedLabel: String {
         switch self {
@@ -26,6 +20,12 @@ enum EventParticipationStatus: Int, Sendable, Equatable, CaseIterable {
             return String(localized: "Maybe", comment: "RSVP status tentative")
         case .declined:
             return String(localized: "Declined", comment: "RSVP status declined")
+        case .delegated:
+            return String(localized: "Delegated", comment: "RSVP status delegated")
+        case .completed:
+            return String(localized: "Completed", comment: "RSVP status completed")
+        case .inProcess:
+            return String(localized: "In progress", comment: "RSVP status in process")
         }
     }
 
@@ -39,6 +39,12 @@ enum EventParticipationStatus: Int, Sendable, Equatable, CaseIterable {
             return String(localized: "You responded maybe", comment: "RSVP detail status")
         case .declined:
             return String(localized: "You declined", comment: "RSVP detail status")
+        case .delegated:
+            return String(localized: "You delegated this invitation", comment: "RSVP detail status")
+        case .completed:
+            return String(localized: "Participation completed", comment: "RSVP detail status")
+        case .inProcess:
+            return String(localized: "Participation in progress", comment: "RSVP detail status")
         }
     }
 
@@ -48,14 +54,13 @@ enum EventParticipationStatus: Int, Sendable, Equatable, CaseIterable {
 }
 
 enum EventParticipationMapping {
-    static func status(hasAttendees: Bool, eventKitRawValue: Int?) -> EventParticipationStatus? {
-        guard hasAttendees else { return nil }
-        guard let rawValue = eventKitRawValue else { return .unknown }
+    static func status(eventKitRawValue: Int?) -> EventParticipationStatus? {
+        guard let rawValue = eventKitRawValue else { return nil }
         return EventParticipationStatus.fromEventKitRawValue(rawValue) ?? .unknown
     }
 
-    static func isDeclinedParticipation(hasAttendees: Bool, eventKitRawValue: Int?) -> Bool {
-        guard hasAttendees, let rawValue = eventKitRawValue else { return false }
+    static func isDeclinedParticipation(eventKitRawValue: Int?) -> Bool {
+        guard let rawValue = eventKitRawValue else { return false }
         return rawValue == EventParticipationStatus.declined.rawValue
     }
 }

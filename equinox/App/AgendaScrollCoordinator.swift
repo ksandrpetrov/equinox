@@ -15,6 +15,7 @@ extension EventsCoordinator: AgendaScrollContext {}
 enum AgendaScrollTarget: Hashable {
     case day(julian: Int)
     case event(id: String)
+    case boundary(julian: Int)
 }
 
 @Observable
@@ -64,12 +65,18 @@ final class AgendaScrollCoordinator {
         var changed = false
 
         if AgendaDisplayRange.shouldExtendPast(visible: visibleDate, rangeFirst: first) {
-            first = AgendaDisplayRange.extendedPast(from: first)
-            changed = true
+            let extended = AgendaDisplayRange.extendedPast(from: first)
+            if extended != first {
+                first = extended
+                changed = true
+            }
         }
         if AgendaDisplayRange.shouldExtendFuture(visible: visibleDate, rangeLast: last) {
-            last = AgendaDisplayRange.extendedFuture(from: last)
-            changed = true
+            let extended = AgendaDisplayRange.extendedFuture(from: last)
+            if extended != last {
+                last = extended
+                changed = true
+            }
         }
 
         if changed {
@@ -107,6 +114,11 @@ final class AgendaScrollCoordinator {
         }
         guard let target = scrolledTarget,
               let visibleDate = visibleDate(for: target, events: events) else { return }
+        if case .boundary = target {
+            extendRangeIfNeeded(for: visibleDate, anchor: events.todayDate)
+            commitAgendaToCoordinator(events, anchor: events.todayDate)
+            return
+        }
         events.syncSelectionFromAgendaScroll(visibleDate)
         let anchor = events.todayDate
         let range = displayRange(anchor: anchor)
@@ -141,6 +153,8 @@ final class AgendaScrollCoordinator {
                 }
             }
             return nil
+        case .boundary(let julian):
+            return CalendarDate(julian: julian)
         }
     }
 

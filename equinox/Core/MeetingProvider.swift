@@ -9,8 +9,47 @@ struct MeetingProvider: Sendable, Equatable {
     let systemImage: String
 
     func matches(_ url: URL) -> Bool {
-        let link = url.absoluteString.lowercased()
-        return detectionSubstrings.contains { link.contains($0.lowercased()) }
+        detectionSubstrings.contains { Self.matches(url, pattern: $0) }
+    }
+
+    private static func matches(_ url: URL, pattern rawPattern: String) -> Bool {
+        let pattern = rawPattern.lowercased()
+        if let schemeSeparator = pattern.range(of: "://") {
+            let expectedScheme = String(pattern[..<schemeSeparator.lowerBound])
+            if expectedScheme != "http" && expectedScheme != "https" {
+                guard url.scheme?.lowercased() == expectedScheme else { return false }
+                let resourcePattern = String(pattern[schemeSeparator.upperBound...])
+                let pieces = resourcePattern.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
+                guard let expectedHost = pieces.first, !expectedHost.isEmpty,
+                      let actualHost = url.host()?.lowercased(),
+                      actualHost == String(expectedHost) else { return false }
+                guard pieces.count == 2 else { return true }
+                return url.path.lowercased().hasPrefix("/" + pieces[1])
+            }
+        }
+
+        guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https",
+              let host = url.host()?.lowercased() else {
+            return false
+        }
+
+        let withoutScheme = pattern
+            .replacingOccurrences(of: "https://", with: "")
+            .replacingOccurrences(of: "http://", with: "")
+        let pieces = withoutScheme.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
+        let hostPattern = String(pieces[0])
+        let pathPattern = pieces.count == 2 ? "/" + pieces[1] : nil
+
+        let hostMatches: Bool
+        if hostPattern.hasSuffix(".") {
+            hostMatches = host.hasPrefix(hostPattern)
+        } else {
+            hostMatches = host == hostPattern || host.hasSuffix("." + hostPattern)
+        }
+        guard hostMatches else { return false }
+
+        guard let pathPattern else { return true }
+        return url.path.lowercased().hasPrefix(pathPattern)
     }
 }
 
@@ -21,7 +60,7 @@ enum MeetingProviderRegistry {
             detectionSubstrings: [
                 "zoom.us/j/", "zoom.us/s/", "zoom.us/w/", "zoom.us/my/",
                 "zoomgov.com/j/", "zoomgov.com/s/", "zoomgov.com/w/", "zoomgov.com/my/",
-                "zoommtg://", "youcanbook.me/zoom/",
+                "zoommtg://zoom.us/join", "youcanbook.me/zoom/",
             ],
             nativeScheme: "zoommtg://",
             displayName: String(localized: "Zoom", comment: "Meeting provider name"),
@@ -31,7 +70,7 @@ enum MeetingProviderRegistry {
             id: "teams",
             detectionSubstrings: [
                 "teams.microsoft.com/l/meetup-join/",
-                "msteams://",
+                "msteams://teams.microsoft.com/l/meetup-join/",
             ],
             nativeScheme: "msteams://",
             displayName: String(localized: "Microsoft Teams", comment: "Meeting provider name"),
@@ -41,7 +80,7 @@ enum MeetingProviderRegistry {
             id: "chime",
             detectionSubstrings: [
                 "chime.aws/",
-                "chime://",
+                "chime://meeting",
             ],
             nativeScheme: "chime://",
             displayName: String(localized: "Amazon Chime", comment: "Meeting provider name"),

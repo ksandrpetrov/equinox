@@ -4,13 +4,10 @@ struct EventLayoutInput: Sendable {
     let startDate: Date
     let endDate: Date
     let isAllDay: Bool
-    let calendarTitle: String
 }
 
 struct EventDaySlot: Sendable, Equatable {
     let dayStart: Date
-    let isFirstDayOfSpan: Bool
-    let isLastDayOfSpan: Bool
     let displaysAsAllDay: Bool
 }
 
@@ -31,8 +28,6 @@ func layoutEventDaySlots(
         let nextDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: date)!)
         slots.append(EventDaySlot(
             dayStart: date,
-            isFirstDayOfSpan: calendar.isDate(date, inSameDayAs: event.startDate) && event.endDate >= nextDate,
-            isLastDayOfSpan: calendar.isDate(date, inSameDayAs: event.endDate) && event.startDate < date,
             displaysAsAllDay: event.isAllDay || (event.startDate < date && event.endDate >= nextDate)
         ))
         date = nextDate
@@ -45,19 +40,36 @@ struct EventSortKey: Sendable {
     let isSlotAllDay: Bool
     let calendarTitle: String
     let startDate: Date
+    let title: String
+    let stableIdentifier: String
 }
 
 /// Sort order for events displayed on a single day (all-day first, then by start time, then calendar title).
 func precedesInDisplayOrder(_ lhs: EventSortKey, _ rhs: EventSortKey) -> Bool {
     if lhs.isEventAllDay && rhs.isEventAllDay {
-        return lhs.calendarTitle.localizedStandardCompare(rhs.calendarTitle) == .orderedAscending
+        return precedesByStableTextOrder(lhs, rhs)
     }
     if lhs.isEventAllDay && !rhs.isEventAllDay { return true }
     if !lhs.isEventAllDay && rhs.isEventAllDay { return false }
     if lhs.isSlotAllDay && rhs.isSlotAllDay {
-        return lhs.calendarTitle.localizedStandardCompare(rhs.calendarTitle) == .orderedAscending
+        return precedesByStableTextOrder(lhs, rhs)
     }
     if lhs.isSlotAllDay { return true }
     if rhs.isSlotAllDay { return false }
-    return lhs.startDate < rhs.startDate
+    if lhs.startDate != rhs.startDate { return lhs.startDate < rhs.startDate }
+    return precedesByStableTextOrder(lhs, rhs)
+}
+
+private func precedesByStableTextOrder(_ lhs: EventSortKey, _ rhs: EventSortKey) -> Bool {
+    for pair in [(lhs.calendarTitle, rhs.calendarTitle), (lhs.title, rhs.title)] {
+        switch pair.0.localizedStandardCompare(pair.1) {
+        case .orderedAscending:
+            return true
+        case .orderedDescending:
+            return false
+        case .orderedSame:
+            if pair.0 != pair.1 { return pair.0 < pair.1 }
+        }
+    }
+    return lhs.stableIdentifier < rhs.stableIdentifier
 }

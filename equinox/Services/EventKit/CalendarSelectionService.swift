@@ -31,9 +31,10 @@ struct CalendarSelectionService {
             }
         }
 
+        let hadStoredSelection = CalendarSelectionStorage.hasStoredSelection(in: defaults)
         let storedSelection = CalendarSelectionStorage.loadSelectedIDs(from: defaults)
         let selectedCalendars: Set<String>
-        if storedSelection.isEmpty, !calendars.isEmpty {
+        if !hadStoredSelection, !calendars.isEmpty {
             let allIDs = calendars.map(\.id)
             CalendarSelectionStorage.saveSelectedIDs(allIDs, to: defaults)
             selectedCalendars = Set(allIDs)
@@ -60,22 +61,33 @@ struct CalendarSelectionService {
             )))
         }
 
-        persistSelectedCalendars(from: result)
+        // Do not turn a temporarily empty EventKit store into an explicit "select none"
+        // preference. That would keep future calendars hidden after access/account changes.
+        if Self.shouldPersistSelection(discoveredCalendarCount: calendars.count) {
+            persistSelectedCalendars(from: result)
+        }
         calendarEntriesStorage = result
     }
 
+    static func shouldPersistSelection(discoveredCalendarCount: Int) -> Bool {
+        discoveredCalendarCount > 0
+    }
+
     mutating func updateSelectedCalendar(identifier: String, selected: Bool) {
+        var didFindCalendar = false
         calendarEntriesStorage = calendarEntriesStorage.map { entry in
             switch entry {
             case .source:
                 return entry
             case .calendar(var cal):
                 if cal.id == identifier {
+                    didFindCalendar = true
                     cal.isSelected = selected
                 }
                 return .calendar(cal)
             }
         }
+        guard didFindCalendar else { return }
         persistSelectedCalendars()
     }
 
@@ -93,12 +105,31 @@ struct CalendarSelectionService {
         })
     }
 
-    private mutating func persistSelectedCalendars(from entries: [CalendarListEntry]? = nil) {
+    private func persistSelectedCalendars(from entries: [CalendarListEntry]? = nil) {
         let source = entries ?? calendarEntriesStorage
-        let ids = source.compactMap { entry -> String? in
+        let discoveredIDs = Set(source.compactMap { entry -> String? in
+            guard case .calendar(let cal) = entry else { return nil }
+            return cal.id
+        })
+        let selectedDiscoveredIDs = source.compactMap { entry -> String? in
             guard case .calendar(let cal) = entry, cal.isSelected else { return nil }
             return cal.id
         }
+        let ids = Self.selectionIDsToPersist(
+            selectedDiscoveredIDs: selectedDiscoveredIDs,
+            discoveredIDs: discoveredIDs,
+            storedSelectedIDs: CalendarSelectionStorage.loadSelectedIDs(from: defaults)
+        )
         CalendarSelectionStorage.saveSelectedIDs(ids, to: defaults)
+    }
+
+    static func selectionIDsToPersist(
+        selectedDiscoveredIDs: [String],
+        discoveredIDs: Set<String>,
+        storedSelectedIDs: [String]
+    ) -> [String] {
+        var seen = Set<String>()
+        return (selectedDiscoveredIDs + storedSelectedIDs.filter { !discoveredIDs.contains($0) })
+            .filter { seen.insert($0).inserted }
     }
 }

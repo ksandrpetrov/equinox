@@ -94,7 +94,8 @@ final class DesignSystemComplianceTests: XCTestCase {
         XCTAssertEqual(MenuBarDesign.barHeight, 16)
         XCTAssertEqual(EquinoxDesign.ShadowToken.panelGlassOpacity, 0.12)
         XCTAssertEqual(EquinoxDesign.EventStripe.width, 3)
-        XCTAssertEqual(EquinoxDesign.onAccentForeground, Color.white)
+        XCTAssertEqual(EquinoxDesign.onAccentForeground, Color("OnAccentForeground"))
+        XCTAssertEqual(EquinoxDesign.ColorToken.solar, Color("SolarAccent"))
     }
 
     func testDesignTokensExposeNewComplianceTokens() {
@@ -177,8 +178,42 @@ final class DesignSystemComplianceTests: XCTestCase {
             "Дата окончания должна быть позже даты начала."
         )
         XCTAssertEqual(
-            localized("Open settings from the Equinox menu bar."),
-            "Откройте настройки из строки меню Equinox."
+            localized("Enable Full Access for Equinox in System Settings."),
+            "Включите полный доступ для Equinox в системных настройках."
+        )
+    }
+
+    func testEveryStaticLocalizedLiteralHasRussianTranslation() throws {
+        let root = try repoRoot()
+        let localizedLiteral = try NSRegularExpression(
+            pattern: "String\\s*\\(\\s*localized:\\s*\"([^\"]+)\""
+        )
+        let translationEntry = try NSRegularExpression(
+            pattern: "(?m)^\\s*\"([^\"]+)\"\\s*="
+        )
+
+        var sourceKeys = Set<String>()
+        for path in try swiftSourceFiles() {
+            let source = try String(contentsOfFile: path, encoding: .utf8)
+            let range = NSRange(source.startIndex..<source.endIndex, in: source)
+            for match in localizedLiteral.matches(in: source, range: range) {
+                guard let keyRange = Range(match.range(at: 1), in: source) else { continue }
+                sourceKeys.insert(String(source[keyRange]))
+            }
+        }
+
+        let stringsPath = root.appendingPathComponent("equinox/ru.lproj/Localizable.strings").path
+        let strings = try String(contentsOfFile: stringsPath, encoding: .utf8)
+        let stringsRange = NSRange(strings.startIndex..<strings.endIndex, in: strings)
+        let translatedKeys = Set(translationEntry.matches(in: strings, range: stringsRange).compactMap { match in
+            Range(match.range(at: 1), in: strings).map { String(strings[$0]) }
+        })
+        let missingKeys = sourceKeys.subtracting(translatedKeys).sorted()
+
+        XCTAssertTrue(
+            missingKeys.isEmpty,
+            "Static String(localized:) literals missing from ru.lproj/Localizable.strings:\n"
+                + missingKeys.joined(separator: "\n")
         )
     }
 
@@ -244,6 +279,22 @@ final class DesignSystemComplianceTests: XCTestCase {
         }
         guard !paths.isEmpty else {
             throw NSError(domain: "DesignSystemComplianceTests", code: 3)
+        }
+        return paths.sorted()
+    }
+
+    private func swiftSourceFiles() throws -> [String] {
+        let sourceRoot = try repoRoot().appendingPathComponent("equinox")
+        guard let enumerator = FileManager.default.enumerator(
+            at: sourceRoot,
+            includingPropertiesForKeys: nil
+        ) else {
+            throw NSError(domain: "DesignSystemComplianceTests", code: 4)
+        }
+        var paths: [String] = []
+        while let url = enumerator.nextObject() as? URL {
+            guard url.pathExtension == "swift" else { continue }
+            paths.append(url.path)
         }
         return paths.sorted()
     }

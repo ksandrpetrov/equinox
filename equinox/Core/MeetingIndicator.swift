@@ -10,7 +10,7 @@ enum MeetingIndicator {
     ) -> Bool {
         let end = calendar.date(byAdding: .minute, value: lookaheadMinutes, to: now) ?? now
         for (_, events) in eventsByDate {
-            for event in events where !event.isEventAllDay {
+            for event in events where !event.isEventAllDay && event.participationStatus != .declined {
                 if event.startDate <= end && event.endDate > now, event.joinURL != nil {
                     return true
                 }

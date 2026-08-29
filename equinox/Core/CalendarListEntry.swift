@@ -22,21 +22,24 @@ enum CalendarListEntryFiltering {
     static func filter(_ entries: [CalendarListEntry], query: String) -> [CalendarListEntry] {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return entries }
-        let lowered = trimmed.lowercased()
         var result: [CalendarListEntry] = []
         var currentSource: String?
         var sourceItems: [CalendarListEntry] = []
 
         func flushSource() {
-            guard currentSource != nil else { return }
-            let matching = sourceItems.filter { item in
-                if case .calendar(let cal) = item {
-                    return cal.title.lowercased().contains(lowered)
+            let matching: [CalendarListEntry]
+            if currentSource?.localizedCaseInsensitiveContains(trimmed) == true {
+                matching = sourceItems
+            } else {
+                matching = sourceItems.filter { item in
+                    guard case .calendar(let calendar) = item else { return false }
+                    return calendar.title.localizedCaseInsensitiveContains(trimmed)
                 }
-                return false
             }
-            if !matching.isEmpty, let source = currentSource {
-                result.append(.source(source))
+            if !matching.isEmpty {
+                if let currentSource {
+                    result.append(.source(currentSource))
+                }
                 result.append(contentsOf: matching)
             }
             sourceItems = []
@@ -51,6 +54,6 @@ enum CalendarListEntryFiltering {
             }
         }
         flushSource()
-        return result.isEmpty && !entries.isEmpty ? entries : result
+        return result
     }
 }

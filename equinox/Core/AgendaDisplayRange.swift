@@ -9,8 +9,8 @@ enum AgendaDisplayRange {
     /// Initial agenda window: a little past, mostly future, anchored on the launch day (today).
     static func initialRange(anchor: CalendarDate) -> (first: CalendarDate, last: CalendarDate) {
         (
-            first: anchor.addingDays(-initialPastDays),
-            last: anchor.addingDays(initialFutureDays)
+            first: max(anchor.addingDays(-initialPastDays), CalendarDate.minimumSupported),
+            last: min(anchor.addingDays(initialFutureDays), CalendarDate.maximumSupported)
         )
     }
 
@@ -23,11 +23,11 @@ enum AgendaDisplayRange {
     }
 
     static func extendedPast(from rangeFirst: CalendarDate) -> CalendarDate {
-        rangeFirst.addingDays(-extensionChunkDays)
+        max(rangeFirst.addingDays(-extensionChunkDays), CalendarDate.minimumSupported)
     }
 
     static func extendedFuture(from rangeLast: CalendarDate) -> CalendarDate {
-        rangeLast.addingDays(extensionChunkDays)
+        min(rangeLast.addingDays(extensionChunkDays), CalendarDate.maximumSupported)
     }
 
     /// Expands `first`/`last` until `date` is inside the range.
@@ -36,13 +36,38 @@ enum AgendaDisplayRange {
         first: CalendarDate,
         last: CalendarDate
     ) -> (first: CalendarDate, last: CalendarDate) {
-        var expandedFirst = first
-        var expandedLast = last
-        while date < expandedFirst {
-            expandedFirst = extendedPast(from: expandedFirst)
+        guard date.isValid else { return (first, last) }
+
+        // A deep link can jump centuries. Re-anchor instead of asking EventKit to fetch
+        // every day between the old and new selection.
+        let maximumIncrementalDistance = extensionChunkDays * 2
+        if date < first, first.compare(date) > maximumIncrementalDistance {
+            return initialRange(anchor: date)
         }
-        while date > expandedLast {
-            expandedLast = extendedFuture(from: expandedLast)
+        if date > last, date.compare(last) > maximumIncrementalDistance {
+            return initialRange(anchor: date)
+        }
+
+        let expandedFirst: CalendarDate
+        if date < first {
+            let chunks = (first.compare(date) + extensionChunkDays - 1) / extensionChunkDays
+            expandedFirst = max(
+                first.addingDays(-chunks * extensionChunkDays),
+                CalendarDate.minimumSupported
+            )
+        } else {
+            expandedFirst = first
+        }
+
+        let expandedLast: CalendarDate
+        if date > last {
+            let chunks = (date.compare(last) + extensionChunkDays - 1) / extensionChunkDays
+            expandedLast = min(
+                last.addingDays(chunks * extensionChunkDays),
+                CalendarDate.maximumSupported
+            )
+        } else {
+            expandedLast = last
         }
         return (expandedFirst, expandedLast)
     }

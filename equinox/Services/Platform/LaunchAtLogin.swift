@@ -1,19 +1,25 @@
 import ServiceManagement
 
 enum LaunchAtLogin {
-    static var isEnabled: Bool {
-        SMAppService.mainApp.status == .enabled
+    static var status: SMAppService.Status {
+        SMAppService.mainApp.status
     }
 
-    static func setEnabled(_ enabled: Bool) {
-        do {
-            if enabled {
+    static var isEnabled: Bool {
+        status == .enabled
+    }
+
+    @discardableResult
+    static func setEnabled(_ enabled: Bool) throws -> SMAppService.Status {
+        if enabled {
+            if status != .enabled {
                 try SMAppService.mainApp.register()
-            } else {
+            }
+        } else {
+            if status != .notRegistered {
                 try SMAppService.mainApp.unregister()
             }
-        } catch {
-            // Fail silently, matching prior behavior.
         }
+        return status
     }
 }

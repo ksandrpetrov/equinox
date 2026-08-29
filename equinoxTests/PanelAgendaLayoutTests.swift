@@ -18,18 +18,30 @@ final class PanelAgendaLayoutTests: XCTestCase {
             screenVisibleHeight: screenHeight
         )
 
-        XCTAssertGreaterThanOrEqual(smallHeight, PanelAgendaLayout.agendaMaxHeightFloor)
+        XCTAssertGreaterThanOrEqual(smallHeight, 0)
         XCTAssertLessThanOrEqual(smallHeight, EquinoxDesign.panelAgendaMaxHeight)
         XCTAssertGreaterThan(smallHeight, largeHeight)
     }
 
-    func testMaxHeightRespectsFloorOnSmallScreens() {
+    func testMaxHeightDoesNotOverflowSmallScreens() {
         let metrics = SizeMetrics.metrics(for: .medium)
         let height = PanelAgendaLayout.maxHeight(
             metrics: metrics,
             calendarRowCount: 8,
             screenVisibleHeight: 200
         )
-        XCTAssertEqual(height, PanelAgendaLayout.agendaMaxHeightFloor)
+        XCTAssertEqual(height, 0)
+    }
+
+    @MainActor
+    func testChangingScreenHeightInvalidatesPanelSizeOnce() {
+        let layout = PanelLayoutMetrics()
+        var invalidationCount = 0
+        layout.onPanelSizeInvalidated = { invalidationCount += 1 }
+
+        layout.panelAgendaMaxHeight = 180
+        layout.panelAgendaMaxHeight = 180
+
+        XCTAssertEqual(invalidationCount, 1)
     }
 }

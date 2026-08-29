@@ -32,6 +32,7 @@ enum SettingsActivationHandler {
         NSApp.activate(ignoringOtherApps: true)
 
         if let existing = NSApp.windows.first(where: { $0.identifier?.rawValue == windowIdentifier }) {
+            existing.deminiaturize(nil)
             existing.makeKeyAndOrderFront(nil)
             return
         }

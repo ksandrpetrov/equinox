@@ -55,15 +55,17 @@ struct PanelStateOverlay: View {
                     .foregroundStyle(EquinoxDesign.ColorToken.semanticOrange)
             }
 
-            Text(String(localized: "Equinox needs access to your calendars to show events.", comment: "Permission banner body"))
+            Text(permissionMessage)
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: EquinoxDesign.spacingSM) {
-                Button(String(localized: "Request Access", comment: "")) {
-                    appState.requestCalendarAccessIfNeeded()
+                if appState.events.calendarAccessStatus == .notDetermined {
+                    Button(String(localized: "Request Access", comment: "")) {
+                        appState.requestCalendarAccessIfNeeded()
+                    }
+                    .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
                 }
-                .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
 
                 Button(String(localized: "Open System Settings", comment: "")) {
                     appState.openCalendarPrivacySettings()
@@ -84,6 +86,19 @@ struct PanelStateOverlay: View {
         .accessibilityElement(children: .contain)
     }
 
+    private var permissionMessage: String {
+        switch appState.events.calendarAccessStatus {
+        case .notDetermined:
+            String(localized: "Equinox needs access to your calendars to show events.", comment: "Permission banner body")
+        case .denied:
+            String(localized: "Calendar access is off. Enable Full Access in System Settings.", comment: "Permission denied banner body")
+        case .restricted:
+            String(localized: "Calendar access is restricted by system policy.", comment: "Permission restricted banner body")
+        case .authorized:
+            ""
+        }
+    }
+
     private func errorBanner(_ message: String) -> some View {
         EquinoxBanner(
             message: message,
@@ -95,7 +110,9 @@ struct PanelStateOverlay: View {
 
     private var noCalendarsBanner: some View {
         EquinoxBanner(
-            message: String(localized: "No calendars selected", comment: "No calendars banner"),
+            message: appState.events.hasCalendars
+                ? String(localized: "No calendars selected", comment: "No calendars banner")
+                : String(localized: "No calendars available", comment: "Calendar settings empty state"),
             style: .info,
             actionTitle: String(localized: "Calendars…", comment: "Open calendars settings"),
             action: { SettingsActivationHandler.openSettings(appState: appState, initialTab: .calendars) }

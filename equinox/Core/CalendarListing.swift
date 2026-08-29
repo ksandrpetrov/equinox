@@ -5,7 +5,7 @@ struct CalendarListItem: Sendable, Equatable {
     let title: String
     let sourceTitle: String
     let sourceIdentifier: String
-    let colorHex: String?
+    let colorHex: String
     let allowsContentModifications: Bool
     let isSubscribed: Bool
     let type: String
@@ -14,14 +14,21 @@ struct CalendarListItem: Sendable, Equatable {
 enum CalendarListing {
     static func sortCalendarsForDisplay(_ items: [CalendarListItem]) -> [CalendarListItem] {
         items.sorted { lhs, rhs in
-            if lhs.sourceIdentifier == rhs.sourceIdentifier {
-                return lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
+            let sourceComparison = lhs.sourceTitle.localizedStandardCompare(rhs.sourceTitle)
+            if sourceComparison != .orderedSame {
+                return sourceComparison == .orderedAscending
             }
-            return lhs.sourceTitle.localizedStandardCompare(rhs.sourceTitle) == .orderedAscending
+            if lhs.sourceIdentifier != rhs.sourceIdentifier {
+                return lhs.sourceIdentifier < rhs.sourceIdentifier
+            }
+            let titleComparison = lhs.title.localizedStandardCompare(rhs.title)
+            if titleComparison != .orderedSame {
+                return titleComparison == .orderedAscending
+            }
+            if lhs.title != rhs.title {
+                return lhs.title < rhs.title
+            }
+            return lhs.id < rhs.id
         }
-    }
-
-    static func filterDisplayableCalendars(_ items: [CalendarListItem]) -> [CalendarListItem] {
-        items.filter { $0.colorHex != nil }
     }
 }

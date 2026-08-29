@@ -3,6 +3,7 @@ import Foundation
 enum EquinoxFormatters {
     private static let cacheLock = NSLock()
     private nonisolated(unsafe) static var cachedLocaleIdentifier: String?
+    private nonisolated(unsafe) static var cachedTimeZoneIdentifier: String?
     private nonisolated(unsafe) static var formatters: [String: DateFormatter] = [:]
 
     static var appLocale: Locale {
@@ -14,12 +15,14 @@ enum EquinoxFormatters {
         configure: (DateFormatter) -> Void
     ) -> DateFormatter {
         let localeID = appLocale.identifier
+        let timeZone = TimeZone.autoupdatingCurrent
         cacheLock.lock()
         defer { cacheLock.unlock() }
 
-        if cachedLocaleIdentifier != localeID {
+        if cachedLocaleIdentifier != localeID || cachedTimeZoneIdentifier != timeZone.identifier {
             formatters.removeAll()
             cachedLocaleIdentifier = localeID
+            cachedTimeZoneIdentifier = timeZone.identifier
         }
 
         if let existing = formatters[key] {
@@ -28,6 +31,7 @@ enum EquinoxFormatters {
 
         let formatter = DateFormatter()
         formatter.locale = appLocale
+        formatter.timeZone = timeZone
         configure(formatter)
         formatters[key] = formatter
         return formatter
@@ -61,12 +65,13 @@ enum EquinoxFormatters {
     }
 
     static func relativeTime(until eventStart: Date, from now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> String? {
-        guard calendar.isDateInToday(eventStart) else { return nil }
+        guard calendar.isDate(eventStart, inSameDayAs: now) else { return nil }
         if eventStart <= now {
             return nil
         }
-        let minutes = Int(eventStart.timeIntervalSince(now) / 60)
-        if minutes < 60 {
+        let interval = eventStart.timeIntervalSince(now)
+        let minutes = max(1, Int(ceil(interval / 60)))
+        if interval < 60 * 60 {
             return String(format: String(localized: "in %lld min", comment: "Relative event time"), minutes)
         }
         let hours = minutes / 60

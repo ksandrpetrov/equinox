@@ -14,7 +14,7 @@ final class EventLayoutTests: XCTestCase {
         let end = calendar.date(byAdding: .hour, value: 1, to: start)!
 
         let slots = layoutEventDaySlots(
-            event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false, calendarTitle: "Work"),
+            event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false),
             rangeStart: calendar.startOfDay(for: start),
             rangeEnd: calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: start))!,
             calendar: calendar
@@ -25,16 +25,35 @@ final class EventLayoutTests: XCTestCase {
     }
 
     func testAllDayEventsSortBeforeTimedEvents() {
-        let allDay = EventSortKey(isEventAllDay: true, isSlotAllDay: true, calendarTitle: "B", startDate: .distantPast)
-        let timed = EventSortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: .distantPast)
+        let allDay = sortKey(isEventAllDay: true, isSlotAllDay: true, calendarTitle: "B", startDate: .distantPast)
+        let timed = sortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: .distantPast)
         XCTAssertTrue(precedesInDisplayOrder(allDay, timed))
         XCTAssertFalse(precedesInDisplayOrder(timed, allDay))
     }
 
     func testTimedEventsSortByStartDate() {
-        let earlier = EventSortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: Date(timeIntervalSince1970: 100))
-        let later = EventSortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: Date(timeIntervalSince1970: 200))
+        let earlier = sortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: Date(timeIntervalSince1970: 100))
+        let later = sortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: Date(timeIntervalSince1970: 200))
         XCTAssertTrue(precedesInDisplayOrder(earlier, later))
+    }
+
+    func testSimultaneousTimedEventsSortByCalendarTitle() {
+        let start = Date(timeIntervalSince1970: 100)
+        let alpha = sortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "Alpha", startDate: start)
+        let beta = sortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "Beta", startDate: start)
+        XCTAssertTrue(precedesInDisplayOrder(alpha, beta))
+        XCTAssertFalse(precedesInDisplayOrder(beta, alpha))
+    }
+
+    func testSimultaneousEventsInSameCalendarSortByTitleThenIdentifier() {
+        let start = Date(timeIntervalSince1970: 100)
+        let alpha = sortKey(calendarTitle: "Work", startDate: start, title: "Alpha", id: "z")
+        let beta = sortKey(calendarTitle: "Work", startDate: start, title: "Beta", id: "a")
+        let firstCopy = sortKey(calendarTitle: "Work", startDate: start, title: "Alpha", id: "a")
+
+        XCTAssertTrue(precedesInDisplayOrder(alpha, beta))
+        XCTAssertTrue(precedesInDisplayOrder(firstCopy, alpha))
+        XCTAssertFalse(precedesInDisplayOrder(alpha, firstCopy))
     }
 
     func testMultiDayEventProducesMultipleSlots() {
@@ -56,12 +75,30 @@ final class EventLayoutTests: XCTestCase {
         let rangeEnd = calendar.date(byAdding: .day, value: 5, to: rangeStart)!
 
         let slots = layoutEventDaySlots(
-            event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false, calendarTitle: "Work"),
+            event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false),
             rangeStart: rangeStart,
             rangeEnd: rangeEnd,
             calendar: calendar
         )
 
         XCTAssertGreaterThanOrEqual(slots.count, 2)
+    }
+
+    private func sortKey(
+        isEventAllDay: Bool = false,
+        isSlotAllDay: Bool = false,
+        calendarTitle: String,
+        startDate: Date,
+        title: String = "Event",
+        id: String = "id"
+    ) -> EventSortKey {
+        EventSortKey(
+            isEventAllDay: isEventAllDay,
+            isSlotAllDay: isSlotAllDay,
+            calendarTitle: calendarTitle,
+            startDate: startDate,
+            title: title,
+            stableIdentifier: id
+        )
     }
 }

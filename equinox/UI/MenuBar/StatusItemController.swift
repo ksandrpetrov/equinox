@@ -12,13 +12,14 @@ final class StatusItemController: NSObject {
 
     private var statusItemMoveWorkItem: DispatchWorkItem?
     private var shortcutEventsTask: Task<Void, Never>?
+    private var notificationObservers: [NSObjectProtocol] = []
     private var iconDateFormatter = DateFormatter()
 
     init(appState: AppState) {
         self.appState = appState
         self.panelController = PanelWindowController(appState: appState)
         super.init()
-        iconDateFormatter.locale = EquinoxFormatters.appLocale
+        resetIconDateFormatter()
     }
 
     func setup() {
@@ -34,20 +35,21 @@ final class StatusItemController: NSObject {
         appState.onRequestPresentPanel = { [weak self] resetToToday in
             self?.showPanelIfHidden(resetToToday: resetToToday)
         }
-        NotificationCenter.default.addObserver(
+        notificationObservers.append(NotificationCenter.default.addObserver(
             forName: kEquinoxSizePreferenceChanged,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in self?.handleSizePreferenceChanged() }
-        }
-        NotificationCenter.default.addObserver(
+        })
+        notificationObservers.append(NotificationCenter.default.addObserver(
             forName: kEquinoxMenuBarAppearanceChanged,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in self?.updateMenuBarIcon() }
-        }
+        })
+        setupSystemChangeObservers()
         createStatusItem()
         setupPeriodicRefresh()
         setupShortcut()
@@ -61,6 +63,9 @@ final class StatusItemController: NSObject {
         dismissMonitor.teardown()
         refreshScheduler?.stop()
         statusItemMoveWorkItem?.cancel()
+        notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        notificationObservers = []
+        NotificationCenter.default.removeObserver(self)
         UserDefaults.standard.set(appState.isPinned && isPanelActuallyVisible, forKey: kPinnedPanelVisible)
         KeyboardShortcuts.disable(.togglePanel)
     }
@@ -106,6 +111,10 @@ final class StatusItemController: NSObject {
         panelController.isVisible
     }
 
+    private var isPanelModalPresented: Bool {
+        appState.panel.isModalSheetPresented || panelController.window?.attachedSheet != nil
+    }
+
     func applyPinState() {
         if !appState.isPinned, isPanelActuallyVisible {
             NSApp.activate()
@@ -116,6 +125,10 @@ final class StatusItemController: NSObject {
 
     private func togglePanel() {
         if isPanelActuallyVisible {
+            guard !isPanelModalPresented else {
+                panelController.window?.makeKeyAndOrderFront(nil)
+                return
+            }
             hidePanel()
         } else {
             showPanel()
@@ -153,27 +166,70 @@ final class StatusItemController: NSObject {
         panelController.handleSizePreferenceChanged(statusItem: statusItem)
     }
 
+    private func setupSystemChangeObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(significantTimeChanged),
+            name: Notification.Name.NSSystemTimeZoneDidChange,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(significantTimeChanged),
+            name: Notification.Name.NSCalendarDayChanged,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(localeChanged),
+            name: NSLocale.currentLocaleDidChangeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func significantTimeChanged() {
+        appState.events.refreshAfterSignificantTimeChange()
+        updateMenuBarIcon()
+    }
+
+    @objc private func localeChanged() {
+        resetIconDateFormatter()
+        appState.events.refreshTodayAndMeetingIndicator()
+        updateMenuBarIcon()
+    }
+
+    private func resetIconDateFormatter() {
+        iconDateFormatter = DateFormatter()
+        iconDateFormatter.locale = EquinoxFormatters.appLocale
+        iconDateFormatter.timeZone = .autoupdatingCurrent
+    }
+
     func updateMenuBarIcon() {
         let prefs = appState.preferences
         guard let button = statusItem.button else { return }
+        let clockIsVisible = !(prefs.clockFormat?.isEmpty ?? true)
+        let scale = button.window?.screen?.backingScaleFactor
+            ?? NSScreen.main?.backingScaleFactor
+            ?? 2
 
         if prefs.isIconHidden {
             if prefs.showMeetingIndicator && appState.events.shouldShowMeetingIndicator {
-                let scale = button.window?.screen?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
                 button.image = MenuBarIconRenderer.meetingIndicatorImage(scale: scale)
-                button.imagePosition = .imageLeading
+                button.imagePosition = clockIsVisible ? .imageLeading : .imageOnly
+            } else if !clockIsVisible {
+                button.image = MenuBarIconRenderer.hiddenDateFallbackImage(scale: scale)
+                button.imagePosition = .imageOnly
             } else {
                 button.image = nil
                 button.imagePosition = .noImage
             }
         } else {
             let text = MenuBarIconRenderer.iconText(prefs: prefs, calendar: appState.calendar, today: appState.events.todayDate)
-            let scale = button.window?.screen?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
             button.image = MenuBarIconRenderer.iconImage(text: text, prefs: prefs, shouldShowMeetingIndicator: appState.events.shouldShowMeetingIndicator, scale: scale)
-            button.imagePosition = prefs.clockFormat != nil ? .imageLeading : .imageOnly
+            button.imagePosition = clockIsVisible ? .imageLeading : .imageOnly
         }
 
-        if let format = prefs.clockFormat, !format.isEmpty {
+        if let format = prefs.clockFormat, clockIsVisible {
             iconDateFormatter.dateFormat = format
             var title = iconDateFormatter.string(from: Date())
             if !prefs.isIconHidden { title = " " + title }
@@ -218,7 +274,7 @@ final class StatusItemController: NSObject {
         dismissMonitor.updateMonitoring(
             isPinned: appState.isPinned,
             isPanelVisible: isPanelActuallyVisible,
-            isModalSheetPresented: { [weak self] in self?.appState.panel.isModalSheetPresented ?? false },
+            isModalSheetPresented: { [weak self] in self?.isPanelModalPresented ?? false },
             isEquinoxWindow: { [weak self] window in
                 guard let self else { return false }
                 return self.panelController.isEquinoxCalendarWindow(window, statusItem: self.statusItem)

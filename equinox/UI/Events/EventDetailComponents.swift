@@ -28,7 +28,7 @@ struct EventDetailHeroHeader: View {
                         color: event.swiftUIColor
                     )
 
-                    if event.showsRSVPControls, let status = event.participationStatus {
+                    if let status = event.participationStatus {
                         EventDetailStatusChip(status: status)
                     }
                 }
@@ -126,22 +126,6 @@ struct EventDetailMetadataRow: View {
     }
 }
 
-struct EventDetailSection<Content: View>: View {
-    let title: String
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, EquinoxDesign.spacingXS)
-
-            content()
-        }
-    }
-}
-
 struct EventDetailNotesCard: View {
     let notes: String
 
@@ -172,51 +156,6 @@ struct EventDetailJoinButton: View {
     }
 }
 
-struct EventDetailSecondaryActionButton: View {
-    let title: String
-    let symbol: String
-    var subtitle: String? = nil
-    let action: () -> Void
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isHovered = false
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: EquinoxDesign.spacingMD) {
-                Image(systemName: symbol)
-                    .font(.body.weight(.semibold))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(.secondary)
-                    .frame(width: EquinoxDesign.ControlWidth.metadataIcon, height: EquinoxDesign.ControlWidth.metadataIcon)
-
-                VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
-                    Text(title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer(minLength: 0)
-
-                Image(systemName: "arrow.up.right")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(.horizontal, EquinoxDesign.spacingMD)
-            .padding(.vertical, EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro)
-            .equinoxCard(style: .row, isHovered: isHovered)
-        }
-        .buttonStyle(.plain)
-        .onHover { isHovered = $0 }
-        .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-    }
-}
-
 private extension EventParticipationStatus {
     var detailSymbolName: String {
         switch self {
@@ -224,6 +163,9 @@ private extension EventParticipationStatus {
         case .accepted: "checkmark.circle.fill"
         case .tentative: "questionmark.circle.fill"
         case .declined: "xmark.circle.fill"
+        case .delegated: "person.2.fill"
+        case .completed: "checkmark.circle.fill"
+        case .inProcess: "clock.arrow.circlepath"
         }
     }
 }

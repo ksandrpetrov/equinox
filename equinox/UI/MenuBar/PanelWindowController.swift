@@ -6,9 +6,14 @@ final class PanelWindowController {
     private let appState: AppState
     private var panel: NSPanel?
     private var hostingController: NSHostingController<MainPanelView>?
+    private weak var currentStatusItem: NSStatusItem?
+    private var layoutUpdateWorkItem: DispatchWorkItem?
 
     init(appState: AppState) {
         self.appState = appState
+        appState.layout.onPanelSizeInvalidated = { [weak self] in
+            self?.scheduleLayoutUpdate()
+        }
     }
 
     var window: NSPanel? { panel }
@@ -16,6 +21,7 @@ final class PanelWindowController {
     var isVisible: Bool { panel?.isVisible == true }
 
     func show(statusItem: NSStatusItem, isPinned: Bool) {
+        currentStatusItem = statusItem
         if panel == nil {
             panel = makePanel()
         }
@@ -46,18 +52,38 @@ final class PanelWindowController {
     }
 
     func hide() {
+        layoutUpdateWorkItem?.cancel()
         panel?.orderOut(nil)
         appState.panel.isPanelVisible = false
     }
 
     func handleSizePreferenceChanged(statusItem: NSStatusItem) {
+        currentStatusItem = statusItem
         updatePanelAgendaMaxHeight(statusItem: statusItem)
-        applyGeometry(statusItem: statusItem, resize: true, reposition: appState.panel.isPanelVisible)
+        applyGeometry(
+            statusItem: statusItem,
+            resize: true,
+            reposition: appState.panel.isPanelVisible && !appState.isPinned
+        )
+        if appState.isPinned, let panel, panel.isVisible {
+            var frame = panel.frame
+            clampPanelFrame(&frame, statusItem: statusItem)
+            panel.setFrame(frame, display: true)
+        }
     }
 
     func repositionUnderStatusItem(_ statusItem: NSStatusItem) {
+        currentStatusItem = statusItem
         guard let panel, panel.isVisible else { return }
-        positionPanel(panel, statusItem: statusItem)
+        updatePanelAgendaMaxHeight(statusItem: statusItem)
+        resizePanel(panel)
+        if appState.isPinned {
+            var frame = panel.frame
+            clampPanelFrame(&frame, statusItem: statusItem)
+            panel.setFrame(frame, display: true)
+        } else {
+            positionPanel(panel, statusItem: statusItem)
+        }
     }
 
     func retainFocusAfterModalDismiss(isPinned: Bool) {
@@ -125,22 +151,45 @@ final class PanelWindowController {
     private func applyGeometry(
         statusItem: NSStatusItem,
         resize: Bool = false,
-        reposition: Bool = false,
-        preferredFrame: NSRect? = nil
+        reposition: Bool = false
     ) {
         guard let panel else { return }
         if resize {
             resizePanel(panel)
         }
         if reposition {
-            positionPanel(panel, statusItem: statusItem, preferredFrame: preferredFrame)
+            positionPanel(panel, statusItem: statusItem)
         }
     }
 
     private func resizePanel(_ panel: NSPanel) {
         var frame = panel.frame
+        let topEdge = frame.maxY
         frame.size = panelContentSize()
+        frame.origin.y = topEdge - frame.height
         panel.setFrame(frame, display: panel.isVisible)
+    }
+
+    private func scheduleLayoutUpdate() {
+        layoutUpdateWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self,
+                  let statusItem = self.currentStatusItem,
+                  let panel = self.panel,
+                  panel.isVisible else { return }
+            self.applyGeometry(
+                statusItem: statusItem,
+                resize: true,
+                reposition: !self.appState.isPinned
+            )
+            if self.appState.isPinned {
+                var frame = panel.frame
+                self.clampPanelFrame(&frame, statusItem: statusItem)
+                panel.setFrame(frame, display: true)
+            }
+        }
+        layoutUpdateWorkItem = workItem
+        DispatchQueue.main.async(execute: workItem)
     }
 
     private func panelContentSize() -> NSSize {
@@ -157,16 +206,7 @@ final class PanelWindowController {
         )
     }
 
-    private func positionPanel(_ panel: NSPanel, statusItem: NSStatusItem, preferredFrame: NSRect? = nil) {
-        if let preferredFrame {
-            var frame = panel.frame
-            frame.origin = preferredFrame.origin
-            frame.size.height = preferredFrame.height
-            clampPanelFrame(&frame, statusItem: statusItem)
-            panel.setFrame(frame, display: true)
-            return
-        }
-
+    private func positionPanel(_ panel: NSPanel, statusItem: NSStatusItem) {
         guard let button = statusItem.button, let window = button.window else { return }
         let frame = window.convertToScreen(button.frame)
         let panelWidth = sizeMetrics.panelWidth

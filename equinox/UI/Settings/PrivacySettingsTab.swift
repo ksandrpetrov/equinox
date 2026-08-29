@@ -17,7 +17,10 @@ struct PrivacySettingsTab: View {
     @ViewBuilder
     private func privacyContent(appState: AppState) -> some View {
         SettingsDetailScaffold(title: String(localized: "Privacy", comment: "Privacy prefs tab label")) {
-            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "access", "privacy", "permission") {
+            if SettingsSearchFilter.matches(
+                searchText: searchText,
+                keywords: "Privacy", "Calendar Access", "Request Access", "Open System Settings"
+            ) {
                 SettingsSection(
                     String(localized: "Calendar Access", comment: "Privacy section"),
                     subtitle: String(localized: "Equinox reads events from your system calendars.", comment: "")
@@ -38,10 +41,12 @@ struct PrivacySettingsTab: View {
                     SettingsDivider()
 
                     HStack(spacing: EquinoxDesign.spacingMD) {
-                        Button(String(localized: "Request Access", comment: "")) {
-                            appState.requestCalendarAccessIfNeeded()
+                        if appState.events.calendarAccessStatus == .notDetermined {
+                            Button(String(localized: "Request Access", comment: "")) {
+                                appState.requestCalendarAccessIfNeeded()
+                            }
+                            .buttonStyle(EquinoxButtonStyle(variant: .prominent))
                         }
-                        .buttonStyle(EquinoxButtonStyle(variant: .prominent))
 
                         Button(String(localized: "Open System Settings", comment: "")) {
                             appState.openCalendarPrivacySettings()
@@ -49,6 +54,10 @@ struct PrivacySettingsTab: View {
                         .buttonStyle(EquinoxButtonStyle(variant: .bordered))
                     }
                     .padding(.vertical, SettingsDesign.rowVerticalPadding)
+
+                    SettingsDivider()
+                    SettingsFooter(text: accessGuidance(for: appState.events.calendarAccessStatus))
+                        .padding(.vertical, SettingsDesign.rowVerticalPadding)
                 }
             } else if !searchText.isEmpty {
                 settingsSearchEmptyState
@@ -83,6 +92,19 @@ struct PrivacySettingsTab: View {
         case .authorized: return EquinoxDesign.ColorToken.success
         case .denied, .restricted: return EquinoxDesign.ColorToken.error
         case .notDetermined: return EquinoxDesign.ColorToken.warning
+        }
+    }
+
+    private func accessGuidance(for status: CalendarAccessStatus) -> String {
+        switch status {
+        case .authorized:
+            String(localized: "Full calendar access is enabled.", comment: "Calendar privacy guidance")
+        case .notDetermined:
+            String(localized: "macOS will ask you to grant Full Access.", comment: "Calendar privacy guidance")
+        case .denied:
+            String(localized: "Enable Full Access for Equinox in System Settings.", comment: "Calendar privacy guidance")
+        case .restricted:
+            String(localized: "Access is restricted by system policy and cannot be requested here.", comment: "Calendar privacy guidance")
         }
     }
 }

@@ -54,12 +54,6 @@ struct SettingsView: View {
                 .tag(SettingsTab.shortcuts)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "Plaud", comment: "Plaud prefs tab label"),
-                    symbol: "waveform"
-                )
-                .tag(SettingsTab.plaud)
-
-                SettingsSidebarLabel(
                     title: String(localized: "About", comment: "About prefs tab label"),
                     symbol: "info.circle"
                 )
@@ -108,11 +102,9 @@ struct SettingsView: View {
         case .privacy:
             PrivacySettingsTab(searchText: searchText)
         case .shortcuts:
-            ShortcutsSettingsTab()
-        case .plaud:
-            PlaudSettingsTab(searchText: searchText, prefs: preferencesStore)
+            ShortcutsSettingsTab(searchText: searchText)
         case .about:
-            AboutSettingsTab()
+            AboutSettingsTab(searchText: searchText)
         }
     }
 

@@ -6,36 +6,40 @@ struct EventDetailView: View {
     let event: DayEvent
     let metrics: SizeMetrics
     @Environment(\.dismiss) private var dismiss
-    @State private var isResponding = false
     @State private var isDeleting = false
-    @State private var isSavingPlaudLink = false
     @State private var actionError: String?
-    @State private var manualPlaudURL = ""
-    @State private var showManualPlaudLink = false
 
-    private var plaudMatch: PlaudEventMatch? {
-        appState.plaud.link(for: event)
+    private var sourceJoinURL: URL? {
+        JoinURLPresentation.sourceJoinURL(
+            location: event.location,
+            eventURL: event.url,
+            notes: event.notes,
+            fallback: event.joinURL
+        )
     }
 
-    private var isPastEvent: Bool {
-        event.endDate < Date()
+    private var eventLinkURL: URL? {
+        JoinURLPresentation.supplementalEventURL(
+            eventURL: event.url,
+            sourceJoinURL: sourceJoinURL
+        )
     }
 
     private var displayNotes: String? {
-        JoinURLPresentation.notesForDisplay(notes: event.notes, excludingJoinURL: event.joinURL)
+        JoinURLPresentation.notesForDisplay(notes: event.notes, excludingJoinURL: sourceJoinURL)
     }
 
     var body: some View {
         ModalSheetScaffold(
             title: String(localized: "Event Details", comment: "Event detail sheet title"),
             metrics: metrics,
-            destructiveTitle: event.allowsContentModifications
+            destructiveTitle: event.allowsDeletion
                 ? String(localized: "Delete", comment: "")
                 : nil,
             isDestructiveInProgress: isDeleting,
             minHeight: nil,
             onCancel: { dismiss() },
-            onDestructive: event.allowsContentModifications ? { deleteEvent() } : nil
+            onDestructive: event.allowsDeletion ? { deleteEvent() } : nil
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: EquinoxDesign.spacingLG) {
@@ -51,28 +55,13 @@ struct EventDetailView: View {
                         EventDetailNotesCard(notes: displayNotes)
                     }
 
-                    if event.showsRSVPControls {
-                        EventDetailSection(
-                            title: String(localized: "Your response", comment: "Event detail RSVP section")
-                        ) {
-                            EventRSVPBar(
-                                status: event.participationStatus,
-                                layout: .detail,
-                                isResponding: isResponding
-                            ) { status in
-                                respond(to: status)
-                            }
-                        }
-                    }
-
                     if hasActionSection {
                         VStack(spacing: EquinoxDesign.spacingSM) {
                             if let url = event.joinURL {
                                 EventDetailJoinButton(url: url, action: { URLOpener.open(url) })
                             }
-
-                            if isPastEvent, appState.preferences.isPlaudEnabled {
-                                plaudSection
+                            if let url = eventLinkURL {
+                                EventDetailLinkButton(url: url, action: { URLOpener.open(url) })
                             }
                         }
                     }
@@ -82,13 +71,10 @@ struct EventDetailView: View {
             }
             .frame(maxHeight: EventDetailLayout.maxScrollableHeight)
         }
-        .onAppear {
-            appState.plaud.refreshMatchesIfNeeded()
-        }
     }
 
     private var hasActionSection: Bool {
-        event.joinURL != nil || (isPastEvent && appState.preferences.isPlaudEnabled)
+        event.joinURL != nil || eventLinkURL != nil
     }
 
     private var metadataRows: [EventDetailMetadataRowModel] {
@@ -112,7 +98,7 @@ struct EventDetailView: View {
             )
         }
 
-        if event.showsRSVPControls, let status = event.participationStatus {
+        if let status = event.participationStatus {
             rows.append(
                 EventDetailMetadataRowModel(
                     symbol: "person.crop.circle.badge.clock",
@@ -126,97 +112,16 @@ struct EventDetailView: View {
         return rows
     }
 
-    @ViewBuilder
-    private var plaudSection: some View {
-        if let match = plaudMatch {
-            EventDetailSecondaryActionButton(
-                title: String(localized: "Open in Plaud", comment: "Plaud recording button"),
-                symbol: "waveform",
-                subtitle: String(localized: "Recording available", comment: "Plaud match subtitle")
-            ) {
-                URLOpener.open(match.webURL)
-            }
-        } else if showManualPlaudLink {
-            VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
-                TextField(
-                    String(localized: "https://web.plaud.ai/file/…", comment: "Plaud manual link placeholder"),
-                    text: $manualPlaudURL
-                )
-                .textFieldStyle(.roundedBorder)
-
-                HStack {
-                    Button {
-                        saveManualPlaudLink()
-                    } label: {
-                        if isSavingPlaudLink {
-                            ProgressView()
-                                .controlSize(.small)
-                        } else {
-                            Text(String(localized: "Save Link", comment: "Plaud manual link save"))
-                        }
-                    }
-                    .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
-                    .disabled(manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSavingPlaudLink)
-
-                    Button(String(localized: "Cancel", comment: "")) {
-                        showManualPlaudLink = false
-                        manualPlaudURL = ""
-                    }
-                    .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
-                    .disabled(isSavingPlaudLink)
-                }
-            }
-            .padding(EquinoxDesign.spacingMD)
-            .background { EventDetailCardBackground() }
-        } else {
-            EventDetailSecondaryActionButton(
-                title: String(localized: "Link Plaud recording…", comment: "Plaud manual link action"),
-                symbol: "link.badge.plus"
-            ) {
-                showManualPlaudLink = true
-            }
-        }
-    }
-
-    private func saveManualPlaudLink() {
-        guard !isSavingPlaudLink else { return }
-        let trimmed = manualPlaudURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let url = URL(string: trimmed) else {
-            actionError = String(
-                localized: "Paste a Plaud URL like https://web.plaud.ai/file/…",
-                comment: "Plaud manual link error"
-            )
-            return
-        }
-        actionError = nil
-        isSavingPlaudLink = true
-        Task {
-            if let error = await appState.plaud.saveManualLink(for: event, url: url) {
-                actionError = error
-                isSavingPlaudLink = false
-            } else {
-                showManualPlaudLink = false
-                manualPlaudURL = ""
-                isSavingPlaudLink = false
-            }
-        }
-    }
-
     private var whenString: String {
-        if event.isEventAllDay { return String(localized: "All-day", comment: "") }
-        return EquinoxFormatters.mediumDateTime(from: event.startDate, to: event.endDate)
-    }
-
-    private func respond(to status: EventParticipationStatus) {
-        guard !isResponding else { return }
-        isResponding = true
-        actionError = nil
-        Task {
-            if let error = await appState.respondToInvitation(event: event, status: status) {
-                actionError = error
-            }
-            isResponding = false
+        if event.isEventAllDay {
+            let formatter = EquinoxFormatters.formatter(key: "date.medium") { $0.dateStyle = .medium }
+            let inclusiveEnd = appState.calendar.date(byAdding: .day, value: -1, to: event.endDate) ?? event.endDate
+            let dates = appState.calendar.isDate(event.startDate, inSameDayAs: inclusiveEnd)
+                ? formatter.string(from: event.startDate)
+                : "\(formatter.string(from: event.startDate)) – \(formatter.string(from: inclusiveEnd))"
+            return "\(String(localized: "All-day", comment: "")) · \(dates)"
         }
+        return EquinoxFormatters.mediumDateTime(from: event.startDate, to: event.endDate)
     }
 
     private func deleteEvent() {
@@ -228,7 +133,10 @@ struct EventDetailView: View {
         }
         isDeleting = true
         Task {
-            if let error = await appState.deleteEvent(identifier: id) {
+            if let error = await appState.deleteEvent(
+                identifier: id,
+                occurrenceStartDate: event.startDate
+            ) {
                 actionError = error
                 isDeleting = false
             } else {
@@ -236,6 +144,56 @@ struct EventDetailView: View {
                 dismiss()
             }
         }
+    }
+}
+
+private struct EventDetailLinkButton: View {
+    let url: URL
+    let action: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: EquinoxDesign.spacingMD) {
+                Image(systemName: "link")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(EquinoxDesign.ColorToken.accent)
+                    .frame(
+                        width: EquinoxDesign.ControlWidth.joinIcon,
+                        height: EquinoxDesign.ControlWidth.joinIcon
+                    )
+
+                VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
+                    Text(String(localized: "Open Link", comment: "Event URL action"))
+                        .font(.headline)
+                    Text(url.host() ?? url.absoluteString)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, EquinoxDesign.spacingMD)
+            .padding(.vertical, EquinoxDesign.spacingSM)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .equinoxCard(style: .row, isHovered: isHovered)
+        .onHover { isHovered = $0 }
+        .animation(
+            EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion),
+            value: isHovered
+        )
+        .accessibilityLabel(String(localized: "Open Link", comment: "Event URL action"))
+        .accessibilityHint(url.absoluteString)
     }
 }
 
