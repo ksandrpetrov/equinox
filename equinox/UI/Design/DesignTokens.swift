@@ -23,15 +23,18 @@ enum EquinoxDesign {
     static let cellRadius: CGFloat = 8
     static let cardRadius: CGFloat = 10
     static let monthBoundaryWidth: CGFloat = 0.5
+    static let selectionStrokeWidth: CGFloat = 1
+    static let focusStrokeWidth: CGFloat = 2
 
     static let agendaHeaderTitleSpacing: CGFloat = spacingSM - 2
     static let agendaHeaderVerticalPadding: CGFloat = spacingSM - 3
     static let agendaDateMarkerSize: CGFloat = 8
     static let agendaEventCountMinWidth: CGFloat = 18
+    static let agendaTimelineNodeSize: CGFloat = 7
+    static let agendaTimelineFocusNodeSize: CGFloat = 10
+    static let agendaTimelineLineWidth: CGFloat = 1
     static let commandBarHeight: CGFloat = 40
     static var toolbarButtonSize: CGFloat { SizeMetrics.metrics(for: .medium).toolbarButtonSize }
-
-    static let emptyStateIconSize: CGFloat = 32
 
     static let settingsSidebarWidth: CGFloat = 220
     static let settingsSectionCornerRadius: CGFloat = 12
@@ -189,15 +192,19 @@ enum EquinoxDesign {
         .system(size: size - 1, weight: .medium)
     }
 
+    static func agendaEventTitleFont(size: CGFloat, isExpanded: Bool) -> Font {
+        .system(size: size, weight: isExpanded ? .semibold : .medium)
+    }
+
+    static func agendaEventMetaFont(size: CGFloat) -> Font {
+        .system(size: size, weight: .regular)
+    }
+
     static func microFont(size: CGFloat = 7) -> Font {
         .system(size: size, weight: .bold)
     }
 
     static func sectionHeaderFont() -> Font { .headline }
-
-    static func emptyStateIconFont() -> Font {
-        .system(size: emptyStateIconSize)
-    }
 
     static func panelIconFont(isSelected: Bool) -> Font {
         .system(size: 13, weight: isSelected ? .semibold : .medium)

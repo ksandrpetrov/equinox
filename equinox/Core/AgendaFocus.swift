@@ -1,5 +1,12 @@
 import Foundation
 
+enum AgendaEventTemporalState: Equatable {
+    case notApplicable
+    case past
+    case ongoing
+    case upcoming
+}
+
 enum AgendaFocus {
     /// Delay before clearing programmatic-scroll guard after `scrollPosition` updates.
     static let programmaticScrollSettleDelay: TimeInterval = 0.35
@@ -25,15 +32,24 @@ enum AgendaFocus {
     /// Timed event to scroll to: ongoing first, else next upcoming; nil → scroll to day header.
     static func focusEventID(in events: [DayEvent], now: Date = Date()) -> String? {
         let timed = events
-            .filter { !$0.isEventAllDay && $0.participationStatus != .declined }
+            .filter { temporalState(for: $0, now: now) != .notApplicable }
             .sorted { $0.startDate < $1.startDate }
 
-        if let ongoing = timed.first(where: { $0.startDate <= now && $0.endDate > now }) {
+        if let ongoing = timed.first(where: { temporalState(for: $0, now: now) == .ongoing }) {
             return ongoing.id
         }
-        if let next = timed.first(where: { $0.startDate > now }) {
+        if let next = timed.first(where: { temporalState(for: $0, now: now) == .upcoming }) {
             return next.id
         }
         return nil
+    }
+
+    static func temporalState(for event: DayEvent, now: Date = Date()) -> AgendaEventTemporalState {
+        guard !event.isEventAllDay, event.participationStatus != .declined else {
+            return .notApplicable
+        }
+        if event.endDate <= now { return .past }
+        if event.startDate <= now { return .ongoing }
+        return .upcoming
     }
 }

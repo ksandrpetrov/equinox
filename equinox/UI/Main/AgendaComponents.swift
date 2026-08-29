@@ -56,6 +56,7 @@ struct AgendaSectionHeader: View {
                 .frame(height: 1)
         }
         .padding(.top, EquinoxDesign.spacingXS)
+        .accessibilityAddTraits(.isHeader)
     }
 
     private func dateMarkerColor(isToday: Bool) -> Color {
@@ -71,11 +72,88 @@ struct AgendaSectionHeader: View {
     }
 }
 
+enum AgendaTimelineEmphasis {
+    case none
+    case next
+    case current
+}
+
+struct AgendaTimelineMarker: View {
+    let calendarColor: Color
+    let emphasis: AgendaTimelineEmphasis
+    let connectsAbove: Bool
+    let connectsBelow: Bool
+    let width: CGFloat
+
+    var body: some View {
+        ZStack {
+            VStack(spacing: 0) {
+                Rectangle()
+                    .fill(connectsAbove ? EquinoxDesign.ColorToken.separator : .clear)
+                    .frame(width: EquinoxDesign.agendaTimelineLineWidth)
+                    .frame(maxHeight: .infinity)
+                Color.clear
+                    .frame(height: EquinoxDesign.agendaTimelineFocusNodeSize)
+                Rectangle()
+                    .fill(connectsBelow ? EquinoxDesign.ColorToken.separator : .clear)
+                    .frame(width: EquinoxDesign.agendaTimelineLineWidth)
+                    .frame(maxHeight: .infinity)
+            }
+
+            marker
+        }
+        .frame(width: width)
+        .frame(maxHeight: .infinity)
+        .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private var marker: some View {
+        switch emphasis {
+        case .none:
+            Circle()
+                .fill(calendarColor)
+                .frame(
+                    width: EquinoxDesign.agendaTimelineNodeSize,
+                    height: EquinoxDesign.agendaTimelineNodeSize
+                )
+        case .next, .current:
+            Circle()
+                .fill(EquinoxDesign.ColorToken.surfaceRaised)
+                .frame(
+                    width: EquinoxDesign.agendaTimelineFocusNodeSize,
+                    height: EquinoxDesign.agendaTimelineFocusNodeSize
+                )
+                .overlay {
+                    Circle()
+                        .strokeBorder(emphasisColor, lineWidth: EquinoxDesign.focusStrokeWidth)
+                    Circle()
+                        .fill(calendarColor)
+                        .frame(
+                            width: EquinoxDesign.agendaTimelineNodeSize - 3,
+                            height: EquinoxDesign.agendaTimelineNodeSize - 3
+                        )
+                }
+        }
+    }
+
+    private var emphasisColor: Color {
+        switch emphasis {
+        case .none: calendarColor
+        case .next: EquinoxDesign.ColorToken.action
+        case .current: EquinoxDesign.ColorToken.present
+        }
+    }
+}
+
 struct AgendaEventCard: View {
     let event: DayEvent
     let metrics: SizeMetrics
     let showLocation: Bool
     let now: Date
+    var isFirstInSection = false
+    var isLastInSection = false
+    var isFocusedEvent = false
     var onTap: (() -> Void)? = nil
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -100,9 +178,14 @@ struct AgendaEventCard: View {
                 onTap?()
             } label: {
                 HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
-                    EventStripeView(
-                        color: calendarColor,
-                        verticalPadding: showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro
+                    timeColumn
+
+                    AgendaTimelineMarker(
+                        calendarColor: calendarColor,
+                        emphasis: timelineEmphasis,
+                        connectsAbove: !isFirstInSection,
+                        connectsBelow: !isLastInSection,
+                        width: metrics.agendaTimelineColumnWidth
                     )
 
                     Group {
@@ -112,10 +195,10 @@ struct AgendaEventCard: View {
                             compactEventContent
                         }
                     }
-                    .padding(.leading, metrics.agendaContentLeadingInset)
+                    .padding(.leading, EquinoxDesign.spacingXS)
                     .padding(.trailing, EquinoxDesign.spacingSM)
-                    .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro)
                 }
+                .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro + 1)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -124,7 +207,12 @@ struct AgendaEventCard: View {
             .accessibilityHint(String(localized: "Show event details.", comment: "Agenda event hint"))
 
             if let url = event.joinURL {
-                EquinoxJoinButton(url: url, variant: .compact, metrics: metrics) {
+                EquinoxJoinButton(
+                    url: url,
+                    variant: .compact,
+                    metrics: metrics,
+                    isProminent: isJoinUrgent
+                ) {
                     URLOpener.open(url)
                 }
                 .padding(.trailing, EquinoxDesign.spacingSM)
@@ -140,14 +228,39 @@ struct AgendaEventCard: View {
     }
 
     @ViewBuilder
+    private var timeColumn: some View {
+        if event.isEventAllDay {
+            Text(String(localized: "All-day", comment: ""))
+                .font(EquinoxDesign.monoTimeFont(size: metrics.agendaTimeFontSize))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
+        } else {
+            VStack(alignment: .trailing, spacing: EquinoxDesign.spacingMicro) {
+                Text(EquinoxFormatters.shortTime(event.startDate))
+                    .foregroundStyle(.secondary)
+                Text(EquinoxFormatters.shortTime(event.endDate))
+                    .foregroundStyle(.tertiary)
+            }
+            .font(EquinoxDesign.monoTimeFont(size: metrics.agendaTimeFontSize))
+            .lineLimit(1)
+            .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
+        }
+    }
+
+    @ViewBuilder
     private var compactEventContent: some View {
         HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
-            Text(timeRangeString)
-                .font(EquinoxDesign.monoTimeFont(size: max(10, metrics.fontSize - 2)))
-                .foregroundStyle(.secondary)
             Text(event.title)
-                .font(.caption.weight(.medium))
+                .font(
+                    EquinoxDesign.agendaEventTitleFont(
+                        size: metrics.agendaEventTitleFontSize,
+                        isExpanded: false
+                    )
+                )
                 .lineLimit(1)
+                .layoutPriority(1)
                 .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
             Spacer(minLength: EquinoxDesign.spacingXS)
             relativeTimeLabel
@@ -158,12 +271,15 @@ struct AgendaEventCard: View {
     private var expandedEventContent: some View {
         VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
             HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
-                Text(timeRangeString)
-                    .font(EquinoxDesign.monoTimeFont(size: max(10, metrics.fontSize - 2)))
-                    .foregroundStyle(.secondary)
                 Text(event.title)
-                    .font(.caption.weight(.semibold))
+                    .font(
+                        EquinoxDesign.agendaEventTitleFont(
+                            size: metrics.agendaEventTitleFontSize,
+                            isExpanded: true
+                        )
+                    )
                     .lineLimit(1)
+                    .layoutPriority(1)
                     .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
                 Spacer(minLength: EquinoxDesign.spacingXS)
                 relativeTimeLabel
@@ -173,7 +289,7 @@ struct AgendaEventCard: View {
                 HStack(spacing: EquinoxDesign.spacingXS) {
                     if showLocation, let location = event.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
-                            .font(.caption)
+                            .font(EquinoxDesign.agendaEventMetaFont(size: metrics.agendaEventMetaFontSize))
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     }
@@ -183,7 +299,7 @@ struct AgendaEventCard: View {
                                 .foregroundStyle(.tertiary)
                         }
                         Text(event.calendarTitle)
-                            .font(.caption)
+                            .font(EquinoxDesign.agendaEventMetaFont(size: metrics.agendaEventMetaFontSize))
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     }
@@ -203,6 +319,9 @@ struct AgendaEventCard: View {
         if let status = event.participationStatus {
             parts.append(status.detailStatusLabel)
         }
+        if let relativeTimeString {
+            parts.append(relativeTimeString)
+        }
         return parts.joined(separator: ", ")
     }
 
@@ -212,19 +331,32 @@ struct AgendaEventCard: View {
     }
 
     private var relativeTimeString: String? {
-        guard !event.isEventAllDay else { return nil }
-        if isHappeningNow {
+        switch temporalState {
+        case .ongoing:
             return EquinoxFormatters.relativeTimeDuringEvent()
-        }
-        if event.startDate > now,
-           Calendar.autoupdatingCurrent.isDate(event.startDate, inSameDayAs: now) {
+        case .upcoming where Calendar.autoupdatingCurrent.isDate(event.startDate, inSameDayAs: now):
             return EquinoxFormatters.relativeTime(until: event.startDate, from: now)
+        case .notApplicable, .past, .upcoming:
+            return nil
         }
-        return nil
     }
 
     private var isHappeningNow: Bool {
-        event.startDate <= now && event.endDate > now
+        temporalState == .ongoing
+    }
+
+    private var temporalState: AgendaEventTemporalState {
+        AgendaFocus.temporalState(for: event, now: now)
+    }
+
+    private var timelineEmphasis: AgendaTimelineEmphasis {
+        if isHappeningNow { return .current }
+        if isFocusedEvent, temporalState == .upcoming { return .next }
+        return .none
+    }
+
+    private var isJoinUrgent: Bool {
+        MeetingIndicator.isJoinActionUrgent(event, now: now)
     }
 
     @ViewBuilder

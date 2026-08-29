@@ -30,13 +30,6 @@ struct CalendarGridView: View {
                 .transition(EquinoxDesign.monthTransition(forward: appState.events.monthNavigationDirection == .forward))
         }
         .padding(EquinoxDesign.spacingXS)
-        .overlay {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusLG, style: .continuous)
-                .strokeBorder(
-                    isGridFocused ? EquinoxDesign.ColorToken.accentRing : .clear,
-                    lineWidth: 1
-                )
-        }
         .focusable()
         .focused($isGridFocused)
         .focusEffectDisabled()
@@ -56,7 +49,12 @@ struct CalendarGridView: View {
         )
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
-        .accessibilityHint(String(localized: "Use arrow keys to move between days", comment: ""))
+        .accessibilityHint(
+            String(
+                localized: "Use arrow keys to move between days. Press Return to create an event.",
+                comment: "Calendar grid keyboard hint"
+            )
+        )
     }
 
     private var weekdayHeaderRow: some View {
@@ -93,6 +91,8 @@ struct CalendarGridView: View {
                             date: date,
                             isToday: date.isSameCalendarDay(as: appState.events.todayDate),
                             isSelected: date.isSameCalendarDay(as: appState.events.selectedDate),
+                            isKeyboardFocused: isGridFocused
+                                && date.isSameCalendarDay(as: appState.events.selectedDate),
                             isInCurrentMonth: date.monthIndex == appState.events.monthDate.monthIndex
                                 && date.year == appState.events.monthDate.year,
                             isHighlighted: prefs.isWeekdayHighlighted(col, weekStartWeekday: prefs.weekStartWeekday),

@@ -123,6 +123,24 @@ final class MeetingIndicatorTests: XCTestCase {
         ))
     }
 
+    func testJoinUrgencyUsesSameEligibilityAsIndicator() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let calendar = Calendar(identifier: .gregorian)
+        let urgent = sampleEvent(
+            start: now.addingTimeInterval(30 * 60),
+            end: now.addingTimeInterval(60 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123")
+        )
+        let distant = sampleEvent(
+            start: now.addingTimeInterval(31 * 60),
+            end: now.addingTimeInterval(61 * 60),
+            joinURL: URL(string: "https://zoom.us/j/123")
+        )
+
+        XCTAssertTrue(MeetingIndicator.isJoinActionUrgent(urgent, now: now, calendar: calendar))
+        XCTAssertFalse(MeetingIndicator.isJoinActionUrgent(distant, now: now, calendar: calendar))
+    }
+
     private func sampleEvent(
         start: Date,
         end: Date,

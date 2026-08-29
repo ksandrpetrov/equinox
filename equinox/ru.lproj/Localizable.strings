@@ -63,7 +63,7 @@
 "New Event   ⌘N" = "Новое событие   ⌘N";
 "Next month" = "Следующий месяц";
 "No events" = "Нет событий";
-"Look Further" = "Искать дальше";
+"Show next 30 days" = "Показать следующие 30 дней";
 /* Alert none
    Repeat none */
 "None" = "Нет";
@@ -188,12 +188,12 @@
 /* Accessibility */
 "On" = "Вкл.";
 "Off" = "Выкл.";
-"Double-click to create an event" = "Дважды щёлкните, чтобы создать событие";
 "Today, selected" = "Сегодня, выбрано";
 "More actions" = "Дополнительные действия";
 "Go to Today   T" = "Перейти к сегодня   T";
 "Calendar grid" = "Сетка календаря";
-"Use arrow keys to move between days" = "Стрелки для перемещения между днями";
+"Use arrow keys to move between days. Press Return to create an event." = "Перемещайтесь между днями стрелками. Нажмите Return, чтобы создать событие.";
+"Use the New Event action to create an event." = "Используйте действие «Новое событие», чтобы создать событие.";
 "Show event details." = "Показать детали события.";
 "No writable calendars available. Check Calendar access in Privacy settings." = "Нет доступных календарей для записи. Проверьте доступ в настройках конфиденциальности.";
 "Could not delete event" = "Не удалось удалить событие.";
@@ -254,5 +254,3 @@
 "Participation in progress" = "Участие в процессе";
 /* App & settings tabs */
 "Equinox" = "Equinox";
-/* Appearance preview */
-"09:00 – 10:00" = "09:00 – 10:00";

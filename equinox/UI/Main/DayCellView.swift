@@ -4,6 +4,7 @@ struct DayCellView: View {
     let date: CalendarDate
     let isToday: Bool
     let isSelected: Bool
+    var isKeyboardFocused = false
     let isInCurrentMonth: Bool
     let isHighlighted: Bool
     let isMonthBoundaryStart: Bool
@@ -67,7 +68,12 @@ struct DayCellView: View {
                         .fill(EquinoxDesign.ColorToken.accentSoft)
                         .overlay {
                             RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                                .strokeBorder(EquinoxDesign.ColorToken.accentRing, lineWidth: 1)
+                                .strokeBorder(
+                                    EquinoxDesign.ColorToken.accentRing,
+                                    lineWidth: isKeyboardFocused
+                                        ? EquinoxDesign.focusStrokeWidth
+                                        : EquinoxDesign.selectionStrokeWidth
+                                )
                         }
                         .padding(.horizontal, 1)
                 } else if isHovered {
@@ -119,9 +125,20 @@ struct DayCellView: View {
         .simultaneousGesture(TapGesture(count: 2).onEnded {
             if date.isValid { onDoubleClick() }
         })
+        .contextMenu {
+            Button {
+                if date.isValid { onDoubleClick() }
+            } label: {
+                Label(String(localized: "New Event", comment: "Day cell context action"), systemImage: "plus")
+            }
+            .disabled(!date.isValid)
+        }
+        .help(accessibilityDateLabel)
         .accessibilityLabel(accessibilityDateLabel)
         .accessibilityValue(accessibilityValue)
-        .accessibilityHint(String(localized: "Double-click to create an event", comment: "Day cell hint"))
+        .accessibilityHint(
+            String(localized: "Use the New Event action to create an event.", comment: "Day cell hint")
+        )
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityAction(named: Text(String(localized: "New Event", comment: "Day cell accessibility action"))) {
             if date.isValid { onDoubleClick() }

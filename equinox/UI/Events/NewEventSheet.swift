@@ -29,6 +29,15 @@ struct NewEventSheet: View {
     @State private var isSaving = false
     @State private var saveError: String?
 
+    init(appState: AppState, metrics: SizeMetrics) {
+        self.appState = appState
+        self.metrics = metrics
+
+        let defaults = appState.smartDefaultEventDates()
+        _startDate = State(initialValue: defaults.start)
+        _endDate = State(initialValue: defaults.end)
+    }
+
     private let recurrenceOptions = [
         String(localized: "None", comment: "Recurrence"),
         String(localized: "Every Day", comment: ""),
@@ -76,7 +85,6 @@ struct NewEventSheet: View {
             }
         }
         .onAppear {
-            applySmartDefaults()
             reconcileSelectedCalendar()
             focusedField = .title
         }
@@ -104,8 +112,13 @@ struct NewEventSheet: View {
 
                 DatePicker(String(localized: "Starts", comment: ""), selection: $startDate,
                            displayedComponents: isAllDay ? [.date] : [.date, .hourAndMinute])
-                    .onChange(of: startDate) { _, new in
-                        endDate = appState.calendar.date(byAdding: .minute, value: 60, to: new) ?? new
+                    .onChange(of: startDate) { old, new in
+                        endDate = EventDraftDefaults.endDatePreservingDuration(
+                            previousStart: old,
+                            previousEnd: endDate,
+                            newStart: new,
+                            calendar: appState.calendar
+                        )
                     }
 
                 DatePicker(String(localized: "Ends", comment: ""), selection: $endDate,
@@ -197,12 +210,6 @@ struct NewEventSheet: View {
             defaultIdentifier: appState.events.defaultCalendarIdentifierForNewEvents,
             availableIdentifiers: modifiableCalendarIdentifiers
         )
-    }
-
-    private func applySmartDefaults() {
-        let defaults = appState.smartDefaultEventDates()
-        startDate = defaults.start
-        endDate = defaults.end
     }
 
     private func save() {

@@ -8,14 +8,30 @@ enum MeetingIndicator {
         calendar: Calendar = .autoupdatingCurrent,
         lookaheadMinutes: Int = 30
     ) -> Bool {
-        let end = calendar.date(byAdding: .minute, value: lookaheadMinutes, to: now) ?? now
         for (_, events) in eventsByDate {
-            for event in events where !event.isEventAllDay && event.participationStatus != .declined {
-                if event.startDate <= end && event.endDate > now, event.joinURL != nil {
-                    return true
-                }
+            for event in events where isJoinActionUrgent(
+                event,
+                now: now,
+                calendar: calendar,
+                lookaheadMinutes: lookaheadMinutes
+            ) {
+                return true
             }
         }
         return false
+    }
+
+    static func isJoinActionUrgent(
+        _ event: DayEvent,
+        now: Date = Date(),
+        calendar: Calendar = .autoupdatingCurrent,
+        lookaheadMinutes: Int = 30
+    ) -> Bool {
+        guard event.joinURL != nil,
+              AgendaFocus.temporalState(for: event, now: now) != .notApplicable else {
+            return false
+        }
+        let end = calendar.date(byAdding: .minute, value: lookaheadMinutes, to: now) ?? now
+        return event.startDate <= end && event.endDate > now
     }
 }

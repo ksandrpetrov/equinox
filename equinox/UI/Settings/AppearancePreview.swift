@@ -59,22 +59,40 @@ struct AppearancePreview: View {
 
     private var previewEventRow: some View {
         HStack(alignment: .center, spacing: 0) {
-            EventStripeView(color: previewEventColor, verticalPadding: EquinoxDesign.ChipMetrics.verticalPadding)
+            VStack(alignment: .trailing, spacing: EquinoxDesign.spacingMicro) {
+                Text(verbatim: "09:00")
+                    .foregroundStyle(.secondary)
+                Text(verbatim: "10:00")
+                    .foregroundStyle(.tertiary)
+            }
+            .font(EquinoxDesign.monoTimeFont(size: previewMetrics.agendaTimeFontSize))
+            .frame(width: previewMetrics.agendaTimeColumnWidth, alignment: .trailing)
+
+            AgendaTimelineMarker(
+                calendarColor: previewEventColor,
+                emphasis: .current,
+                connectsAbove: false,
+                connectsBelow: false,
+                width: previewMetrics.agendaTimelineColumnWidth
+            )
 
             HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
-                Text(String(localized: "09:00 – 10:00", comment: "Appearance preview sample time"))
-                    .font(EquinoxDesign.monoTimeFont(size: 11))
-                    .foregroundStyle(.secondary)
                 Text(String(localized: "Team standup", comment: "Appearance preview sample event"))
-                    .font(.caption.weight(.medium))
+                    .font(
+                        EquinoxDesign.agendaEventTitleFont(
+                            size: previewMetrics.agendaEventTitleFontSize,
+                            isExpanded: false
+                        )
+                    )
                     .lineLimit(1)
+                    .layoutPriority(1)
                 Spacer(minLength: EquinoxDesign.spacingXS)
                 EquinoxBadge(
                     text: String(localized: "Now", comment: "Event happening now"),
                     tint: EquinoxDesign.ColorToken.present
                 )
             }
-            .padding(.leading, previewMetrics.agendaContentLeadingInset)
+            .padding(.leading, EquinoxDesign.spacingXS)
             .padding(.trailing, EquinoxDesign.spacingSM)
 
             Spacer(minLength: 0)

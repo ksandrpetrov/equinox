@@ -6,35 +6,40 @@ struct SizeMetrics {
     let cellSize: CGFloat
     let cellRadius: CGFloat
     let cellDotWidth: CGFloat
-    let agendaEventLeadingMargin: CGFloat
+    let agendaTimeColumnWidth: CGFloat
+    let agendaTimelineColumnWidth: CGFloat
+    let agendaEventTitleFontSize: CGFloat
+    let agendaEventMetaFontSize: CGFloat
+    let agendaTimeFontSize: CGFloat
     let panelWidth: CGFloat
     let sheetWidth: CGFloat
     let toolbarButtonSize: CGFloat
     let weekColumnWidth: CGFloat
-
-    /// Leading inset for agenda event content, aligned to the event stripe edge.
-    var agendaContentLeadingInset: CGFloat {
-        agendaEventLeadingMargin - EquinoxDesign.EventStripe.width
-    }
 
     static func metrics(for preference: SizePreference) -> SizeMetrics {
         switch preference {
         case .small:
             return SizeMetrics(fontSize: 11, calendarTitleFontSize: 13, cellSize: 30,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
-                               agendaEventLeadingMargin: 8,
+                               agendaTimeColumnWidth: 54, agendaTimelineColumnWidth: 16,
+                               agendaEventTitleFontSize: 11, agendaEventMetaFontSize: 9,
+                               agendaTimeFontSize: 9,
                                panelWidth: 340, sheetWidth: 340, toolbarButtonSize: 28,
                                weekColumnWidth: 24)
         case .medium:
             return SizeMetrics(fontSize: 13, calendarTitleFontSize: 15, cellSize: 36,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
-                               agendaEventLeadingMargin: 10,
+                               agendaTimeColumnWidth: 60, agendaTimelineColumnWidth: 18,
+                               agendaEventTitleFontSize: 12, agendaEventMetaFontSize: 10,
+                               agendaTimeFontSize: 10,
                                panelWidth: 380, sheetWidth: 380, toolbarButtonSize: 30,
                                weekColumnWidth: 24)
         case .large:
             return SizeMetrics(fontSize: 15, calendarTitleFontSize: 17, cellSize: 40,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4.5,
-                               agendaEventLeadingMargin: 12,
+                               agendaTimeColumnWidth: 68, agendaTimelineColumnWidth: 20,
+                               agendaEventTitleFontSize: 13, agendaEventMetaFontSize: 11,
+                               agendaTimeFontSize: 11,
                                panelWidth: 420, sheetWidth: 420, toolbarButtonSize: 32,
                                weekColumnWidth: 24)
         }

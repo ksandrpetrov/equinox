@@ -44,32 +44,50 @@ enum EventDraftDefaults {
 
     static func defaultStartAndEnd(
         calendar: Calendar,
-        initialDate: CalendarDate?
+        initialDate: CalendarDate?,
+        now: Date = Date()
     ) -> (start: Date, end: Date) {
+        let roundedNow = roundedUpToHalfHour(now, calendar: calendar)
         let roundedStart: Date
         if let initial = initialDate {
             var components = calendar.dateComponents([.year, .month, .day], from: initial.date(in: calendar))
-            let now = Date()
-            let nowHour = calendar.component(.hour, from: now)
-            let nowMinute = calendar.component(.minute, from: now)
-            components.hour = nowMinute >= 30 ? nowHour + 1 : nowHour
-            components.minute = 0
+            components.hour = calendar.component(.hour, from: roundedNow)
+            components.minute = calendar.component(.minute, from: roundedNow)
             if let rounded = calendar.date(from: components) {
-                roundedStart = rounded
+                let today = CalendarDate(date: now, calendar: calendar)
+                if initial == today, rounded < now {
+                    roundedStart = calendar.date(byAdding: .day, value: 1, to: rounded) ?? roundedNow
+                } else {
+                    roundedStart = rounded
+                }
             } else {
                 roundedStart = initial.date(in: calendar)
             }
         } else {
-            let now = Date()
-            let minute = calendar.component(.minute, from: now)
-            let hour = calendar.component(.hour, from: now)
-            var components = calendar.dateComponents([.year, .month, .day], from: now)
-            components.hour = minute >= 30 ? hour + 1 : hour
-            components.minute = 0
-            roundedStart = calendar.date(from: components) ?? now
+            roundedStart = roundedNow
         }
         let end = calendar.date(byAdding: .minute, value: 60, to: roundedStart) ?? roundedStart
         return (roundedStart, end)
+    }
+
+    static func endDatePreservingDuration(
+        previousStart: Date,
+        previousEnd: Date,
+        newStart: Date,
+        calendar: Calendar
+    ) -> Date {
+        let duration = previousEnd.timeIntervalSince(previousStart)
+        if duration.isFinite, duration > 0 {
+            let preservedEnd = newStart.addingTimeInterval(duration)
+            if preservedEnd.timeIntervalSinceReferenceDate.isFinite, preservedEnd > newStart {
+                return preservedEnd
+            }
+        }
+
+        if let fallback = calendar.date(byAdding: .minute, value: 60, to: newStart), fallback > newStart {
+            return fallback
+        }
+        return newStart.addingTimeInterval(60 * 60)
     }
 
     static func recurrenceDraft(fromIndex index: Int, endDateIndex: Int, endDate: Date) -> RecurrenceDraft? {
@@ -104,5 +122,26 @@ enum EventDraftDefaults {
             return defaultIdentifier
         }
         return availableIdentifiers.first ?? ""
+    }
+
+    private static func roundedUpToHalfHour(_ date: Date, calendar: Calendar) -> Date {
+        var components = calendar.dateComponents(
+            [.era, .year, .month, .day, .hour, .minute, .second, .nanosecond],
+            from: date
+        )
+        let minute = components.minute ?? 0
+        let second = components.second ?? 0
+        let nanosecond = components.nanosecond ?? 0
+        let minuteRemainder = minute % 30
+
+        components.minute = minute - minuteRemainder
+        components.second = 0
+        components.nanosecond = 0
+        guard let lowerBoundary = calendar.date(from: components) else { return date }
+
+        if minuteRemainder == 0, second == 0, nanosecond == 0 {
+            return lowerBoundary
+        }
+        return calendar.date(byAdding: .minute, value: 30, to: lowerBoundary) ?? date
     }
 }

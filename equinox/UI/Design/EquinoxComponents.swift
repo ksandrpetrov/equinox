@@ -348,6 +348,7 @@ struct EquinoxJoinButton: View {
     let url: URL
     var variant: Variant = .full
     var metrics: SizeMetrics? = nil
+    var isProminent = true
     let action: () -> Void
 
     enum Variant {
@@ -370,6 +371,7 @@ struct EquinoxJoinButton: View {
         .buttonStyle(.plain)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
+        .help(helpText)
         .accessibilityLabel(String(localized: "Join Meeting", comment: ""))
         .accessibilityHint(JoinURLPresentation.meetingDisplayName(for: url))
     }
@@ -405,7 +407,7 @@ struct EquinoxJoinButton: View {
         Image(systemName: JoinURLPresentation.meetingSystemImage(for: url))
             .font(.caption.weight(.semibold))
             .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(EquinoxDesign.onAccentForeground)
+            .foregroundStyle(isProminent ? EquinoxDesign.onAccentForeground : Color.primary)
             .frame(width: metrics?.toolbarButtonSize ?? EquinoxDesign.toolbarButtonSize,
                    height: metrics?.toolbarButtonSize ?? EquinoxDesign.toolbarButtonSize)
             .background { joinBackground }
@@ -413,6 +415,21 @@ struct EquinoxJoinButton: View {
 
     private var joinBackground: some View {
         RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(isHovered ? EquinoxDesign.ColorToken.accentStrong : EquinoxDesign.ColorToken.accent)
+            .fill(joinBackgroundColor)
+    }
+
+    private var joinBackgroundColor: Color {
+        if variant == .compact, !isProminent {
+            return isHovered
+                ? EquinoxDesign.ColorToken.interactionHover
+                : EquinoxDesign.ColorToken.interactionRest
+        }
+        return isHovered
+            ? EquinoxDesign.ColorToken.accentStrong
+            : EquinoxDesign.ColorToken.accent
+    }
+
+    private var helpText: String {
+        "\(String(localized: "Join Meeting", comment: "")) — \(JoinURLPresentation.meetingDisplayName(for: url))"
     }
 }

@@ -43,6 +43,7 @@ struct AgendaView: View {
     var body: some View {
         let displayRange = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
         let sections = agendaSections
+        let focusedEventID = agendaFocusEventID(in: displayRange)
         Group {
             switch contentState {
             case .hidden:
@@ -59,14 +60,17 @@ struct AgendaView: View {
                             Section {
                             if section.events.isEmpty
                                 && (prefs.showDaysWithNoEvents || section.date == appState.events.selectedDate) {
-                                emptyDayRow
+                                emptyDayRow(for: section.date)
                             } else {
-                                ForEach(section.events) { event in
+                                ForEach(Array(section.events.enumerated()), id: \.element.id) { index, event in
                                     AgendaEventCard(
                                         event: event,
                                         metrics: metrics,
                                         showLocation: prefs.showLocation,
                                         now: appState.events.currentTime,
+                                        isFirstInSection: index == section.events.startIndex,
+                                        isLastInSection: index == section.events.index(before: section.events.endIndex),
+                                        isFocusedEvent: event.id == focusedEventID,
                                         onTap: {
                                             appState.panel.selectedEvent = event
                                             appState.panel.isEventDetailPresented = true
@@ -200,22 +204,35 @@ struct AgendaView: View {
             + EquinoxDesign.spacingXS
     }
 
-    private var emptyDayRow: some View {
+    private func emptyDayRow(for date: CalendarDate) -> some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
             Image(systemName: "calendar.badge.minus")
                 .foregroundStyle(.tertiary)
             Text(String(localized: "No events", comment: "Agenda empty day"))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+            Spacer(minLength: 0)
+            if date == appState.events.selectedDate {
+                Button {
+                    presentNewEvent(on: date)
+                } label: {
+                    Label(String(localized: "New Event", comment: "Agenda empty day action"), systemImage: "plus")
+                }
+                .buttonStyle(EquinoxButtonStyle(variant: .plain, size: .small))
+            }
         }
-        .padding(.leading, metrics.agendaEventLeadingMargin)
+        .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.spacingSM)
     }
 
     private var loadingAgenda: some View {
-        Text(String(localized: "Loading events", comment: "Agenda initial loading state"))
-            .font(.caption)
-            .foregroundStyle(.secondary)
+        HStack(spacing: EquinoxDesign.spacingSM) {
+            ProgressView()
+                .controlSize(.small)
+            Text(String(localized: "Loading events", comment: "Agenda initial loading state"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
@@ -229,22 +246,23 @@ struct AgendaView: View {
                 isSelected: true
             )
 
-            VStack(spacing: EquinoxDesign.spacingMD) {
-                Image(systemName: "calendar.badge.clock")
-                    .font(EquinoxDesign.emptyStateIconFont())
-                    .foregroundStyle(.tertiary)
-                Text(String(localized: "No events", comment: "Agenda empty day"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Button {
-                    appState.panel.newEventInitialDate = appState.events.selectedDate
-                    appState.panel.isNewEventSheetPresented = true
-                } label: {
-                    Text(String(localized: "New Event", comment: "Empty agenda CTA"))
+            VStack(spacing: EquinoxDesign.spacingSM) {
+                HStack(spacing: EquinoxDesign.spacingSM) {
+                    Image(systemName: "calendar.badge.plus")
+                        .foregroundStyle(EquinoxDesign.ColorToken.action)
+                    Text(String(localized: "No events", comment: "Agenda empty day"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    Button {
+                        presentNewEvent(on: appState.events.selectedDate)
+                    } label: {
+                        Text(String(localized: "New Event", comment: "Empty agenda CTA"))
+                    }
+                    .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
                 }
-                .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
 
-                Button(String(localized: "Look Further", comment: "Extend empty agenda range")) {
+                Button {
                     let range = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
                     scrollCoordinator.extendRangeIfNeeded(
                         for: range.last,
@@ -254,13 +272,33 @@ struct AgendaView: View {
                         appState.events,
                         anchor: appState.events.todayDate
                     )
+                } label: {
+                    HStack(spacing: EquinoxDesign.spacingXS) {
+                        Text(String(localized: "Show next 30 days", comment: "Extend empty agenda range"))
+                        Group {
+                            if appState.events.isFetchingEvents {
+                                ProgressView()
+                                    .controlSize(.mini)
+                            } else {
+                                Color.clear
+                            }
+                        }
+                        .frame(width: EquinoxDesign.spacingMD, height: EquinoxDesign.spacingMD)
+                        .accessibilityHidden(true)
+                    }
                 }
                 .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
+                .accessibilityLabel(
+                    String(localized: "Show next 30 days", comment: "Extend empty agenda range")
+                )
                 .disabled(
-                    scrollCoordinator.displayRange(anchor: appState.events.todayDate).last
-                        == CalendarDate.maximumSupported
+                    appState.events.isFetchingEvents
+                        || scrollCoordinator.displayRange(anchor: appState.events.todayDate).last
+                            == CalendarDate.maximumSupported
                 )
             }
+            .padding(.horizontal, EquinoxDesign.spacingSM)
+            .padding(.vertical, EquinoxDesign.spacingSM)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -289,6 +327,23 @@ struct AgendaView: View {
 
     private var contentHeight: CGFloat {
         contentState == .hidden ? 0 : height
+    }
+
+    private func agendaFocusEventID(
+        in range: (first: CalendarDate, last: CalendarDate)
+    ) -> String? {
+        guard appState.events.selectedDate == appState.events.todayDate else { return nil }
+        return AgendaFocus.focusEventID(
+            from: appState.events.todayDate,
+            through: range.last,
+            eventsFor: appState.events.events(for:),
+            now: appState.events.currentTime
+        )
+    }
+
+    private func presentNewEvent(on date: CalendarDate) {
+        appState.panel.newEventInitialDate = date
+        appState.panel.isNewEventSheetPresented = true
     }
 }
 

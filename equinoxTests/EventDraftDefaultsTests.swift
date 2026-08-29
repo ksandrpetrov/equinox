@@ -44,11 +44,86 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 5), -1800)
     }
 
-    func testDefaultStartRoundsToHourBoundary() {
+    func testDefaultStartRoundsToHalfHourBoundary() {
         let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
         let (start, _) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: initial)
-        XCTAssertEqual(calendar.component(.minute, from: start), 0)
+        XCTAssertTrue([0, 30].contains(calendar.component(.minute, from: start)))
         XCTAssertEqual(calendar.component(.second, from: start), 0)
+    }
+
+    func testDefaultStartRoundsUpInsteadOfIntoThePast() {
+        let now = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10, minute: 1))!
+        let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
+
+        let (start, end) = EventDraftDefaults.defaultStartAndEnd(
+            calendar: calendar,
+            initialDate: initial,
+            now: now
+        )
+
+        XCTAssertEqual(calendar.dateComponents([.hour, .minute], from: start).hour, 10)
+        XCTAssertEqual(calendar.dateComponents([.hour, .minute], from: start).minute, 30)
+        XCTAssertGreaterThanOrEqual(start, now)
+        XCTAssertEqual(end.timeIntervalSince(start), 60 * 60)
+    }
+
+    func testDefaultStartKeepsExactHalfHourBoundary() {
+        let now = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10, minute: 30))!
+        let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
+
+        let (start, _) = EventDraftDefaults.defaultStartAndEnd(
+            calendar: calendar,
+            initialDate: initial,
+            now: now
+        )
+
+        XCTAssertEqual(start, now)
+    }
+
+    func testDefaultStartRollsLateTodayIntoTomorrow() {
+        let now = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 23, minute: 50))!
+        let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
+
+        let (start, _) = EventDraftDefaults.defaultStartAndEnd(
+            calendar: calendar,
+            initialDate: initial,
+            now: now
+        )
+
+        XCTAssertEqual(
+            calendar.dateComponents([.year, .month, .day, .hour, .minute], from: start),
+            DateComponents(year: 2026, month: 6, day: 22, hour: 0, minute: 0)
+        )
+    }
+
+    func testChangingStartPreservesPositiveDuration() {
+        let previousStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 9))!
+        let previousEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10, minute: 30))!
+        let newStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 13))!
+
+        let newEnd = EventDraftDefaults.endDatePreservingDuration(
+            previousStart: previousStart,
+            previousEnd: previousEnd,
+            newStart: newStart,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(newEnd.timeIntervalSince(newStart), 90 * 60)
+    }
+
+    func testChangingStartFallsBackToOneHourForInvalidDuration() {
+        let previousStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10))!
+        let previousEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 9))!
+        let newStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 13))!
+
+        let newEnd = EventDraftDefaults.endDatePreservingDuration(
+            previousStart: previousStart,
+            previousEnd: previousEnd,
+            newStart: newStart,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(newEnd.timeIntervalSince(newStart), 60 * 60)
     }
 
     func testRecurrenceDraftMapsMonthlyPickerIndex() {
@@ -70,7 +145,7 @@ final class EventDraftDefaultsTests: XCTestCase {
     func testDefaultStartAndEndWithoutInitialDateSpansOneHour() {
         let (start, end) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: nil)
         XCTAssertEqual(calendar.dateComponents([.minute], from: start, to: end).minute, 60)
-        XCTAssertEqual(calendar.component(.minute, from: start), 0)
+        XCTAssertTrue([0, 30].contains(calendar.component(.minute, from: start)))
     }
 
     func testAlertOffsetTwoDaysBefore() {

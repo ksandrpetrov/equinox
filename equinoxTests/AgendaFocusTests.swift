@@ -62,6 +62,34 @@ final class AgendaFocusTests: XCTestCase {
         XCTAssertEqual(AgendaFocus.focusEventID(in: [declined, accepted], now: now), "accepted")
     }
 
+    func testTemporalStateExcludesAllDayAndDeclinedEvents() {
+        let allDay = makeEvent(
+            id: "all-day",
+            start: now.addingTimeInterval(-3600),
+            end: now.addingTimeInterval(3600),
+            isEventAllDay: true
+        )
+        let declined = makeEvent(
+            id: "declined",
+            start: now.addingTimeInterval(-3600),
+            end: now.addingTimeInterval(3600),
+            participationStatus: .declined
+        )
+
+        XCTAssertEqual(AgendaFocus.temporalState(for: allDay, now: now), .notApplicable)
+        XCTAssertEqual(AgendaFocus.temporalState(for: declined, now: now), .notApplicable)
+    }
+
+    func testTemporalStateDistinguishesPastOngoingAndUpcoming() {
+        let past = makeEvent(id: "past", start: now.addingTimeInterval(-7200), end: now.addingTimeInterval(-3600))
+        let ongoing = makeEvent(id: "ongoing", start: now.addingTimeInterval(-900), end: now.addingTimeInterval(900))
+        let upcoming = makeEvent(id: "upcoming", start: now.addingTimeInterval(900), end: now.addingTimeInterval(1800))
+
+        XCTAssertEqual(AgendaFocus.temporalState(for: past, now: now), .past)
+        XCTAssertEqual(AgendaFocus.temporalState(for: ongoing, now: now), .ongoing)
+        XCTAssertEqual(AgendaFocus.temporalState(for: upcoming, now: now), .upcoming)
+    }
+
     func testPrefersEarlierOngoingWhenOverlapping() {
         let first = makeEvent(id: "first", start: now.addingTimeInterval(-1800), end: now.addingTimeInterval(1800))
         let second = makeEvent(id: "second", start: now.addingTimeInterval(-900), end: now.addingTimeInterval(900))

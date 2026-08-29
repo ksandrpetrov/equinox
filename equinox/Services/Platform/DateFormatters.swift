@@ -38,8 +38,12 @@ enum EquinoxFormatters {
     }
 
     static func timeRange(from start: Date, to end: Date) -> String {
-        let formatter = formatter(key: "time.short") { $0.timeStyle = .short; $0.dateStyle = .none }
-        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
+        "\(shortTime(start)) – \(shortTime(end))"
+    }
+
+    static func shortTime(_ date: Date) -> String {
+        formatter(key: "time.short") { $0.timeStyle = .short; $0.dateStyle = .none }
+            .string(from: date)
     }
 
     static func mediumDateTime(from start: Date, to end: Date) -> String {
