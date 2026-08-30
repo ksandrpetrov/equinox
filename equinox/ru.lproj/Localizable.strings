@@ -78,6 +78,9 @@
 "Preferences" = "Настройки";
 "Preferences…" = "Настройки…";
 "Previous month" = "Предыдущий месяц";
+"Previous year" = "Предыдущий год";
+"Next year" = "Следующий год";
+"Choose month" = "Выбрать месяц";
 "Quit Equinox" = "Завершить Equinox";
 "Repeat" = "Повтор";
 "Saturday" = "Суббота";
@@ -192,7 +195,7 @@
 "More actions" = "Дополнительные действия";
 "Go to Today   T" = "Перейти к сегодня   T";
 "Calendar grid" = "Сетка календаря";
-"Use arrow keys to move between days. Press Return to create an event." = "Перемещайтесь между днями стрелками. Нажмите Return, чтобы создать событие.";
+"Use arrow keys to move between days. Hold Option for months and Shift-Option for years. Press Return to create an event." = "Перемещайтесь между днями стрелками. Удерживайте Option для месяцев и Shift-Option для лет. Нажмите Return, чтобы создать событие.";
 "Use the New Event action to create an event." = "Используйте действие «Новое событие», чтобы создать событие.";
 "Show event details." = "Показать детали события.";
 "No writable calendars available. Check Calendar access in Privacy settings." = "Нет доступных календарей для записи. Проверьте доступ в настройках конфиденциальности.";

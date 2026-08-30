@@ -22,24 +22,24 @@ struct SizeMetrics {
             return SizeMetrics(fontSize: 11, calendarTitleFontSize: 13, cellSize: 30,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaTimeColumnWidth: 54, agendaTimelineColumnWidth: 16,
-                               agendaEventTitleFontSize: 11, agendaEventMetaFontSize: 9,
-                               agendaTimeFontSize: 9,
+                               agendaEventTitleFontSize: 12, agendaEventMetaFontSize: 10,
+                               agendaTimeFontSize: 10,
                                panelWidth: 340, sheetWidth: 340, toolbarButtonSize: 28,
                                weekColumnWidth: 24)
         case .medium:
             return SizeMetrics(fontSize: 13, calendarTitleFontSize: 15, cellSize: 36,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaTimeColumnWidth: 60, agendaTimelineColumnWidth: 18,
-                               agendaEventTitleFontSize: 12, agendaEventMetaFontSize: 10,
-                               agendaTimeFontSize: 10,
+                               agendaEventTitleFontSize: 13, agendaEventMetaFontSize: 11,
+                               agendaTimeFontSize: 11,
                                panelWidth: 380, sheetWidth: 380, toolbarButtonSize: 30,
                                weekColumnWidth: 24)
         case .large:
             return SizeMetrics(fontSize: 15, calendarTitleFontSize: 17, cellSize: 40,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4.5,
                                agendaTimeColumnWidth: 68, agendaTimelineColumnWidth: 20,
-                               agendaEventTitleFontSize: 13, agendaEventMetaFontSize: 11,
-                               agendaTimeFontSize: 11,
+                               agendaEventTitleFontSize: 14, agendaEventMetaFontSize: 12,
+                               agendaTimeFontSize: 12,
                                panelWidth: 420, sheetWidth: 420, toolbarButtonSize: 32,
                                weekColumnWidth: 24)
         }

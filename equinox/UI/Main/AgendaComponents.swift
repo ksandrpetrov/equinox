@@ -23,11 +23,9 @@ struct AgendaSectionHeader: View {
             Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
                 .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
                 .foregroundStyle(isToday ? EquinoxDesign.ColorToken.present : .secondary)
-            if !isToday && !isTomorrow {
-                Text(EquinoxFormatters.shortWeekday(nsDate))
-                    .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
-                    .foregroundStyle(.tertiary)
-            }
+            Text(sectionContext(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
+                .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
+                .foregroundStyle(.tertiary)
             Spacer(minLength: 0)
             if eventCount > 0 {
                 Text("\(eventCount)")
@@ -69,6 +67,13 @@ struct AgendaSectionHeader: View {
         if isToday { return String(localized: "Today", comment: "") }
         if isTomorrow { return String(localized: "Tomorrow", comment: "Agenda section header") }
         return EquinoxFormatters.agendaHeader(nsDate)
+    }
+
+    private func sectionContext(isToday: Bool, isTomorrow: Bool, nsDate: Date) -> String {
+        if isToday || isTomorrow {
+            return EquinoxFormatters.agendaHeader(nsDate)
+        }
+        return EquinoxFormatters.shortWeekday(nsDate)
     }
 }
 
@@ -168,8 +173,7 @@ struct AgendaEventCard: View {
     }
 
     private var showsSecondaryDetails: Bool {
-        (showLocation && !(event.location?.isEmpty ?? true))
-            || !event.calendarTitle.isEmpty
+        showLocation && !(event.location?.isEmpty ?? true)
     }
 
     var body: some View {
@@ -222,7 +226,7 @@ struct AgendaEventCard: View {
         .equinoxCard(style: isHappeningNow ? .activeTimeline : .timeline, isHovered: isHovered)
         .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedEvent : 1)
         .padding(.horizontal, EquinoxDesign.spacingXS)
-        .help(event.calendarTitle)
+        .help(eventHelp)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
     }
@@ -290,7 +294,7 @@ struct AgendaEventCard: View {
                     if showLocation, let location = event.location, !location.isEmpty {
                         Label(location, systemImage: "mappin")
                             .font(EquinoxDesign.agendaEventMetaFont(size: metrics.agendaEventMetaFontSize))
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
                     if !event.calendarTitle.isEmpty {
@@ -300,7 +304,7 @@ struct AgendaEventCard: View {
                         }
                         Text(event.calendarTitle)
                             .font(EquinoxDesign.agendaEventMetaFont(size: metrics.agendaEventMetaFontSize))
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
                 }
@@ -323,6 +327,14 @@ struct AgendaEventCard: View {
             parts.append(relativeTimeString)
         }
         return parts.joined(separator: ", ")
+    }
+
+    private var eventHelp: String {
+        var parts = [event.title, timeRangeString]
+        if !event.calendarTitle.isEmpty {
+            parts.append(event.calendarTitle)
+        }
+        return parts.joined(separator: " · ")
     }
 
     private var timeRangeString: String {

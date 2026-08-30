@@ -27,6 +27,7 @@ final class PanelWindowController {
         }
         guard let panel else { return }
 
+        configurePanelMode(panel, isPinned: isPinned)
         assignHostingController(to: panel)
         updatePanelAgendaMaxHeight(statusItem: statusItem)
 
@@ -92,6 +93,19 @@ final class PanelWindowController {
         panel?.makeKeyAndOrderFront(nil)
     }
 
+    func applyPinState(isPinned: Bool, statusItem: NSStatusItem) {
+        currentStatusItem = statusItem
+        guard let panel, panel.isVisible else { return }
+        configurePanelMode(panel, isPinned: isPinned)
+        if isPinned {
+            var frame = panel.frame
+            clampPanelFrame(&frame, statusItem: statusItem)
+            panel.setFrame(frame, display: true)
+        } else {
+            positionPanel(panel, statusItem: statusItem)
+        }
+    }
+
     func isEquinoxCalendarWindow(_ window: NSWindow, statusItem: NSStatusItem) -> Bool {
         if let statusWindow = statusItem.button?.window, window === statusWindow {
             return true
@@ -129,6 +143,11 @@ final class PanelWindowController {
         panel.hasShadow = true
         panel.hidesOnDeactivate = false
         return panel
+    }
+
+    private func configurePanelMode(_ panel: NSPanel, isPinned: Bool) {
+        panel.level = isPinned ? .floating : .mainMenu
+        panel.isMovableByWindowBackground = isPinned
     }
 
     private func assignHostingController(to panel: NSPanel) {

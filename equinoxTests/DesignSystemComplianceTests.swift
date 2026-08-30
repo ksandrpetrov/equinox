@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import XCTest
 @testable import equinox
@@ -104,6 +105,27 @@ final class DesignSystemComplianceTests: XCTestCase {
         XCTAssertEqual(EquinoxDesign.StateOpacity.weekdayDimmed, 0.7)
         XCTAssertEqual(EquinoxDesign.StateOpacity.warningBannerTint, 0.08)
         XCTAssertEqual(EquinoxDesign.StateOpacity.chipForegroundSubtle, 0.85)
+        XCTAssertEqual(
+            EquinoxDesign.ColorToken.focusRing,
+            Color(nsColor: .keyboardFocusIndicatorColor)
+        )
+    }
+
+    func testSmallAgendaTextMeetsReadableMinimum() {
+        let metrics = SizeMetrics.metrics(for: .small)
+        XCTAssertGreaterThanOrEqual(metrics.agendaEventMetaFontSize, 10)
+        XCTAssertGreaterThanOrEqual(metrics.agendaTimeFontSize, 10)
+        XCTAssertGreaterThanOrEqual(metrics.agendaEventTitleFontSize, 11)
+    }
+
+    func testLightAccentMeetsAAContrastWithAccentForeground() throws {
+        let accent = try assetRGB(named: "AccentColor")
+        let foreground = try assetRGB(named: "OnAccentForeground")
+        XCTAssertGreaterThanOrEqual(
+            contrastRatio(accent, foreground),
+            4.5,
+            "Light AccentColor must keep at least 4.5:1 contrast with OnAccentForeground"
+        )
     }
 
     func testToolbarTargetsMeetMacOSMinimumAcrossSizes() {
@@ -301,6 +323,49 @@ final class DesignSystemComplianceTests: XCTestCase {
 
     private func lines(at path: String) throws -> [String] {
         try String(contentsOfFile: path, encoding: .utf8).components(separatedBy: .newlines)
+    }
+
+    private struct RGB {
+        let red: Double
+        let green: Double
+        let blue: Double
+    }
+
+    private func assetRGB(named name: String) throws -> RGB {
+        let path = try repoRoot()
+            .appendingPathComponent("equinox/Colors.xcassets/\(name).colorset/Contents.json")
+        let data = try Data(contentsOf: path)
+        guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let colors = root["colors"] as? [[String: Any]],
+              let lightEntry = colors.first(where: { $0["appearances"] == nil }),
+              let color = lightEntry["color"] as? [String: Any],
+              let components = color["components"] as? [String: String],
+              let red = components["red"].flatMap(Double.init),
+              let green = components["green"].flatMap(Double.init),
+              let blue = components["blue"].flatMap(Double.init) else {
+            throw NSError(domain: "DesignSystemComplianceTests", code: 5)
+        }
+        return RGB(red: red, green: green, blue: blue)
+    }
+
+    private func contrastRatio(_ lhs: RGB, _ rhs: RGB) -> Double {
+        let lhsLuminance = relativeLuminance(lhs)
+        let rhsLuminance = relativeLuminance(rhs)
+        return (max(lhsLuminance, rhsLuminance) + 0.05)
+            / (min(lhsLuminance, rhsLuminance) + 0.05)
+    }
+
+    private func relativeLuminance(_ color: RGB) -> Double {
+        0.2126 * linearized(color.red)
+            + 0.7152 * linearized(color.green)
+            + 0.0722 * linearized(color.blue)
+    }
+
+    private func linearized(_ component: Double) -> Double {
+        if component <= 0.04045 {
+            return component / 12.92
+        }
+        return pow((component + 0.055) / 1.055, 2.4)
     }
 
     private func repoRoot() throws -> URL {

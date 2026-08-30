@@ -7,6 +7,7 @@ struct EventDetailView: View {
     let metrics: SizeMetrics
     @Environment(\.dismiss) private var dismiss
     @State private var isDeleting = false
+    @State private var isDeleteConfirmationPresented = false
     @State private var actionError: String?
 
     private var sourceJoinURL: URL? {
@@ -39,7 +40,7 @@ struct EventDetailView: View {
             isDestructiveInProgress: isDeleting,
             minHeight: nil,
             onCancel: { dismiss() },
-            onDestructive: event.allowsDeletion ? { deleteEvent() } : nil
+            onDestructive: event.allowsDeletion ? { isDeleteConfirmationPresented = true } : nil
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: EquinoxDesign.spacingLG) {
@@ -70,6 +71,21 @@ struct EventDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxHeight: EventDetailLayout.maxScrollableHeight)
+        }
+        .sheet(isPresented: $isDeleteConfirmationPresented) {
+            ModalConfirmDialog(
+                title: String(localized: "Delete event?", comment: "Delete event confirmation title"),
+                message: event.title,
+                confirmTitle: String(localized: "Delete", comment: ""),
+                onConfirm: {
+                    isDeleteConfirmationPresented = false
+                    deleteEvent()
+                },
+                onCancel: {
+                    isDeleteConfirmationPresented = false
+                }
+            )
+            .equinoxSheetPresentation()
         }
     }
 

@@ -4,13 +4,32 @@ struct PanelCommandBar: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
 
+    private var displayedMonthDate: Date {
+        appState.events.monthDate.date(in: appState.calendar)
+    }
+
     private var monthTitle: String {
-        EquinoxFormatters.formatter(key: "month.year") { $0.dateFormat = "MMMM yyyy" }
-            .string(from: appState.events.monthDate.date(in: appState.calendar))
+        EquinoxFormatters.formatter(key: "month.standalone") { $0.dateFormat = "LLLL" }
+            .string(from: displayedMonthDate)
+    }
+
+    private var yearTitle: String {
+        EquinoxFormatters.formatter(key: "year.numeric") { $0.dateFormat = "yyyy" }
+            .string(from: displayedMonthDate)
+    }
+
+    private var monthSymbols: [String] {
+        let symbols = EquinoxFormatters.formatter(key: "month.standalone.symbols") { _ in }
+            .standaloneMonthSymbols ?? []
+        return Array(symbols.prefix(12))
     }
 
     var body: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
+            monthMenu
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+
             PanelButtonGroup(spacing: EquinoxDesign.spacingMicro, showsBackground: true) {
                 PanelIconButton(
                     symbol: "chevron.left",
@@ -29,15 +48,6 @@ struct PanelCommandBar: View {
                 }
                 .disabled(!appState.events.canGoToNextMonth)
             }
-
-            Text(monthTitle)
-                .font(EquinoxDesign.calendarTitleFont(size: metrics.calendarTitleFontSize))
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .minimumScaleFactor(0.85)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .layoutPriority(1)
-                .accessibilityAddTraits(.isHeader)
 
             PanelButtonGroup(spacing: EquinoxDesign.spacingXS) {
                 PanelDateButton(
@@ -124,6 +134,79 @@ struct PanelCommandBar: View {
             }
         }
         .padding(.bottom, EquinoxDesign.spacingXS)
+    }
+
+    private var monthMenu: some View {
+        Menu {
+            Button {
+                navigateByMonths(-12)
+            } label: {
+                Label(String(localized: "Previous year", comment: "Month navigator action"), systemImage: "chevron.backward.2")
+            }
+            .disabled(appState.events.selectedDate.year <= CalendarDate.minYear)
+
+            Button {
+                appState.goToToday()
+            } label: {
+                Label(String(localized: "Go to Today", comment: ""), systemImage: "calendar")
+            }
+
+            Button {
+                navigateByMonths(12)
+            } label: {
+                Label(String(localized: "Next year", comment: "Month navigator action"), systemImage: "chevron.forward.2")
+            }
+            .disabled(appState.events.selectedDate.year >= CalendarDate.maxYear)
+
+            Divider()
+
+            ForEach(Array(monthSymbols.enumerated()), id: \.offset) { index, name in
+                Button {
+                    navigateToMonth(index)
+                } label: {
+                    if index == appState.events.monthDate.monthIndex {
+                        Label(name, systemImage: "checkmark")
+                    } else {
+                        Text(name)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: EquinoxDesign.spacingXS) {
+                Text(monthTitle)
+                    .font(EquinoxDesign.calendarTitleFont(size: metrics.calendarTitleFontSize))
+                Text(yearTitle)
+                    .font(EquinoxDesign.calendarYearFont(size: metrics.calendarTitleFontSize))
+                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
+            .padding(.horizontal, EquinoxDesign.spacingSM)
+            .frame(maxWidth: .infinity, minHeight: metrics.toolbarButtonSize, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .menuIndicator(.hidden)
+        .buttonStyle(PanelButtonStyle())
+        .help(String(localized: "Choose month", comment: "Month navigator help"))
+        .accessibilityLabel("\(monthTitle) \(yearTitle)")
+        .accessibilityHint(String(localized: "Choose month", comment: "Month navigator help"))
+        .accessibilityAddTraits(.isHeader)
+    }
+
+    private func navigateToMonth(_ monthIndex: Int) {
+        let delta = monthIndex - appState.events.selectedDate.monthIndex
+        navigateByMonths(delta)
+    }
+
+    private func navigateByMonths(_ delta: Int) {
+        let target = appState.events.selectedDate.addingMonthsPreservingDay(
+            delta,
+            calendar: appState.calendar
+        )
+        appState.selectDate(target)
     }
 
     private var showsAgendaBinding: Binding<Bool> {

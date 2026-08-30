@@ -25,6 +25,9 @@ enum EquinoxDesign {
     static let monthBoundaryWidth: CGFloat = 0.5
     static let selectionStrokeWidth: CGFloat = 1
     static let focusStrokeWidth: CGFloat = 2
+    static let eventMarkerRowHeight: CGFloat = 10
+    static let todayOrbitGap: CGFloat = 3
+    static let todayOrbitStrokeWidth: CGFloat = 1
 
     static let agendaHeaderTitleSpacing: CGFloat = spacingSM - 2
     static let agendaHeaderVerticalPadding: CGFloat = spacingSM - 3
@@ -84,7 +87,8 @@ enum EquinoxDesign {
         static let error = semanticRed
 
         static var accentSoft: Color { accent.opacity(0.16) }
-        static var accentRing: Color { accent.opacity(0.55) }
+        static var accentRing: Color { accent }
+        static let focusRing = Color(nsColor: .keyboardFocusIndicatorColor)
 
         static let hairlineBorder = Color.primary.opacity(0.06)
         static let separator = Color.primary.opacity(0.10)
@@ -184,6 +188,10 @@ enum EquinoxDesign {
         .system(size: size, weight: .semibold, design: .rounded)
     }
 
+    static func calendarYearFont(size: CGFloat) -> Font {
+        .system(size: size - 1, weight: .medium).monospacedDigit()
+    }
+
     static func agendaSectionTitleFont(size: CGFloat) -> Font {
         .system(size: size + 1, weight: .semibold)
     }
@@ -200,7 +208,7 @@ enum EquinoxDesign {
         .system(size: size, weight: .regular)
     }
 
-    static func microFont(size: CGFloat = 7) -> Font {
+    static func microFont(size: CGFloat = 8) -> Font {
         .system(size: size, weight: .bold)
     }
 
@@ -215,7 +223,7 @@ enum EquinoxDesign {
     }
 
     static func monoTimeFont(size: CGFloat = 12) -> Font {
-        .system(size: size, weight: .medium, design: .monospaced)
+        .system(size: size, weight: .medium).monospacedDigit()
     }
 
     static func aboutTitleFont() -> Font { .largeTitle.bold() }

@@ -16,12 +16,13 @@ struct DayCellView: View {
     let onSelect: () -> Void
     let onDoubleClick: () -> Void
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
     @State private var selectionTrigger = false
 
     private var circleSize: CGFloat {
-        min(metrics.cellSize - 7, metrics.cellSize * 0.82)
+        min(metrics.cellSize - 3, metrics.cellSize * 0.9)
     }
 
     private var accessibilityDateLabel: String {
@@ -69,7 +70,9 @@ struct DayCellView: View {
                         .overlay {
                             RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
                                 .strokeBorder(
-                                    EquinoxDesign.ColorToken.accentRing,
+                                    isKeyboardFocused
+                                        ? EquinoxDesign.ColorToken.focusRing
+                                        : EquinoxDesign.ColorToken.accentRing,
                                     lineWidth: isKeyboardFocused
                                         ? EquinoxDesign.focusStrokeWidth
                                         : EquinoxDesign.selectionStrokeWidth
@@ -83,9 +86,20 @@ struct DayCellView: View {
                 }
 
                 if isToday {
-                    Circle()
-                        .fill(EquinoxDesign.ColorToken.present)
-                        .frame(width: circleSize, height: circleSize)
+                    ZStack {
+                        Circle()
+                            .strokeBorder(
+                                EquinoxDesign.ColorToken.present,
+                                lineWidth: EquinoxDesign.todayOrbitStrokeWidth
+                            )
+                        Circle()
+                            .fill(EquinoxDesign.ColorToken.present)
+                            .frame(
+                                width: circleSize - EquinoxDesign.todayOrbitGap,
+                                height: circleSize - EquinoxDesign.todayOrbitGap
+                            )
+                    }
+                    .frame(width: circleSize, height: circleSize)
                 }
 
                 VStack(spacing: EquinoxDesign.spacingMicro) {
@@ -155,21 +169,29 @@ struct DayCellView: View {
     @ViewBuilder
     private var dotRow: some View {
         if let dotColors {
-            HStack(spacing: EquinoxDesign.spacingMicro) {
-                HStack(spacing: -metrics.cellDotWidth * 0.25) {
-                    ForEach(Array(dotColors.prefix(3).enumerated()), id: \.offset) { _, color in
-                        Circle()
-                            .fill(color)
-                            .frame(width: metrics.cellDotWidth + 0.5, height: metrics.cellDotWidth + 0.5)
-                    }
-                }
-                if eventCount > 3 {
+            Group {
+                if differentiateWithoutColor, eventCount > 0 {
                     Text("\(eventCount)")
                         .font(EquinoxDesign.microFont())
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(textColor)
+                } else {
+                    HStack(spacing: EquinoxDesign.spacingMicro) {
+                        HStack(spacing: -metrics.cellDotWidth * 0.25) {
+                            ForEach(Array(dotColors.prefix(3).enumerated()), id: \.offset) { _, color in
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: metrics.cellDotWidth + 0.5, height: metrics.cellDotWidth + 0.5)
+                            }
+                        }
+                        if eventCount > 3 {
+                            Text("\(eventCount)")
+                                .font(EquinoxDesign.microFont())
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
-            .frame(height: metrics.cellDotWidth + 2)
+            .frame(height: EquinoxDesign.eventMarkerRowHeight)
             .accessibilityHidden(true)
         }
     }

@@ -43,6 +43,11 @@ struct CalendarGridView: View {
         .onChange(of: numRows) { _, _ in
             appState.events.refreshVisibleGridRange()
         }
+        .onChange(of: appState.panel.isModalSheetPresented) { _, isPresented in
+            if !isPresented {
+                isGridFocused = true
+            }
+        }
         .animation(
             EquinoxDesign.animation(EquinoxDesign.expandAnimation, reduceMotion: reduceMotion),
             value: appState.events.monthDate.julian
@@ -51,7 +56,7 @@ struct CalendarGridView: View {
         .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
         .accessibilityHint(
             String(
-                localized: "Use arrow keys to move between days. Press Return to create an event.",
+                localized: "Use arrow keys to move between days. Hold Option for months and Shift-Option for years. Press Return to create an event.",
                 comment: "Calendar grid keyboard hint"
             )
         )
@@ -102,7 +107,10 @@ struct CalendarGridView: View {
                             dotColors: dots,
                             metrics: metrics,
                             calendar: appState.calendar,
-                            onSelect: { appState.selectDate(date) },
+                            onSelect: {
+                                appState.selectDate(date)
+                                isGridFocused = true
+                            },
                             onDoubleClick: {
                                 appState.panel.newEventInitialDate = date
                                 appState.panel.isNewEventSheetPresented = true
@@ -170,6 +178,23 @@ struct CalendarGridView: View {
 
     private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
         let current = appState.events.selectedDate
+        if press.modifiers.contains(.option) {
+            let monthStep = press.modifiers.contains(.shift) ? 12 : 1
+            switch press.key {
+            case .leftArrow:
+                appState.selectDate(
+                    current.addingMonthsPreservingDay(-monthStep, calendar: appState.calendar)
+                )
+                return .handled
+            case .rightArrow:
+                appState.selectDate(
+                    current.addingMonthsPreservingDay(monthStep, calendar: appState.calendar)
+                )
+                return .handled
+            default:
+                break
+            }
+        }
         let next: CalendarDate?
         switch press.key {
         case .leftArrow:

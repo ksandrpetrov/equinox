@@ -36,6 +36,7 @@ struct NewEventSheet: View {
         let defaults = appState.smartDefaultEventDates()
         _startDate = State(initialValue: defaults.start)
         _endDate = State(initialValue: defaults.end)
+        _recurrenceEndDate = State(initialValue: defaults.start)
     }
 
     private let recurrenceOptions = [
@@ -119,6 +120,10 @@ struct NewEventSheet: View {
                             newStart: new,
                             calendar: appState.calendar
                         )
+                        let earliestRecurrenceEnd = appState.calendar.startOfDay(for: new)
+                        if recurrenceEndDate < earliestRecurrenceEnd {
+                            recurrenceEndDate = earliestRecurrenceEnd
+                        }
                     }
 
                 DatePicker(String(localized: "Ends", comment: ""), selection: $endDate,
@@ -168,7 +173,12 @@ struct NewEventSheet: View {
                         }
                     }
                     if recurrenceEndIndex == 1 {
-                        DatePicker(String(localized: "End date", comment: ""), selection: $recurrenceEndDate, displayedComponents: [.date])
+                        DatePicker(
+                            String(localized: "End date", comment: ""),
+                            selection: $recurrenceEndDate,
+                            in: earliestRecurrenceEndDate...Date.distantFuture,
+                            displayedComponents: [.date]
+                        )
                     }
                 }
             }
@@ -202,6 +212,10 @@ struct NewEventSheet: View {
 
     private var modifiableCalendarIdentifiers: [String] {
         modifiableCalendars.map(\.id)
+    }
+
+    private var earliestRecurrenceEndDate: Date {
+        appState.calendar.startOfDay(for: startDate)
     }
 
     private func reconcileSelectedCalendar() {

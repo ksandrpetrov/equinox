@@ -116,6 +116,7 @@ final class StatusItemController: NSObject {
     }
 
     func applyPinState() {
+        panelController.applyPinState(isPinned: appState.isPinned, statusItem: statusItem)
         if !appState.isPinned, isPanelActuallyVisible {
             NSApp.activate()
             panelController.window?.makeKeyAndOrderFront(nil)

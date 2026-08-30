@@ -118,7 +118,7 @@ struct AgendaView: View {
                     }
                     .scrollTargetLayout()
                 }
-                .scrollIndicators(.hidden)
+                .scrollIndicators(.automatic)
                 .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
                 .onPreferenceChange(AgendaSectionHeaderHeightKey.self) { height in
                     sectionHeaderHeight = height
