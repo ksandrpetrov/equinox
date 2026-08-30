@@ -12,6 +12,28 @@ final class EventsCoordinatorSyncTests: XCTestCase {
 
         XCTAssertEqual(reloadCount, 4, "create, delete, selection-on, and reset must reload through the fetch queue")
     }
+
+    func testCreateNavigatesBeforeReloadingEvents() throws {
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let sourceURL = repoRoot.appendingPathComponent("equinox/App/EventsCoordinator.swift")
+        let source = try String(contentsOf: sourceURL, encoding: .utf8)
+        let createBody = try XCTUnwrap(
+            source.components(separatedBy: "func createEvent(from draft: NewEventDraft)").dropFirst().first?
+                .components(separatedBy: "func deleteEvent").first
+        )
+        let selection = try XCTUnwrap(
+            createBody.range(of: "selectDate(CalendarDate(date: draft.startDate, calendar: calendar))")
+        )
+        let reload = try XCTUnwrap(createBody.range(of: "reloadCurrentEvents()"))
+
+        XCTAssertLessThan(
+            selection.lowerBound,
+            reload.lowerBound,
+            "The target month must be selected before the post-create refetch range is computed"
+        )
+    }
 }
 
 @MainActor
@@ -226,6 +248,67 @@ final class AgendaContentStateTests: XCTestCase {
     }
 }
 
+final class PanelStateOverlayContentTests: XCTestCase {
+    func testAuthorizedInitialLoadDoesNotShowFalseNoCalendarsState() {
+        XCTAssertEqual(
+            PanelStateOverlayContent.resolve(
+                accessStatus: .authorized,
+                hasCompletedInitialLoad: false,
+                fetchError: nil,
+                hasCalendars: false,
+                hasSelectedCalendars: false
+            ),
+            .none
+        )
+    }
+
+    func testCompletedLoadDistinguishesUnavailableAndUnselectedCalendars() {
+        XCTAssertEqual(
+            PanelStateOverlayContent.resolve(
+                accessStatus: .authorized,
+                hasCompletedInitialLoad: true,
+                fetchError: nil,
+                hasCalendars: false,
+                hasSelectedCalendars: false
+            ),
+            .noCalendarsAvailable
+        )
+        XCTAssertEqual(
+            PanelStateOverlayContent.resolve(
+                accessStatus: .authorized,
+                hasCompletedInitialLoad: true,
+                fetchError: nil,
+                hasCalendars: true,
+                hasSelectedCalendars: false
+            ),
+            .noCalendarsSelected
+        )
+    }
+
+    func testPermissionAndFetchErrorsTakePriority() {
+        XCTAssertEqual(
+            PanelStateOverlayContent.resolve(
+                accessStatus: .denied,
+                hasCompletedInitialLoad: true,
+                fetchError: "stale error",
+                hasCalendars: true,
+                hasSelectedCalendars: true
+            ),
+            .permission
+        )
+        XCTAssertEqual(
+            PanelStateOverlayContent.resolve(
+                accessStatus: .authorized,
+                hasCompletedInitialLoad: false,
+                fetchError: "fetch failed",
+                hasCalendars: false,
+                hasSelectedCalendars: false
+            ),
+            .fetchError("fetch failed")
+        )
+    }
+}
+
 final class DateFormattersTests: XCTestCase {
     func testRelativeTimeNeverShowsZeroMinutes() {
         let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
@@ -247,5 +330,21 @@ final class DateFormattersTests: XCTestCase {
         }
 
         XCTAssertEqual(formatter.timeZone.identifier, TimeZone.autoupdatingCurrent.identifier)
+    }
+
+    func testFormatterKeepsGregorianYearForNonGregorianLocale() {
+        let timeZone = TimeZone(secondsFromGMT: 0)!
+        let formatter = EquinoxFormatters.makeFormatter(
+            locale: Locale(identifier: "ja_JP@calendar=japanese"),
+            timeZone: timeZone
+        ) {
+            $0.dateFormat = "yyyy"
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let date = calendar.date(from: DateComponents(year: 2026, month: 8, day: 30))!
+
+        XCTAssertEqual(formatter.calendar.identifier, .gregorian)
+        XCTAssertEqual(formatter.string(from: date), "2026")
     }
 }

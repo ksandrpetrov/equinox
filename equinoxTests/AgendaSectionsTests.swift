@@ -13,6 +13,8 @@ final class AgendaSectionsTests: XCTestCase {
             url: nil,
             startDate: date.date(in: .autoupdatingCurrent),
             endDate: date.date(in: .autoupdatingCurrent),
+            slotStartDate: date.date(in: .autoupdatingCurrent),
+            slotEndDate: date.date(in: .autoupdatingCurrent),
             isEventAllDay: false,
             isSlotAllDay: false,
             joinURL: nil,
@@ -22,6 +24,7 @@ final class AgendaSectionsTests: XCTestCase {
             calendarColorGreen: 0,
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
+            isRecurring: false,
             allowsContentModifications: true,
             participationStatus: nil
         )
@@ -32,6 +35,139 @@ final class AgendaSectionsTests: XCTestCase {
 
         XCTAssertTrue(makeEvent(on: date).allowsDeletion)
         XCTAssertFalse(makeEvent(on: date, eventIdentifier: nil).allowsDeletion)
+    }
+
+    func testDayEventMappingPreservesRecurrenceFlag() {
+        let startDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let fields = EventKitEventFields(
+            eventIdentifier: "event-1",
+            calendarItemIdentifier: "item-1",
+            title: "Weekly sync",
+            location: nil,
+            notes: nil,
+            hasNotes: false,
+            url: nil,
+            startDate: startDate,
+            endDate: startDate.addingTimeInterval(3_600),
+            isAllDay: false,
+            calendarIdentifier: "calendar-1",
+            calendarTitle: "Work",
+            isRecurring: true,
+            allowsContentModifications: true,
+            participationRawValue: nil
+        )
+
+        let event = DayEventMapping.dayEvent(
+            from: fields,
+            calendarColorComponents: (red: 1, green: 0, blue: 0, alpha: 1),
+            slot: EventDaySlot(
+                dayStart: startDate,
+                startDate: startDate,
+                endDate: startDate.addingTimeInterval(3_600),
+                displaysAsAllDay: false
+            ),
+            joinURL: nil,
+            dayKey: startDate
+        )
+
+        XCTAssertTrue(event.isRecurring)
+        XCTAssertEqual(event.slotStartDate, startDate)
+        XCTAssertEqual(event.slotEndDate, startDate.addingTimeInterval(3_600))
+    }
+
+    func testDayEventBuilderSortsContinuationsByVisibleSlotStart() async throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let targetDay = calendar.date(from: DateComponents(year: 2026, month: 6, day: 11))!
+        let targetEnd = calendar.date(byAdding: .day, value: 1, to: targetDay)!
+        let alphaStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 10, hour: 23))!
+        let betaStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 9, hour: 22))!
+
+        let eventsByDate = await DayEventBuilder.buildDayEvents(
+            from: [
+                makeSource(
+                    identifier: "beta",
+                    title: "Beta",
+                    startDate: betaStart,
+                    endDate: calendar.date(byAdding: .hour, value: 10, to: targetDay)!
+                ),
+                makeSource(
+                    identifier: "alpha",
+                    title: "Alpha",
+                    startDate: alphaStart,
+                    endDate: calendar.date(byAdding: .hour, value: 9, to: targetDay)!
+                )
+            ],
+            rangeStart: targetDay,
+            rangeEnd: targetEnd,
+            calendar: calendar,
+            resolveNativeJoinURL: { _ in nil }
+        )
+
+        let events = try XCTUnwrap(eventsByDate[targetDay])
+        XCTAssertEqual(events.map(\.title), ["Alpha", "Beta"])
+        XCTAssertEqual(events.map(\.slotStartDate), [targetDay, targetDay])
+        XCTAssertEqual(events.map(\.displaysAsAllDay), [false, false])
+    }
+
+    func testDetachedOccurrenceIsStillClassifiedAsRecurring() {
+        XCTAssertTrue(
+            EventKitEventFields.isRecurring(
+                hasRecurrenceRules: false,
+                occurrenceDate: Date()
+            )
+        )
+        XCTAssertFalse(
+            EventKitEventFields.isRecurring(
+                hasRecurrenceRules: false,
+                occurrenceDate: nil
+            )
+        )
+    }
+
+    func testDeleteConfirmationTitleMatchesEventRecurrence() {
+        XCTAssertEqual(
+            EventDeletionConfirmation.title(isRecurring: false),
+            String(localized: "Delete event?", comment: "Delete event confirmation title")
+        )
+        XCTAssertEqual(
+            EventDeletionConfirmation.title(isRecurring: true),
+            String(
+                localized: "Delete this occurrence?",
+                comment: "Recurring event occurrence deletion confirmation title"
+            )
+        )
+    }
+
+    private func makeSource(
+        identifier: String,
+        title: String,
+        startDate: Date,
+        endDate: Date
+    ) -> DayEventSource {
+        DayEventSource(
+            fields: EventKitEventFields(
+                eventIdentifier: identifier,
+                calendarItemIdentifier: identifier,
+                title: title,
+                location: nil,
+                notes: nil,
+                hasNotes: false,
+                url: nil,
+                startDate: startDate,
+                endDate: endDate,
+                isAllDay: false,
+                calendarIdentifier: "calendar-1",
+                calendarTitle: "Work",
+                isRecurring: false,
+                allowsContentModifications: true,
+                participationRawValue: nil
+            ),
+            calendarColorRed: 1,
+            calendarColorGreen: 0,
+            calendarColorBlue: 0,
+            calendarColorAlpha: 1
+        )
     }
 
     func testOccurrenceIdentityUsesEventIDAndStableFallback() {

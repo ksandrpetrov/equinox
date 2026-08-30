@@ -115,9 +115,16 @@ enum MenuBarIconRenderer {
             var template = "d"
             if prefs.showMonthInIcon { template += "MMM" }
             if prefs.showDayOfWeekInIcon { template += "EEE" }
-            let formatter = DateFormatter()
-            formatter.locale = locale
-            formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: template, options: 0, locale: locale)
+            let formatter = EquinoxFormatters.makeFormatter(
+                locale: locale,
+                timeZone: calendar.timeZone
+            ) {
+                $0.dateFormat = DateFormatter.dateFormat(
+                    fromTemplate: template,
+                    options: 0,
+                    locale: locale
+                )
+            }
             return formatter.string(from: today.date(in: calendar))
         }
         return "\(today.day)"

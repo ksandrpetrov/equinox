@@ -8,6 +8,18 @@ enum ModalBannerStyle {
     case warning
 }
 
+enum EventDeletionConfirmation {
+    static func title(isRecurring: Bool) -> String {
+        if isRecurring {
+            return String(
+                localized: "Delete this occurrence?",
+                comment: "Recurring event occurrence deletion confirmation title"
+            )
+        }
+        return String(localized: "Delete event?", comment: "Delete event confirmation title")
+    }
+}
+
 struct ModalErrorBanner: View {
     let message: String
     var style: ModalBannerStyle = .error

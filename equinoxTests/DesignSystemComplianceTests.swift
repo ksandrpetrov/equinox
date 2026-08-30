@@ -116,6 +116,10 @@ final class DesignSystemComplianceTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(metrics.agendaEventMetaFontSize, 10)
         XCTAssertGreaterThanOrEqual(metrics.agendaTimeFontSize, 10)
         XCTAssertGreaterThanOrEqual(metrics.agendaEventTitleFontSize, 11)
+        XCTAssertGreaterThanOrEqual(
+            EquinoxDesign.minimumReadableFontSize,
+            10
+        )
     }
 
     func testLightAccentMeetsAAContrastWithAccentForeground() throws {
@@ -134,7 +138,17 @@ final class DesignSystemComplianceTests: XCTestCase {
         XCTAssertEqual(SizeMetrics.metrics(for: .large).toolbarButtonSize, 32)
     }
 
-    func testGlassEffectIsLimitedToOuterPanelChrome() throws {
+    func testAgendaRowsMeetToolbarTargetsAcrossSizes() {
+        for preference in SizePreference.allCases {
+            let metrics = SizeMetrics.metrics(for: preference)
+            XCTAssertGreaterThanOrEqual(
+                metrics.agendaRowMinHeight,
+                metrics.toolbarButtonSize
+            )
+        }
+    }
+
+    func testGlassEffectIsLimitedToPanelCommandShelf() throws {
         let files = try swiftUIFiles(excludingDesign: false)
         let occurrences = try files.flatMap { path -> [(String, Int)] in
             try lines(at: path).enumerated().compactMap { index, line in
@@ -142,11 +156,18 @@ final class DesignSystemComplianceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(occurrences.count, 1, "Only the outer panel may use glassEffect: \(occurrences)")
+        XCTAssertEqual(occurrences.count, 1, "Only the command shelf may use glassEffect: \(occurrences)")
         XCTAssertTrue(
             occurrences.first?.0.hasSuffix("/UI/Design/PanelComponents.swift") == true,
             "glassEffect must be owned by PanelComponents"
         )
+
+        let root = try repoRoot()
+        let source = try String(
+            contentsOf: root.appendingPathComponent("equinox/UI/Design/PanelComponents.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(source.contains("func panelCommandShelf"))
     }
 
     func testAgendaActionsRemainSeparateAccessibilityElements() throws {
@@ -181,7 +202,18 @@ final class DesignSystemComplianceTests: XCTestCase {
         )
     }
 
-    func testRussianAppearanceAndErrorStringsAreLocalized() {
+    func testCalendarUsesOneKeyboardFocusTarget() throws {
+        let root = try repoRoot()
+        let path = root.appendingPathComponent("equinox/UI/Main/DayCellView.swift").path
+        let source = try String(contentsOfFile: path, encoding: .utf8)
+
+        XCTAssertTrue(
+            source.contains(".focusable(false)"),
+            "Individual day buttons must not compete with the arrow-key calendar focus target"
+        )
+    }
+
+    func testRussianAppearanceAndErrorStringsAreLocalized() throws {
         let locale = Locale(identifier: "ru")
         let localized: (String.LocalizationValue) -> String = {
             String(localized: $0, bundle: .main, locale: locale)
@@ -189,7 +221,11 @@ final class DesignSystemComplianceTests: XCTestCase {
 
         XCTAssertEqual(localized("Calendar rows"), "Строки календаря")
         XCTAssertEqual(localized("Dismiss"), "Закрыть")
-        XCTAssertEqual(localized("Show event details."), "Показать детали события.")
+        XCTAssertEqual(localized("Go to Today"), "Перейти к сегодняшнему дню")
+        XCTAssertEqual(localized("Global Shortcut"), "Глобальная горячая клавиша")
+        XCTAssertEqual(localized("Panel Shortcuts"), "Горячие клавиши панели")
+        XCTAssertEqual(localized("Show event details."), "Открыть сведения о событии.")
+        XCTAssertEqual(localized("Delete this occurrence?"), "Удалить только это событие?")
         XCTAssertEqual(
             localized("Camera icon when a meeting is starting soon"),
             "Значок камеры, когда встреча скоро начнётся"
@@ -203,6 +239,32 @@ final class DesignSystemComplianceTests: XCTestCase {
             localized("Enable Full Access for Equinox in System Settings."),
             "Включите полный доступ для Equinox в системных настройках."
         )
+
+        func formattedEventCount(_ count: Int64, format: String, locale: Locale) -> String {
+            String(format: format, locale: locale, arguments: [count])
+        }
+
+        let eventCountFormat = localized("%lld events")
+        let russianLocale = Locale(identifier: "ru")
+        XCTAssertEqual(formattedEventCount(1, format: eventCountFormat, locale: russianLocale), "1 событие")
+        XCTAssertEqual(formattedEventCount(2, format: eventCountFormat, locale: russianLocale), "2 события")
+        XCTAssertEqual(formattedEventCount(5, format: eventCountFormat, locale: russianLocale), "5 событий")
+        XCTAssertEqual(formattedEventCount(21, format: eventCountFormat, locale: russianLocale), "21 событие")
+
+        let englishLocalizationPath = try XCTUnwrap(
+            Bundle.main.path(forResource: "en", ofType: "lproj")
+        )
+        let englishBundle = try XCTUnwrap(Bundle(path: englishLocalizationPath))
+        let englishEventCountFormat = englishBundle.localizedString(
+            forKey: "%lld events",
+            value: nil,
+            table: nil
+        )
+        let englishLocale = Locale(identifier: "en")
+        XCTAssertEqual(formattedEventCount(1, format: englishEventCountFormat, locale: englishLocale), "1 event")
+        XCTAssertEqual(formattedEventCount(2, format: englishEventCountFormat, locale: englishLocale), "2 events")
+        XCTAssertEqual(formattedEventCount(5, format: englishEventCountFormat, locale: englishLocale), "5 events")
+        XCTAssertEqual(formattedEventCount(21, format: englishEventCountFormat, locale: englishLocale), "21 events")
     }
 
     func testEveryStaticLocalizedLiteralHasRussianTranslation() throws {
@@ -227,9 +289,15 @@ final class DesignSystemComplianceTests: XCTestCase {
         let stringsPath = root.appendingPathComponent("equinox/ru.lproj/Localizable.strings").path
         let strings = try String(contentsOfFile: stringsPath, encoding: .utf8)
         let stringsRange = NSRange(strings.startIndex..<strings.endIndex, in: strings)
-        let translatedKeys = Set(translationEntry.matches(in: strings, range: stringsRange).compactMap { match in
+        let stringKeys = Set(translationEntry.matches(in: strings, range: stringsRange).compactMap { match in
             Range(match.range(at: 1), in: strings).map { String(strings[$0]) }
         })
+        let stringsDictPath = root.appendingPathComponent("equinox/ru.lproj/Localizable.stringsdict").path
+        let stringsDictData = try Data(contentsOf: URL(fileURLWithPath: stringsDictPath))
+        let pluralEntries = try XCTUnwrap(
+            PropertyListSerialization.propertyList(from: stringsDictData, format: nil) as? [String: Any]
+        )
+        let translatedKeys = stringKeys.union(pluralEntries.keys)
         let missingKeys = sourceKeys.subtracting(translatedKeys).sorted()
 
         XCTAssertTrue(

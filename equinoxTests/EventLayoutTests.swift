@@ -22,6 +22,8 @@ final class EventLayoutTests: XCTestCase {
 
         XCTAssertEqual(slots.count, 1)
         XCTAssertFalse(slots[0].displaysAsAllDay)
+        XCTAssertEqual(slots[0].startDate, start)
+        XCTAssertEqual(slots[0].endDate, end)
     }
 
     func testAllDayEventsSortBeforeTimedEvents() {
@@ -81,7 +83,54 @@ final class EventLayoutTests: XCTestCase {
             calendar: calendar
         )
 
-        XCTAssertGreaterThanOrEqual(slots.count, 2)
+        let june11 = calendar.date(byAdding: .day, value: 1, to: rangeStart)!
+        let june12 = calendar.date(byAdding: .day, value: 2, to: rangeStart)!
+
+        XCTAssertEqual(slots.count, 3)
+        XCTAssertEqual(slots.map(\.displaysAsAllDay), [false, true, false])
+        XCTAssertEqual(slots.map(\.startDate), [start, june11, june12])
+        XCTAssertEqual(slots.map(\.endDate), [june11, june12, end])
+    }
+
+    func testTimedEventCoveringExactCivilDayDisplaysAsAllDaySlot() {
+        var components = DateComponents()
+        components.year = 2024
+        components.month = 6
+        components.day = 10
+        let start = calendar.date(from: components)!
+        let end = calendar.date(byAdding: .day, value: 1, to: start)!
+
+        let slots = layoutEventDaySlots(
+            event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false),
+            rangeStart: start,
+            rangeEnd: end,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(slots.count, 1)
+        XCTAssertTrue(slots[0].displaysAsAllDay)
+        XCTAssertEqual(slots[0].startDate, start)
+        XCTAssertEqual(slots[0].endDate, end)
+    }
+
+    func testTimedEventCoveringDSTCivilDayDisplaysAsAllDaySlot() {
+        var dstCalendar = Calendar(identifier: .gregorian)
+        dstCalendar.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let start = dstCalendar.date(from: DateComponents(year: 2024, month: 3, day: 10))!
+        let end = dstCalendar.date(byAdding: .day, value: 1, to: start)!
+
+        let slots = layoutEventDaySlots(
+            event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false),
+            rangeStart: start,
+            rangeEnd: end,
+            calendar: dstCalendar
+        )
+
+        XCTAssertEqual(end.timeIntervalSince(start), 23 * 60 * 60)
+        XCTAssertEqual(slots.count, 1)
+        XCTAssertTrue(slots[0].displaysAsAllDay)
+        XCTAssertEqual(slots[0].startDate, start)
+        XCTAssertEqual(slots[0].endDate, end)
     }
 
     private func sortKey(

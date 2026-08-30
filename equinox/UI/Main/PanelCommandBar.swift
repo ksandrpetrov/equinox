@@ -18,6 +18,11 @@ struct PanelCommandBar: View {
             .string(from: displayedMonthDate)
     }
 
+    private var shortMonthTitle: String {
+        EquinoxFormatters.formatter(key: "month.standalone.short") { $0.dateFormat = "LLL" }
+            .string(from: displayedMonthDate)
+    }
+
     private var monthSymbols: [String] {
         let symbols = EquinoxFormatters.formatter(key: "month.standalone.symbols") { _ in }
             .standaloneMonthSymbols ?? []
@@ -30,7 +35,7 @@ struct PanelCommandBar: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .layoutPriority(1)
 
-            PanelButtonGroup(spacing: EquinoxDesign.spacingMicro, showsBackground: true) {
+            PanelButtonGroup(spacing: EquinoxDesign.spacingMicro) {
                 PanelIconButton(
                     symbol: "chevron.left",
                     help: String(localized: "Previous month", comment: ""),
@@ -117,23 +122,18 @@ struct PanelCommandBar: View {
                 }
             }
         }
-        .padding(.vertical, EquinoxDesign.spacingXS)
+        .padding(.horizontal, EquinoxDesign.spacingXS)
         .frame(height: EquinoxDesign.commandBarHeight)
         .overlay(alignment: .bottom) {
-            ZStack {
-                Rectangle()
-                    .fill(EquinoxDesign.ColorToken.separator)
-                    .frame(height: 1)
-                if appState.events.shouldShowLoadingIndicator {
-                    ProgressView()
-                        .progressViewStyle(.linear)
-                        .controlSize(.mini)
-                        .tint(EquinoxDesign.ColorToken.action)
-                        .accessibilityLabel(String(localized: "Loading events", comment: ""))
-                }
+            if appState.events.shouldShowLoadingIndicator {
+                ProgressView()
+                    .progressViewStyle(.linear)
+                    .controlSize(.mini)
+                    .tint(EquinoxDesign.ColorToken.action)
+                    .padding(.horizontal, EquinoxDesign.spacingSM)
+                    .accessibilityLabel(String(localized: "Loading events", comment: ""))
             }
         }
-        .padding(.bottom, EquinoxDesign.spacingXS)
     }
 
     private var monthMenu: some View {
@@ -172,18 +172,11 @@ struct PanelCommandBar: View {
                 }
             }
         } label: {
-            HStack(spacing: EquinoxDesign.spacingXS) {
-                Text(monthTitle)
-                    .font(EquinoxDesign.calendarTitleFont(size: metrics.calendarTitleFontSize))
-                Text(yearTitle)
-                    .font(EquinoxDesign.calendarYearFont(size: metrics.calendarTitleFontSize))
-                    .foregroundStyle(.secondary)
-                Image(systemName: "chevron.down")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+            ViewThatFits(in: .horizontal) {
+                monthLabel(monthTitle)
+                monthLabel(shortMonthTitle)
             }
             .lineLimit(1)
-            .minimumScaleFactor(0.85)
             .padding(.horizontal, EquinoxDesign.spacingSM)
             .frame(maxWidth: .infinity, minHeight: metrics.toolbarButtonSize, alignment: .leading)
             .contentShape(Rectangle())
@@ -194,6 +187,19 @@ struct PanelCommandBar: View {
         .accessibilityLabel("\(monthTitle) \(yearTitle)")
         .accessibilityHint(String(localized: "Choose month", comment: "Month navigator help"))
         .accessibilityAddTraits(.isHeader)
+    }
+
+    private func monthLabel(_ title: String) -> some View {
+        HStack(spacing: EquinoxDesign.spacingXS) {
+            Text(title)
+                .font(EquinoxDesign.calendarTitleFont(size: metrics.calendarTitleFontSize))
+            Text(yearTitle)
+                .font(EquinoxDesign.calendarYearFont(size: metrics.calendarTitleFontSize))
+                .foregroundStyle(.secondary)
+            Image(systemName: "chevron.down")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
     }
 
     private func navigateToMonth(_ monthIndex: Int) {

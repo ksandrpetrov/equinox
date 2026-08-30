@@ -136,7 +136,7 @@ final class AppState {
     }
 
     init() {
-        let calendar = Calendar.autoupdatingCurrent
+        let calendar = Calendar.equinoxGregorian()
         let calendarStore = CalendarStore(calendar: calendar)
 
         events = EventsCoordinator(

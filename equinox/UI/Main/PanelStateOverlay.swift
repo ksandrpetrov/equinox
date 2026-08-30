@@ -1,5 +1,29 @@
 import SwiftUI
 
+enum PanelStateOverlayContent: Equatable {
+    case none
+    case permission
+    case fetchError(String)
+    case noCalendarsSelected
+    case noCalendarsAvailable
+
+    static func resolve(
+        accessStatus: CalendarAccessStatus,
+        hasCompletedInitialLoad: Bool,
+        fetchError: String?,
+        hasCalendars: Bool,
+        hasSelectedCalendars: Bool
+    ) -> PanelStateOverlayContent {
+        guard accessStatus.isAuthorized else { return .permission }
+        if let fetchError { return .fetchError(fetchError) }
+        guard hasCompletedInitialLoad else { return .none }
+        guard hasSelectedCalendars else {
+            return hasCalendars ? .noCalendarsSelected : .noCalendarsAvailable
+        }
+        return .none
+    }
+}
+
 struct PanelStateOverlay: View {
     @Bindable var appState: AppState
 
@@ -8,14 +32,29 @@ struct PanelStateOverlay: View {
             if shouldShowShortcutTip {
                 shortcutTipBanner
             }
-            if !appState.events.calendarAccessStatus.isAuthorized {
+            switch contentState {
+            case .none:
+                EmptyView()
+            case .permission:
                 permissionBanner
-            } else if let error = appState.events.lastFetchError {
+            case .fetchError(let error):
                 errorBanner(error)
-            } else if !appState.events.hasSelectedCalendars {
-                noCalendarsBanner
+            case .noCalendarsSelected:
+                noCalendarsBanner(hasCalendars: true)
+            case .noCalendarsAvailable:
+                noCalendarsBanner(hasCalendars: false)
             }
         }
+    }
+
+    private var contentState: PanelStateOverlayContent {
+        PanelStateOverlayContent.resolve(
+            accessStatus: appState.events.calendarAccessStatus,
+            hasCompletedInitialLoad: appState.events.hasCompletedInitialEventLoad,
+            fetchError: appState.events.lastFetchError,
+            hasCalendars: appState.events.hasCalendars,
+            hasSelectedCalendars: appState.events.hasSelectedCalendars
+        )
     }
 
     private var shouldShowShortcutTip: Bool {
@@ -59,18 +98,13 @@ struct PanelStateOverlay: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: EquinoxDesign.spacingSM) {
-                if appState.events.calendarAccessStatus == .notDetermined {
-                    Button(String(localized: "Request Access", comment: "")) {
-                        appState.requestCalendarAccessIfNeeded()
-                    }
-                    .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: EquinoxDesign.spacingSM) {
+                    permissionActions
                 }
-
-                Button(String(localized: "Open System Settings", comment: "")) {
-                    appState.openCalendarPrivacySettings()
+                VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
+                    permissionActions
                 }
-                .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,6 +133,23 @@ struct PanelStateOverlay: View {
         }
     }
 
+    @ViewBuilder
+    private var permissionActions: some View {
+        if appState.events.calendarAccessStatus == .notDetermined {
+            Button(String(localized: "Request Access", comment: "")) {
+                appState.requestCalendarAccessIfNeeded()
+            }
+            .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
+            .fixedSize(horizontal: true, vertical: false)
+        }
+
+        Button(String(localized: "Open System Settings", comment: "")) {
+            appState.openCalendarPrivacySettings()
+        }
+        .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
     private func errorBanner(_ message: String) -> some View {
         EquinoxBanner(
             message: message,
@@ -108,9 +159,9 @@ struct PanelStateOverlay: View {
         )
     }
 
-    private var noCalendarsBanner: some View {
+    private func noCalendarsBanner(hasCalendars: Bool) -> some View {
         EquinoxBanner(
-            message: appState.events.hasCalendars
+            message: hasCalendars
                 ? String(localized: "No calendars selected", comment: "No calendars banner")
                 : String(localized: "No calendars available", comment: "Calendar settings empty state"),
             style: .info,

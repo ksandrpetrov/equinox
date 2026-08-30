@@ -45,6 +45,23 @@ final class AgendaFocusTests: XCTestCase {
         XCTAssertEqual(AgendaFocus.focusEventID(in: [allDay, upcoming], now: now), "upcoming")
     }
 
+    func testIgnoresFullDaySlotsOfTimedMultiDayEvents() {
+        let continuingEvent = makeEvent(
+            id: "continuing",
+            start: now.addingTimeInterval(-86_400),
+            end: now.addingTimeInterval(86_400),
+            isSlotAllDay: true
+        )
+        let upcoming = makeEvent(
+            id: "upcoming",
+            start: now.addingTimeInterval(1_800),
+            end: now.addingTimeInterval(3_600)
+        )
+
+        XCTAssertEqual(AgendaFocus.temporalState(for: continuingEvent, now: now), .notApplicable)
+        XCTAssertEqual(AgendaFocus.focusEventID(in: [continuingEvent, upcoming], now: now), "upcoming")
+    }
+
     func testIgnoresDeclinedEvents() {
         let declined = makeEvent(
             id: "declined",
@@ -162,6 +179,7 @@ final class AgendaFocusTests: XCTestCase {
         start: Date,
         end: Date,
         isEventAllDay: Bool = false,
+        isSlotAllDay: Bool = false,
         participationStatus: EventParticipationStatus? = nil
     ) -> DayEvent {
         DayEvent(
@@ -174,8 +192,10 @@ final class AgendaFocusTests: XCTestCase {
             url: nil,
             startDate: start,
             endDate: end,
+            slotStartDate: start,
+            slotEndDate: end,
             isEventAllDay: isEventAllDay,
-            isSlotAllDay: false,
+            isSlotAllDay: isSlotAllDay,
             joinURL: nil,
             calendarIdentifier: "cal-1",
             calendarTitle: "Work",
@@ -183,6 +203,7 @@ final class AgendaFocusTests: XCTestCase {
             calendarColorGreen: 0,
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
+            isRecurring: false,
             allowsContentModifications: true,
             participationStatus: participationStatus
         )

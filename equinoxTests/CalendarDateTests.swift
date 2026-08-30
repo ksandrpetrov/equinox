@@ -2,6 +2,44 @@ import XCTest
 @testable import equinox
 
 final class CalendarDateTests: XCTestCase {
+    func testEquinoxCalendarKeepsGregorianDateContractForNonGregorianLocale() {
+        let calendar = Calendar.equinoxGregorian(
+            locale: Locale(identifier: "ja_JP@calendar=japanese"),
+            timeZone: TimeZone(identifier: "Asia/Tokyo")!
+        )
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(secondsFromGMT: 0)!
+        let instant = utc.date(from: DateComponents(year: 2026, month: 8, day: 30, hour: 12))!
+
+        let calendarDate = CalendarDate(date: instant, calendar: calendar)
+
+        XCTAssertEqual(calendar.identifier, .gregorian)
+        XCTAssertEqual(calendarDate, CalendarDate(year: 2026, monthIndex: 7, day: 30))
+        XCTAssertTrue(calendarDate.isValid)
+    }
+
+    func testEquinoxCalendarTracksAutoupdatingLocaleAndTimeZone() {
+        let calendar = Calendar.equinoxGregorian()
+
+        XCTAssertEqual(calendar.identifier, .gregorian)
+        XCTAssertEqual(calendar.locale?.identifier, Locale.autoupdatingCurrent.identifier)
+        XCTAssertEqual(calendar.timeZone.identifier, TimeZone.autoupdatingCurrent.identifier)
+    }
+
+    func testSupportedBoundaryDatesRoundTripThroughEquinoxCalendar() {
+        let calendar = Calendar.equinoxGregorian(
+            locale: Locale(identifier: "en_US_POSIX"),
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )
+
+        for boundary in [CalendarDate.minimumSupported, CalendarDate.maximumSupported] {
+            XCTAssertEqual(
+                CalendarDate(date: boundary.date(in: calendar), calendar: calendar),
+                boundary
+            )
+        }
+    }
+
     func testJulianRoundTrip() {
         let date = CalendarDate(year: 2024, monthIndex: 5, day: 15)
         let roundTripped = CalendarDate(julian: date.julian)

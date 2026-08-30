@@ -8,6 +8,8 @@ struct EventLayoutInput: Sendable {
 
 struct EventDaySlot: Sendable, Equatable {
     let dayStart: Date
+    let startDate: Date
+    let endDate: Date
     let displaysAsAllDay: Bool
 }
 
@@ -25,10 +27,22 @@ func layoutEventDaySlots(
 
     var slots: [EventDaySlot] = []
     while date < final {
-        let nextDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: date)!)
+        guard let followingDay = calendar.date(byAdding: .day, value: 1, to: date) else {
+            break
+        }
+        let nextDate = calendar.startOfDay(for: followingDay)
+        guard nextDate > date else { break }
+        let slotStart = max(max(event.startDate, rangeStart), date)
+        let slotEnd = min(min(event.endDate, rangeEnd), nextDate)
+        guard slotStart < slotEnd else {
+            date = nextDate
+            continue
+        }
         slots.append(EventDaySlot(
             dayStart: date,
-            displaysAsAllDay: event.isAllDay || (event.startDate < date && event.endDate >= nextDate)
+            startDate: slotStart,
+            endDate: slotEnd,
+            displaysAsAllDay: event.isAllDay || (slotStart <= date && slotEnd >= nextDate)
         ))
         date = nextDate
     }

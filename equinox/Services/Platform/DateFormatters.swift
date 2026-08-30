@@ -29,11 +29,25 @@ enum EquinoxFormatters {
             return existing
         }
 
+        let formatter = makeFormatter(
+            locale: appLocale,
+            timeZone: timeZone,
+            configure: configure
+        )
+        formatters[key] = formatter
+        return formatter
+    }
+
+    static func makeFormatter(
+        locale: Locale,
+        timeZone: TimeZone,
+        configure: (DateFormatter) -> Void
+    ) -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = appLocale
+        formatter.locale = locale
+        formatter.calendar = Calendar.equinoxGregorian(locale: locale, timeZone: timeZone)
         formatter.timeZone = timeZone
         configure(formatter)
-        formatters[key] = formatter
         return formatter
     }
 
@@ -84,5 +98,12 @@ enum EquinoxFormatters {
 
     static func relativeTimeDuringEvent() -> String {
         String(localized: "Now", comment: "Event happening now")
+    }
+
+    static func eventCount(_ count: Int) -> String {
+        String.localizedStringWithFormat(
+            String(localized: "%lld events", comment: "Event count"),
+            Int64(count)
+        )
     }
 }

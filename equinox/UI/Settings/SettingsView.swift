@@ -72,7 +72,7 @@ struct SettingsView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .background(SettingsDesign.ColorToken.surfaceWindow)
-        .searchable(text: $searchText, prompt: String(localized: "Search settings", comment: "Settings search placeholder"))
+        .searchable(text: $searchText, prompt: searchPrompt)
         .toolbarBackground(.visible, for: .windowToolbar)
         .frame(minWidth: SettingsDesign.windowMinWidth, minHeight: SettingsDesign.windowMinHeight)
         .environment(\.appState, appState)
@@ -110,5 +110,27 @@ struct SettingsView: View {
 
     private var preferencesStore: PreferencesStore {
         appState?.preferences ?? PreferencesStore.shared
+    }
+
+    private var searchPrompt: String {
+        let sectionTitle: String
+        switch selectedTab ?? .general {
+        case .general:
+            sectionTitle = String(localized: "General", comment: "General prefs tab label")
+        case .calendars:
+            sectionTitle = String(localized: "Calendars", comment: "")
+        case .appearance:
+            sectionTitle = String(localized: "Appearance", comment: "Appearance prefs tab label")
+        case .privacy:
+            sectionTitle = String(localized: "Privacy", comment: "Privacy prefs tab label")
+        case .shortcuts:
+            sectionTitle = String(localized: "Shortcuts", comment: "Settings section: shortcuts")
+        case .about:
+            sectionTitle = String(localized: "About", comment: "About prefs tab label")
+        }
+        return String(
+            format: String(localized: "Search %@", comment: "Settings search placeholder for current section"),
+            sectionTitle
+        )
     }
 }

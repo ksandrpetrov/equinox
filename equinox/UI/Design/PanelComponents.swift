@@ -12,7 +12,6 @@ extension View {
                     shape
                         .fill(.regularMaterial)
                         .overlay { shape.fill(EquinoxDesign.ColorToken.interactionRest) }
-                        .glassEffect(.regular, in: shape)
                 }
             }
             .overlay {
@@ -27,6 +26,27 @@ extension View {
                 radius: EquinoxDesign.ShadowToken.panelRadius,
                 y: EquinoxDesign.ShadowToken.panelYOffset
             )
+        }
+        .clipShape(shape)
+    }
+
+    /// Keeps Liquid Glass on the command layer instead of putting calendar content on glass.
+    func panelCommandShelf(style: BackgroundStyle, reduceTransparency: Bool = false) -> some View {
+        let effectiveStyle: BackgroundStyle = (style == .glass && reduceTransparency) ? .solid : style
+        let shape = RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
+        return background {
+            Group {
+                if effectiveStyle == .glass {
+                    shape
+                        .fill(.regularMaterial)
+                        .glassEffect(.regular, in: shape)
+                } else {
+                    shape.fill(EquinoxDesign.ColorToken.interactionSubtle)
+                }
+            }
+            .overlay {
+                shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
+            }
         }
         .clipShape(shape)
     }

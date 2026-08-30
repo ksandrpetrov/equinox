@@ -45,7 +45,7 @@ enum AgendaFocus {
     }
 
     static func temporalState(for event: DayEvent, now: Date = Date()) -> AgendaEventTemporalState {
-        guard !event.isEventAllDay, event.participationStatus != .declined else {
+        guard !event.displaysAsAllDay, event.participationStatus != .declined else {
             return .notApplicable
         }
         if event.endDate <= now { return .past }

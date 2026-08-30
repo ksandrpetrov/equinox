@@ -256,6 +256,7 @@ final class EventsCoordinator {
     func createEvent(from draft: NewEventDraft) async -> String? {
         do {
             try await calendarStore.createEvent(from: draft)
+            selectDate(CalendarDate(date: draft.startDate, calendar: calendar))
             _ = await reloadCurrentEvents()
             return nil
         } catch {

@@ -14,6 +14,8 @@ final class DayEventUniqueCalendarsTests: XCTestCase {
             url: nil,
             startDate: Date(),
             endDate: Date(),
+            slotStartDate: Date(),
+            slotEndDate: Date(),
             isEventAllDay: false,
             isSlotAllDay: false,
             joinURL: nil,
@@ -23,6 +25,7 @@ final class DayEventUniqueCalendarsTests: XCTestCase {
             calendarColorGreen: 0,
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
+            isRecurring: false,
             allowsContentModifications: true,
             participationStatus: nil
         )

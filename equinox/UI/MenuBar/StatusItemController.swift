@@ -19,6 +19,9 @@ final class StatusItemController: NSObject {
         self.appState = appState
         self.panelController = PanelWindowController(appState: appState)
         super.init()
+        panelController.onDismissRequested = { [weak self] in
+            self?.hidePanel()
+        }
         resetIconDateFormatter()
     }
 
@@ -84,6 +87,9 @@ final class StatusItemController: NSObject {
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked)
         statusItem.button?.sendAction(on: [.leftMouseDown])
+        if let button = statusItem.button {
+            Self.configureAccessibility(for: button)
+        }
 
         if let cell = statusItem.button?.cell as? NSButtonCell {
             cell.highlightsBy = []
@@ -101,6 +107,18 @@ final class StatusItemController: NSObject {
             name: NSWindow.didResizeNotification,
             object: statusItem.button?.window
         )
+    }
+
+    static func configureAccessibility(for button: NSButton) {
+        let help = String(
+            localized: "Show or hide the Equinox panel from anywhere",
+            comment: "Menu bar status item accessibility help and tooltip"
+        )
+        button.setAccessibilityLabel(
+            String(localized: "Equinox calendar", comment: "Menu bar status item accessibility label")
+        )
+        button.setAccessibilityHelp(help)
+        button.toolTip = help
     }
 
     @objc private func statusItemClicked() {
@@ -239,6 +257,11 @@ final class StatusItemController: NSObject {
         } else {
             button.title = ""
         }
+
+        let accessibleDate = EquinoxFormatters.formatter(key: "status-item.date.full") {
+            $0.dateStyle = .full
+        }.string(from: appState.events.todayDate.date(in: appState.calendar))
+        button.setAccessibilityValue(accessibleDate)
     }
 
     private func setupPeriodicRefresh() {

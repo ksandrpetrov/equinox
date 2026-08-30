@@ -88,7 +88,7 @@ enum DayEventBuilder {
                         isEventAllDay: lhs.isEventAllDay,
                         isSlotAllDay: lhs.isSlotAllDay,
                         calendarTitle: lhs.calendarTitle,
-                        startDate: lhs.startDate,
+                        startDate: lhs.slotStartDate,
                         title: lhs.title,
                         stableIdentifier: lhs.id
                     ),
@@ -96,7 +96,7 @@ enum DayEventBuilder {
                         isEventAllDay: rhs.isEventAllDay,
                         isSlotAllDay: rhs.isSlotAllDay,
                         calendarTitle: rhs.calendarTitle,
-                        startDate: rhs.startDate,
+                        startDate: rhs.slotStartDate,
                         title: rhs.title,
                         stableIdentifier: rhs.id
                     )

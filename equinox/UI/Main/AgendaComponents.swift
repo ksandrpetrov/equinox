@@ -11,41 +11,52 @@ struct AgendaSectionHeader: View {
         let nsDate = date.date(in: calendar)
         let isToday = calendar.isDateInToday(nsDate)
         let isTomorrow = calendar.isDateInTomorrow(nsDate)
+        let context = sectionContext(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate)
 
-        HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
-            Circle()
-                .fill(dateMarkerColor(isToday: isToday))
-                .frame(
-                    width: EquinoxDesign.agendaDateMarkerSize,
-                    height: EquinoxDesign.agendaDateMarkerSize
+        HStack(spacing: 0) {
+            Text(EquinoxFormatters.shortWeekday(nsDate).uppercased())
+                .font(EquinoxDesign.weekdayHeaderFont())
+                .tracking(EquinoxDesign.weekdayHeaderTracking())
+                .foregroundStyle(
+                    isToday
+                        ? EquinoxDesign.ColorToken.present
+                        : EquinoxDesign.ColorToken.weekdayDimmed
                 )
-                .accessibilityHidden(true)
-            Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
-                .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
-                .foregroundStyle(isToday ? EquinoxDesign.ColorToken.present : .secondary)
-            Text(sectionContext(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
-                .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
-                .foregroundStyle(.tertiary)
-            Spacer(minLength: 0)
-            if eventCount > 0 {
-                Text("\(eventCount)")
-                    .font(EquinoxDesign.agendaEventCountFont())
-                    .foregroundStyle(
-                        isSelected
-                            ? EquinoxDesign.ColorToken.action
-                            : EquinoxDesign.ColorToken.weekdayDimmed
-                    )
-                    .frame(minWidth: EquinoxDesign.agendaEventCountMinWidth, alignment: .trailing)
-                    .accessibilityLabel(
-                        String(
-                            format: String(localized: "%lld events", comment: "Agenda section event count"),
-                            Int64(eventCount)
+                .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
+
+            AgendaSectionDateMarker(
+                isToday: isToday,
+                isSelected: isSelected,
+                width: metrics.agendaTimelineColumnWidth
+            )
+
+            HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
+                Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
+                    .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
+                    .foregroundStyle(isToday ? EquinoxDesign.ColorToken.present : .secondary)
+                if !context.isEmpty {
+                    Text(context)
+                        .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
+                        .foregroundStyle(.tertiary)
+                }
+                Spacer(minLength: 0)
+                if eventCount > 0 {
+                    Text("\(eventCount)")
+                        .font(EquinoxDesign.agendaEventCountFont())
+                        .foregroundStyle(
+                            isSelected
+                                ? EquinoxDesign.ColorToken.action
+                                : EquinoxDesign.ColorToken.weekdayDimmed
                         )
-                    )
+                        .frame(minWidth: EquinoxDesign.agendaEventCountMinWidth, alignment: .trailing)
+                        .accessibilityLabel(EquinoxFormatters.eventCount(eventCount))
+                }
             }
+            .padding(.leading, EquinoxDesign.spacingXS)
+            .padding(.trailing, EquinoxDesign.spacingSM)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, EquinoxDesign.spacingSM)
+        .padding(.horizontal, EquinoxDesign.spacingXS)
         .padding(.vertical, EquinoxDesign.agendaHeaderVerticalPadding)
         .background(EquinoxDesign.ColorToken.surfaceRaised)
         .overlay(alignment: .bottom) {
@@ -55,12 +66,6 @@ struct AgendaSectionHeader: View {
         }
         .padding(.top, EquinoxDesign.spacingXS)
         .accessibilityAddTraits(.isHeader)
-    }
-
-    private func dateMarkerColor(isToday: Bool) -> Color {
-        if isToday { return EquinoxDesign.ColorToken.present }
-        if isSelected { return EquinoxDesign.ColorToken.action }
-        return EquinoxDesign.ColorToken.separator
     }
 
     private func agendaSectionTitle(isToday: Bool, isTomorrow: Bool, nsDate: Date) -> String {
@@ -73,7 +78,107 @@ struct AgendaSectionHeader: View {
         if isToday || isTomorrow {
             return EquinoxFormatters.agendaHeader(nsDate)
         }
-        return EquinoxFormatters.shortWeekday(nsDate)
+        return ""
+    }
+}
+
+private struct AgendaSectionDateMarker: View {
+    let isToday: Bool
+    let isSelected: Bool
+    let width: CGFloat
+
+    var body: some View {
+        Group {
+            if isToday {
+                EquinoxOrbitMark(showsInnerDot: true)
+                    .frame(
+                        width: EquinoxDesign.agendaTimelineFocusNodeSize,
+                        height: EquinoxDesign.agendaTimelineFocusNodeSize
+                    )
+            } else {
+                Circle()
+                    .fill(
+                        isSelected
+                            ? EquinoxDesign.ColorToken.action
+                            : EquinoxDesign.ColorToken.separator
+                    )
+                    .frame(
+                        width: EquinoxDesign.agendaDateMarkerSize,
+                        height: EquinoxDesign.agendaDateMarkerSize
+                    )
+            }
+        }
+        .frame(width: width)
+        .accessibilityHidden(true)
+    }
+}
+
+struct AgendaHorizonControl: View {
+    @Binding var heightRatio: Double
+    let metrics: SizeMetrics
+    let onHide: () -> Void
+
+    var body: some View {
+        HStack(spacing: EquinoxDesign.spacingSM) {
+            horizonLine
+
+            Menu {
+                presetButton(
+                    String(localized: "Compact height", comment: "Compact agenda height"),
+                    ratio: AgendaLayout.minimumHeightRatio
+                )
+                presetButton(
+                    String(localized: "Balanced height", comment: "Balanced agenda height"),
+                    ratio: AgendaLayout.defaultHeightRatio
+                )
+                presetButton(
+                    String(localized: "Expanded height", comment: "Expanded agenda height"),
+                    ratio: AgendaLayout.maximumHeightRatio
+                )
+                Divider()
+                Button(String(localized: "Hide agenda", comment: "Agenda horizon action")) {
+                    onHide()
+                }
+            } label: {
+                HStack(spacing: EquinoxDesign.spacingXS) {
+                    Text(String(localized: "Agenda", comment: "Agenda section label"))
+                        .font(.caption2.weight(.semibold))
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption2.weight(.semibold))
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, EquinoxDesign.spacingSM)
+                .frame(minHeight: metrics.toolbarButtonSize)
+                .contentShape(Rectangle())
+            }
+            .menuIndicator(.hidden)
+            .buttonStyle(PanelButtonStyle())
+            .help(String(localized: "Adjust agenda height", comment: "Agenda horizon help"))
+            .accessibilityLabel(String(localized: "Adjust agenda height", comment: "Agenda horizon accessibility"))
+
+            horizonLine
+        }
+        .frame(height: metrics.toolbarButtonSize)
+    }
+
+    private var horizonLine: some View {
+        Rectangle()
+            .fill(EquinoxDesign.ColorToken.separator)
+            .frame(maxWidth: .infinity)
+            .frame(height: EquinoxDesign.monthBoundaryWidth)
+            .accessibilityHidden(true)
+    }
+
+    private func presetButton(_ title: String, ratio: Double) -> some View {
+        Button {
+            heightRatio = ratio
+        } label: {
+            if abs(heightRatio - ratio) < 0.001 {
+                Label(title, systemImage: "checkmark")
+            } else {
+                Text(title)
+            }
+        }
     }
 }
 
@@ -130,8 +235,15 @@ struct AgendaTimelineMarker: View {
                     height: EquinoxDesign.agendaTimelineFocusNodeSize
                 )
                 .overlay {
-                    Circle()
-                        .strokeBorder(emphasisColor, lineWidth: EquinoxDesign.focusStrokeWidth)
+                    if emphasis == .current {
+                        EquinoxOrbitMark(
+                            tint: emphasisColor,
+                            lineWidth: EquinoxDesign.todayOrbitStrokeWidth
+                        )
+                    } else {
+                        Circle()
+                            .strokeBorder(emphasisColor, lineWidth: EquinoxDesign.focusStrokeWidth)
+                    }
                     Circle()
                         .fill(calendarColor)
                         .frame(
@@ -161,6 +273,7 @@ struct AgendaEventCard: View {
     var isFocusedEvent = false
     var onTap: (() -> Void)? = nil
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
 
@@ -173,7 +286,8 @@ struct AgendaEventCard: View {
     }
 
     private var showsSecondaryDetails: Bool {
-        showLocation && !(event.location?.isEmpty ?? true)
+        (showLocation && !(event.location?.isEmpty ?? true))
+            || (differentiateWithoutColor && !event.calendarTitle.isEmpty)
     }
 
     var body: some View {
@@ -203,6 +317,11 @@ struct AgendaEventCard: View {
                     .padding(.trailing, EquinoxDesign.spacingSM)
                 }
                 .padding(.vertical, showsSecondaryDetails ? EquinoxDesign.spacingXS : EquinoxDesign.spacingMicro + 1)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: metrics.agendaRowMinHeight,
+                    alignment: .leading
+                )
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -233,7 +352,7 @@ struct AgendaEventCard: View {
 
     @ViewBuilder
     private var timeColumn: some View {
-        if event.isEventAllDay {
+        if event.displaysAsAllDay {
             Text(String(localized: "All-day", comment: ""))
                 .font(EquinoxDesign.monoTimeFont(size: metrics.agendaTimeFontSize))
                 .foregroundStyle(.secondary)
@@ -242,9 +361,9 @@ struct AgendaEventCard: View {
                 .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
         } else {
             VStack(alignment: .trailing, spacing: EquinoxDesign.spacingMicro) {
-                Text(EquinoxFormatters.shortTime(event.startDate))
+                Text(EquinoxFormatters.shortTime(event.slotStartDate))
                     .foregroundStyle(.secondary)
-                Text(EquinoxFormatters.shortTime(event.endDate))
+                Text(EquinoxFormatters.shortTime(event.slotEndDate))
                     .foregroundStyle(.tertiary)
             }
             .font(EquinoxDesign.monoTimeFont(size: metrics.agendaTimeFontSize))
@@ -338,8 +457,8 @@ struct AgendaEventCard: View {
     }
 
     private var timeRangeString: String {
-        if event.isEventAllDay { return String(localized: "All-day", comment: "") }
-        return EquinoxFormatters.timeRange(from: event.startDate, to: event.endDate)
+        if event.displaysAsAllDay { return String(localized: "All-day", comment: "") }
+        return EquinoxFormatters.timeRange(from: event.slotStartDate, to: event.slotEndDate)
     }
 
     private var relativeTimeString: String? {

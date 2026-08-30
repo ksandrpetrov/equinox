@@ -3,6 +3,7 @@ import SwiftUI
 struct AppearancePreview: View {
     @Bindable var prefs: PreferencesStore
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     private var previewMetrics: SizeMetrics {
         let preference = SizePreference(rawValue: prefs.sizePreference) ?? .medium
@@ -10,7 +11,7 @@ struct AppearancePreview: View {
     }
 
     private var previewCalendar: Calendar {
-        Calendar.current
+        Calendar.equinoxGregorian()
     }
 
     private var previewMonth: CalendarDate {
@@ -19,6 +20,10 @@ struct AppearancePreview: View {
 
     private var previewEventColor: Color {
         EquinoxDesign.ColorToken.accent
+    }
+
+    private var previewBackgroundStyle: BackgroundStyle {
+        BackgroundStyle(rawValue: prefs.backgroundStyle) ?? .glass
     }
 
     var body: some View {
@@ -52,8 +57,12 @@ struct AppearancePreview: View {
                 previewEventRow
             }
             .padding(.horizontal, EquinoxDesign.spacingMD)
-            .padding(.vertical, EquinoxDesign.spacingXS)
+            .padding(.vertical, EquinoxDesign.spacingMD)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .panelBackground(
+                style: previewBackgroundStyle,
+                reduceTransparency: reduceTransparency
+            )
         }
     }
 

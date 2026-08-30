@@ -25,8 +25,7 @@ enum EquinoxDesign {
     static let monthBoundaryWidth: CGFloat = 0.5
     static let selectionStrokeWidth: CGFloat = 1
     static let focusStrokeWidth: CGFloat = 2
-    static let eventMarkerRowHeight: CGFloat = 10
-    static let todayOrbitGap: CGFloat = 3
+    static let eventMarkerRowHeight: CGFloat = 12
     static let todayOrbitStrokeWidth: CGFloat = 1
 
     static let agendaHeaderTitleSpacing: CGFloat = spacingSM - 2
@@ -38,6 +37,7 @@ enum EquinoxDesign {
     static let agendaTimelineLineWidth: CGFloat = 1
     static let commandBarHeight: CGFloat = 40
     static var toolbarButtonSize: CGFloat { SizeMetrics.metrics(for: .medium).toolbarButtonSize }
+    static let minimumReadableFontSize: CGFloat = 10
 
     static let settingsSidebarWidth: CGFloat = 220
     static let settingsSectionCornerRadius: CGFloat = 12
@@ -51,7 +51,6 @@ enum EquinoxDesign {
 
     static let pressScale: CGFloat = 0.97
     static let onAccentForeground = Color("OnAccentForeground")
-    static var onSolarForeground: Color { ColorToken.surfaceWindow }
 
     static func animation(_ animation: Animation, reduceMotion: Bool) -> Animation? {
         reduceMotion ? nil : animation
@@ -117,6 +116,15 @@ enum EquinoxDesign {
         static let width: CGFloat = 3
         static let widthHero: CGFloat = 4
         static let cornerRadius: CGFloat = 2
+    }
+
+    enum Orbit {
+        static let trimStart: CGFloat = 0.08
+        static let trimEnd: CGFloat = 0.92
+        static let axisLengthRatio: CGFloat = 0.22
+        static let axisOffsetRatio: CGFloat = 0.38
+        static let innerDotRatio: CGFloat = 0.34
+        static let rotation: Angle = .degrees(-90)
     }
 
     enum ChipMetrics {
@@ -208,7 +216,7 @@ enum EquinoxDesign {
         .system(size: size, weight: .regular)
     }
 
-    static func microFont(size: CGFloat = 8) -> Font {
+    static func microFont(size: CGFloat = minimumReadableFontSize) -> Font {
         .system(size: size, weight: .bold)
     }
 

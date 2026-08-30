@@ -13,7 +13,7 @@
 "All-day" = "Весь день";
 /* Appearance prefs tab label */
 "Appearance" = "Оформление";
-"At time of event" = "Во время события";
+"At time of event" = "В момент начала события";
 "Awaiting response" = "Ожидается ответ";
 "Background" = "Фон";
 "Calendar" = "Календарь";
@@ -24,15 +24,16 @@
 "Date & Time" = "Дата и время";
 "Delete" = "Удалить";
 "Delete event?" = "Удалить событие?";
+"Delete this occurrence?" = "Удалить только это событие?";
 "Delete…" = "Удалить…";
 "Declined" = "Отклонено";
 "Dismiss" = "Закрыть";
 "Done" = "Готово";
 "End date" = "Дата окончания";
-"End repeat" = "Конец повтора";
+"End repeat" = "Завершение повтора";
 "Ends" = "Окончание";
 "Event" = "Событие";
-"Event Details" = "Детали события";
+"Event Details" = "Сведения о событии";
 "Every 2 Weeks" = "Каждые 2 недели";
 "Every Day" = "Каждый день";
 "Every Month" = "Каждый месяц";
@@ -42,7 +43,7 @@
 "Friday" = "Пятница";
 /* General prefs tab label */
 "General" = "Основные";
-"Glass" = "Стекло";
+"Glass" = "Стеклянный";
 "Going" = "Пойду";
 "Join Meeting" = "Присоединиться к встрече";
 "Open Link" = "Открыть ссылку";
@@ -68,10 +69,8 @@
    Repeat none */
 "None" = "Нет";
 "Notes" = "Заметки";
-"On date" = "По дате";
+"On date" = "В указанную дату";
 "Options" = "Параметры";
-/* Calendar source/account name from EventKit */
-"Other" = "Другое";
 "Pin Equinox" = "Закрепить Equinox";
 "Pin Equinox   P" = "Закрепить Equinox   P";
 /* Settings window title */
@@ -81,7 +80,7 @@
 "Previous year" = "Предыдущий год";
 "Next year" = "Следующий год";
 "Choose month" = "Выбрать месяц";
-"Quit Equinox" = "Завершить Equinox";
+"Quit Equinox" = "Завершить работу Equinox";
 "Repeat" = "Повтор";
 "Saturday" = "Суббота";
 "Shortcuts" = "Горячие клавиши";
@@ -94,8 +93,8 @@
 "Show event location" = "Показывать место события";
 "Show month in icon" = "Показывать месяц в значке";
 "Size" = "Размер";
-"Small" = "Малый";
-"Solid" = "Сплошной";
+"Small" = "Маленький";
+"Solid" = "Непрозрачный";
 "Startup" = "Запуск";
 "Starts" = "Начало";
 "Sunday" = "Воскресенье";
@@ -118,19 +117,19 @@
 "Now" = "Сейчас";
 "in %lld min" = "через %lld мин";
 "in %lld h" = "через %lld ч";
-"Show Details" = "Подробности";
+"Show Details" = "Подробнее";
 "Show month boundaries" = "Показывать границы месяца";
 "Highlight days" = "Выделять дни";
 "Calendar rows" = "Строки календаря";
 "Calendar Display" = "Отображение календаря";
-"Customize the calendar grid and agenda" = "Настройка сетки календаря и списка событий";
+"Customize the calendar grid and agenda" = "Настройте сетку календаря и список событий";
 "Visible Calendars" = "Видимые календари";
-"Choose which calendars appear in Equinox" = "Выберите календари для отображения в Equinox";
-"Global Shortcut" = "Глобальное сокращение";
-"Show or hide the Equinox panel from anywhere" = "Показывать или скрывать панель Equinox из любого места";
-"Panel Shortcuts" = "Сокращения панели";
-"Go to Today" = "Перейти к сегодня";
-"Search settings" = "Поиск настроек";
+"Choose which calendars appear in Equinox" = "Выберите, какие календари показывать в Equinox";
+"Global Shortcut" = "Глобальная горячая клавиша";
+"Show or hide the Equinox panel from anywhere" = "Открывайте и скрывайте панель Equinox из любого приложения";
+"Panel Shortcuts" = "Горячие клавиши панели";
+"Go to Today" = "Перейти к сегодняшнему дню";
+"Search %@" = "Поиск: %@";
 "Preview" = "Предпросмотр";
 "Team standup" = "Командный стендап";
 "Open Equinox when you sign in" = "Открывать Equinox при входе в систему";
@@ -153,25 +152,31 @@
 "Open System Settings" = "Открыть системные настройки";
 /* Panel states */
 "Calendar access required" = "Требуется доступ к календарю";
-"Equinox needs access to your calendars to show events." = "Equinox нужен доступ к календарям для отображения событий.";
+"Equinox needs access to your calendars to show events." = "Equinox нужен доступ к календарям, чтобы показывать события.";
 "No calendars selected" = "Календари не выбраны";
 "Calendars…" = "Календари…";
 "Retry" = "Повторить";
 "Loading events" = "Загрузка событий";
-"New Event   ⌘N · Go to Today   T · Pin Equinox   P" = "Новое событие   ⌘N · Перейти к сегодня   T · Закрепить Equinox   P";
+"New Event   ⌘N · Go to Today   T · Pin Equinox   P" = "Новое событие   ⌘N · Перейти к сегодняшнему дню   T · Закрепить Equinox   P";
 "Dismiss shortcut tip" = "Скрыть подсказку";
-"Calendar access is required to load events." = "Для загрузки событий требуется доступ к календарю.";
+"Calendar access is required to load events." = "Разрешите доступ к календарям, чтобы загрузить события.";
 /* Panel */
 "Panel" = "Панель";
 "Pin panel by default" = "Закреплять панель по умолчанию";
-"Keep the calendar panel open as a floating window" = "Держать панель календаря открытой как плавающее окно";
+"Keep the calendar panel open as a floating window" = "Оставлять панель календаря открытой в отдельном окне";
 "Agenda height" = "Высота списка событий";
-"Default proportion of the agenda section" = "Пропорция секции списка событий по умолчанию";
+"Agenda" = "Расписание";
+"Adjust agenda height" = "Настроить высоту расписания";
+"Compact height" = "Компактная";
+"Balanced height" = "Оптимальная";
+"Expanded height" = "Увеличенная";
+"Hide agenda" = "Скрыть расписание";
+"Default proportion of the agenda section" = "Доля панели под список событий";
 "Advanced" = "Дополнительно";
 "Reset All Settings to Defaults" = "Сбросить все настройки";
 "Reset all settings?" = "Сбросить все настройки?";
 "Reset" = "Сбросить";
-"This restores all preferences to their default values." = "Все настройки будут восстановлены до значений по умолчанию.";
+"This restores all preferences to their default values." = "Настройки вернутся к значениям по умолчанию.";
 "No Results" = "Нет результатов";
 "Try a different search term." = "Попробуйте другой поисковый запрос.";
 /* Menu bar advanced */
@@ -182,8 +187,8 @@
 "Show meeting indicator" = "Показывать индикатор встречи";
 "Camera icon when a meeting is starting soon" = "Значок камеры, когда встреча скоро начнётся";
 "Clock format" = "Формат часов";
-"12-hour" = "12 часов";
-"24-hour" = "24 часа";
+"12-hour" = "12-часовой";
+"24-hour" = "24-часовой";
 /* Icon styles */
 "Minimal" = "Минимальный";
 "Classic" = "Классический";
@@ -191,27 +196,27 @@
 /* Accessibility */
 "On" = "Вкл.";
 "Off" = "Выкл.";
-"Today, selected" = "Сегодня, выбрано";
+"Equinox calendar" = "Календарь Equinox";
+"Today, selected" = "Сегодня, выбранный день";
 "More actions" = "Дополнительные действия";
-"Go to Today   T" = "Перейти к сегодня   T";
+"Go to Today   T" = "Перейти к сегодняшнему дню   T";
 "Calendar grid" = "Сетка календаря";
-"Use arrow keys to move between days. Hold Option for months and Shift-Option for years. Press Return to create an event." = "Перемещайтесь между днями стрелками. Удерживайте Option для месяцев и Shift-Option для лет. Нажмите Return, чтобы создать событие.";
-"Use the New Event action to create an event." = "Используйте действие «Новое событие», чтобы создать событие.";
-"Show event details." = "Показать детали события.";
-"No writable calendars available. Check Calendar access in Privacy settings." = "Нет доступных календарей для записи. Проверьте доступ в настройках конфиденциальности.";
+"Use arrow keys to move between days. Hold Option for months and Shift-Option for years. Press Return to create an event." = "Переходите между днями клавишами со стрелками. Удерживайте Option для перехода по месяцам, Shift-Option для перехода по годам. Нажмите Return, чтобы создать событие.";
+"Use the New Event action to create an event." = "Чтобы добавить событие, выберите «Новое событие».";
+"Show event details." = "Открыть сведения о событии.";
+"No writable calendars available. Check Calendar access in Privacy settings." = "Нет календарей, в которые можно добавить событие. Проверьте доступ к календарям в разделе «Конфиденциальность».";
 "Could not delete event" = "Не удалось удалить событие.";
 "View on GitHub" = "Открыть на GitHub";
-"%lld events" = "%lld событий";
 /* Event detail & modals */
 "When" = "Когда";
-"Attendance" = "Участники";
+"Attendance" = "Ваш ответ";
 "Confirm" = "Подтвердить";
 /* Create event errors */
 "The calendar could not be found." = "Календарь не найден.";
 "This calendar is read-only." = "Этот календарь доступен только для чтения.";
 "End date must be after start date." = "Дата окончания должна быть позже даты начала.";
 "Enter an event title." = "Введите название события.";
-"Enter a valid URL including its scheme." = "Введите корректный URL со схемой, например https://.";
+"Enter a valid URL including its scheme." = "Введите полный URL, например https://example.com.";
 "Repeat end date cannot be before event start." = "Дата окончания повтора не может быть раньше начала события.";
 /* General settings */
 "First day of week" = "Первый день недели";
@@ -219,7 +224,7 @@
 "Show the event timeline below the calendar" = "Показывать ленту событий под календарём";
 "Loading calendars" = "Загрузка календарей";
 "No calendars available" = "Нет доступных календарей";
-"No event calendars were found." = "Календари событий не найдены.";
+"No event calendars were found." = "Календари не найдены.";
 /* Panel */
 "Unpin Equinox   P" = "Открепить Equinox   P";
 /* Meeting providers */
@@ -232,19 +237,19 @@
 "VK Calls" = "VK Calls";
 "FaceTime" = "FaceTime";
 /* Privacy */
-"App state unavailable." = "Состояние приложения недоступно.";
+"App state unavailable." = "Не удалось загрузить настройки доступа к календарю.";
 /* Calendar access guidance */
 "Calendar access is off. Enable Full Access in System Settings." = "Доступ к календарям выключен. Включите полный доступ в системных настройках.";
 "Calendar access is restricted by system policy." = "Доступ к календарям ограничен системной политикой.";
 "Full calendar access is enabled." = "Полный доступ к календарям включён.";
-"macOS will ask you to grant Full Access." = "macOS запросит полный доступ к календарям.";
+"macOS will ask you to grant Full Access." = "macOS попросит предоставить полный доступ к календарям.";
 "Enable Full Access for Equinox in System Settings." = "Включите полный доступ для Equinox в системных настройках.";
 "Access is restricted by system policy and cannot be requested here." = "Доступ ограничен системной политикой, запросить его здесь нельзя.";
 /* Shortcut recorder */
-"Click to record a shortcut" = "Нажмите, чтобы записать сочетание клавиш";
-"Clear shortcut" = "Очистить сочетание клавиш";
-"Record Shortcut" = "Записать сочетание";
-"Press shortcut…" = "Нажмите сочетание…";
+"Click to record a shortcut" = "Нажмите, чтобы задать сочетание клавиш";
+"Clear shortcut" = "Удалить сочетание клавиш";
+"Record Shortcut" = "Задать сочетание";
+"Press shortcut…" = "Нажмите нужное сочетание…";
 "Use Command, Control, or Option with a key, or choose a function key." = "Используйте Command, Control или Option вместе с клавишей либо выберите функциональную клавишу.";
 "This shortcut is already used by macOS." = "Это сочетание уже используется macOS.";
 "This shortcut is already used by “%@”." = "Это сочетание уже используется командой «%@».";

@@ -158,6 +158,8 @@ final class MeetingIndicatorTests: XCTestCase {
             url: nil,
             startDate: start,
             endDate: end,
+            slotStartDate: start,
+            slotEndDate: end,
             isEventAllDay: isEventAllDay,
             isSlotAllDay: false,
             joinURL: joinURL,
@@ -167,6 +169,7 @@ final class MeetingIndicatorTests: XCTestCase {
             calendarColorGreen: 0,
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
+            isRecurring: false,
             allowsContentModifications: true,
             participationStatus: participationStatus
         )

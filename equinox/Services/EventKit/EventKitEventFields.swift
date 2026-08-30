@@ -15,6 +15,7 @@ struct EventKitEventFields: Sendable {
     let isAllDay: Bool
     let calendarIdentifier: String
     let calendarTitle: String
+    let isRecurring: Bool
     let allowsContentModifications: Bool
     let participationRawValue: Int?
 
@@ -32,8 +33,16 @@ struct EventKitEventFields: Sendable {
             isAllDay: event.isAllDay,
             calendarIdentifier: event.calendar.calendarIdentifier,
             calendarTitle: event.calendar.title,
+            isRecurring: isRecurring(
+                hasRecurrenceRules: event.hasRecurrenceRules,
+                occurrenceDate: event.occurrenceDate
+            ),
             allowsContentModifications: event.calendar.allowsContentModifications,
             participationRawValue: event.equinoxParticipationRawValue
         )
+    }
+
+    static func isRecurring(hasRecurrenceRules: Bool, occurrenceDate: Date?) -> Bool {
+        hasRecurrenceRules || occurrenceDate != nil
     }
 }

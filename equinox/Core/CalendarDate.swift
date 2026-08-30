@@ -1,5 +1,23 @@
 import Foundation
 
+extension Calendar {
+    /// Calendar used for Equinox civil-date arithmetic.
+    ///
+    /// `CalendarDate` is a proleptic Gregorian value (12 months, Gregorian leap-year rules),
+    /// so using the user's preferred calendar identifier can make otherwise valid dates invalid
+    /// (for example, Japanese year 8 or Hebrew month 13). Locale and time zone still follow the
+    /// system so formatting and local day boundaries remain current.
+    static func equinoxGregorian(
+        locale: Locale = .autoupdatingCurrent,
+        timeZone: TimeZone = .autoupdatingCurrent
+    ) -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = locale
+        calendar.timeZone = timeZone
+        return calendar
+    }
+}
+
 struct CalendarDate: Equatable, Hashable, Sendable {
     var year: Int
     var monthIndex: Int

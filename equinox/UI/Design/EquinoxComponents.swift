@@ -1,5 +1,54 @@
 import SwiftUI
 
+// MARK: - Equinox signature
+
+/// The single bespoke mark in the interface: an open orbit that means “present”.
+/// Color is never the only signal; callers pair it with Today/Now text and accessibility labels.
+struct EquinoxOrbitMark: View {
+    var tint: Color = EquinoxDesign.ColorToken.present
+    var lineWidth: CGFloat = EquinoxDesign.todayOrbitStrokeWidth
+    var showsInnerDot = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            let side = min(geometry.size.width, geometry.size.height)
+            ZStack {
+                Circle()
+                    .trim(
+                        from: EquinoxDesign.Orbit.trimStart,
+                        to: EquinoxDesign.Orbit.trimEnd
+                    )
+                    .stroke(
+                        tint,
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                    )
+                    .rotationEffect(EquinoxDesign.Orbit.rotation)
+
+                Capsule(style: .continuous)
+                    .fill(tint)
+                    .frame(
+                        width: side * EquinoxDesign.Orbit.axisLengthRatio,
+                        height: lineWidth
+                    )
+                    .offset(x: side * EquinoxDesign.Orbit.axisOffsetRatio)
+
+                if showsInnerDot {
+                    Circle()
+                        .fill(tint)
+                        .frame(
+                            width: side * EquinoxDesign.Orbit.innerDotRatio,
+                            height: side * EquinoxDesign.Orbit.innerDotRatio
+                        )
+                }
+            }
+            .frame(width: side, height: side)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .accessibilityHidden(true)
+    }
+}
+
 // MARK: - Button styles
 
 enum EquinoxButtonVariant {

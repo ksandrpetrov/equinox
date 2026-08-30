@@ -21,7 +21,7 @@ struct DayCellView: View {
     @State private var isHovered = false
     @State private var selectionTrigger = false
 
-    private var circleSize: CGFloat {
+    private var todayMarkerSize: CGFloat {
         min(metrics.cellSize - 3, metrics.cellSize * 0.9)
     }
 
@@ -40,12 +40,7 @@ struct DayCellView: View {
         } else if isSelected {
             values.append(String(localized: "Selected", comment: "Day cell accessibility"))
         }
-        values.append(
-            String(
-                format: String(localized: "%lld events", comment: "Day cell event count"),
-                Int64(eventCount)
-            )
-        )
+        values.append(EquinoxFormatters.eventCount(eventCount))
         return values.joined(separator: ", ")
     }
 
@@ -64,7 +59,7 @@ struct DayCellView: View {
                         .padding(.horizontal, 1)
                 }
 
-                if isSelected {
+                if isSelected && !isToday {
                     RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
                         .fill(EquinoxDesign.ColorToken.accentSoft)
                         .overlay {
@@ -79,27 +74,32 @@ struct DayCellView: View {
                                 )
                         }
                         .padding(.horizontal, 1)
-                } else if isHovered {
+                } else if isHovered && !isSelected {
                     RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
                         .fill(EquinoxDesign.ColorToken.interactionHover)
                         .padding(.horizontal, 1)
                 }
 
                 if isToday {
-                    ZStack {
-                        Circle()
-                            .strokeBorder(
-                                EquinoxDesign.ColorToken.present,
-                                lineWidth: EquinoxDesign.todayOrbitStrokeWidth
-                            )
-                        Circle()
-                            .fill(EquinoxDesign.ColorToken.present)
-                            .frame(
-                                width: circleSize - EquinoxDesign.todayOrbitGap,
-                                height: circleSize - EquinoxDesign.todayOrbitGap
-                            )
-                    }
-                    .frame(width: circleSize, height: circleSize)
+                    Circle()
+                        .fill(
+                            isSelected
+                                ? EquinoxDesign.ColorToken.present
+                                    .opacity(EquinoxDesign.StateOpacity.selectionTint)
+                                : Color.clear
+                        )
+                        .overlay {
+                            Circle()
+                                .strokeBorder(
+                                    isSelected && isKeyboardFocused
+                                        ? EquinoxDesign.ColorToken.focusRing
+                                        : EquinoxDesign.ColorToken.present,
+                                    lineWidth: isSelected
+                                        ? EquinoxDesign.focusStrokeWidth
+                                        : EquinoxDesign.todayOrbitStrokeWidth
+                                )
+                        }
+                        .frame(width: todayMarkerSize, height: todayMarkerSize)
                 }
 
                 VStack(spacing: EquinoxDesign.spacingMicro) {
@@ -133,6 +133,7 @@ struct DayCellView: View {
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isSelected)
         }
         .buttonStyle(.plain)
+        .focusable(false)
         .disabled(!date.isValid)
         .sensoryFeedback(.selection, trigger: selectionTrigger)
         .onHover { isHovered = $0 }
@@ -160,7 +161,7 @@ struct DayCellView: View {
     }
 
     private var textColor: Color {
-        if isToday { return EquinoxDesign.onSolarForeground }
+        if isToday { return EquinoxDesign.ColorToken.present }
         if isSelected { return EquinoxDesign.ColorToken.action }
         if isInCurrentMonth { return .primary }
         return .secondary

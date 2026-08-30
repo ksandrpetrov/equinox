@@ -74,7 +74,7 @@ struct EventDetailView: View {
         }
         .sheet(isPresented: $isDeleteConfirmationPresented) {
             ModalConfirmDialog(
-                title: String(localized: "Delete event?", comment: "Delete event confirmation title"),
+                title: EventDeletionConfirmation.title(isRecurring: event.isRecurring),
                 message: event.title,
                 confirmTitle: String(localized: "Delete", comment: ""),
                 onConfirm: {

@@ -5,6 +5,7 @@ private struct PendingDeleteEvent: Identifiable {
     let eventIdentifier: String
     let occurrenceStartDate: Date
     let title: String
+    let isRecurring: Bool
 }
 
 enum AgendaContentState: Equatable {
@@ -44,97 +45,107 @@ struct AgendaView: View {
         let displayRange = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
         let sections = agendaSections
         let focusedEventID = agendaFocusEventID(in: displayRange)
-        Group {
-            switch contentState {
-            case .hidden:
-                Color.clear
-            case .loading:
-                loadingAgenda
-            case .empty:
-                emptyAgenda
-            case .content:
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: EquinoxDesign.spacingXS, pinnedViews: [.sectionHeaders]) {
-                        agendaBoundaryMarker(displayRange.first)
-                        ForEach(sections, id: \.date) { section in
-                            Section {
-                            if section.events.isEmpty
-                                && (prefs.showDaysWithNoEvents || section.date == appState.events.selectedDate) {
-                                emptyDayRow(for: section.date)
-                            } else {
-                                ForEach(Array(section.events.enumerated()), id: \.element.id) { index, event in
-                                    AgendaEventCard(
-                                        event: event,
-                                        metrics: metrics,
-                                        showLocation: prefs.showLocation,
-                                        now: appState.events.currentTime,
-                                        isFirstInSection: index == section.events.startIndex,
-                                        isLastInSection: index == section.events.index(before: section.events.endIndex),
-                                        isFocusedEvent: event.id == focusedEventID,
-                                        onTap: {
-                                            appState.panel.selectedEvent = event
-                                            appState.panel.isEventDetailPresented = true
-                                        }
-                                    )
-                                    .id(AgendaScrollTarget.event(id: event.id))
-                                    .contextMenu {
-                                        Button(String(localized: "Show Details", comment: "Agenda context menu")) {
-                                            appState.panel.selectedEvent = event
-                                            appState.panel.isEventDetailPresented = true
-                                        }
-                                        if event.allowsDeletion, let eventIdentifier = event.eventIdentifier {
-                                            Button(String(localized: "Delete…", comment: ""), role: .destructive) {
-                                                pendingDelete = PendingDeleteEvent(
-                                                    id: event.id,
-                                                    eventIdentifier: eventIdentifier,
-                                                    occurrenceStartDate: event.startDate,
-                                                    title: event.title
-                                                )
+        VStack(spacing: 0) {
+            if contentState != .hidden {
+                AgendaHorizonControl(
+                    heightRatio: agendaHeightBinding,
+                    metrics: metrics,
+                    onHide: { prefs.showsAgenda = false }
+                )
+            }
+
+            Group {
+                switch contentState {
+                case .hidden:
+                    Color.clear
+                case .loading:
+                    loadingAgenda
+                case .empty:
+                    emptyAgenda
+                case .content:
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: EquinoxDesign.spacingXS, pinnedViews: [.sectionHeaders]) {
+                            agendaBoundaryMarker(displayRange.first)
+                            ForEach(sections, id: \.date) { section in
+                                Section {
+                                    if section.events.isEmpty
+                                        && (prefs.showDaysWithNoEvents || section.date == appState.events.selectedDate) {
+                                        emptyDayRow(for: section.date)
+                                    } else {
+                                        ForEach(Array(section.events.enumerated()), id: \.element.id) { index, event in
+                                            AgendaEventCard(
+                                                event: event,
+                                                metrics: metrics,
+                                                showLocation: prefs.showLocation,
+                                                now: appState.events.currentTime,
+                                                isFirstInSection: index == section.events.startIndex,
+                                                isLastInSection: index == section.events.index(before: section.events.endIndex),
+                                                isFocusedEvent: event.id == focusedEventID,
+                                                onTap: {
+                                                    appState.panel.selectedEvent = event
+                                                    appState.panel.isEventDetailPresented = true
+                                                }
+                                            )
+                                            .id(AgendaScrollTarget.event(id: event.id))
+                                            .contextMenu {
+                                                Button(String(localized: "Show Details", comment: "Agenda context menu")) {
+                                                    appState.panel.selectedEvent = event
+                                                    appState.panel.isEventDetailPresented = true
+                                                }
+                                                if event.allowsDeletion, let eventIdentifier = event.eventIdentifier {
+                                                    Button(String(localized: "Delete…", comment: ""), role: .destructive) {
+                                                        pendingDelete = PendingDeleteEvent(
+                                                            id: event.id,
+                                                            eventIdentifier: eventIdentifier,
+                                                            occurrenceStartDate: event.startDate,
+                                                            title: event.title,
+                                                            isRecurring: event.isRecurring
+                                                        )
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            }
-                            } header: {
-                                AgendaSectionHeader(
-                                    date: section.date,
-                                    calendar: appState.calendar,
-                                    metrics: metrics,
-                                    eventCount: section.events.count,
-                                    isSelected: section.date == appState.events.selectedDate
-                                )
-                                .id(AgendaScrollTarget.day(julian: section.date.julian))
-                                .background {
-                                    GeometryReader { geometry in
-                                        Color.clear.preference(
-                                            key: AgendaSectionHeaderHeightKey.self,
-                                            value: geometry.size.height
-                                        )
+                                } header: {
+                                    AgendaSectionHeader(
+                                        date: section.date,
+                                        calendar: appState.calendar,
+                                        metrics: metrics,
+                                        eventCount: section.events.count,
+                                        isSelected: section.date == appState.events.selectedDate
+                                    )
+                                    .id(AgendaScrollTarget.day(julian: section.date.julian))
+                                    .background {
+                                        GeometryReader { geometry in
+                                            Color.clear.preference(
+                                                key: AgendaSectionHeaderHeightKey.self,
+                                                value: geometry.size.height
+                                            )
+                                        }
                                     }
                                 }
                             }
+                            agendaBoundaryMarker(displayRange.last)
                         }
-                        agendaBoundaryMarker(displayRange.last)
+                        .scrollTargetLayout()
                     }
-                    .scrollTargetLayout()
-                }
-                .scrollIndicators(.automatic)
-                .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
-                .onPreferenceChange(AgendaSectionHeaderHeightKey.self) { height in
-                    sectionHeaderHeight = height
-                }
-                .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
-                    scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, events: appState.events)
-                }
-                .onScrollPhaseChange { _, newPhase in
-                    if newPhase == .idle {
-                        scrollCoordinator.commitScrollSettle(events: appState.events)
+                    .scrollIndicators(.automatic)
+                    .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
+                    .onPreferenceChange(AgendaSectionHeaderHeightKey.self) { height in
+                        sectionHeaderHeight = height
+                    }
+                    .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
+                        scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, events: appState.events)
+                    }
+                    .onScrollPhaseChange { _, newPhase in
+                        if newPhase == .idle {
+                            scrollCoordinator.commitScrollSettle(events: appState.events)
+                        }
                     }
                 }
             }
+            .frame(height: contentHeight)
         }
-        .frame(height: contentHeight)
-        .padding(.top, contentState == .hidden ? 0 : EquinoxDesign.spacingSM)
         .onAppear {
             scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
             scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
@@ -152,7 +163,7 @@ struct AgendaView: View {
         }
         .sheet(item: $pendingDelete) { pending in
             ModalConfirmDialog(
-                title: String(localized: "Delete event?", comment: "Delete event confirmation title"),
+                title: EventDeletionConfirmation.title(isRecurring: pending.isRecurring),
                 message: pending.title,
                 confirmTitle: String(localized: "Delete", comment: ""),
                 onConfirm: {
@@ -327,6 +338,13 @@ struct AgendaView: View {
 
     private var contentHeight: CGFloat {
         contentState == .hidden ? 0 : height
+    }
+
+    private var agendaHeightBinding: Binding<Double> {
+        Binding(
+            get: { prefs.agendaHeightRatio },
+            set: { prefs.agendaHeightRatio = $0 }
+        )
     }
 
     private func agendaFocusEventID(

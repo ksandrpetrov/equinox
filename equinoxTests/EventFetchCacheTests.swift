@@ -16,6 +16,8 @@ final class EventFetchCacheTests: XCTestCase {
             url: nil,
             startDate: dayStart,
             endDate: dayStart.addingTimeInterval(3600),
+            slotStartDate: dayStart,
+            slotEndDate: dayStart.addingTimeInterval(3600),
             isEventAllDay: false,
             isSlotAllDay: false,
             joinURL: nil,
@@ -25,6 +27,7 @@ final class EventFetchCacheTests: XCTestCase {
             calendarColorGreen: 0,
             calendarColorBlue: 0,
             calendarColorAlpha: 1,
+            isRecurring: false,
             allowsContentModifications: true,
             participationStatus: nil
         )

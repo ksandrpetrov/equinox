@@ -11,6 +11,7 @@ struct SizeMetrics {
     let agendaEventTitleFontSize: CGFloat
     let agendaEventMetaFontSize: CGFloat
     let agendaTimeFontSize: CGFloat
+    let agendaRowMinHeight: CGFloat
     let panelWidth: CGFloat
     let sheetWidth: CGFloat
     let toolbarButtonSize: CGFloat
@@ -23,7 +24,7 @@ struct SizeMetrics {
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaTimeColumnWidth: 54, agendaTimelineColumnWidth: 16,
                                agendaEventTitleFontSize: 12, agendaEventMetaFontSize: 10,
-                               agendaTimeFontSize: 10,
+                               agendaTimeFontSize: 10, agendaRowMinHeight: 28,
                                panelWidth: 340, sheetWidth: 340, toolbarButtonSize: 28,
                                weekColumnWidth: 24)
         case .medium:
@@ -31,7 +32,7 @@ struct SizeMetrics {
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaTimeColumnWidth: 60, agendaTimelineColumnWidth: 18,
                                agendaEventTitleFontSize: 13, agendaEventMetaFontSize: 11,
-                               agendaTimeFontSize: 11,
+                               agendaTimeFontSize: 11, agendaRowMinHeight: 30,
                                panelWidth: 380, sheetWidth: 380, toolbarButtonSize: 30,
                                weekColumnWidth: 24)
         case .large:
@@ -39,7 +40,7 @@ struct SizeMetrics {
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4.5,
                                agendaTimeColumnWidth: 68, agendaTimelineColumnWidth: 20,
                                agendaEventTitleFontSize: 14, agendaEventMetaFontSize: 12,
-                               agendaTimeFontSize: 12,
+                               agendaTimeFontSize: 12, agendaRowMinHeight: 32,
                                panelWidth: 420, sheetWidth: 420, toolbarButtonSize: 32,
                                weekColumnWidth: 24)
         }

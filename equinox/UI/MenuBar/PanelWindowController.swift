@@ -8,6 +8,7 @@ final class PanelWindowController {
     private var hostingController: NSHostingController<MainPanelView>?
     private weak var currentStatusItem: NSStatusItem?
     private var layoutUpdateWorkItem: DispatchWorkItem?
+    var onDismissRequested: (() -> Void)?
 
     init(appState: AppState) {
         self.appState = appState
@@ -19,6 +20,13 @@ final class PanelWindowController {
     var window: NSPanel? { panel }
 
     var isVisible: Bool { panel?.isVisible == true }
+
+    static func shouldHandleCancelOperation(
+        isVisible: Bool,
+        isModalSheetPresented: Bool
+    ) -> Bool {
+        isVisible && !isModalSheetPresented
+    }
 
     func show(statusItem: NSStatusItem, isPinned: Bool) {
         currentStatusItem = statusItem
@@ -142,7 +150,23 @@ final class PanelWindowController {
         panel.isOpaque = false
         panel.hasShadow = true
         panel.hidesOnDeactivate = false
+        panel.onCancelOperation = { [weak self] in
+            self?.handleCancelOperation() ?? false
+        }
         return panel
+    }
+
+    private func handleCancelOperation() -> Bool {
+        let isModalSheetPresented = appState.panel.isModalSheetPresented
+            || panel?.attachedSheet != nil
+        guard Self.shouldHandleCancelOperation(
+            isVisible: isVisible,
+            isModalSheetPresented: isModalSheetPresented
+        ), let onDismissRequested else {
+            return false
+        }
+        onDismissRequested()
+        return true
     }
 
     private func configurePanelMode(_ panel: NSPanel, isPinned: Bool) {

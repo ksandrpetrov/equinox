@@ -71,7 +71,7 @@ struct MenuBarIconPicker: View {
     private var previewText: String {
         MenuBarIconRenderer.iconText(
             prefs: prefs,
-            calendar: Calendar.current,
+            calendar: Calendar.equinoxGregorian(),
             today: CalendarDate(year: 2026, monthIndex: 5, day: 13)
         )
     }

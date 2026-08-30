@@ -60,6 +60,8 @@ enum DayEventMapping {
             url: fields.url,
             startDate: fields.startDate,
             endDate: fields.endDate,
+            slotStartDate: slot.startDate,
+            slotEndDate: slot.endDate,
             isEventAllDay: fields.isAllDay,
             isSlotAllDay: slot.displaysAsAllDay,
             joinURL: joinURL,
@@ -69,6 +71,7 @@ enum DayEventMapping {
             calendarColorGreen: components.green,
             calendarColorBlue: components.blue,
             calendarColorAlpha: components.alpha,
+            isRecurring: fields.isRecurring,
             allowsContentModifications: fields.allowsContentModifications,
             participationStatus: EventParticipationMapping.status(eventKitRawValue: fields.participationRawValue)
         )

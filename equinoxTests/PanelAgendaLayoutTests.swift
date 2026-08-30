@@ -33,6 +33,26 @@ final class PanelAgendaLayoutTests: XCTestCase {
         XCTAssertEqual(height, 0)
     }
 
+    func testAgendaIsEitherUsableOrHiddenAcrossSupportedLayouts() {
+        for preference in SizePreference.allCases {
+            for rowCount in 6...10 {
+                for screenHeight: CGFloat in [480, 600, 900, 1_440] {
+                    let height = PanelAgendaLayout.maxHeight(
+                        metrics: SizeMetrics.metrics(for: preference),
+                        calendarRowCount: rowCount,
+                        screenVisibleHeight: screenHeight
+                    )
+
+                    XCTAssertTrue(
+                        height == 0 || height >= AgendaLayout.minHeight,
+                        "Agenda height \(height) is unusable for \(preference), \(rowCount) rows, \(screenHeight) pt"
+                    )
+                    XCTAssertLessThanOrEqual(height, EquinoxDesign.panelAgendaMaxHeight)
+                }
+            }
+        }
+    }
+
     @MainActor
     func testChangingScreenHeightInvalidatesPanelSizeOnce() {
         let layout = PanelLayoutMetrics()
