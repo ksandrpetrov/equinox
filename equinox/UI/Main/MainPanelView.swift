@@ -38,25 +38,14 @@ struct MainPanelView: View {
         panelContent
             .panelBackground(style: backgroundStyle, reduceTransparency: reduceTransparency)
             .frame(width: metrics.panelWidth)
-            .overlay {
-                if appState.panel.isEventDetailPresented {
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            eventDetailSheetBinding.wrappedValue = false
-                        }
-                        .accessibilityHidden(true)
-                }
-            }
             .sheet(isPresented: modalSheetBinding(\.panel.isNewEventSheetPresented)) {
                 NewEventSheet(appState: appState, metrics: metrics)
                     .equinoxSheetPresentation()
             }
-            .sheet(isPresented: eventDetailSheetBinding) {
+            .sheet(isPresented: modalSheetBinding(\.panel.isEventDetailPresented)) {
                 if let event = appState.panel.selectedEvent {
                     EventDetailView(appState: appState, event: event, metrics: metrics)
                         .equinoxSheetPresentation()
-                        .presentationBackgroundInteraction(.enabled)
                 }
             }
             .onChange(of: panelLayoutState) { _, _ in
@@ -98,10 +87,6 @@ struct MainPanelView: View {
             }
         }
         .padding(EquinoxDesign.panelPadding)
-    }
-
-    private var eventDetailSheetBinding: Binding<Bool> {
-        modalSheetBinding(\.panel.isEventDetailPresented)
     }
 
     private func modalSheetBinding(_ keyPath: ReferenceWritableKeyPath<AppState, Bool>) -> Binding<Bool> {

@@ -72,6 +72,13 @@ struct EventDetailView: View {
             }
             .frame(maxHeight: EventDetailLayout.maxScrollableHeight)
         }
+        .background {
+            EventDetailParentClickDismissMonitor(
+                isDismissEnabled: !isDeleteConfirmationPresented && !isDeleting,
+                onDismiss: { dismiss() }
+            )
+            .allowsHitTesting(false)
+        }
         .sheet(isPresented: $isDeleteConfirmationPresented) {
             ModalConfirmDialog(
                 title: EventDeletionConfirmation.title(isRecurring: event.isRecurring),
@@ -159,6 +166,81 @@ struct EventDetailView: View {
                 isDeleting = false
                 dismiss()
             }
+        }
+    }
+}
+
+private struct EventDetailParentClickDismissMonitor: NSViewRepresentable {
+    let isDismissEnabled: Bool
+    let onDismiss: @MainActor () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(isDismissEnabled: isDismissEnabled, onDismiss: onDismiss)
+    }
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        context.coordinator.install(for: view)
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        context.coordinator.isDismissEnabled = isDismissEnabled
+        context.coordinator.onDismiss = onDismiss
+    }
+
+    static func dismantleNSView(_ nsView: NSView, coordinator: Coordinator) {
+        coordinator.teardown()
+    }
+
+    @MainActor
+    final class Coordinator {
+        var isDismissEnabled: Bool
+        var onDismiss: @MainActor () -> Void
+
+        private weak var sheetContentView: NSView?
+        private var eventMonitor: Any?
+        private var isDismissPending = false
+
+        init(isDismissEnabled: Bool, onDismiss: @escaping @MainActor () -> Void) {
+            self.isDismissEnabled = isDismissEnabled
+            self.onDismiss = onDismiss
+        }
+
+        func install(for view: NSView) {
+            sheetContentView = view
+            guard eventMonitor == nil else { return }
+
+            eventMonitor = NSEvent.addLocalMonitorForEvents(
+                matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
+            ) { [weak self] event in
+                guard let self else { return event }
+                let shouldConsume = MainActor.assumeIsolated {
+                    guard self.isDismissEnabled,
+                          !self.isDismissPending,
+                          let sheetWindow = self.sheetContentView?.window,
+                          let sheetParent = sheetWindow.sheetParent,
+                          event.window === sheetParent,
+                          sheetWindow.attachedSheet == nil else {
+                        return false
+                    }
+
+                    self.isDismissPending = true
+                    DispatchQueue.main.async { [weak self] in
+                        self?.onDismiss()
+                    }
+                    return true
+                }
+                return shouldConsume ? nil : event
+            }
+        }
+
+        func teardown() {
+            if let eventMonitor {
+                NSEvent.removeMonitor(eventMonitor)
+                self.eventMonitor = nil
+            }
+            sheetContentView = nil
         }
     }
 }
