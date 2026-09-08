@@ -10,6 +10,14 @@ enum EquinoxFormatters {
         Locale.autoupdatingCurrent
     }
 
+    static func invalidateCache() {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        formatters.removeAll()
+        cachedLocaleIdentifier = nil
+        cachedTimeZoneIdentifier = nil
+    }
+
     static func formatter(
         key: String,
         configure: (DateFormatter) -> Void

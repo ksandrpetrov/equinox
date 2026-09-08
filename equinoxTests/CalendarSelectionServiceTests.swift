@@ -46,6 +46,13 @@ final class CalendarSelectionServiceTests: XCTestCase {
         XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
     }
 
+    func testMalformedSelectionDoesNotBecomeExplicitSelectNone() {
+        defaults.set("invalid", forKey: kSelectedCalendars)
+        XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+        defaults.set([1, 2], forKey: kSelectedCalendars)
+        XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+    }
+
     func testTemporarilyEmptyStoreDoesNotCreateSelectNonePreference() {
         XCTAssertFalse(
             CalendarSelectionService.shouldPersistSelection(

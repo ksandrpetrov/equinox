@@ -2,19 +2,28 @@ import Foundation
 
 @MainActor
 final class PeriodicRefreshScheduler {
+    typealias Schedule = @MainActor (TimeInterval, @escaping @MainActor () -> Void) -> Timer
     private var timer: Timer?
     private let onTick: () -> Void
+    private let schedule: Schedule
+    private var isRunning = false
+    private var generation = 0
 
-    init(onTick: @escaping () -> Void) {
+    init(schedule: @escaping Schedule = PeriodicRefreshScheduler.scheduleTimer, onTick: @escaping () -> Void) {
+        self.schedule = schedule
         self.onTick = onTick
     }
 
     func start() {
-        guard timer == nil else { return }
+        guard !isRunning else { return }
+        isRunning = true
+        generation &+= 1
         scheduleNextTick()
     }
 
     func stop() {
+        isRunning = false
+        generation &+= 1
         timer?.invalidate()
         timer = nil
     }
@@ -22,13 +31,21 @@ final class PeriodicRefreshScheduler {
     private func scheduleNextTick() {
         timer?.invalidate()
         let interval = secondsUntilNextMinuteBoundary()
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.onTick()
-                self.scheduleNextTick()
-            }
+        let generation = generation
+        timer = schedule(interval) { [weak self] in
+            guard let self, self.isRunning, self.generation == generation else { return }
+            self.onTick()
+            guard self.isRunning, self.generation == generation else { return }
+            self.scheduleNextTick()
         }
+    }
+
+    private static func scheduleTimer(interval: TimeInterval, tick: @escaping @MainActor () -> Void) -> Timer {
+        let timer = Timer(timeInterval: interval, repeats: false) { _ in
+            Task { @MainActor in tick() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
     }
 
     private func secondsUntilNextMinuteBoundary() -> TimeInterval {

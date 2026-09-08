@@ -2,6 +2,9 @@ import XCTest
 @testable import equinox
 
 final class ColorHexTests: XCTestCase {
+    func testNonFiniteComponentsCannotTrapDuringIntegerConversion() {
+        XCTAssertEqual(ColorHex.rgbaToHex(red: .nan, green: .infinity, blue: -.infinity), "#00FF00")
+    }
     func testRgbaToHexFormatsSRGB() {
         XCTAssertEqual(ColorHex.rgbaToHex(red: 1, green: 0.5, blue: 0), "#FF8000")
     }

@@ -83,6 +83,7 @@ struct NewEventSheet: View {
                         .padding(.top, EquinoxDesign.spacingSM)
                 }
                 formContent
+                    .disabled(isSaving)
             }
         }
         .onAppear {

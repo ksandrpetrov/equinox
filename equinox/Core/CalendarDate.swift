@@ -19,12 +19,11 @@ extension Calendar {
 }
 
 struct CalendarDate: Equatable, Hashable, Sendable {
-    var year: Int
-    var monthIndex: Int
-    var day: Int
-    var julian: Int
+    let year: Int
+    let monthIndex: Int
+    let day: Int
+    let julian: Int
 
-    static let noJulian = -1
     static let minYear = 1583
     static let maxYear = 3333
     static let minimumSupported = CalendarDate(year: minYear, monthIndex: 0, day: 1)
@@ -70,11 +69,7 @@ struct CalendarDate: Equatable, Hashable, Sendable {
     }
 
     func addingDays(_ days: Int) -> CalendarDate {
-        var copy = self
-        if copy.julian == Self.noJulian {
-            copy.julian = Self.makeJulian(year: year, monthIndex: monthIndex, day: day)
-        }
-        return CalendarDate(julian: copy.julian + days)
+        CalendarDate(julian: julian + days)
     }
 
     func addingMonths(_ months: Int) -> CalendarDate {
@@ -104,11 +99,7 @@ struct CalendarDate: Equatable, Hashable, Sendable {
     }
 
     func compare(_ other: CalendarDate) -> Int {
-        let j1 = julian == Self.noJulian ? Self.makeJulian(year: year, monthIndex: monthIndex, day: day) : julian
-        let j2 = other.julian == Self.noJulian
-            ? Self.makeJulian(year: other.year, monthIndex: other.monthIndex, day: other.day)
-            : other.julian
-        return j1 - j2
+        julian - other.julian
     }
 
     func isSameCalendarDay(as other: CalendarDate) -> Bool {

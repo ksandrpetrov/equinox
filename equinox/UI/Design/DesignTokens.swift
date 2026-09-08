@@ -26,21 +26,11 @@ enum EquinoxDesign {
     static let selectionStrokeWidth: CGFloat = 1
     static let focusStrokeWidth: CGFloat = 2
     static let eventMarkerRowHeight: CGFloat = 12
-    static let todayOrbitStrokeWidth: CGFloat = 1
 
-    static let agendaHeaderTitleSpacing: CGFloat = spacingSM - 2
-    static let agendaHeaderVerticalPadding: CGFloat = spacingSM - 3
-    static let agendaDateMarkerSize: CGFloat = 8
-    static let agendaEventCountMinWidth: CGFloat = 18
-    static let agendaTimelineNodeSize: CGFloat = 7
-    static let agendaTimelineFocusNodeSize: CGFloat = 10
-    static let agendaTimelineLineWidth: CGFloat = 1
-    static let commandBarHeight: CGFloat = 40
     static var toolbarButtonSize: CGFloat { SizeMetrics.metrics(for: .medium).toolbarButtonSize }
     static let minimumReadableFontSize: CGFloat = 10
 
     static let settingsSidebarWidth: CGFloat = 220
-    static let settingsSectionCornerRadius: CGFloat = 12
     static let settingsSectionSpacing: CGFloat = 20
     static let settingsDetailPadding: CGFloat = 20
     static let settingsRowVerticalPadding: CGFloat = 8
@@ -100,31 +90,10 @@ enum EquinoxDesign {
         static var weekdayDimmed: Color { Color.secondary.opacity(EquinoxDesign.StateOpacity.weekdayDimmed) }
     }
 
-    enum ShadowToken {
-        static let panelGlassOpacity: Double = 0.12
-        static let panelSolidOpacity: Double = 0.06
-        static let panelRadius: CGFloat = 12
-        static let panelYOffset: CGFloat = 4
-
-        static let sheetOpacity: Double = 0.22
-        static let sheetRadius: CGFloat = 20
-        static let sheetYOffset: CGFloat = 12
-
-    }
-
     enum EventStripe {
         static let width: CGFloat = 3
         static let widthHero: CGFloat = 4
         static let cornerRadius: CGFloat = 2
-    }
-
-    enum Orbit {
-        static let trimStart: CGFloat = 0.08
-        static let trimEnd: CGFloat = 0.92
-        static let axisLengthRatio: CGFloat = 0.22
-        static let axisOffsetRatio: CGFloat = 0.38
-        static let innerDotRatio: CGFloat = 0.34
-        static let rotation: Angle = .degrees(-90)
     }
 
     enum ChipMetrics {
@@ -140,7 +109,6 @@ enum EquinoxDesign {
 
     enum ControlWidth {
         static let settingsPicker: CGFloat = 160
-        static let settingsPickerNarrow: CGFloat = 140
         static let weekdayCell: CGFloat = 32
         static let weekdayCellHeight: CGFloat = 28
         static let shortcutRecorder: CGFloat = 160
@@ -160,19 +128,14 @@ enum EquinoxDesign {
         static let declinedTitle: Double = 0.55
         static let notesBody: Double = 0.9
         static let joinSubtitle: Double = 0.85
-        static let selectionTint: Double = 0.16
-        static let selectionBorder: Double = 0.35
         static let chipBackground: Double = 0.14
         static let weekendHighlight: Double = 0.25
-        static let metadataIconBackground: Double = 0.12
-        static let cardBackground: Double = 0.72
         static let badgeTint: Double = 0.12
         static let badgeBorder: Double = 0.25
         static let chipForegroundSubtle: Double = 0.85
         static let weekdayDimmed: Double = 0.7
         static let warningBannerTint: Double = 0.08
         static let currentEventBackground: Double = 0.10
-        static let currentEventBorder: Double = 0.32
         static let monthBoundary: Double = 0.55
     }
 
@@ -189,11 +152,11 @@ enum EquinoxDesign {
     }
 
     static func dayNumeralFont(size: CGFloat) -> Font {
-        .system(size: size, weight: .medium, design: .rounded)
+        .system(size: size, weight: .medium)
     }
 
     static func calendarTitleFont(size: CGFloat) -> Font {
-        .system(size: size, weight: .semibold, design: .rounded)
+        .system(size: size, weight: .semibold)
     }
 
     static func calendarYearFont(size: CGFloat) -> Font {
@@ -275,7 +238,6 @@ enum ModalDesign {
 
 enum SettingsDesign {
     static var sidebarWidth: CGFloat { EquinoxDesign.settingsSidebarWidth }
-    static var sectionCornerRadius: CGFloat { EquinoxDesign.settingsSectionCornerRadius }
     static var sectionSpacing: CGFloat { EquinoxDesign.settingsSectionSpacing }
     static var sectionHeaderBottomPadding: CGFloat { EquinoxDesign.spacingSM - 2 }
     static var detailPadding: CGFloat { EquinoxDesign.settingsDetailPadding }

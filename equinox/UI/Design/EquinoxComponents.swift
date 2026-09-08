@@ -1,54 +1,5 @@
 import SwiftUI
 
-// MARK: - Equinox signature
-
-/// The single bespoke mark in the interface: an open orbit that means “present”.
-/// Color is never the only signal; callers pair it with Today/Now text and accessibility labels.
-struct EquinoxOrbitMark: View {
-    var tint: Color = EquinoxDesign.ColorToken.present
-    var lineWidth: CGFloat = EquinoxDesign.todayOrbitStrokeWidth
-    var showsInnerDot = false
-
-    var body: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height)
-            ZStack {
-                Circle()
-                    .trim(
-                        from: EquinoxDesign.Orbit.trimStart,
-                        to: EquinoxDesign.Orbit.trimEnd
-                    )
-                    .stroke(
-                        tint,
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                    )
-                    .rotationEffect(EquinoxDesign.Orbit.rotation)
-
-                Capsule(style: .continuous)
-                    .fill(tint)
-                    .frame(
-                        width: side * EquinoxDesign.Orbit.axisLengthRatio,
-                        height: lineWidth
-                    )
-                    .offset(x: side * EquinoxDesign.Orbit.axisOffsetRatio)
-
-                if showsInnerDot {
-                    Circle()
-                        .fill(tint)
-                        .frame(
-                            width: side * EquinoxDesign.Orbit.innerDotRatio,
-                            height: side * EquinoxDesign.Orbit.innerDotRatio
-                        )
-                }
-            }
-            .frame(width: side, height: side)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .aspectRatio(1, contentMode: .fit)
-        .accessibilityHidden(true)
-    }
-}
-
 // MARK: - Button styles
 
 enum EquinoxButtonVariant {
@@ -63,93 +14,32 @@ enum EquinoxButtonSize {
     case small
 }
 
-struct EquinoxButtonStyle: ButtonStyle {
+/// Keep the shared variants while delegating interaction, focus and rendering to macOS.
+struct EquinoxButtonStyle: PrimitiveButtonStyle {
     var variant: EquinoxButtonVariant = .bordered
     var size: EquinoxButtonSize = .regular
 
-    @Environment(\.isEnabled) private var isEnabled
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isHovered = false
-
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(size == .small ? .caption.weight(.semibold) : .subheadline.weight(.semibold))
-            .padding(.horizontal, horizontalPadding)
-            .padding(.vertical, verticalPadding)
-            .foregroundStyle(foregroundColor(isPressed: configuration.isPressed))
-            .background { background(isPressed: configuration.isPressed) }
-            .overlay { borderOverlay(isPressed: configuration.isPressed) }
-            .scaleEffect(pressScale(isPressed: configuration.isPressed))
-            .opacity(isEnabled ? 1 : EquinoxDesign.StateOpacity.disabled)
-            .onHover { isHovered = $0 }
-            .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: configuration.isPressed)
-            .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-    }
-
-    private var horizontalPadding: CGFloat {
-        size == .small ? EquinoxDesign.spacingSM : EquinoxDesign.spacingMD
-    }
-
-    private var verticalPadding: CGFloat {
-        size == .small ? EquinoxDesign.spacingXS : EquinoxDesign.spacingSM - 2
-    }
-
-    private func foregroundColor(isPressed: Bool) -> Color {
-        switch variant {
-        case .prominent:
-            return EquinoxDesign.onAccentForeground
-        case .destructive:
-            return EquinoxDesign.ColorToken.semanticRed
-        case .bordered, .plain:
-            return .primary
-        }
+        styledButton(configuration)
+            .controlSize(size == .small ? .small : .regular)
     }
 
     @ViewBuilder
-    private func background(isPressed: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
+    private func styledButton(_ configuration: Configuration) -> some View {
         switch variant {
         case .prominent:
-            shape.fill(isPressed || isHovered ? EquinoxDesign.ColorToken.accentStrong : EquinoxDesign.ColorToken.accent)
+            Button(role: configuration.role, action: configuration.trigger) { configuration.label }
+                .buttonStyle(.borderedProminent)
+        case .bordered:
+            Button(role: configuration.role, action: configuration.trigger) { configuration.label }
+                .buttonStyle(.bordered)
+        case .plain:
+            Button(role: configuration.role, action: configuration.trigger) { configuration.label }
+                .buttonStyle(.borderless)
         case .destructive:
-            shape.fill(EquinoxDesign.ColorToken.semanticRed.opacity(interactionFill(isPressed: isPressed)))
-        case .bordered, .plain:
-            if variant == .plain && !isPressed && !isHovered {
-                shape.fill(Color.clear)
-            } else {
-                shape.fill(interactionColor(isPressed: isPressed))
-            }
+            Button(role: .destructive, action: configuration.trigger) { configuration.label }
+                .buttonStyle(.bordered)
         }
-    }
-
-    @ViewBuilder
-    private func borderOverlay(isPressed: Bool) -> some View {
-        if variant == .bordered || variant == .destructive {
-            RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                .strokeBorder(
-                    variant == .destructive
-                        ? EquinoxDesign.ColorToken.semanticRed.opacity(EquinoxDesign.StateOpacity.selectionBorder)
-                        : EquinoxDesign.ColorToken.hairlineBorder,
-                    lineWidth: 1
-                )
-        }
-    }
-
-    private func interactionColor(isPressed: Bool) -> Color {
-        if isPressed { return EquinoxDesign.ColorToken.interactionPress }
-        if isHovered { return EquinoxDesign.ColorToken.interactionHover }
-        return EquinoxDesign.ColorToken.interactionRest
-    }
-
-    private func interactionFill(isPressed: Bool) -> Double {
-        if isPressed { return EquinoxDesign.StateOpacity.selectionTint }
-        if isHovered { return EquinoxDesign.StateOpacity.selectionTint - 0.02 }
-        return EquinoxDesign.StateOpacity.selectionTint - 0.04
-    }
-
-    private func pressScale(isPressed: Bool) -> CGFloat {
-        guard isEnabled, isPressed, !reduceMotion else { return 1 }
-        return EquinoxDesign.pressScale
     }
 }
 
@@ -205,11 +95,8 @@ struct EquinoxCardModifier: ViewModifier {
         if style == .row {
             return isHovered ? EquinoxDesign.ColorToken.separator : EquinoxDesign.ColorToken.hairlineBorder
         }
-        if style == .timeline {
-            return isHovered ? EquinoxDesign.ColorToken.separator : .clear
-        }
-        if style == .activeTimeline {
-            return EquinoxDesign.ColorToken.present.opacity(EquinoxDesign.StateOpacity.currentEventBorder)
+        if style == .timeline || style == .activeTimeline {
+            return .clear
         }
         return isHovered ? EquinoxDesign.ColorToken.interactionHover : EquinoxDesign.ColorToken.hairlineBorder
     }
@@ -234,6 +121,7 @@ struct EquinoxBadge: View {
     var body: some View {
         Text(text)
             .font(.caption2.weight(.semibold))
+            .lineLimit(1)
             .foregroundStyle(tint)
             .padding(.horizontal, EquinoxDesign.ChipMetrics.badgeHorizontalPadding)
             .padding(.vertical, EquinoxDesign.ChipMetrics.badgeVerticalPadding)
@@ -299,11 +187,7 @@ struct EquinoxChip: View {
 struct EventDetailCardBackground: View {
     var body: some View {
         RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(EquinoxDesign.ColorToken.surfaceSecondary.opacity(EquinoxDesign.StateOpacity.cardBackground))
-            .overlay {
-                RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-                    .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 1)
-            }
+            .fill(EquinoxDesign.ColorToken.surfaceSecondary)
     }
 }
 

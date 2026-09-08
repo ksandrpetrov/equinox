@@ -21,10 +21,6 @@ struct DayCellView: View {
     @State private var isHovered = false
     @State private var selectionTrigger = false
 
-    private var todayMarkerSize: CGFloat {
-        min(metrics.cellSize - 3, metrics.cellSize * 0.9)
-    }
-
     private var accessibilityDateLabel: String {
         EquinoxFormatters.formatter(key: "daycell.a11y") { $0.dateStyle = .full }.string(
             from: date.date(in: calendar)
@@ -59,48 +55,15 @@ struct DayCellView: View {
                         .padding(.horizontal, 1)
                 }
 
-                if isSelected && !isToday {
-                    RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                        .fill(EquinoxDesign.ColorToken.accentSoft)
-                        .overlay {
+                RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
+                    .fill(isSelected ? EquinoxDesign.ColorToken.action : (isHovered ? EquinoxDesign.ColorToken.interactionHover : .clear))
+                    .overlay {
+                        if isToday && !isSelected {
                             RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                                .strokeBorder(
-                                    isKeyboardFocused
-                                        ? EquinoxDesign.ColorToken.focusRing
-                                        : EquinoxDesign.ColorToken.accentRing,
-                                    lineWidth: isKeyboardFocused
-                                        ? EquinoxDesign.focusStrokeWidth
-                                        : EquinoxDesign.selectionStrokeWidth
-                                )
+                                .strokeBorder(EquinoxDesign.ColorToken.action, lineWidth: EquinoxDesign.selectionStrokeWidth)
                         }
-                        .padding(.horizontal, 1)
-                } else if isHovered && !isSelected {
-                    RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                        .fill(EquinoxDesign.ColorToken.interactionHover)
-                        .padding(.horizontal, 1)
-                }
-
-                if isToday {
-                    Circle()
-                        .fill(
-                            isSelected
-                                ? EquinoxDesign.ColorToken.present
-                                    .opacity(EquinoxDesign.StateOpacity.selectionTint)
-                                : Color.clear
-                        )
-                        .overlay {
-                            Circle()
-                                .strokeBorder(
-                                    isSelected && isKeyboardFocused
-                                        ? EquinoxDesign.ColorToken.focusRing
-                                        : EquinoxDesign.ColorToken.present,
-                                    lineWidth: isSelected
-                                        ? EquinoxDesign.focusStrokeWidth
-                                        : EquinoxDesign.todayOrbitStrokeWidth
-                                )
-                        }
-                        .frame(width: todayMarkerSize, height: todayMarkerSize)
-                }
+                    }
+                    .padding(.horizontal, EquinoxDesign.spacingMicro)
 
                 VStack(spacing: EquinoxDesign.spacingMicro) {
                     Text("\(date.day)")
@@ -126,6 +89,12 @@ struct DayCellView: View {
                         .fill(EquinoxDesign.ColorToken.monthBoundary)
                         .opacity(EquinoxDesign.StateOpacity.monthBoundary)
                         .frame(width: EquinoxDesign.monthBoundaryWidth)
+                }
+            }
+            .overlay {
+                if isKeyboardFocused {
+                    RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
+                        .strokeBorder(EquinoxDesign.ColorToken.focusRing, lineWidth: EquinoxDesign.focusStrokeWidth)
                 }
             }
             .contentShape(Rectangle())
@@ -161,8 +130,8 @@ struct DayCellView: View {
     }
 
     private var textColor: Color {
-        if isToday { return EquinoxDesign.ColorToken.present }
-        if isSelected { return EquinoxDesign.ColorToken.action }
+        if isSelected { return EquinoxDesign.onAccentForeground }
+        if isToday { return EquinoxDesign.ColorToken.action }
         if isInCurrentMonth { return .primary }
         return .secondary
     }
@@ -180,14 +149,14 @@ struct DayCellView: View {
                         HStack(spacing: -metrics.cellDotWidth * 0.25) {
                             ForEach(Array(dotColors.prefix(3).enumerated()), id: \.offset) { _, color in
                                 Circle()
-                                    .fill(color)
+                                    .fill(isSelected ? EquinoxDesign.onAccentForeground : color)
                                     .frame(width: metrics.cellDotWidth + 0.5, height: metrics.cellDotWidth + 0.5)
                             }
                         }
                         if eventCount > 3 {
                             Text("\(eventCount)")
                                 .font(EquinoxDesign.microFont())
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(textColor)
                         }
                     }
                 }

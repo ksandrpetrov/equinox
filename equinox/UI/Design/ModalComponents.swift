@@ -102,6 +102,7 @@ struct ModalSheetScaffold<Content: View>: View {
                 }
         }
         .equinoxSheetChrome(metrics: metrics, minHeight: minHeight)
+        .interactiveDismissDisabled(isConfirming || isDestructiveInProgress)
     }
 }
 
@@ -110,6 +111,7 @@ struct ModalConfirmDialog: View {
     let message: String
     var confirmTitle: String = String(localized: "Confirm", comment: "Modal confirm button")
     var cancelTitle: String = String(localized: "Cancel", comment: "Modal cancel button")
+    var isConfirming = false
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
@@ -126,17 +128,19 @@ struct ModalConfirmDialog: View {
             HStack {
                 Spacer()
                 Button(cancelTitle, action: onCancel)
-                    .buttonStyle(EquinoxButtonStyle(variant: .plain))
+                    .buttonStyle(.bordered)
                     .keyboardShortcut(.cancelAction)
-                Button(confirmTitle, action: onConfirm)
-                    .buttonStyle(EquinoxButtonStyle(variant: .destructive))
+                Button(confirmTitle, role: .destructive, action: onConfirm)
+                    .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
             }
         }
         .padding(ModalDesign.contentPadding)
+        .disabled(isConfirming)
+        .interactiveDismissDisabled(isConfirming)
         .frame(width: ModalDesign.confirmWidth)
         .presentationSizing(.fitted)
-        .presentationBackground(.regularMaterial)
+        .presentationBackground(.background)
     }
 }
 
@@ -156,11 +160,6 @@ extension View {
     }
 
     func equinoxSheetPresentation() -> some View {
-        presentationBackground(.regularMaterial)
-            .shadow(
-                color: .black.opacity(EquinoxDesign.ShadowToken.sheetOpacity),
-                radius: EquinoxDesign.ShadowToken.sheetRadius,
-                y: EquinoxDesign.ShadowToken.sheetYOffset
-            )
+        presentationBackground(.background)
     }
 }

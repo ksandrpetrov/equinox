@@ -13,58 +13,26 @@ struct AgendaSectionHeader: View {
         let isTomorrow = calendar.isDateInTomorrow(nsDate)
         let context = sectionContext(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate)
 
-        HStack(spacing: 0) {
-            Text(EquinoxFormatters.shortWeekday(nsDate).uppercased())
-                .font(EquinoxDesign.weekdayHeaderFont())
-                .tracking(EquinoxDesign.weekdayHeaderTracking())
-                .foregroundStyle(
-                    isToday
-                        ? EquinoxDesign.ColorToken.present
-                        : EquinoxDesign.ColorToken.weekdayDimmed
-                )
-                .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
-
-            AgendaSectionDateMarker(
-                isToday: isToday,
-                isSelected: isSelected,
-                width: metrics.agendaTimelineColumnWidth
-            )
-
-            HStack(spacing: EquinoxDesign.agendaHeaderTitleSpacing) {
-                Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
-                    .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
-                    .foregroundStyle(isToday ? EquinoxDesign.ColorToken.present : .secondary)
-                if !context.isEmpty {
-                    Text(context)
-                        .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
-                        .foregroundStyle(.tertiary)
-                }
-                Spacer(minLength: 0)
-                if eventCount > 0 {
-                    Text("\(eventCount)")
-                        .font(EquinoxDesign.agendaEventCountFont())
-                        .foregroundStyle(
-                            isSelected
-                                ? EquinoxDesign.ColorToken.action
-                                : EquinoxDesign.ColorToken.weekdayDimmed
-                        )
-                        .frame(minWidth: EquinoxDesign.agendaEventCountMinWidth, alignment: .trailing)
-                        .accessibilityLabel(EquinoxFormatters.eventCount(eventCount))
-                }
+        HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
+            Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
+                .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
+                .foregroundStyle(isSelected ? EquinoxDesign.ColorToken.action : .primary)
+            if !context.isEmpty {
+                Text(context)
+                    .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
+                    .foregroundStyle(.secondary)
             }
-            .padding(.leading, EquinoxDesign.spacingXS)
-            .padding(.trailing, EquinoxDesign.spacingSM)
+            Spacer(minLength: 0)
+            if eventCount > 0 {
+                Text("\(eventCount)")
+                    .font(EquinoxDesign.agendaEventCountFont())
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel(EquinoxFormatters.eventCount(eventCount))
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, EquinoxDesign.spacingXS)
-        .padding(.vertical, EquinoxDesign.agendaHeaderVerticalPadding)
-        .background(EquinoxDesign.ColorToken.surfaceRaised)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(EquinoxDesign.ColorToken.separator)
-                .frame(height: 1)
-        }
-        .padding(.top, EquinoxDesign.spacingXS)
+        .padding(.horizontal, EquinoxDesign.spacingSM)
+        .padding(.vertical, EquinoxDesign.spacingSM)
+        .background(EquinoxDesign.ColorToken.surfaceWindow)
         .accessibilityAddTraits(.isHeader)
     }
 
@@ -79,37 +47,6 @@ struct AgendaSectionHeader: View {
             return EquinoxFormatters.agendaHeader(nsDate)
         }
         return ""
-    }
-}
-
-private struct AgendaSectionDateMarker: View {
-    let isToday: Bool
-    let isSelected: Bool
-    let width: CGFloat
-
-    var body: some View {
-        Group {
-            if isToday {
-                EquinoxOrbitMark(showsInnerDot: true)
-                    .frame(
-                        width: EquinoxDesign.agendaTimelineFocusNodeSize,
-                        height: EquinoxDesign.agendaTimelineFocusNodeSize
-                    )
-            } else {
-                Circle()
-                    .fill(
-                        isSelected
-                            ? EquinoxDesign.ColorToken.action
-                            : EquinoxDesign.ColorToken.separator
-                    )
-                    .frame(
-                        width: EquinoxDesign.agendaDateMarkerSize,
-                        height: EquinoxDesign.agendaDateMarkerSize
-                    )
-            }
-        }
-        .frame(width: width)
-        .accessibilityHidden(true)
     }
 }
 
@@ -191,75 +128,16 @@ enum AgendaTimelineEmphasis {
 struct AgendaTimelineMarker: View {
     let calendarColor: Color
     let emphasis: AgendaTimelineEmphasis
-    let connectsAbove: Bool
-    let connectsBelow: Bool
     let width: CGFloat
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                Rectangle()
-                    .fill(connectsAbove ? EquinoxDesign.ColorToken.separator : .clear)
-                    .frame(width: EquinoxDesign.agendaTimelineLineWidth)
-                    .frame(maxHeight: .infinity)
-                Color.clear
-                    .frame(height: EquinoxDesign.agendaTimelineFocusNodeSize)
-                Rectangle()
-                    .fill(connectsBelow ? EquinoxDesign.ColorToken.separator : .clear)
-                    .frame(width: EquinoxDesign.agendaTimelineLineWidth)
-                    .frame(maxHeight: .infinity)
-            }
-
-            marker
-        }
-        .frame(width: width)
-        .frame(maxHeight: .infinity)
-        .accessibilityHidden(true)
-    }
-
-    @ViewBuilder
-    private var marker: some View {
-        switch emphasis {
-        case .none:
-            Circle()
-                .fill(calendarColor)
-                .frame(
-                    width: EquinoxDesign.agendaTimelineNodeSize,
-                    height: EquinoxDesign.agendaTimelineNodeSize
-                )
-        case .next, .current:
-            Circle()
-                .fill(EquinoxDesign.ColorToken.surfaceRaised)
-                .frame(
-                    width: EquinoxDesign.agendaTimelineFocusNodeSize,
-                    height: EquinoxDesign.agendaTimelineFocusNodeSize
-                )
-                .overlay {
-                    if emphasis == .current {
-                        EquinoxOrbitMark(
-                            tint: emphasisColor,
-                            lineWidth: EquinoxDesign.todayOrbitStrokeWidth
-                        )
-                    } else {
-                        Circle()
-                            .strokeBorder(emphasisColor, lineWidth: EquinoxDesign.focusStrokeWidth)
-                    }
-                    Circle()
-                        .fill(calendarColor)
-                        .frame(
-                            width: EquinoxDesign.agendaTimelineNodeSize - 3,
-                            height: EquinoxDesign.agendaTimelineNodeSize - 3
-                        )
-                }
-        }
-    }
-
-    private var emphasisColor: Color {
-        switch emphasis {
-        case .none: calendarColor
-        case .next: EquinoxDesign.ColorToken.action
-        case .current: EquinoxDesign.ColorToken.present
-        }
+        EventStripeView(
+            color: calendarColor,
+            width: emphasis == .none ? EquinoxDesign.EventStripe.width : EquinoxDesign.EventStripe.widthHero
+        )
+            .frame(width: width)
+            .frame(maxHeight: .infinity)
+            .accessibilityHidden(true)
     }
 }
 
@@ -268,14 +146,13 @@ struct AgendaEventCard: View {
     let metrics: SizeMetrics
     let showLocation: Bool
     let now: Date
-    var isFirstInSection = false
-    var isLastInSection = false
     var isFocusedEvent = false
     var onTap: (() -> Void)? = nil
 
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isHovered = false
+    @State private var showsOpenError = false
 
     private var calendarColor: Color {
         event.swiftUIColor
@@ -301,8 +178,6 @@ struct AgendaEventCard: View {
                     AgendaTimelineMarker(
                         calendarColor: calendarColor,
                         emphasis: timelineEmphasis,
-                        connectsAbove: !isFirstInSection,
-                        connectsBelow: !isLastInSection,
                         width: metrics.agendaTimelineColumnWidth
                     )
 
@@ -336,7 +211,10 @@ struct AgendaEventCard: View {
                     metrics: metrics,
                     isProminent: isJoinUrgent
                 ) {
-                    URLOpener.open(url)
+                    let fallback = JoinURLDetection.detectJoinURL(
+                        location: event.location, url: event.url?.absoluteString, notes: event.notes
+                    )
+                    showsOpenError = !URLOpener.open(url, fallback: fallback)
                 }
                 .padding(.trailing, EquinoxDesign.spacingSM)
                 .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
@@ -348,6 +226,9 @@ struct AgendaEventCard: View {
         .help(eventHelp)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
+        .alert(String(localized: "Could not open the link.", comment: "URL open error"), isPresented: $showsOpenError) {
+            Button(String(localized: "OK", comment: "Dismiss alert"), role: .cancel) {}
+        }
     }
 
     @ViewBuilder
@@ -387,6 +268,8 @@ struct AgendaEventCard: View {
                 .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
             Spacer(minLength: EquinoxDesign.spacingXS)
             relativeTimeLabel
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(2)
         }
     }
 
@@ -406,6 +289,8 @@ struct AgendaEventCard: View {
                     .opacity(isDeclined ? EquinoxDesign.StateOpacity.declinedTitle : 1)
                 Spacer(minLength: EquinoxDesign.spacingXS)
                 relativeTimeLabel
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(2)
             }
 
             if showLocation || !event.calendarTitle.isEmpty {

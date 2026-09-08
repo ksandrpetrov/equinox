@@ -9,47 +9,17 @@ extension View {
                 if effectiveStyle == .solid {
                     shape.fill(EquinoxDesign.ColorToken.surfacePrimary)
                 } else {
-                    shape
-                        .fill(.regularMaterial)
-                        .overlay { shape.fill(EquinoxDesign.ColorToken.interactionRest) }
+                    shape.fill(.regularMaterial)
                 }
             }
             .overlay {
                 shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
             }
-            .shadow(
-                color: .black.opacity(
-                    effectiveStyle == .glass
-                        ? EquinoxDesign.ShadowToken.panelGlassOpacity
-                        : EquinoxDesign.ShadowToken.panelSolidOpacity
-                ),
-                radius: EquinoxDesign.ShadowToken.panelRadius,
-                y: EquinoxDesign.ShadowToken.panelYOffset
-            )
+
         }
         .clipShape(shape)
     }
 
-    /// Keeps Liquid Glass on the command layer instead of putting calendar content on glass.
-    func panelCommandShelf(style: BackgroundStyle, reduceTransparency: Bool = false) -> some View {
-        let effectiveStyle: BackgroundStyle = (style == .glass && reduceTransparency) ? .solid : style
-        let shape = RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-        return background {
-            Group {
-                if effectiveStyle == .glass {
-                    shape
-                        .fill(.regularMaterial)
-                        .glassEffect(.regular, in: shape)
-                } else {
-                    shape.fill(EquinoxDesign.ColorToken.interactionSubtle)
-                }
-            }
-            .overlay {
-                shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
-            }
-        }
-        .clipShape(shape)
-    }
 
 }
 
@@ -150,40 +120,6 @@ struct PanelIconMenuButton<MenuContent: View>: View {
     }
 }
 
-struct PanelDateButton: View {
-    let day: Int
-    var help: String = ""
-    var accessibilityLabel: String = ""
-    var isSelected = false
-    var buttonSize: CGFloat = EquinoxDesign.toolbarButtonSize
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
-                    .strokeBorder(
-                        EquinoxDesign.ColorToken.present,
-                        lineWidth: 1
-                    )
-                    .frame(width: buttonSize * 0.62, height: buttonSize * 0.62)
-                Text("\(day)")
-                    .font(.system(size: buttonSize * 0.3, weight: .bold, design: .rounded))
-                    .foregroundStyle(EquinoxDesign.ColorToken.present)
-                    .contentTransition(.numericText())
-            }
-            .frame(width: buttonSize, height: buttonSize)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(PanelButtonStyle(isSelected: isSelected))
-        .help(help)
-        .panelAccessibilityLabel(
-            accessibilityLabel.isEmpty ? help : accessibilityLabel,
-            hint: help
-        )
-    }
-}
-
 private func panelIconLabel(
     symbol: String,
     isSelected: Bool = false,
@@ -200,26 +136,4 @@ private func panelIconLabel(
         )
         .frame(width: buttonSize, height: buttonSize)
         .contentShape(Rectangle())
-}
-
-struct PanelButtonGroup<Content: View>: View {
-    var spacing: CGFloat = EquinoxDesign.spacingXS
-    var showsBackground = false
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        HStack(spacing: spacing) {
-            content()
-        }
-        .background {
-            if showsBackground {
-                RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                    .fill(EquinoxDesign.ColorToken.interactionSubtle)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
-                            .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
-                    }
-            }
-        }
-    }
 }

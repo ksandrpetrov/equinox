@@ -2,6 +2,27 @@ import XCTest
 @testable import equinox
 
 final class EventFetchRangeTests: XCTestCase {
+    func testLongFetchIsSplitWithoutGapsOrOverlaps() throws {
+        let first = CalendarDate(year: 2020, monthIndex: 0, day: 1)
+        let last = CalendarDate(year: 2030, monthIndex: 11, day: 31)
+        let chunks = EventFetchRange.chunks(first: first, last: last)
+        XCTAssertEqual(chunks.first?.first, first)
+        XCTAssertEqual(chunks.last?.last, last)
+        XCTAssertTrue(chunks.allSatisfy { $0.last.compare($0.first) <= 365 })
+        for (previous, next) in zip(chunks, chunks.dropFirst()) {
+            XCTAssertEqual(previous.last.addingDays(1), next.first)
+        }
+    }
+
+    func testFetchChunksRespectSupportedBoundariesAndRejectReversedRanges() {
+        let first = CalendarDate.minimumSupported
+        let last = CalendarDate.maximumSupported
+        XCTAssertEqual(EventFetchRange.chunks(first: first, last: first).count, 1)
+        XCTAssertEqual(EventFetchRange.chunks(first: last, last: last).last?.last, last)
+        XCTAssertTrue(EventFetchRange.chunks(first: last, last: first).isEmpty)
+        XCTAssertTrue(EventFetchRange.chunks(first: first.addingDays(-1), last: first).isEmpty)
+    }
+
     func testFetchRangeExtendsForAgendaBounds() {
         let gridFirst = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let gridLast = CalendarDate(year: 2026, monthIndex: 5, day: 30)

@@ -56,10 +56,6 @@ struct MainPanelView: View {
     private var panelContent: some View {
         VStack(spacing: 0) {
             PanelCommandBar(appState: appState, metrics: metrics)
-                .panelCommandShelf(
-                    style: backgroundStyle,
-                    reduceTransparency: reduceTransparency
-                )
                 .padding(.bottom, EquinoxDesign.spacingSM)
 
             if let feedback = appState.panel.panelFeedback {

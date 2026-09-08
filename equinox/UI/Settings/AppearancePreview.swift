@@ -63,6 +63,8 @@ struct AppearancePreview: View {
                 style: previewBackgroundStyle,
                 reduceTransparency: reduceTransparency
             )
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
     }
 
@@ -80,8 +82,6 @@ struct AppearancePreview: View {
             AgendaTimelineMarker(
                 calendarColor: previewEventColor,
                 emphasis: .current,
-                connectsAbove: false,
-                connectsBelow: false,
                 width: previewMetrics.agendaTimelineColumnWidth
             )
 

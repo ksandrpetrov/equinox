@@ -261,3 +261,43 @@ final class EventDraftDefaultsTests: XCTestCase {
         )
     }
 }
+
+final class NewEventDraftValidationTests: XCTestCase {
+    private var draft: NewEventDraft {
+        NewEventDraft(title: "Meeting", location: "", isAllDay: false,
+                      startDate: Date(timeIntervalSince1970: 1_800_000_000),
+                      endDate: Date(timeIntervalSince1970: 1_800_003_600), calendarIdentifier: "work")
+    }
+
+    func testValidDraftPasses() {
+        XCTAssertNoThrow(try draft.validate())
+    }
+
+    func testInvalidDraftsAreRejectedBeforeEventKitMutation() {
+        let cases: [(CalendarStoreError, (inout NewEventDraft) -> Void)] = [
+            (.emptyTitle, { $0.title = " \n " }),
+            (.endDateBeforeStart, { $0.endDate = $0.startDate }),
+            (.endDateBeforeStart, { $0.startDate = Date(timeIntervalSince1970: .nan) }),
+            (.endDateBeforeStart, { $0.endDate = Date(timeIntervalSince1970: .infinity) }),
+            (.invalidURL, { $0.url = URL(string: "relative/path") }),
+            (.invalidRecurrenceEnd, { $0.recurrence = RecurrenceDraft(frequency: .daily, endDate: $0.startDate.addingTimeInterval(-1)) }),
+            (.invalidAlert, { $0.alertOffset = .infinity }),
+        ]
+        for (expected, mutate) in cases {
+            var invalid = draft
+            mutate(&invalid)
+            XCTAssertThrowsError(try invalid.validate()) { error in
+                XCTAssertEqual(error as? CalendarStoreError, expected)
+            }
+        }
+    }
+
+    func testNonFiniteDatesAreRejectedBeforeAllDayNormalization() {
+        for allDay in [false, true] {
+            XCTAssertNil(EventDraftDefaults.normalizedDates(
+                calendar: Calendar.equinoxGregorian(), start: draft.startDate,
+                end: Date(timeIntervalSince1970: .infinity), isAllDay: allDay
+            ))
+        }
+    }
+}

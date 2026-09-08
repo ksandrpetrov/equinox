@@ -30,41 +30,42 @@ struct PanelCommandBar: View {
     }
 
     var body: some View {
-        HStack(spacing: EquinoxDesign.spacingSM) {
-            monthMenu
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .layoutPriority(1)
+        VStack(spacing: EquinoxDesign.spacingXS) {
+            HStack(spacing: EquinoxDesign.spacingSM) {
+                monthMenu
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .layoutPriority(1)
 
-            PanelButtonGroup(spacing: EquinoxDesign.spacingMicro) {
-                PanelIconButton(
-                    symbol: "chevron.left",
-                    help: String(localized: "Previous month", comment: ""),
-                    buttonSize: metrics.toolbarButtonSize
-                ) {
-                    appState.goToPreviousMonth()
+                HStack(spacing: EquinoxDesign.spacingMicro) {
+                    PanelIconButton(
+                        symbol: "chevron.left",
+                        help: String(localized: "Previous month", comment: ""),
+                        buttonSize: metrics.toolbarButtonSize
+                    ) {
+                        appState.goToPreviousMonth()
+                    }
+                    .disabled(!appState.events.canGoToPreviousMonth)
+                    PanelIconButton(
+                        symbol: "chevron.right",
+                        help: String(localized: "Next month", comment: ""),
+                        buttonSize: metrics.toolbarButtonSize
+                    ) {
+                        appState.goToNextMonth()
+                    }
+                    .disabled(!appState.events.canGoToNextMonth)
                 }
-                .disabled(!appState.events.canGoToPreviousMonth)
-                PanelIconButton(
-                    symbol: "chevron.right",
-                    help: String(localized: "Next month", comment: ""),
-                    buttonSize: metrics.toolbarButtonSize
-                ) {
-                    appState.goToNextMonth()
-                }
-                .disabled(!appState.events.canGoToNextMonth)
             }
 
-            PanelButtonGroup(spacing: EquinoxDesign.spacingXS) {
-                PanelDateButton(
-                    day: appState.events.todayDate.day,
-                    help: String(localized: "Go to Today   T", comment: ""),
-                    accessibilityLabel: String(localized: "Go to Today", comment: ""),
-                    isSelected: appState.events.selectedDate == appState.events.todayDate,
-                    buttonSize: metrics.toolbarButtonSize
-                ) {
+            HStack(spacing: EquinoxDesign.spacingXS) {
+                Button(String(localized: "Today", comment: "Return to today's date")) {
                     appState.goToToday()
                 }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
                 .keyboardShortcut("t", modifiers: [])
+                .help(String(localized: "Go to Today   T", comment: ""))
+
+                Spacer(minLength: EquinoxDesign.spacingSM)
 
                 PanelIconButton(
                     symbol: "plus",
@@ -123,7 +124,7 @@ struct PanelCommandBar: View {
             }
         }
         .padding(.horizontal, EquinoxDesign.spacingXS)
-        .frame(height: EquinoxDesign.commandBarHeight)
+        .frame(height: metrics.commandBarHeight)
         .overlay(alignment: .bottom) {
             if appState.events.shouldShowLoadingIndicator {
                 ProgressView()

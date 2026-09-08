@@ -71,6 +71,6 @@ enum ColorHex {
     }
 
     private static func clamped(_ component: CGFloat) -> CGFloat {
-        min(max(component, 0), 1)
+        component.isNaN ? 0 : min(max(component, 0), 1)
     }
 }

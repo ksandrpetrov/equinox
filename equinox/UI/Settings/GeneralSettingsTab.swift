@@ -9,6 +9,7 @@ struct GeneralSettingsTab: View {
     @State private var launchAtLoginMessage: String?
     @State private var launchAtLoginMessageIsError = false
     @State private var showResetConfirmation = false
+    @State private var isResetting = false
 
     var body: some View {
         SettingsDetailScaffold(title: String(localized: "General", comment: "General prefs tab label")) {
@@ -32,36 +33,7 @@ struct GeneralSettingsTab: View {
                 }
             }
 
-            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "First day of week:", "Show agenda") {
-                SettingsSection(String(localized: "Calendar", comment: "Settings section: calendar")) {
-                    SettingsRow(title: String(localized: "First day of week:", comment: "")) {
-                        Picker(String(localized: "First day of week", comment: ""), selection: Binding(
-                            get: { prefs.weekStartWeekday },
-                            set: { prefs.weekStartWeekday = $0 }
-                        )) {
-                            Text(String(localized: "Sunday", comment: "")).tag(0)
-                            Text(String(localized: "Monday", comment: "")).tag(1)
-                            Text(String(localized: "Tuesday", comment: "")).tag(2)
-                            Text(String(localized: "Wednesday", comment: "")).tag(3)
-                            Text(String(localized: "Thursday", comment: "")).tag(4)
-                            Text(String(localized: "Friday", comment: "")).tag(5)
-                            Text(String(localized: "Saturday", comment: "")).tag(6)
-                        }
-                        .labelsHidden()
-                        .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
-                    }
-
-                    SettingsDivider()
-
-                    SettingsLabeledToggle(
-                        title: String(localized: "Show agenda", comment: "Agenda visibility setting"),
-                        subtitle: String(localized: "Show the event timeline below the calendar", comment: "Agenda visibility subtitle"),
-                        isOn: $prefs.showsAgenda
-                    )
-                }
-            }
-
-            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "Pin panel by default", "Agenda height") {
+            if SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "Pin panel by default") {
                 SettingsSection(String(localized: "Panel", comment: "Panel settings section")) {
                     SettingsLabeledToggle(
                         title: String(localized: "Pin panel by default", comment: ""),
@@ -71,21 +43,6 @@ struct GeneralSettingsTab: View {
                             set: { appState.setPinned($0) }
                         )
                     )
-
-                    SettingsDivider()
-
-                    SettingsRow(
-                        title: String(localized: "Agenda height", comment: ""),
-                        subtitle: String(localized: "Default proportion of the agenda section", comment: "")
-                    ) {
-                        Slider(
-                            value: $prefs.agendaHeightRatio,
-                            in: AgendaLayout.minimumHeightRatio...AgendaLayout.maximumHeightRatio
-                        )
-                            .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
-                    }
-                    .disabled(!prefs.showsAgenda)
-                    .opacity(prefs.showsAgenda ? 1 : EquinoxDesign.StateOpacity.disabled)
                 }
             }
 
@@ -107,13 +64,17 @@ struct GeneralSettingsTab: View {
                 title: String(localized: "Reset all settings?", comment: ""),
                 message: String(localized: "This restores all preferences to their default values.", comment: ""),
                 confirmTitle: String(localized: "Reset", comment: ""),
+                isConfirming: isResetting,
                 onConfirm: {
+                    guard !isResetting else { return }
+                    isResetting = true
                     Task {
                         let resetError = await appState.resetPreferencesToDefaults()
                         launchAtLogin = LaunchAtLogin.isEnabled
                         launchAtLoginMessage = resetError
                         launchAtLoginMessageIsError = resetError != nil
                         showResetConfirmation = false
+                        isResetting = false
                     }
                 },
                 onCancel: {
@@ -155,8 +116,7 @@ struct GeneralSettingsTab: View {
 
     private var hasVisibleSections: Bool {
         SettingsSearchFilter.matches(searchText: searchText, keywords: "Startup", "Launch at login", "Open Equinox when you sign in")
-            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Calendar", "First day of week:", "Show agenda")
-            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "Pin panel by default", "Agenda height")
+            || SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "Pin panel by default")
             || SettingsSearchFilter.matches(searchText: searchText, keywords: "Advanced", "Reset", "Reset All Settings to Defaults")
     }
 

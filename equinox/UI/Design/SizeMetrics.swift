@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SizeMetrics {
+    var commandBarHeight: CGFloat { toolbarButtonSize * 2 + EquinoxDesign.spacingXS }
+
     let fontSize: CGFloat
     let calendarTitleFontSize: CGFloat
     let cellSize: CGFloat

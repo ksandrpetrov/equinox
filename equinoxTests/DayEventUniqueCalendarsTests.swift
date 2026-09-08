@@ -1,4 +1,4 @@
-import AppKit
+import SwiftUI
 import XCTest
 @testable import equinox
 
@@ -32,7 +32,7 @@ final class DayEventUniqueCalendarsTests: XCTestCase {
     }
 
     func testEmptyEventsReturnsNil() {
-        XCTAssertNil(DayEvent.makeDotColors(for: []))
+        XCTAssertNil(DayEvent.makeSwiftUIDotColors(for: []))
     }
 
     func testDeduplicatesCalendars() {
@@ -41,13 +41,13 @@ final class DayEventUniqueCalendarsTests: XCTestCase {
             makeEvent(calendarID: "a", red: 1),
             makeEvent(calendarID: "b", red: 0.5),
         ]
-        let colors = DayEvent.makeDotColors(for: events)
+        let colors = DayEvent.makeSwiftUIDotColors(for: events)
         XCTAssertEqual(colors?.count, 2)
     }
 
     func testCapsAtThreeColors() {
         let events = (0..<5).map { makeEvent(calendarID: "cal-\($0)", red: CGFloat($0) / 5) }
-        XCTAssertEqual(DayEvent.makeDotColors(for: events)?.count, 3)
+        XCTAssertEqual(DayEvent.makeSwiftUIDotColors(for: events)?.count, 3)
     }
 
     func testMakeUniqueCalendarEventsReturnsNilForEmpty() {

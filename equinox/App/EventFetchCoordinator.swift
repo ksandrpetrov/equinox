@@ -22,6 +22,11 @@ final class EventFetchCoordinator {
                 current: (first: first, last: last),
                 incoming: range
             )
+            if merged.first > first || merged.last < last {
+                // A distant navigation superseded these ranges; they were not fetched.
+                completions.forEach { $0.resume(returning: false) }
+                completions.removeAll()
+            }
             first = merged.first
             last = merged.last
             self.refetch = self.refetch || refetch
@@ -44,13 +49,13 @@ final class EventFetchCoordinator {
     var onPresentationUpdate: ((_ shouldShowLoadingIndicator: Bool, _ isFetchingEvents: Bool) -> Void)?
     var onSyncComplete: ((_ successfulFetch: Bool) async -> Void)?
 
-    convenience init(calendarStore: CalendarStore) {
+    convenience init(calendarStore: any CalendarEventStore) {
         self.init(
             requestCalendarAccess: {
                 await calendarStore.requestCalendarAccessIfNeeded()
             },
             fetchEvents: { first, last in
-                await calendarStore.fetchEvents(first: first, last: last)
+                await calendarStore.fetchEvents(first: first, last: last, refetch: false)
             },
             refetchEvents: { first, last in
                 await calendarStore.refetchAll(first: first, last: last)
@@ -105,7 +110,7 @@ final class EventFetchCoordinator {
         preparesCalendarAccess: Bool,
         completion: CheckedContinuation<Bool, Never>?
     ) {
-        guard range.first <= range.last else {
+        guard range.first.isValid, range.last.isValid, range.first <= range.last else {
             completion?.resume(returning: false)
             return
         }

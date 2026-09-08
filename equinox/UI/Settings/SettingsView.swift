@@ -84,6 +84,9 @@ struct SettingsView: View {
         .onChange(of: appState?.panel.settingsInitialTab) { _, newTab in
             if let newTab { selectedTab = newTab }
         }
+        .onChange(of: selectedTab) { _, newTab in
+            if let newTab { appState?.panel.settingsInitialTab = newTab }
+        }
     }
 
     @ViewBuilder

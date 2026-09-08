@@ -8,33 +8,25 @@ struct EventDetailHeroHeader: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: EquinoxDesign.spacingMD) {
-            EventStripeView(
-                color: event.swiftUIColor,
-                width: EquinoxDesign.EventStripe.widthHero,
-                verticalPadding: EquinoxDesign.spacingMicro
-            )
+        VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
+            Text(event.title)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.primary)
+                .opacity(isDeclined ? EquinoxDesign.StateOpacity.declined : 1)
+                .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
-                Text(event.title)
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .opacity(isDeclined ? EquinoxDesign.StateOpacity.declined : 1)
-                    .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
+                EventDetailCalendarChip(
+                    title: event.calendarTitle,
+                    color: event.swiftUIColor
+                )
 
-                HStack(spacing: EquinoxDesign.spacingSM) {
-                    EventDetailCalendarChip(
-                        title: event.calendarTitle,
-                        color: event.swiftUIColor
-                    )
-
-                    if let status = event.participationStatus {
-                        EventDetailStatusChip(status: status)
-                    }
+                if let status = event.participationStatus {
+                    EventDetailStatusChip(status: status)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -103,16 +95,12 @@ struct EventDetailMetadataRow: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(model.tint)
                 .frame(width: EquinoxDesign.ControlWidth.metadataIcon, height: EquinoxDesign.ControlWidth.metadataIcon)
-                .background {
-                    Circle()
-                        .fill(model.tint.opacity(EquinoxDesign.StateOpacity.metadataIconBackground))
-                }
 
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
                 if let title = model.title {
                     Text(title)
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
                 Text(model.value)
                     .font(.subheadline)

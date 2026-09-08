@@ -78,7 +78,7 @@ final class DesignSystemComplianceTests: XCTestCase {
     func testFeatureViewsAvoidMagicOpacityLiterals() throws {
         try assertNoMatches(
             regex: #"\.opacity\(0\.[0-9]+\)"#,
-            message: "Move opacity literals into EquinoxDesign.StateOpacity/ShadowToken tokens"
+            message: "Move opacity literals into EquinoxDesign.StateOpacity tokens"
         )
     }
 
@@ -91,9 +91,8 @@ final class DesignSystemComplianceTests: XCTestCase {
         }
     }
 
-    func testDesignTokensExposeMenuBarAndShadowTokens() {
+    func testDesignTokensExposeMenuBarTokens() {
         XCTAssertEqual(MenuBarDesign.barHeight, 16)
-        XCTAssertEqual(EquinoxDesign.ShadowToken.panelGlassOpacity, 0.12)
         XCTAssertEqual(EquinoxDesign.EventStripe.width, 3)
         XCTAssertEqual(EquinoxDesign.onAccentForeground, Color("OnAccentForeground"))
         XCTAssertEqual(EquinoxDesign.ColorToken.solar, Color("SolarAccent"))
@@ -146,28 +145,6 @@ final class DesignSystemComplianceTests: XCTestCase {
                 metrics.toolbarButtonSize
             )
         }
-    }
-
-    func testGlassEffectIsLimitedToPanelCommandShelf() throws {
-        let files = try swiftUIFiles(excludingDesign: false)
-        let occurrences = try files.flatMap { path -> [(String, Int)] in
-            try lines(at: path).enumerated().compactMap { index, line in
-                line.contains(".glassEffect(") ? (path, index + 1) : nil
-            }
-        }
-
-        XCTAssertEqual(occurrences.count, 1, "Only the command shelf may use glassEffect: \(occurrences)")
-        XCTAssertTrue(
-            occurrences.first?.0.hasSuffix("/UI/Design/PanelComponents.swift") == true,
-            "glassEffect must be owned by PanelComponents"
-        )
-
-        let root = try repoRoot()
-        let source = try String(
-            contentsOf: root.appendingPathComponent("equinox/UI/Design/PanelComponents.swift"),
-            encoding: .utf8
-        )
-        XCTAssertTrue(source.contains("func panelCommandShelf"))
     }
 
     func testAgendaActionsRemainSeparateAccessibilityElements() throws {
@@ -305,6 +282,95 @@ final class DesignSystemComplianceTests: XCTestCase {
             "Static String(localized:) literals missing from ru.lproj/Localizable.strings:\n"
                 + missingKeys.joined(separator: "\n")
         )
+    }
+
+
+    /// Render production components with synthetic content; attachments support visual review.
+    @MainActor
+    func testCalendarAndAgendaRenderAcrossSizesAndThemes() throws {
+        let calendar = Calendar.equinoxGregorian()
+        let day = CalendarDate(year: 2026, monthIndex: 8, day: 8)
+        let start = day.date(in: calendar).addingTimeInterval(9 * 3600)
+        let event = DayEvent(
+            id: "design-preview", eventIdentifier: nil, calendarItemIdentifier: "design-preview",
+            title: "Обсуждение запуска новой версии приложения", location: "Переговорная • Москва",
+            notes: nil, url: nil, startDate: start, endDate: start.addingTimeInterval(3600),
+            slotStartDate: start, slotEndDate: start.addingTimeInterval(3600),
+            isEventAllDay: false, isSlotAllDay: false, joinURL: nil,
+            calendarIdentifier: "work", calendarTitle: "Рабочий календарь команды",
+            calendarColorRed: 0.25, calendarColorGreen: 0.5, calendarColorBlue: 0.75,
+            calendarColorAlpha: 1, isRecurring: false, allowsContentModifications: false,
+            participationStatus: nil
+        )
+        for size in SizePreference.allCases {
+            let metrics = SizeMetrics.metrics(for: size)
+            for scheme in [ColorScheme.light, .dark] {
+                let content = VStack(spacing: EquinoxDesign.spacingSM) {
+                    HStack(spacing: EquinoxDesign.spacingXS) {
+                        ForEach(0..<7) { index in
+                            DayCellView(
+                                date: CalendarDate(year: 2026, monthIndex: 8, day: index + 7),
+                                isToday: index == 1, isSelected: index == 2,
+                                isKeyboardFocused: index == 2, isInCurrentMonth: index != 0,
+                                isHighlighted: index >= 5,
+                                isMonthBoundaryStart: false, isMonthBoundaryEnd: false,
+                                eventCount: 5, dotColors: [.blue, .green, .orange],
+                                metrics: metrics, calendar: calendar, onSelect: {}, onDoubleClick: {}
+                            )
+                        }
+                    }
+                    AgendaSectionHeader(date: day, calendar: calendar, metrics: metrics,
+                                        eventCount: 2, isSelected: true)
+                    AgendaEventCard(event: event, metrics: metrics, showLocation: false, now: start)
+                    AgendaEventCard(event: event, metrics: metrics, showLocation: true, now: start.addingTimeInterval(-3600))
+                }
+                .padding(EquinoxDesign.panelPadding)
+                .frame(width: metrics.panelWidth)
+                .background(EquinoxDesign.ColorToken.surfaceWindow)
+                .environment(\.colorScheme, scheme)
+                .environment(\.locale, Locale(identifier: "ru_RU"))
+                for showsLocation in [false, true] {
+                    let row = AgendaEventCard(event: event, metrics: metrics, showLocation: showsLocation, now: start)
+                        .frame(width: metrics.panelWidth - EquinoxDesign.panelPadding * 2)
+                        .environment(\.locale, Locale(identifier: "ru_RU"))
+                    let rowImage = try XCTUnwrap(ImageRenderer(content: row).nsImage)
+                    XCTAssertLessThan(rowImage.size.height, metrics.agendaRowMinHeight * 2,
+                                      "A long title must not wrap the relative-time badge vertically")
+                }
+                try exportDesignPreview(content, name: "components-\(size.rawValue)-\(scheme)", width: metrics.panelWidth)
+                let details = VStack(alignment: .leading, spacing: EquinoxDesign.spacingLG) {
+                    EventDetailHeroHeader(event: event)
+                    EventDetailMetadataCard(rows: [
+                        EventDetailMetadataRowModel(symbol: "clock", title: "Когда", value: "8 сентября, 09:00–10:00"),
+                        EventDetailMetadataRowModel(symbol: "mappin", title: "Место", value: "Переговорная • Москва")
+                    ])
+                    EventDetailNotesCard(notes: "Обсудить готовность релиза и результаты проверки интерфейса.")
+                }
+                .padding(ModalDesign.contentPadding)
+                .frame(width: metrics.sheetWidth)
+                .background(EquinoxDesign.ColorToken.surfaceWindow)
+                .environment(\.colorScheme, scheme)
+                try exportDesignPreview(details, name: "details-\(size.rawValue)-\(scheme)", width: metrics.sheetWidth)
+            }
+        }
+    }
+
+    @MainActor
+    private func exportDesignPreview<Content: View>(_ content: Content, name: String, width: CGFloat) throws {
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = 2
+        let image = try XCTUnwrap(renderer.nsImage)
+        XCTAssertEqual(image.size.width, width, accuracy: 1)
+        XCTAssertGreaterThan(image.size.height, 0)
+        let attachment = XCTAttachment(image: image)
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("equinox-design-previews")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(image.tiffRepresentation)))
+        try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+            .write(to: folder.appendingPathComponent(name + ".png"))
     }
 
     private func assertNoOccurrences(

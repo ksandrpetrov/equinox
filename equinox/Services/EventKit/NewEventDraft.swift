@@ -25,4 +25,25 @@ struct NewEventDraft: Sendable, Equatable {
     var recurrence: RecurrenceDraft?
     /// Relative alarm offset in seconds (negative = before start). `nil` = no alert.
     var alertOffset: TimeInterval?
+
+    func validate() throws {
+        guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw CalendarStoreError.emptyTitle
+        }
+        guard startDate.timeIntervalSinceReferenceDate.isFinite,
+              endDate.timeIntervalSinceReferenceDate.isFinite,
+              endDate > startDate else {
+            throw CalendarStoreError.endDateBeforeStart
+        }
+        if let url, EventDraftDefaults.absoluteURL(from: url.absoluteString) == nil {
+            throw CalendarStoreError.invalidURL
+        }
+        if let end = recurrence?.endDate,
+           !end.timeIntervalSinceReferenceDate.isFinite || end < startDate {
+            throw CalendarStoreError.invalidRecurrenceEnd
+        }
+        if let alertOffset, !alertOffset.isFinite {
+            throw CalendarStoreError.invalidAlert
+        }
+    }
 }

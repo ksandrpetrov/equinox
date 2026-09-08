@@ -1,9 +1,16 @@
+import KeyboardShortcuts
 import AppKit
 import XCTest
 @testable import equinox
 
 @MainActor
 final class PanelPresentationStateTests: XCTestCase {
+    func testDeepLinkBeforeApplicationInitializationIsDeferred() throws {
+        let delegate = AppDelegate()
+        delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "equinox://date/2026-06-14"))])
+        XCTAssertNil(delegate.appState)
+    }
+
     func testModalSheetPresentedWhenNewEventSheetOpen() {
         let panel = PanelPresentationState()
         panel.isNewEventSheetPresented = true
@@ -69,5 +76,24 @@ final class PanelPresentationStateTests: XCTestCase {
         )
         XCTAssertEqual(button.accessibilityHelp(), expectedHelp)
         XCTAssertEqual(button.toolTip, expectedHelp)
+    }
+}
+
+@MainActor
+final class ShortcutCaptureLifecycleTests: XCTestCase {
+    func testLeavingRecorderWindowRestoresGlobalShortcuts() {
+        let originalEnabled = KeyboardShortcuts.isEnabled
+        defer { KeyboardShortcuts.isEnabled = originalEnabled }
+        KeyboardShortcuts.isEnabled = true
+        let window = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: true)
+        let button = ShortcutCaptureButton(frame: .zero)
+        window.contentView = button
+        XCTAssertTrue(button.becomeFirstResponder())
+        XCTAssertTrue(button.isRecording)
+        XCTAssertFalse(KeyboardShortcuts.isEnabled)
+        NotificationCenter.default.post(name: NSWindow.didResignKeyNotification, object: window)
+        XCTAssertFalse(button.isRecording)
+        XCTAssertTrue(KeyboardShortcuts.isEnabled)
+        window.contentView = nil
     }
 }

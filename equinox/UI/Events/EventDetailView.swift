@@ -50,21 +50,24 @@ struct EventDetailView: View {
 
                     EventDetailHeroHeader(event: event)
 
-                    EventDetailMetadataCard(rows: metadataRows)
-
-                    if let displayNotes {
-                        EventDetailNotesCard(notes: displayNotes)
-                    }
+                    EventDetailMetadataCard(rows: Array(metadataRows.prefix(1)))
 
                     if hasActionSection {
                         VStack(spacing: EquinoxDesign.spacingSM) {
                             if let url = event.joinURL {
-                                EventDetailJoinButton(url: url, action: { URLOpener.open(url) })
+                                EventDetailJoinButton(url: url, action: { openURL(url, fallback: sourceJoinURL) })
                             }
                             if let url = eventLinkURL {
-                                EventDetailLinkButton(url: url, action: { URLOpener.open(url) })
+                                EventDetailLinkButton(url: url, action: { openURL(url) })
                             }
                         }
+                    }
+
+                    if metadataRows.count > 1 {
+                        EventDetailMetadataCard(rows: Array(metadataRows.dropFirst()))
+                    }
+                    if let displayNotes {
+                        EventDetailNotesCard(notes: displayNotes)
                     }
                 }
                 .padding(ModalDesign.contentPadding)
@@ -98,6 +101,11 @@ struct EventDetailView: View {
 
     private var hasActionSection: Bool {
         event.joinURL != nil || eventLinkURL != nil
+    }
+
+    private func openURL(_ url: URL, fallback: URL? = nil) {
+        actionError = URLOpener.open(url, fallback: fallback)
+            ? nil : String(localized: "Could not open the link.", comment: "URL open error")
     }
 
     private var metadataRows: [EventDetailMetadataRowModel] {
@@ -227,7 +235,8 @@ private struct EventDetailParentClickDismissMonitor: NSViewRepresentable {
 
                     self.isDismissPending = true
                     DispatchQueue.main.async { [weak self] in
-                        self?.onDismiss()
+                        guard let self, self.isDismissEnabled, self.sheetContentView?.window != nil else { return }
+                        self.onDismiss()
                     }
                     return true
                 }

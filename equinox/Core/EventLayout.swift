@@ -20,6 +20,10 @@ func layoutEventDaySlots(
     rangeEnd: Date,
     calendar: Calendar
 ) -> [EventDaySlot] {
+    guard event.startDate.timeIntervalSinceReferenceDate.isFinite,
+          event.endDate.timeIntervalSinceReferenceDate.isFinite,
+          rangeStart.timeIntervalSinceReferenceDate.isFinite,
+          rangeEnd.timeIntervalSinceReferenceDate.isFinite else { return [] }
     var date = max(event.startDate, rangeStart)
     let final = min(event.endDate, rangeEnd)
     date = calendar.startOfDay(for: date)

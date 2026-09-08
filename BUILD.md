@@ -100,13 +100,13 @@ xcodebuild \
 
 ## Ресурсы приложения
 
-`AppIcon` и `AppLogo` в `equinox/Images.xcassets` не рисуются вручную, а генерируются из `scripts/assets/equinox-mark.png`:
+`AppIcon` и `AppLogo` в `equinox/Images.xcassets` генерируются из геометрического исходника `drawEquinoxMark` в Swift-скрипте (он также сохраняет `scripts/assets/equinox-mark.png`):
 
 ```bash
 swift scripts/regenerate-design-assets.swift
 ```
 
-Скрипт перезаписывает все размеры appiconset, оба масштаба `AppLogo` и его `Contents.json`. Запускайте его после замены исходного марка, а не правьте PNG'и по отдельности.
+Скрипт перезаписывает все размеры appiconset, оба масштаба `AppLogo` и его `Contents.json`. Геометрический исходник знака находится в `drawEquinoxMark` этого скрипта; PNG знака, AppIcon и AppLogo генерируются вместе. Не правьте PNG по отдельности.
 
 ## Нотаризация и распространение
 

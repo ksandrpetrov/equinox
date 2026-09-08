@@ -56,18 +56,12 @@ struct SettingsSection<Content: View>: View {
                 }
             }
 
-            VStack(spacing: 0) {
-                content()
-            }
-            .padding(.horizontal, EquinoxDesign.spacingMD)
-            .padding(.vertical, EquinoxDesign.spacingXS)
-            .background {
-                RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
-                    .fill(EquinoxDesign.ColorToken.surfaceRaised)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: SettingsDesign.sectionCornerRadius, style: .continuous)
-                            .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
-                    }
+            GroupBox {
+                VStack(spacing: 0) {
+                    content()
+                }
+                .padding(.horizontal, EquinoxDesign.spacingXS)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
@@ -159,6 +153,6 @@ struct SettingsSegmentedPicker: View {
         .pickerStyle(.segmented)
         .labelsHidden()
         .accessibilityLabel(label.isEmpty ? String(localized: "Options", comment: "Segmented picker") : label)
-        .accessibilityValue(selection < options.count ? options[selection] : "")
+        .accessibilityValue(options.indices.contains(selection) ? options[selection] : "")
     }
 }

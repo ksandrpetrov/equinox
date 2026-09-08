@@ -2,7 +2,7 @@ import Foundation
 
 enum CalendarSelectionStorage {
     static func hasStoredSelection(in defaults: UserDefaults = .standard) -> Bool {
-        defaults.object(forKey: kSelectedCalendars) != nil
+        defaults.array(forKey: kSelectedCalendars) as? [String] != nil
     }
 
     static func loadSelectedIDs(from defaults: UserDefaults = .standard) -> [String] {

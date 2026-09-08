@@ -3,7 +3,11 @@ import Foundation
 enum CalendarDateParsing {
     /// Parses `yyyy-MM-dd` deep-link date paths into `CalendarDate`.
     static func parseDayString(_ value: String) -> CalendarDate? {
-        guard value.count == 10 else { return nil }
+        let bytes = Array(value.utf8)
+        guard bytes.count == 10, bytes[4] == 45, bytes[7] == 45,
+              bytes.enumerated().allSatisfy({ index, byte in
+                  index == 4 || index == 7 || (48...57).contains(byte)
+              }) else { return nil }
         let parts = value.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 3,
               let year = Int(parts[0]),

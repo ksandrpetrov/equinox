@@ -7,6 +7,8 @@ enum EventDraftDefaults {
         end: Date,
         isAllDay: Bool
     ) -> (start: Date, end: Date)? {
+        guard start.timeIntervalSinceReferenceDate.isFinite,
+              end.timeIntervalSinceReferenceDate.isFinite else { return nil }
         guard isAllDay else {
             return end > start ? (start, end) : nil
         }

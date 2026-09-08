@@ -34,6 +34,7 @@ enum DayEventBuilder {
         resolveNativeJoinURL: ResolveNativeJoinURL
     ) async -> [Date: [DayEvent]] {
         var newEventsForDate: [Date: [DayEvent]] = [:]
+        var resolvedJoinURLs: [URL: URL] = [:]
 
         for source in sources {
             let fields = source.fields
@@ -48,6 +49,7 @@ enum DayEventBuilder {
                 rangeEnd: rangeEnd,
                 calendar: calendar
             )
+            guard !slots.isEmpty else { continue }
             let notes = fields.hasNotes ? fields.notes : nil
             let webJoinURL = JoinURLDetection.detectJoinURL(
                 location: fields.location,
@@ -56,7 +58,13 @@ enum DayEventBuilder {
             )
             let joinURL: URL?
             if let webJoinURL {
-                joinURL = await resolveNativeJoinURL(webJoinURL) ?? webJoinURL
+                if let cached = resolvedJoinURLs[webJoinURL] {
+                    joinURL = cached
+                } else {
+                    let resolved = await resolveNativeJoinURL(webJoinURL) ?? webJoinURL
+                    resolvedJoinURLs[webJoinURL] = resolved
+                    joinURL = resolved
+                }
             } else {
                 joinURL = nil
             }

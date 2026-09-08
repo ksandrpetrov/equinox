@@ -55,3 +55,42 @@ final class LoadingIndicatorControllerTests: XCTestCase {
         XCTAssertEqual(updates.last?.1, false)
     }
 }
+
+@MainActor
+final class PeriodicRefreshSchedulerTests: XCTestCase {
+    func testStoppedSchedulerIgnoresAlreadyQueuedTick() {
+        var callbacks: [@MainActor () -> Void] = []
+        var ticks = 0
+        let scheduler = PeriodicRefreshScheduler(schedule: { _, callback in
+            callbacks.append(callback)
+            return Timer(timeInterval: 60, repeats: false) { _ in }
+        }, onTick: { ticks += 1 })
+        scheduler.start()
+        scheduler.start()
+        XCTAssertEqual(callbacks.count, 1)
+        scheduler.stop()
+        callbacks[0]()
+        XCTAssertEqual(ticks, 0)
+        XCTAssertEqual(callbacks.count, 1)
+        scheduler.start()
+        callbacks[0]()
+        XCTAssertEqual(ticks, 0, "A tick from the previous run must not affect the restarted timer")
+        callbacks[1]()
+        XCTAssertEqual(ticks, 1)
+        XCTAssertEqual(callbacks.count, 3)
+        scheduler.stop()
+    }
+
+    func testStoppingInsideTickDoesNotScheduleAnotherTimer() {
+        var callbacks: [@MainActor () -> Void] = []
+        var scheduler: PeriodicRefreshScheduler?
+        scheduler = PeriodicRefreshScheduler(schedule: { _, callback in
+            callbacks.append(callback)
+            return Timer(timeInterval: 60, repeats: false) { _ in }
+        }, onTick: { scheduler?.stop() })
+        scheduler?.start()
+        callbacks[0]()
+        XCTAssertEqual(callbacks.count, 1)
+        scheduler = nil
+    }
+}

@@ -4,14 +4,12 @@ struct WeekendHighlightPicker: View {
     @Bindable var preferences: PreferencesStore
 
     private var dowLabels: [String] {
-        let formatter = DateFormatter()
-        formatter.locale = EquinoxFormatters.appLocale
-        let symbols = formatter.shortWeekdaySymbols ?? ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
-        return symbols
+        EquinoxFormatters.formatter(key: "weekday.short.symbols") { _ in }.shortWeekdaySymbols
     }
 
     var body: some View {
-        HStack(spacing: EquinoxDesign.spacingSM - 2) {
+        let dowLabels = dowLabels
+        return HStack(spacing: EquinoxDesign.spacingSM - 2) {
             ForEach(0..<7, id: \.self) { col in
                 let dow = weekdayForColumn(startDOW: preferences.weekStartWeekday, col: col)
                 let isOn = (preferences.highlightedWeekdays & (1 << dow)) != 0

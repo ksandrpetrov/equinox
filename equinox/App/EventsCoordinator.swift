@@ -4,7 +4,7 @@ import Foundation
 @MainActor
 final class EventsCoordinator {
     let calendar: Calendar
-    private let calendarStore: CalendarStore
+    private let calendarStore: any CalendarEventStore
     private let preferences: PreferencesStore
     private let fetchCoordinator: EventFetchCoordinator
     private let navigation: CalendarNavigationCoordinator
@@ -60,6 +60,8 @@ final class EventsCoordinator {
         navigation.visibleGridDates
     }
 
+    private var snapshotGeneration = 0
+
     private var agendaVisibleFirst: CalendarDate?
     private var agendaVisibleLast: CalendarDate?
     private var visibleGridRange: (first: CalendarDate, last: CalendarDate)?
@@ -67,7 +69,7 @@ final class EventsCoordinator {
 
     init(
         calendar: Calendar,
-        calendarStore: CalendarStore,
+        calendarStore: any CalendarEventStore,
         preferences: PreferencesStore
     ) {
         self.calendar = calendar
@@ -86,8 +88,8 @@ final class EventsCoordinator {
             self.shouldShowLoadingIndicator = shouldShow
             self.isFetchingEvents = isFetching
         }
-        fetchCoordinator.onSyncComplete = { [weak self] successfulFetch in
-            await self?.syncFromCalendarStore(markInitialLoadComplete: successfulFetch)
+        fetchCoordinator.onSyncComplete = { [weak self] _ in
+            await self?.syncFromCalendarStore()
         }
 
         preferences.onVisibleGridPreferencesChanged = { [weak self] in
@@ -113,16 +115,7 @@ final class EventsCoordinator {
     }
 
     func refreshCalendarAccessStatus() async {
-        calendarAccessStatus = await calendarStore.accessStatus()
-        if !calendarAccessStatus.isAuthorized {
-            eventsByDate = [:]
-            calendarEntries = []
-            defaultCalendarIdentifierForNewEvents = nil
-            hasSelectedCalendars = false
-            hasCompletedInitialEventLoad = false
-            updateMeetingIndicator()
-            onEventsSnapshotChanged()
-        }
+        await syncFromCalendarStore()
     }
 
     func retryFetchEvents() {
@@ -133,24 +126,18 @@ final class EventsCoordinator {
         )
     }
 
-    func syncFromCalendarStore(markInitialLoadComplete: Bool = false) async {
-        calendarAccessStatus = await calendarStore.accessStatus()
-        if calendarAccessStatus.isAuthorized {
-            eventsByDate = await calendarStore.selectedCalendarEvents()
-            calendarEntries = await calendarStore.calendarEntries()
-            defaultCalendarIdentifierForNewEvents = await calendarStore.defaultCalendarIdentifierForNewEvents()
-            hasSelectedCalendars = await calendarStore.hasSelectedCalendars()
-        } else {
-            eventsByDate = [:]
-            calendarEntries = []
-            defaultCalendarIdentifierForNewEvents = nil
-            hasSelectedCalendars = false
-            hasCompletedInitialEventLoad = false
-        }
-        lastFetchError = await calendarStore.lastFetchError
-        if markInitialLoadComplete, calendarAccessStatus.isAuthorized {
-            hasCompletedInitialEventLoad = true
-        }
+    func syncFromCalendarStore() async {
+        snapshotGeneration &+= 1
+        let generation = snapshotGeneration
+        let snapshot = await calendarStore.snapshot()
+        guard generation == snapshotGeneration else { return }
+        calendarAccessStatus = snapshot.accessStatus
+        eventsByDate = snapshot.eventsByDate
+        calendarEntries = snapshot.calendarEntries
+        defaultCalendarIdentifierForNewEvents = snapshot.defaultCalendarIdentifier
+        hasSelectedCalendars = snapshot.hasSelectedCalendars
+        hasCompletedInitialEventLoad = snapshot.hasCompletedInitialLoad
+        lastFetchError = snapshot.lastFetchError
         updateMeetingIndicator()
         onEventsSnapshotChanged()
         maybeRefocusAgendaAfterFetch()
@@ -249,7 +236,11 @@ final class EventsCoordinator {
     func refreshAfterSignificantTimeChange() {
         currentTime = Date()
         navigation.refreshTodayIfNeeded()
-        retryFetchEvents()
+        Task {
+            await calendarStore.invalidateTimeContext()
+            await syncFromCalendarStore()
+            retryFetchEvents()
+        }
         updateMeetingIndicator(now: currentTime)
     }
 
@@ -279,11 +270,8 @@ final class EventsCoordinator {
 
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
         await calendarStore.updateSelectedCalendar(identifier: identifier, selected: selected)
-        if selected {
-            _ = await reloadCurrentEvents()
-        } else {
-            await syncFromCalendarStore()
-        }
+        await syncFromCalendarStore()
+        _ = await reloadCurrentEvents()
     }
 
     func resetCalendarSelection() async {

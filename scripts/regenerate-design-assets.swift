@@ -32,16 +32,36 @@ let iconSizes: [(String, Int)] = [
 
 let iconMarginRatio: CGFloat = 0.098
 let iconCornerRatio: CGFloat = 0.2237
-// Matches SurfaceWindow dark (#1E1F22) in Colors.xcassets
+// Graphite icon tile; UI surfaces continue to use system semantic colors.
 let iconBackground = NSColor(calibratedRed: 30 / 255, green: 31 / 255, blue: 34 / 255, alpha: 1)
-let iconEdge = NSColor.white.withAlphaComponent(0.10)
 
-guard let sourceMark = NSImage(contentsOf: sourceMarkURL) else {
-    fputs("Missing source mark: \(sourceMarkURL.path)\n", stderr)
-    exit(1)
+/// Geometric master: equal light and shadow, separated by a solar horizon.
+/// Drawn at the destination size so the mark stays crisp in small icons.
+func drawEquinoxMark(in canvas: NSRect) {
+    let side = canvas.width
+    let diameter = side * 0.52
+    let circle = NSRect(x: (side - diameter) / 2, y: (side - diameter) / 2,
+                        width: diameter, height: diameter)
+    let light = NSColor(calibratedRed: 0.94, green: 0.95, blue: 0.96, alpha: 1)
+    let shade = NSColor(calibratedRed: 0.34, green: 0.38, blue: 0.43, alpha: 1)
+    let solar = NSColor(calibratedRed: 0.91, green: 0.69, blue: 0.35, alpha: 1)
+
+    NSGraphicsContext.saveGraphicsState()
+    NSBezierPath(ovalIn: circle).addClip()
+    shade.setFill()
+    circle.fill()
+    light.setFill()
+    NSRect(x: circle.minX, y: side / 2, width: diameter, height: diameter / 2).fill()
+    NSGraphicsContext.restoreGraphicsState()
+
+    let horizonHeight = max(1, round(side * 0.024))
+    let horizon = NSRect(x: side * 0.19, y: round((side - horizonHeight) / 2),
+                        width: side * 0.62, height: horizonHeight)
+    solar.setFill()
+    NSBezierPath(roundedRect: horizon, xRadius: horizonHeight / 2, yRadius: horizonHeight / 2).fill()
 }
 
-func renderAppIcon(size: Int) throws -> NSBitmapImageRep {
+func renderAppIcon(size: Int, includesTile: Bool = true) throws -> NSBitmapImageRep {
     let side = CGFloat(size)
     let canvas = NSRect(x: 0, y: 0, width: side, height: side)
     guard let bitmap = NSBitmapImageRep(
@@ -78,26 +98,15 @@ func renderAppIcon(size: Int) throws -> NSBitmapImageRep {
     context.imageInterpolation = .high
     NSGraphicsContext.current = context
 
-    let margin = max(1, round(side * iconMarginRatio))
-    let panelRect = canvas.insetBy(dx: margin, dy: margin)
-    let cornerRadius = max(2, round(panelRect.width * iconCornerRatio))
-    let panelPath = NSBezierPath(roundedRect: panelRect, xRadius: cornerRadius, yRadius: cornerRadius)
-
-    iconBackground.setFill()
-    panelPath.fill()
-
-    panelPath.lineWidth = max(1, round(side / 512))
-    iconEdge.setStroke()
-    panelPath.stroke()
-
-    sourceMark.draw(
-        in: canvas,
-        from: NSRect(origin: .zero, size: sourceMark.size),
-        operation: .sourceOver,
-        fraction: 1,
-        respectFlipped: false,
-        hints: [.interpolation: NSImageInterpolation.high]
-    )
+    if includesTile {
+        let margin = max(1, round(side * iconMarginRatio))
+        let panelRect = canvas.insetBy(dx: margin, dy: margin)
+        let cornerRadius = max(2, round(panelRect.width * iconCornerRatio))
+        let panelPath = NSBezierPath(roundedRect: panelRect, xRadius: cornerRadius, yRadius: cornerRadius)
+        iconBackground.setFill()
+        panelPath.fill()
+    }
+    drawEquinoxMark(in: canvas)
 
     return bitmap
 }
@@ -143,6 +152,7 @@ func writeAppLogoContents() throws {
 }
 
 do {
+    try writePNG(try renderAppIcon(size: 1024, includesTile: false), to: sourceMarkURL)
     for (filename, size) in iconSizes {
         try writePNG(try renderAppIcon(size: size), to: appIconURL.appendingPathComponent(filename))
     }
@@ -151,7 +161,7 @@ do {
     try writePNG(try renderAppIcon(size: 512), to: appLogoURL.appendingPathComponent("AppLogo@2x.png"))
     try writeAppLogoContents()
 
-    print("Regenerated AppIcon and AppLogo from \(sourceMarkURL.path)")
+    print("Regenerated AppIcon, AppLogo and mark from the geometric master in this script")
 } catch {
     fputs("\(error)\n", stderr)
     exit(1)

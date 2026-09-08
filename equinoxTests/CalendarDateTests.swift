@@ -2,6 +2,16 @@ import XCTest
 @testable import equinox
 
 final class CalendarDateTests: XCTestCase {
+    func testEverySupportedDayRoundTripsThroughJulianArithmetic() {
+        for julian in CalendarDate.minimumSupported.julian...CalendarDate.maximumSupported.julian {
+            let date = CalendarDate(julian: julian)
+            guard date.isValid,
+                  CalendarDate(year: date.year, monthIndex: date.monthIndex, day: date.day) == date else {
+                XCTFail("Invalid Gregorian round trip at Julian day \(julian)")
+                return
+            }
+        }
+    }
     func testEquinoxCalendarKeepsGregorianDateContractForNonGregorianLocale() {
         let calendar = Calendar.equinoxGregorian(
             locale: Locale(identifier: "ja_JP@calendar=japanese"),

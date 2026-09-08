@@ -17,8 +17,8 @@ enum NativeJoinURLResolver {
         from webURL: URL,
         isAppInstalled: NativeAppInstalledChecker = defaultInstalledChecker
     ) async -> URL? {
-        guard await isAppInstalled(webURL),
-              let native = NativeJoinURL.nativeURLString(from: webURL) else {
+        guard let native = NativeJoinURL.nativeURLString(from: webURL),
+              await isAppInstalled(webURL) else {
             return nil
         }
         return URL(string: native)

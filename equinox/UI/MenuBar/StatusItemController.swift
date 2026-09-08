@@ -69,6 +69,7 @@ final class StatusItemController: NSObject {
         notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
         notificationObservers = []
         NotificationCenter.default.removeObserver(self)
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
         UserDefaults.standard.set(appState.isPinned && isPanelActuallyVisible, forKey: kPinnedPanelVisible)
         KeyboardShortcuts.disable(.togglePanel)
     }
@@ -186,6 +187,18 @@ final class StatusItemController: NSObject {
     }
 
     private func setupSystemChangeObservers() {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(significantTimeChanged),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(significantTimeChanged),
+            name: Notification.Name.NSSystemClockDidChange,
+            object: nil
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(significantTimeChanged),
@@ -207,14 +220,15 @@ final class StatusItemController: NSObject {
     }
 
     @objc private func significantTimeChanged() {
+        refreshScheduler?.stop()
+        refreshScheduler?.start()
         appState.events.refreshAfterSignificantTimeChange()
-        updateMenuBarIcon()
     }
 
     @objc private func localeChanged() {
+        EquinoxFormatters.invalidateCache()
         resetIconDateFormatter()
         appState.events.refreshTodayAndMeetingIndicator()
-        updateMenuBarIcon()
     }
 
     private func resetIconDateFormatter() {
@@ -275,7 +289,6 @@ final class StatusItemController: NSObject {
 
     private func handlePeriodicRefresh() {
         appState.events.refreshTodayAndMeetingIndicator()
-        updateMenuBarIcon()
     }
 
     private func setupShortcut() {

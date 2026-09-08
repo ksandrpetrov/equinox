@@ -1,28 +1,58 @@
 import EventKit
 import Foundation
 
-actor CalendarStore {
+struct CalendarStoreSnapshot: Sendable {
+    let accessStatus: CalendarAccessStatus
+    let eventsByDate: [CalendarDate: [DayEvent]]
+    let calendarEntries: [CalendarListEntry]
+    let defaultCalendarIdentifier: String?
+    let hasSelectedCalendars: Bool
+    let lastFetchError: String?
+    let hasCompletedInitialLoad: Bool
+}
+
+protocol CalendarEventStore: Sendable {
+    func snapshot() async -> CalendarStoreSnapshot
+    func setExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) async
+    func requestCalendarAccessIfNeeded() async -> Bool
+    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool) async -> Bool
+    func refetchAll(first: CalendarDate, last: CalendarDate) async -> Bool
+    func invalidateTimeContext() async
+    func createEvent(from draft: NewEventDraft) async throws
+    func deleteEvent(identifier: String, occurrenceStartDate: Date) async throws
+    func updateSelectedCalendar(identifier: String, selected: Bool) async
+    func resetCalendarSelection() async
+}
+
+actor CalendarStore: CalendarEventStore {
     private let store = EKEventStore()
     private let calendar: Calendar
     private let isNativeAppInstalled: NativeAppInstalledChecker
-    private let externalChangeDispatcher = ExternalChangeDispatcher()
+    private var externalChangeHandler: (@Sendable () -> Void)?
+    private var hasPendingExternalChange = false
     private nonisolated(unsafe) var storeObserver: NSObjectProtocol?
 
     private var fetchCache = EventFetchCache()
     private var calendarSelection = CalendarSelectionService()
-
-    var lastFetchError: String? { fetchCache.lastFetchError }
+    private var previousAccessStatus: CalendarAccessStatus?
+    private var needsPreparation = true
+    private var hasCompletedInitialLoad = false
 
     var hasCalendarAccess: Bool {
         accessStatus() == .authorized
     }
 
     func accessStatus() -> CalendarAccessStatus {
-        CalendarAccessMapping.guiAccessStatus()
-    }
-
-    func hasSelectedCalendars() -> Bool {
-        calendarSelection.hasSelectedCalendars()
+        let status = CalendarAccessMapping.guiAccessStatus()
+        if status != previousAccessStatus {
+            previousAccessStatus = status
+            invalidateEvents()
+        }
+        if !status.isAuthorized {
+            fetchCache.clearEvents()
+            hasCompletedInitialLoad = false
+        }
+        return status
     }
 
     init(
@@ -36,13 +66,17 @@ actor CalendarStore {
             forName: .EKEventStoreChanged,
             object: nil,
             queue: .main
-        ) { [externalChangeDispatcher] _ in
-            externalChangeDispatcher.notify()
+        ) { [weak self] _ in
+            Task { await self?.handleExternalChange() }
         }
     }
 
     func setExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) {
-        externalChangeDispatcher.setHandler(handler)
+        externalChangeHandler = handler
+        if hasPendingExternalChange {
+            hasPendingExternalChange = false
+            handler()
+        }
     }
 
     deinit {
@@ -51,15 +85,20 @@ actor CalendarStore {
         }
     }
 
-    func selectedCalendarEvents() -> [CalendarDate: [DayEvent]] {
-        fetchCache.selectedCalendarEvents(calendar: calendar)
+    func snapshot() -> CalendarStoreSnapshot {
+        let status = accessStatus()
+        return CalendarStoreSnapshot(
+            accessStatus: status,
+            eventsByDate: status.isAuthorized ? fetchCache.selectedCalendarEvents(calendar: calendar) : [:],
+            calendarEntries: status.isAuthorized ? calendarSelection.calendarEntries : [],
+            defaultCalendarIdentifier: status.isAuthorized ? defaultCalendarIdentifierForNewEvents() : nil,
+            hasSelectedCalendars: status.isAuthorized && calendarSelection.hasSelectedCalendars(),
+            lastFetchError: fetchCache.lastFetchError,
+            hasCompletedInitialLoad: hasCompletedInitialLoad
+        )
     }
 
-    func calendarEntries() -> [CalendarListEntry] {
-        calendarSelection.calendarEntries
-    }
-
-    func defaultCalendarIdentifierForNewEvents() -> String? {
+    private func defaultCalendarIdentifierForNewEvents() -> String? {
         guard let calendar = store.defaultCalendarForNewEvents,
               calendar.allowsContentModifications else { return nil }
         return calendar.calendarIdentifier
@@ -68,7 +107,6 @@ actor CalendarStore {
     func requestCalendarAccessIfNeeded() async -> Bool {
         switch accessStatus() {
         case .authorized:
-            prepareStore()
             return true
         case .denied, .restricted:
             fetchCache.clearEvents()
@@ -84,7 +122,6 @@ actor CalendarStore {
         }
 
         if granted {
-            prepareStore()
             return true
         }
         fetchCache.clearEvents()
@@ -92,12 +129,16 @@ actor CalendarStore {
     }
 
     func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool = false) async -> Bool {
+        guard first.isValid, last.isValid, first <= last else { return false }
+        guard hasCalendarAccess else { return false }
+        if needsPreparation || refetch { prepareStore() }
+        let revision = fetchCache.revision
         let primarySucceeded = await fetchEventsWithStartDate(
             first,
             endDate: last,
             refetch: refetch
         )
-        guard primarySucceeded else { return false }
+        guard primarySucceeded, fetchCache.revision == revision else { return false }
 
         let today = CalendarDate.today(calendar: calendar)
         let meetingMonitorLast = min(today.addingDays(1), CalendarDate.maximumSupported)
@@ -106,16 +147,14 @@ actor CalendarStore {
             let todaySucceeded = await fetchEventsWithStartDate(
                 today,
                 endDate: meetingMonitorLast,
-                refetch: refetch,
-                preparesStoreOnRefetch: false
+                refetch: refetch
             )
-            guard todaySucceeded else { return false }
+            guard todaySucceeded, fetchCache.revision == revision else { return false }
             retainedRanges.append((first: today, last: meetingMonitorLast))
         }
-        if refetch {
-            fetchCache.retainEvents(inside: retainedRanges, calendar: calendar)
-            applyCalendarFilter()
-        }
+        fetchCache.retainEvents(inside: retainedRanges, calendar: calendar)
+        applyCalendarFilter()
+        hasCompletedInitialLoad = true
         return true
     }
 
@@ -124,23 +163,26 @@ actor CalendarStore {
     }
 
     func createEvent(from draft: NewEventDraft) throws {
+        try draft.validate()
+        guard hasCalendarAccess else { throw CalendarStoreError.calendarAccessRequired }
         guard let ekCalendar = store.calendar(withIdentifier: draft.calendarIdentifier) else {
             throw CalendarStoreError.calendarNotFound
         }
         guard ekCalendar.allowsContentModifications else {
             throw CalendarStoreError.readOnlyCalendar
         }
-        guard draft.endDate > draft.startDate else {
-            throw CalendarStoreError.endDateBeforeStart
-        }
-
         let event = EKEvent(eventStore: store)
         EventKitMutation.applyCreate(from: draft, to: event, calendar: ekCalendar)
 
         try store.save(event, span: .thisEvent, commit: true)
+        invalidateEvents()
     }
 
     func deleteEvent(identifier: String, occurrenceStartDate: Date) throws {
+        guard hasCalendarAccess else { throw CalendarStoreError.calendarAccessRequired }
+        guard occurrenceStartDate.timeIntervalSinceReferenceDate.isFinite else {
+            throw CalendarStoreError.eventNotFound
+        }
         guard let event = eventOccurrence(
             identifier: identifier,
             occurrenceStartDate: occurrenceStartDate
@@ -156,15 +198,18 @@ actor CalendarStore {
             throw CalendarStoreError.readOnlyCalendar
         }
         try store.remove(event, span: .thisEvent, commit: true)
+        invalidateEvents()
     }
 
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
         calendarSelection.updateSelectedCalendar(identifier: identifier, selected: selected)
+        invalidateEvents()
         applyCalendarFilter()
     }
 
     func resetCalendarSelection() {
         calendarSelection = CalendarSelectionService()
+        invalidateEvents()
         guard hasCalendarAccess else {
             applyCalendarFilter()
             return
@@ -173,11 +218,33 @@ actor CalendarStore {
         applyCalendarFilter()
     }
 
+    func invalidateTimeContext() {
+        fetchCache.clearEvents()
+        needsPreparation = true
+        hasCompletedInitialLoad = false
+    }
+
     // MARK: - Private
 
+    private func invalidateEvents() {
+        fetchCache.invalidate()
+        needsPreparation = true
+    }
+
+    private func handleExternalChange() {
+        invalidateEvents()
+        if let externalChangeHandler {
+            externalChangeHandler()
+        } else {
+            hasPendingExternalChange = true
+        }
+    }
+
     private func prepareStore() {
+        fetchCache.invalidate()
         refreshEventKitStore()
         calendarSelection.refresh(from: store)
+        needsPreparation = false
     }
 
     private func refreshEventKitStore() {
@@ -207,8 +274,7 @@ actor CalendarStore {
     private func fetchEventsWithStartDate(
         _ startDate: CalendarDate,
         endDate: CalendarDate,
-        refetch: Bool,
-        preparesStoreOnRefetch: Bool = true
+        refetch: Bool
     ) async -> Bool {
         guard hasCalendarAccess else {
             fetchCache.clearEvents()
@@ -216,37 +282,36 @@ actor CalendarStore {
             return false
         }
 
-        if refetch, preparesStoreOnRefetch {
-            prepareStore()
-        }
-
         guard let fetchRange = fetchCache.prepareFetchRange(first: startDate, last: endDate, refetch: refetch) else {
             fetchCache.lastFetchError = nil
             return true
         }
 
-        let rangeStart = fetchRange.fetchStart.date(in: calendar)
-        let rangeEnd = fetchRange.fetchEnd.addingDays(1).date(in: calendar)
+        let revision = fetchCache.revision
         let cals = calendarSelection.validCalendars(from: store)
-        guard !cals.isEmpty else {
-            fetchCache.commitFetch([:], plan: fetchRange, calendar: calendar)
-            applyCalendarFilter()
-            return true
-        }
-        let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
-        let events = store.events(matching: predicate)
-        let sources = events.map(DayEventSource.extract(from:))
-        let newEventsForDate = await DayEventBuilder.buildDayEvents(
-            from: sources,
-            rangeStart: rangeStart,
-            rangeEnd: rangeEnd,
-            calendar: calendar,
-            resolveNativeJoinURL: { [isNativeAppInstalled] url in
-                await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
+        var newEventsForDate: [Date: [DayEvent]] = [:]
+        if !cals.isEmpty {
+            for chunk in EventFetchRange.chunks(first: fetchRange.fetchStart, last: fetchRange.fetchEnd) {
+                let rangeStart = chunk.first.date(in: calendar)
+                let rangeEnd = chunk.last.addingDays(1).date(in: calendar)
+                let predicate = store.predicateForEvents(withStart: rangeStart, end: rangeEnd, calendars: cals)
+                let sources = store.events(matching: predicate).map(DayEventSource.extract(from:))
+                let chunkEvents = await DayEventBuilder.buildDayEvents(
+                    from: sources,
+                    rangeStart: rangeStart,
+                    rangeEnd: rangeEnd,
+                    calendar: calendar,
+                    resolveNativeJoinURL: { [isNativeAppInstalled] url in
+                        await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: isNativeAppInstalled)
+                    }
+                )
+                guard hasCalendarAccess, fetchCache.revision == revision else { return false }
+                newEventsForDate.merge(chunkEvents) { _, new in new }
             }
-        )
-        fetchCache.commitFetch(newEventsForDate, plan: fetchRange, calendar: calendar)
-        applyCalendarFilter()
+        }
+        guard fetchCache.commitFetch(newEventsForDate, plan: fetchRange, calendar: calendar) else {
+            return false
+        }
         return true
     }
 
@@ -256,40 +321,29 @@ actor CalendarStore {
 
 }
 
-private final class ExternalChangeDispatcher: @unchecked Sendable {
-    private let lock = NSLock()
-    private var handler: (@Sendable () -> Void)?
-    private var pendingChange = false
-
-    func setHandler(_ handler: @escaping @Sendable () -> Void) {
-        lock.lock()
-        defer { lock.unlock() }
-        self.handler = handler
-        if pendingChange {
-            pendingChange = false
-            handler()
-        }
-    }
-
-    func notify() {
-        lock.lock()
-        defer { lock.unlock() }
-        if let handler {
-            handler()
-        } else {
-            pendingChange = true
-        }
-    }
-}
-
-enum CalendarStoreError: Error, LocalizedError {
+enum CalendarStoreError: Error, LocalizedError, Equatable {
     case eventNotFound
     case calendarNotFound
     case readOnlyCalendar
     case endDateBeforeStart
+    case emptyTitle
+    case invalidURL
+    case invalidRecurrenceEnd
+    case invalidAlert
+    case calendarAccessRequired
 
     var errorDescription: String? {
         switch self {
+        case .emptyTitle:
+            return String(localized: "Enter an event title.", comment: "Create event title validation error")
+        case .invalidURL:
+            return String(localized: "Enter a valid URL including its scheme.", comment: "Create event URL validation error")
+        case .invalidRecurrenceEnd:
+            return String(localized: "Repeat end date cannot be before event start.", comment: "Create event recurrence validation error")
+        case .invalidAlert:
+            return String(localized: "Enter a valid event alert.", comment: "Create event alert validation error")
+        case .calendarAccessRequired:
+            return String(localized: "Calendar access required", comment: "Permission banner title")
         case .eventNotFound:
             return String(localized: "The event could not be found.", comment: "Delete event error")
         case .calendarNotFound:

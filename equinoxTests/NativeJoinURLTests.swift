@@ -2,6 +2,15 @@ import XCTest
 @testable import equinox
 
 final class NativeJoinURLTests: XCTestCase {
+    func testWebOnlyMeetingDoesNotQueryInstalledApplications() async throws {
+        let url = try XCTUnwrap(URL(string: "https://meet.google.com/abc-defg-hij"))
+        let native = await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: { _ in
+            XCTFail("A web-only meeting must not query Launch Services")
+            return true
+        })
+        XCTAssertNil(native)
+    }
+
     func testZoomWebToNativeString() {
         let web = URL(string: "https://zoom.us/j/123456789")!
         let native = NativeJoinURL.nativeURLString(from: web)

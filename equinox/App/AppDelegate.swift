@@ -4,6 +4,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var appState: AppState!
     private var statusItemController: StatusItemController?
+    private var pendingOpenURLs: [URL]?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         PreferencesStore.shared.applyTheme()
@@ -15,6 +16,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItemController = StatusItemController(appState: appState)
         statusItemController?.setup()
         appState.requestCalendarAccessIfNeeded()
+        if let pendingOpenURLs {
+            self.pendingOpenURLs = nil
+            application(NSApp, open: pendingOpenURLs)
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -37,6 +42,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
               url.scheme?.lowercased() == "equinox",
               url.host == "date",
               url.pathComponents.count == 2 else { return }
+        guard appState != nil else {
+            pendingOpenURLs = urls
+            return
+        }
         let dateString = url.pathComponents[1]
         if dateString == "now" {
             appState.navigateToDate(Date())

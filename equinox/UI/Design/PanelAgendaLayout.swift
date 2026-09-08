@@ -10,7 +10,7 @@ enum PanelAgendaLayout {
         screenVisibleHeight: CGFloat
     ) -> CGFloat {
         let maxPanel = screenVisibleHeight * screenVisibleHeightFraction
-        let commandBarHeight = EquinoxDesign.commandBarHeight + EquinoxDesign.spacingSM
+        let commandBarHeight = metrics.commandBarHeight + EquinoxDesign.spacingSM
         let weekdayHeaderRowHeight = metrics.fontSize + EquinoxDesign.spacingXS
         let gridHeight = weekdayHeaderRowHeight + CGFloat(calendarRowCount) * (metrics.cellSize + EquinoxDesign.spacingXS)
         let splitHeight = metrics.toolbarButtonSize

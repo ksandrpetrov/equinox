@@ -189,4 +189,49 @@ final class EventFetchCacheTests: XCTestCase {
 
         XCTAssertNil(cache.lastFetchError)
     }
+
+    func testInvalidationRejectsSuspendedFetchWithoutLosingDisplayedEvents() throws {
+        var cache = EventFetchCache()
+        let date = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let plan = try XCTUnwrap(cache.prepareFetchRange(first: date, last: date, refetch: false))
+        let key = date.date(in: calendar)
+        cache.commitFetch([key: [makeEvent(calendarID: "work", on: date)]], plan: plan, calendar: calendar)
+        cache.invalidate()
+
+        XCTAssertFalse(cache.commitFetch([:], plan: plan, calendar: calendar))
+        XCTAssertEqual(cache.eventsForDate[key]?.count, 1)
+        XCTAssertNotNil(cache.prepareFetchRange(first: date, last: date, refetch: false))
+    }
+
+    func testRevokedAccessCannotBeRepopulatedBySuspendedFetch() throws {
+        var cache = EventFetchCache()
+        let date = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let plan = try XCTUnwrap(cache.prepareFetchRange(first: date, last: date, refetch: false))
+        cache.clearEvents()
+        XCTAssertFalse(cache.commitFetch(
+            [date.date(in: calendar): [makeEvent(calendarID: "work", on: date)]],
+            plan: plan, calendar: calendar
+        ))
+        XCTAssertTrue(cache.eventsForDate.isEmpty)
+    }
+
+    func testRetainingRangeDoesNotMarkUnfetchedDaysAsLoaded() throws {
+        var cache = EventFetchCache()
+        let first = CalendarDate(year: 2026, monthIndex: 5, day: 10)
+        let last = first.addingDays(10)
+        let plan = try XCTUnwrap(cache.prepareFetchRange(first: first, last: first, refetch: false))
+        cache.commitFetch([:], plan: plan, calendar: calendar)
+        cache.retainEvents(inside: [(first, last)], calendar: calendar)
+        XCTAssertNil(cache.prepareFetchRange(first: first, last: first, refetch: false))
+        XCTAssertEqual(cache.prepareFetchRange(first: first, last: last, refetch: false)?.fetchStart, first.addingDays(1))
+    }
+
+    func testInvalidRangesAreRejected() {
+        let cache = EventFetchCache()
+        let date = CalendarDate.minimumSupported
+        for refetch in [false, true] {
+            XCTAssertNil(cache.prepareFetchRange(first: date.addingDays(1), last: date, refetch: refetch))
+            XCTAssertNil(cache.prepareFetchRange(first: date.addingDays(-1), last: date, refetch: refetch))
+        }
+    }
 }

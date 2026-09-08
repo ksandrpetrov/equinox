@@ -139,18 +139,39 @@ final class AgendaSectionsTests: XCTestCase {
         )
     }
 
+    func testRecurringMeetingResolvesSharedURLOnceAndSkipsOutOfRangeSources() async {
+        let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
+        let date = CalendarDate(year: 2026, monthIndex: 5, day: 10).date(in: calendar)
+        let url = "https://zoom.us/j/123456789"
+        let counter = JoinResolutionCounter()
+        let sources = (0..<100).map { index in
+            makeSource(identifier: "event-\(index)", title: "Meeting", startDate: date,
+                       endDate: date.addingTimeInterval(3600), location: url)
+        } + [makeSource(identifier: "outside", title: "Outside", startDate: date.addingTimeInterval(-86400),
+                        endDate: date.addingTimeInterval(-3600), location: "https://zoom.us/j/999")]
+        let events = await DayEventBuilder.buildDayEvents(
+            from: sources, rangeStart: date, rangeEnd: date.addingTimeInterval(86400), calendar: calendar,
+            resolveNativeJoinURL: { url in await counter.resolve(url) }
+        )
+        let calls = await counter.calls
+        XCTAssertEqual(calls, 1)
+        XCTAssertEqual(events.values.flatMap { $0 }.count, 100)
+        XCTAssertTrue(events.values.flatMap { $0 }.allSatisfy { $0.joinURL?.absoluteString == url })
+    }
+
     private func makeSource(
         identifier: String,
         title: String,
         startDate: Date,
-        endDate: Date
+        endDate: Date,
+        location: String? = nil
     ) -> DayEventSource {
         DayEventSource(
             fields: EventKitEventFields(
                 eventIdentifier: identifier,
                 calendarItemIdentifier: identifier,
                 title: title,
-                location: nil,
+                location: location,
                 notes: nil,
                 hasNotes: false,
                 url: nil,
@@ -247,5 +268,13 @@ final class AgendaSectionsTests: XCTestCase {
         XCTAssertEqual(sections.count, 5)
         XCTAssertEqual(sections.map(\.0).first, selected.addingDays(-2))
         XCTAssertEqual(sections.map(\.0).last, selected.addingDays(2))
+    }
+}
+
+private actor JoinResolutionCounter {
+    private(set) var calls = 0
+    func resolve(_ url: URL) -> URL? {
+        calls += 1
+        return nil
     }
 }

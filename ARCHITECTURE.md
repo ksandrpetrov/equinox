@@ -45,7 +45,8 @@ flowchart TB
 - `AppState` — `@Observable @MainActor`; composition root: `EventsCoordinator`, `PanelPresentationState`, `PanelLayoutMetrics`
 - `PreferencesStore.shared` — персистентные настройки (`k*`-ключи в `Constants.swift`)
 - `CalendarStore` — `actor`; единственный шлюз к EventKit
-- Синхронизация событий: `EventsCoordinator.syncFromCalendarStore()` подтягивает снимки из `CalendarStore` после fetch/мутации/смены выбора календарей/выдачи доступа и внешних изменений EventKit (без NotificationCenter)
+- Синхронизация событий: `EventsCoordinator.syncFromCalendarStore()` получает единый `CalendarStoreSnapshot: Sendable` из actor после fetch/мутации/смены выбора календарей/выдачи доступа и внешних изменений EventKit. Снимок применяется без промежуточных `await`; запоздалые ответы синхронизации отбрасываются.
+- `CalendarEventStore` — контракт для подстановки сервиса в тестах; рабочая реализация — `CalendarStore`. Поколение кэша инвалидирует незавершённую обработку при изменении данных, выбора, доступа или временного контекста. Длинные запросы разбиваются на части до 366 дней, чтобы не попасть под четырёхлетнее ограничение EventKit.
 - Уведомления (только menu bar / appearance, не данные календаря):
   - `kEquinoxSizePreferenceChanged` — размер панели S/M/L
   - `kEquinoxMenuBarAppearanceChanged` — перерисовка иконки menu bar

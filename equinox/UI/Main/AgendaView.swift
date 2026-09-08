@@ -44,6 +44,7 @@ struct AgendaView: View {
     var body: some View {
         let displayRange = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
         let sections = agendaSections
+        let contentState = contentState(hasVisibleEvents: sections.contains { !$0.events.isEmpty })
         let focusedEventID = agendaFocusEventID(in: displayRange)
         VStack(spacing: 0) {
             if contentState != .hidden {
@@ -72,14 +73,12 @@ struct AgendaView: View {
                                         && (prefs.showDaysWithNoEvents || section.date == appState.events.selectedDate) {
                                         emptyDayRow(for: section.date)
                                     } else {
-                                        ForEach(Array(section.events.enumerated()), id: \.element.id) { index, event in
+                                        ForEach(section.events) { event in
                                             AgendaEventCard(
                                                 event: event,
                                                 metrics: metrics,
                                                 showLocation: prefs.showLocation,
                                                 now: appState.events.currentTime,
-                                                isFirstInSection: index == section.events.startIndex,
-                                                isLastInSection: index == section.events.index(before: section.events.endIndex),
                                                 isFocusedEvent: event.id == focusedEventID,
                                                 onTap: {
                                                     appState.panel.selectedEvent = event
@@ -144,7 +143,7 @@ struct AgendaView: View {
                     }
                 }
             }
-            .frame(height: contentHeight)
+            .frame(height: contentState == .hidden ? 0 : height)
         }
         .onAppear {
             scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
@@ -211,7 +210,7 @@ struct AgendaView: View {
         metrics.fontSize
             + 1
             + EquinoxDesign.spacingSM
-            + EquinoxDesign.agendaHeaderVerticalPadding * 2
+            + EquinoxDesign.spacingSM * 2
             + EquinoxDesign.spacingXS
     }
 
@@ -326,18 +325,14 @@ struct AgendaView: View {
         )
     }
 
-    private var contentState: AgendaContentState {
+    private func contentState(hasVisibleEvents: Bool) -> AgendaContentState {
         AgendaContentState.resolve(
             accessStatus: appState.events.calendarAccessStatus,
             hasCompletedInitialLoad: appState.events.hasCompletedInitialEventLoad,
             hasFetchError: appState.events.lastFetchError != nil,
-            hasVisibleEvents: agendaSections.contains { !$0.events.isEmpty },
+            hasVisibleEvents: hasVisibleEvents,
             hasSelectedCalendars: appState.events.hasSelectedCalendars
         )
-    }
-
-    private var contentHeight: CGFloat {
-        contentState == .hidden ? 0 : height
     }
 
     private var agendaHeightBinding: Binding<Double> {

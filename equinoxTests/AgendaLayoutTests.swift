@@ -2,6 +2,14 @@ import XCTest
 @testable import equinox
 
 final class AgendaLayoutTests: XCTestCase {
+    func testNonFiniteLayoutInputsProduceFiniteHeights() {
+        XCTAssertEqual(AgendaLayout.agendaHeight(maxHeight: .infinity, heightRatio: 0.35), 0)
+        XCTAssertEqual(AgendaLayout.agendaHeight(maxHeight: .nan, heightRatio: 0.35), 0)
+        XCTAssertEqual(
+            AgendaLayout.agendaHeight(maxHeight: 400, heightRatio: .nan),
+            AgendaLayout.agendaHeight(maxHeight: 400, heightRatio: AgendaLayout.defaultHeightRatio)
+        )
+    }
     func testMinimumRatioUsesMinimumHeight() {
         let height = AgendaLayout.agendaHeight(maxHeight: 400, heightRatio: 0.15)
         XCTAssertEqual(height, AgendaLayout.minHeight)

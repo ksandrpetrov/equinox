@@ -40,9 +40,6 @@ struct CalendarGridView: View {
             appState.events.refreshVisibleGridRange()
             isGridFocused = true
         }
-        .onChange(of: numRows) { _, _ in
-            appState.events.refreshVisibleGridRange()
-        }
         .onChange(of: appState.panel.isModalSheetPresented) { _, isPresented in
             if !isPresented {
                 isGridFocused = true
@@ -78,11 +75,12 @@ struct CalendarGridView: View {
     }
 
     private var gridBody: some View {
-        VStack(spacing: EquinoxDesign.spacingXS) {
+        let gridDates = gridDates
+        return VStack(spacing: EquinoxDesign.spacingXS) {
             ForEach(0..<numRows, id: \.self) { row in
                 HStack(spacing: 0) {
                     if prefs.showWeeks {
-                        weekNumberCell(row: row)
+                        weekNumberCell(row: row, gridDates: gridDates)
                     }
                     ForEach(0..<7, id: \.self) { col in
                         let index = row * 7 + col
@@ -91,7 +89,7 @@ struct CalendarGridView: View {
                         let dots: [Color]? = prefs.showEventDots
                             ? DayEvent.makeSwiftUIDotColors(for: events)
                             : nil
-                        let (boundaryStart, boundaryEnd) = monthBoundaryFlags(for: date, col: col, row: row)
+                        let (boundaryStart, boundaryEnd) = monthBoundaryFlags(for: date, col: col, row: row, gridDates: gridDates)
                         DayCellView(
                             date: date,
                             isToday: date.isSameCalendarDay(as: appState.events.todayDate),
@@ -136,7 +134,7 @@ struct CalendarGridView: View {
             .accessibilityLabel(String(localized: "Week number", comment: "Calendar week column header"))
     }
 
-    private func weekNumberCell(row: Int) -> some View {
+    private func weekNumberCell(row: Int, gridDates: [CalendarDate]) -> some View {
         let mondayColumn = columnForWeekday(startDOW: prefs.weekStartWeekday, dow: 1)
         let weekDate = gridDates[row * 7 + mondayColumn]
         let weekNumber = CalendarDate.weekOfYear(
@@ -219,7 +217,7 @@ struct CalendarGridView: View {
         return .ignored
     }
 
-    private func monthBoundaryFlags(for date: CalendarDate, col: Int, row: Int) -> (Bool, Bool) {
+    private func monthBoundaryFlags(for date: CalendarDate, col: Int, row: Int, gridDates: [CalendarDate]) -> (Bool, Bool) {
         let flags = monthGridBoundaryFlags(
             for: date,
             monthIndex: appState.events.monthDate.monthIndex,

@@ -32,7 +32,13 @@ struct MenuBarIconPicker: View {
         Button {
             prefs.menuBarIconType = index
         } label: {
-            styleThumbnail(for: style)
+            VStack(spacing: EquinoxDesign.spacingSM) {
+                styleThumbnail(for: style)
+                Text(styleNames[index])
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, EquinoxDesign.spacingLG)
                 .background {

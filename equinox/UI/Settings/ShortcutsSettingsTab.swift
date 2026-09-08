@@ -176,7 +176,9 @@ private final class ShortcutRecorderView: NSView {
     func refreshDisplay() {
         let shortcut = KeyboardShortcuts.getShortcut(for: name)
         captureButton.currentShortcut = shortcut
-        captureButton.title = shortcut?.description ?? String(localized: "Record Shortcut", comment: "Shortcut recorder empty state")
+        if !captureButton.isRecording {
+            captureButton.title = shortcut?.description ?? String(localized: "Record Shortcut", comment: "Shortcut recorder empty state")
+        }
         clearButton.isHidden = shortcut == nil
     }
 
@@ -192,12 +194,13 @@ private final class ShortcutRecorderView: NSView {
 }
 
 @MainActor
-private final class ShortcutCaptureButton: NSButton {
+final class ShortcutCaptureButton: NSButton {
     var currentShortcut: KeyboardShortcuts.Shortcut?
     var onCommit: (KeyboardShortcuts.Shortcut?) -> Void = { _ in }
     var onValidation: (String?) -> Void = { _ in }
 
     private var eventMonitor: Any?
+    private var resignKeyObserver: NSObjectProtocol?
     private var wasKeyboardShortcutsEnabled = true
     private(set) var isRecording = false
 
@@ -248,6 +251,14 @@ private final class ShortcutCaptureButton: NSButton {
         title = String(localized: "Press shortcut…", comment: "Shortcut recorder recording state")
         onValidation(nil)
 
+        if let window {
+            resignKeyObserver = NotificationCenter.default.addObserver(
+                forName: NSWindow.didResignKeyNotification, object: window, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated { self?.stopCapture() }
+            }
+        }
+
         eventMonitor = NSEvent.addLocalMonitorForEvents(
             matching: [.keyDown, .leftMouseDown, .rightMouseDown]
         ) { [weak self] event in
@@ -271,6 +282,10 @@ private final class ShortcutCaptureButton: NSButton {
         if let eventMonitor {
             NSEvent.removeMonitor(eventMonitor)
             self.eventMonitor = nil
+        }
+        if let resignKeyObserver {
+            NotificationCenter.default.removeObserver(resignKeyObserver)
+            self.resignKeyObserver = nil
         }
         KeyboardShortcuts.isEnabled = wasKeyboardShortcutsEnabled
         title = currentShortcut?.description ?? String(localized: "Record Shortcut", comment: "Shortcut recorder empty state")

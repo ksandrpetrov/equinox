@@ -262,3 +262,8 @@
 "Participation in progress" = "Участие в процессе";
 /* App & settings tabs */
 "Equinox" = "Equinox";
+
+/* Create event alert validation error */
+"Enter a valid event alert." = "Укажите корректное напоминание о событии.";
+"Could not open the link." = "Не удалось открыть ссылку.";
+"OK" = "ОК";

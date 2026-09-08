@@ -10,7 +10,8 @@ struct CalendarsSettingsSection: View {
     }
 
     var body: some View {
-        ScrollView {
+        let filteredEntries = filteredEntries
+        return ScrollView {
             if entries.isEmpty {
                 calendarListEmptyState
             } else if filteredEntries.isEmpty && !filterText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
