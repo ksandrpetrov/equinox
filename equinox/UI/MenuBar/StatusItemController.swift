@@ -219,16 +219,23 @@ final class StatusItemController: NSObject {
         )
     }
 
-    @objc private func significantTimeChanged() {
-        refreshScheduler?.stop()
-        refreshScheduler?.start()
-        appState.events.refreshAfterSignificantTimeChange()
+    // System notifications, including the midnight rollover, can arrive off the main thread.
+    @objc nonisolated private func significantTimeChanged() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.refreshScheduler?.stop()
+            self.refreshScheduler?.start()
+            self.appState.events.refreshAfterSignificantTimeChange()
+        }
     }
 
-    @objc private func localeChanged() {
-        EquinoxFormatters.invalidateCache()
-        resetIconDateFormatter()
-        appState.events.refreshTodayAndMeetingIndicator()
+    @objc nonisolated private func localeChanged() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            EquinoxFormatters.invalidateCache()
+            self.resetIconDateFormatter()
+            self.appState.events.refreshTodayAndMeetingIndicator()
+        }
     }
 
     private func resetIconDateFormatter() {

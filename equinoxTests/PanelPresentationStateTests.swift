@@ -5,6 +5,33 @@ import XCTest
 
 @MainActor
 final class PanelPresentationStateTests: XCTestCase {
+    func testSystemTimeNotificationsFromBackgroundThreadDoNotCrash() async {
+        // The test host runs the app's real StatusItemController observers.
+        // Foundation can deliver the midnight notification on a background queue.
+        for name in [
+            Notification.Name.NSCalendarDayChanged,
+            .NSSystemClockDidChange,
+            .NSSystemTimeZoneDidChange
+        ] {
+            await postFromBackground(name, center: .default)
+        }
+        await postFromBackground(NSWorkspace.didWakeNotification, center: NSWorkspace.shared.notificationCenter)
+    }
+
+    func testLocaleNotificationFromBackgroundThreadDoesNotCrash() async {
+        await postFromBackground(NSLocale.currentLocaleDidChangeNotification, center: .default)
+    }
+
+    private func postFromBackground(_ name: Notification.Name, center: NotificationCenter) async {
+        let posted = expectation(description: "Posted \(name.rawValue) from a background queue")
+        DispatchQueue.global(qos: .userInitiated).async {
+            XCTAssertFalse(Thread.isMainThread)
+            center.post(name: name, object: nil)
+            posted.fulfill()
+        }
+        await fulfillment(of: [posted], timeout: 5)
+    }
+
     func testDeepLinkBeforeApplicationInitializationIsDeferred() throws {
         let delegate = AppDelegate()
         delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "equinox://date/2026-06-14"))])
