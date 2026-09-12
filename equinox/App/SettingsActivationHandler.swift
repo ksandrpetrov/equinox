@@ -41,7 +41,7 @@ enum SettingsActivationHandler {
             .environment(\.appState, appState)
         let window = NSWindow(contentViewController: NSHostingController(rootView: root))
         window.identifier = NSUserInterfaceItemIdentifier(windowIdentifier)
-        window.title = String(localized: "Preferences", comment: "Settings window title")
+        window.title = String(localized: "Preferences", bundle: .equinox, comment: "Settings window title")
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false

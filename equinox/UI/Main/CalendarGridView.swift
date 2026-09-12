@@ -50,11 +50,11 @@ struct CalendarGridView: View {
             value: appState.events.monthDate.julian
         )
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(String(localized: "Calendar grid", comment: ""))
+        .accessibilityLabel(String(localized: "Calendar grid", bundle: .equinox, comment: ""))
         .accessibilityHint(
             String(
                 localized: "Use arrow keys to move between days. Hold Option for months and Shift-Option for years. Press Return to create an event.",
-                comment: "Calendar grid keyboard hint"
+                bundle: .equinox, comment: "Calendar grid keyboard hint"
             )
         )
     }
@@ -131,7 +131,7 @@ struct CalendarGridView: View {
                     .fill(EquinoxDesign.ColorToken.separator)
                     .frame(width: EquinoxDesign.monthBoundaryWidth)
             }
-            .accessibilityLabel(String(localized: "Week number", comment: "Calendar week column header"))
+            .accessibilityLabel(String(localized: "Week number", bundle: .equinox, comment: "Calendar week column header"))
     }
 
     private func weekNumberCell(row: Int, gridDates: [CalendarDate]) -> some View {
@@ -168,7 +168,7 @@ struct CalendarGridView: View {
             }
             .accessibilityLabel(
                 String(
-                    format: String(localized: "Week %lld", comment: "Calendar week number"),
+                    format: String(localized: "Week %lld", bundle: .equinox, comment: "Calendar week number"),
                     Int64(weekNumber)
                 )
             )

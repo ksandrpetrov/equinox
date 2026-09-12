@@ -1,8 +1,52 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class EventLayoutTests: XCTestCase {
     private let calendar = Calendar(identifier: .gregorian)
+
+    func testSlotsPartitionClippedEventsAcrossTimeZoneTransitions() throws {
+        let transitions = [
+            ("America/Los_Angeles", 2026, 3, 8),
+            ("America/Los_Angeles", 2026, 11, 1),
+            ("Australia/Lord_Howe", 2026, 4, 5),
+            ("Australia/Lord_Howe", 2026, 10, 4),
+            ("Pacific/Apia", 2011, 12, 29),
+            ("Europe/Moscow", 2026, 9, 12),
+        ]
+        for (zone, year, month, day) in transitions {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try XCTUnwrap(TimeZone(identifier: zone))
+            let anchor = try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month, day: day)))
+            let rangeStart = anchor.addingTimeInterval(-12 * 3600)
+            let rangeEnd = anchor.addingTimeInterval(60 * 3600)
+            for offset in [-36, -12, 0, 1, 12, 23, 24, 48, 60, 72] {
+                for duration in [0, 1, 12, 24, 25, 49, 96] {
+                    let start = anchor.addingTimeInterval(Double(offset * 3600))
+                    let end = start.addingTimeInterval(Double(duration * 3600))
+                    let slots = layoutEventDaySlots(
+                        event: EventLayoutInput(startDate: start, endDate: end, isAllDay: false),
+                        rangeStart: rangeStart, rangeEnd: rangeEnd, calendar: calendar
+                    )
+                    let expectedStart = max(start, rangeStart)
+                    let expectedEnd = min(end, rangeEnd)
+                    if expectedStart >= expectedEnd {
+                        XCTAssertTrue(slots.isEmpty, "\(zone): \(offset), \(duration)")
+                        continue
+                    }
+                    XCTAssertEqual(slots.first?.startDate, expectedStart)
+                    XCTAssertEqual(slots.last?.endDate, expectedEnd)
+                    XCTAssertEqual(Set(slots.map(\.dayStart)).count, slots.count)
+                    XCTAssertEqual(slots.reduce(0) { $0 + $1.endDate.timeIntervalSince($1.startDate) },
+                                   expectedEnd.timeIntervalSince(expectedStart), accuracy: 0.001)
+                    for (index, slot) in slots.enumerated() {
+                        XCTAssertLessThan(slot.startDate, slot.endDate)
+                        XCTAssertEqual(calendar.startOfDay(for: slot.startDate), slot.dayStart)
+                        if index > 0 { XCTAssertEqual(slots[index - 1].endDate, slot.startDate) }
+                    }
+                }
+            }
+        }
+    }
 
     func testSingleDayEventProducesOneSlot() {
         var components = DateComponents()

@@ -97,12 +97,6 @@ final class EventsCoordinator {
         }
     }
 
-    func registerExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) {
-        Task {
-            await calendarStore.setExternalChangeHandler(handler)
-        }
-    }
-
     func requestCalendarAccessIfNeeded() {
         let range = updateCurrentFetchRange()
         Task {

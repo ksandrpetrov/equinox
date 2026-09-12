@@ -22,8 +22,16 @@ struct CalendarSelectionService {
     }
 
     mutating func refresh(from store: EKEventStore) {
-        let calendars = EventKitCalendarMapping.displayableCalendarItems(from: store)
+        let calendars = EventKitCalendarMapping.displayableCalendarItems(from: store).compactMap { item in
+            store.calendar(withIdentifier: item.id).map {
+                SelectableCalendar.from(item, calendar: $0, isSelected: false)
+            }
+        }
+        refresh(calendars: calendars)
+    }
 
+    /// Resolves selections against a value snapshot; a transient empty discovery preserves stored choices.
+    mutating func refresh(calendars: [SelectableCalendar]) {
         var inMemorySelections: [String: Bool] = [:]
         for entry in calendarEntriesStorage {
             if case .calendar(let cal) = entry {
@@ -43,34 +51,26 @@ struct CalendarSelectionService {
         }
 
         var result: [CalendarListEntry] = []
-        var currentSourceTitle = ""
+        var currentSourceTitle: String?
 
         for item in calendars {
-            guard let ekCalendar = store.calendar(withIdentifier: item.id) else { continue }
             let calendarSourceTitle = item.sourceTitle
 
             if calendarSourceTitle != currentSourceTitle {
                 result.append(.source(calendarSourceTitle))
                 currentSourceTitle = calendarSourceTitle
             }
-            let isSelected = inMemorySelections[item.id] ?? selectedCalendars.contains(item.id)
-            result.append(.calendar(SelectableCalendar.from(
-                item,
-                calendar: ekCalendar,
-                isSelected: isSelected
-            )))
+            var selectable = item
+            selectable.isSelected = inMemorySelections[item.id] ?? selectedCalendars.contains(item.id)
+            result.append(.calendar(selectable))
         }
 
         // Do not turn a temporarily empty EventKit store into an explicit "select none"
         // preference. That would keep future calendars hidden after access/account changes.
-        if Self.shouldPersistSelection(discoveredCalendarCount: calendars.count) {
+        if !calendars.isEmpty {
             persistSelectedCalendars(from: result)
         }
         calendarEntriesStorage = result
-    }
-
-    static func shouldPersistSelection(discoveredCalendarCount: Int) -> Bool {
-        discoveredCalendarCount > 0
     }
 
     mutating func updateSelectedCalendar(identifier: String, selected: Bool) {

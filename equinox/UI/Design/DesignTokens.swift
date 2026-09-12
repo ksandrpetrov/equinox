@@ -40,7 +40,7 @@ enum EquinoxDesign {
     static let expandAnimation = Animation.smooth(duration: 0.22)
 
     static let pressScale: CGFloat = 0.97
-    static let onAccentForeground = Color("OnAccentForeground")
+    static let onAccentForeground = Color("OnAccentForeground", bundle: .equinox)
 
     static func animation(_ animation: Animation, reduceMotion: Bool) -> Animation? {
         reduceMotion ? nil : animation
@@ -55,9 +55,9 @@ enum EquinoxDesign {
     }
 
     enum ColorToken {
-        static let accent = Color("AccentColor")
-        static let accentStrong = Color("AccentStrong")
-        static let solar = Color("SolarAccent")
+        static let accent = Color("AccentColor", bundle: .equinox)
+        static let accentStrong = Color("AccentStrong", bundle: .equinox)
+        static let solar = Color("SolarAccent", bundle: .equinox)
         static var action: Color { accent }
         static var actionStrong: Color { accentStrong }
         static var present: Color { solar }
@@ -65,12 +65,12 @@ enum EquinoxDesign {
         static let surfaceSecondary = Color(nsColor: .controlBackgroundColor)
         static let surfaceWindow = Color(nsColor: .windowBackgroundColor)
         static let surfaceRaised = Color(nsColor: .textBackgroundColor)
-        static let weekendTint = Color("WeekendTint")
-        static let monthBoundary = Color("MonthBoundary")
-        static let semanticRed = Color("SemanticRed")
-        static let semanticOrange = Color("SemanticOrange")
-        static let semanticGreen = Color("SemanticGreen")
-        static let semanticBlue = Color("SemanticBlue")
+        static let weekendTint = Color("WeekendTint", bundle: .equinox)
+        static let monthBoundary = Color("MonthBoundary", bundle: .equinox)
+        static let semanticRed = Color("SemanticRed", bundle: .equinox)
+        static let semanticOrange = Color("SemanticOrange", bundle: .equinox)
+        static let semanticGreen = Color("SemanticGreen", bundle: .equinox)
+        static let semanticBlue = Color("SemanticBlue", bundle: .equinox)
         static let warning = semanticOrange
         static let success = semanticGreen
         static let error = semanticRed

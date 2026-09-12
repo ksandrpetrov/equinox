@@ -6,11 +6,20 @@ final class PeriodicRefreshScheduler {
     private var timer: Timer?
     private let onTick: () -> Void
     private let schedule: Schedule
+    private let now: () -> Date
+    private let calendar: Calendar
     private var isRunning = false
     private var generation = 0
 
-    init(schedule: @escaping Schedule = PeriodicRefreshScheduler.scheduleTimer, onTick: @escaping () -> Void) {
+    init(
+        schedule: @escaping Schedule = PeriodicRefreshScheduler.scheduleTimer,
+        now: @escaping () -> Date = Date.init,
+        calendar: Calendar = .autoupdatingCurrent,
+        onTick: @escaping () -> Void
+    ) {
         self.schedule = schedule
+        self.now = now
+        self.calendar = calendar
         self.onTick = onTick
     }
 
@@ -49,12 +58,8 @@ final class PeriodicRefreshScheduler {
     }
 
     private func secondsUntilNextMinuteBoundary() -> TimeInterval {
-        let now = Date()
-        let calendar = Calendar.current
-        guard let nextMinute = calendar.date(byAdding: .minute, value: 1, to: now),
-              let startOfNextMinute = calendar.date(
-                from: calendar.dateComponents([.year, .month, .day, .hour, .minute], from: nextMinute)
-              ) else {
+        let now = now()
+        guard let startOfNextMinute = calendar.dateInterval(of: .minute, for: now)?.end else {
             return 30
         }
         return max(1, startOfNextMinute.timeIntervalSince(now))

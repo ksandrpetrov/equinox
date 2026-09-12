@@ -3,8 +3,8 @@ import SwiftUI
 enum EquinoxAccessibility {
     static func onOffValue(_ isOn: Bool) -> String {
         isOn
-            ? String(localized: "On", comment: "Accessibility toggle value")
-            : String(localized: "Off", comment: "Accessibility toggle value")
+            ? String(localized: "On", bundle: .equinox, comment: "Accessibility toggle value")
+            : String(localized: "Off", bundle: .equinox, comment: "Accessibility toggle value")
     }
 }
 

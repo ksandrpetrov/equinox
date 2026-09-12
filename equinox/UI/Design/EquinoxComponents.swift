@@ -305,7 +305,7 @@ struct EquinoxJoinButton: View {
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
         .help(helpText)
-        .accessibilityLabel(String(localized: "Join Meeting", comment: ""))
+        .accessibilityLabel(String(localized: "Join Meeting", bundle: .equinox, comment: ""))
         .accessibilityHint(JoinURLPresentation.meetingDisplayName(for: url))
     }
 
@@ -317,7 +317,7 @@ struct EquinoxJoinButton: View {
                 .frame(width: EquinoxDesign.ControlWidth.joinIcon, height: EquinoxDesign.ControlWidth.joinIcon)
 
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
-                Text(String(localized: "Join Meeting", comment: ""))
+                Text(String(localized: "Join Meeting", bundle: .equinox, comment: ""))
                     .font(.headline)
                 Text(JoinURLPresentation.meetingDisplayName(for: url))
                     .font(.caption)
@@ -363,6 +363,6 @@ struct EquinoxJoinButton: View {
     }
 
     private var helpText: String {
-        "\(String(localized: "Join Meeting", comment: "")) — \(JoinURLPresentation.meetingDisplayName(for: url))"
+        "\(String(localized: "Join Meeting", bundle: .equinox, comment: "")) — \(JoinURLPresentation.meetingDisplayName(for: url))"
     }
 }

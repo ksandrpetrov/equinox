@@ -19,7 +19,6 @@ DerivedData/
 *.xcscmblueprint
 .swiftpm/
 .build/
-Package.resolved
 
 # Local signing (see Local.xcconfig.example)
 Local.xcconfig

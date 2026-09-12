@@ -1,7 +1,24 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class MeetingProviderTests: XCTestCase {
+    func testShortTeamsLinksKeepOriginalWebURLAndPasscode() throws {
+        let url = try XCTUnwrap(URL(string: "https://teams.microsoft.com/meet/1234567890123?p=a%2Bb%2F%3D&context=example"))
+        XCTAssertEqual(MeetingProviderRegistry.match(for: url)?.id, "teams")
+        XCTAssertEqual(JoinURLDetection.detectJoinURL(location: nil, url: url.absoluteString, notes: nil), url)
+        XCTAssertEqual(JoinURLDetection.detectJoinURL(location: nil, url: nil, notes: "Join: \(url.absoluteString)"), url)
+        XCTAssertNil(NativeJoinURL.nativeURLString(from: url))
+        XCTAssertNil(NativeJoinURL.nativeScheme(for: url))
+    }
+
+    func testShortTeamsLinksRejectLookalikeHostsAndUnrelatedPaths() throws {
+        for value in ["https://teams.microsoft.com.evil.invalid/meet/123?p=x",
+                      "https://evil.invalid/?next=https://teams.microsoft.com/meet/123?p=x",
+                      "https://teams.microsoft.com/meetings/123?p=x"] {
+            XCTAssertNil(MeetingProviderRegistry.match(for: try XCTUnwrap(URL(string: value))), value)
+        }
+    }
+
     func testRegistryCoversKnownProviders() {
         let cases: [(String, String)] = [
             ("https://zoom.us/j/123456789", "zoom"),
@@ -55,7 +72,7 @@ final class MeetingProviderTests: XCTestCase {
         XCTAssertNil(MeetingProviderRegistry.match(for: unknown))
         XCTAssertEqual(
             JoinURLPresentation.meetingDisplayName(for: unknown),
-            String(localized: "Video call", comment: "Generic meeting provider name")
+            String(localized: "Video call", bundle: .equinox, comment: "Generic meeting provider name")
         )
         XCTAssertEqual(JoinURLPresentation.meetingSystemImage(for: unknown), "video.fill")
     }

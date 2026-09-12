@@ -28,7 +28,7 @@ struct AppearancePreview: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: SettingsDesign.sectionHeaderBottomPadding) {
-            Text(String(localized: "Preview", comment: "Appearance preview section title"))
+            Text(String(localized: "Preview", bundle: .equinox, comment: "Appearance preview section title"))
                 .font(EquinoxDesign.sectionHeaderFont())
 
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
@@ -86,7 +86,7 @@ struct AppearancePreview: View {
             )
 
             HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
-                Text(String(localized: "Team standup", comment: "Appearance preview sample event"))
+                Text(String(localized: "Team standup", bundle: .equinox, comment: "Appearance preview sample event"))
                     .font(
                         EquinoxDesign.agendaEventTitleFont(
                             size: previewMetrics.agendaEventTitleFontSize,
@@ -97,7 +97,7 @@ struct AppearancePreview: View {
                     .layoutPriority(1)
                 Spacer(minLength: EquinoxDesign.spacingXS)
                 EquinoxBadge(
-                    text: String(localized: "Now", comment: "Event happening now"),
+                    text: String(localized: "Now", bundle: .equinox, comment: "Event happening now"),
                     tint: EquinoxDesign.ColorToken.present
                 )
             }

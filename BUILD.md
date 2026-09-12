@@ -4,12 +4,15 @@
 
 ## Что собирается
 
-В репозитории два Xcode target:
+В репозитории пять Xcode targets:
 
 | Часть | Что даёт пользователю |
 |-------|------------------------|
 | `equinox.app` | menu bar календарь: месячная сетка, agenda, создание/удаление событий, read-only RSVP-статус, join meeting, настройки |
-| `equinoxTests` | XCTest для чистой логики и сервисных контрактов без живого EventKit |
+| `EquinoxKit` | Код приложения без `@main`, локализация и ресурсы |
+| `equinoxTests` | XCTest библиотеки без запуска приложения |
+| `equinoxGraphicsHost` | Минимальный AppKit-host без AppDelegate и доступа к календарю |
+| `equinoxGraphicsTests` | Рендеры компонентов, компоновка экранов и ресурсы |
 
 ## Требования
 
@@ -69,26 +72,48 @@ xcodebuild \
 
 ## Тесты
 
-### Swift (XCTest)
-
 ```bash
-. scripts/xcodebuild-local-settings.sh
-load_xcodebuild_local_settings Local.xcconfig
-
-xcodebuild \
-  -project equinox.xcodeproj \
-  -scheme equinox \
-  -configuration Debug \
-  -derivedDataPath build/DerivedData \
-  test \
-  "${XCODEBUILD_LOCAL_SETTINGS[@]}"
+./scripts/test.sh
 ```
 
-Тесты Core и Services — в `equinoxTests/`. Живой EventKit в unit-тестах не используется.
+Команда запускает обычные и графические XCTest в Debug и Release с покрытием.
+`equinox.app` не запускается. Графическому host нужна активная графическая сессия
+macOS. Тесты календарных сценариев используют подставной `CalendarEventStore`;
+проверки адаптера создают несохранённые объекты EventKit, без запроса доступа,
+выборки пользовательских событий, сохранения или удаления.
+
+```bash
+./scripts/test.sh --configuration Debug --suite unit
+./scripts/test.sh --configuration Release --suite graphics
+./scripts/test.sh --configuration Debug --suite unit \
+  --filter equinoxTests/LoadingIndicatorControllerTests
+```
+
+Логи, `.xcresult`, JSON-сводки и покрытие сохраняются в отдельной папке каждого
+запуска под `build/Tests/results/`. Нулевое число тестов, ошибка или пропуск
+завершают команду с ошибкой. Покрытие отражает исполненные строки, а не полноту
+бизнес-сценариев; рендеры не заменяют живую проверку EventKit и взаимодействий.
+
+Пути можно переопределить переменными `EQUINOX_TEST_DERIVED_DATA` и
+`EQUINOX_PACKAGE_CACHE`. По умолчанию checkout пакетов общий с `run.sh`:
+`build/DerivedData/SourcePackages`. `Package.resolved` включён в Git; используется
+закреплённая версия KeyboardShortcuts. Первому запуску требуется сеть для загрузки
+пакета, последующие используют кэш. Обновление зависимостей выполняется отдельной
+задачей с ревью изменения lock-файла.
+
+Для запуска из Xcode доступны схемы `equinoxTests` и `equinoxGraphicsTests`.
+Release-тестам нужен `ENABLE_TESTABILITY=YES` (скрипт передаёт его автоматически).
+Подпись для тестовой сборки отключена; GUI собирается отдельно через `run.sh`
+с настройками `Local.xcconfig`.
+
+Старый `scripts/test-offline.py` удалён: ручная компиляция `swiftc` и специальная
+подстановка ресурсов больше не нужны. Исторические отчёты `AUDIT.md`,
+`DESIGN-AUDIT.md`, `OFFLINE-TEST-REPORT.md` описывают прежние прогоны; текущий итог —
+`REFACTOR-REPORT.md`.
 
 ## Локализация
 
-Базовый язык — английский: строки задаются прямо в коде через `String(localized:comment:)`. Русский перевод хранится в `equinox/ru.lproj/Localizable.strings`, формы множественного числа — в `Localizable.stringsdict` соответствующей локали, а описания доступа — в `InfoPlist.strings`.
+Базовый язык — английский: строки задаются через `String(localized:bundle:comment:)` с `bundle: .equinox`. Русский перевод хранится в `equinox/ru.lproj/Localizable.strings`, формы множественного числа — в `Localizable.stringsdict` соответствующей локали, а описания доступа — в `InfoPlist.strings`.
 
 Чтобы добавить или обновить переводы:
 
@@ -99,6 +124,12 @@ xcodebuild \
 Экспортированные `.xliff` — промежуточный артефакт, в репозиторий они не коммитятся; источник правды — файлы локализации в `ru.lproj`.
 
 ## Ресурсы приложения
+
+`EquinoxKit` владеет локализацией и графическими ресурсами. `Bundle.equinox`
+находит framework через класс-маркер, поэтому одинаково работает в GUI и XCTest.
+Именованные `Color` и `Image` используют этот bundle явно. Версия приложения и
+описания TCC остаются в bundle `equinox.app`.
+
 
 `AppIcon` и `AppLogo` в `equinox/Images.xcassets` генерируются из геометрического исходника `drawEquinoxMark` в Swift-скрипте (он также сохраняет `scripts/assets/equinox-mark.png`):
 

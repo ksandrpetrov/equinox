@@ -66,7 +66,7 @@ struct PanelStateOverlay: View {
 
     private var shortcutTipBanner: some View {
         HStack(spacing: EquinoxDesign.spacingSM) {
-            Text(String(localized: "New Event   ⌘N · Go to Today   T · Pin Equinox   P", comment: "Shortcut tip banner"))
+            Text(String(localized: "New Event   ⌘N · Go to Today   T · Pin Equinox   P", bundle: .equinox, comment: "Shortcut tip banner"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
@@ -77,7 +77,7 @@ struct PanelStateOverlay: View {
                     .font(.caption2.weight(.semibold))
             }
             .buttonStyle(EquinoxButtonStyle(variant: .plain, size: .small))
-            .accessibilityLabel(String(localized: "Dismiss shortcut tip", comment: ""))
+            .accessibilityLabel(String(localized: "Dismiss shortcut tip", bundle: .equinox, comment: ""))
         }
         .padding(.horizontal, EquinoxDesign.spacingMD)
         .padding(.vertical, EquinoxDesign.spacingSM)
@@ -87,7 +87,7 @@ struct PanelStateOverlay: View {
     private var permissionBanner: some View {
         VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
             Label {
-                Text(String(localized: "Calendar access required", comment: "Permission banner title"))
+                Text(String(localized: "Calendar access required", bundle: .equinox, comment: "Permission banner title"))
                     .font(.subheadline.weight(.semibold))
             } icon: {
                 Image(systemName: "calendar.badge.exclamationmark")
@@ -123,11 +123,11 @@ struct PanelStateOverlay: View {
     private var permissionMessage: String {
         switch appState.events.calendarAccessStatus {
         case .notDetermined:
-            String(localized: "Equinox needs access to your calendars to show events.", comment: "Permission banner body")
+            String(localized: "Equinox needs access to your calendars to show events.", bundle: .equinox, comment: "Permission banner body")
         case .denied:
-            String(localized: "Calendar access is off. Enable Full Access in System Settings.", comment: "Permission denied banner body")
+            String(localized: "Calendar access is off. Enable Full Access in System Settings.", bundle: .equinox, comment: "Permission denied banner body")
         case .restricted:
-            String(localized: "Calendar access is restricted by system policy.", comment: "Permission restricted banner body")
+            String(localized: "Calendar access is restricted by system policy.", bundle: .equinox, comment: "Permission restricted banner body")
         case .authorized:
             ""
         }
@@ -136,14 +136,14 @@ struct PanelStateOverlay: View {
     @ViewBuilder
     private var permissionActions: some View {
         if appState.events.calendarAccessStatus == .notDetermined {
-            Button(String(localized: "Request Access", comment: "")) {
+            Button(String(localized: "Request Access", bundle: .equinox, comment: "")) {
                 appState.requestCalendarAccessIfNeeded()
             }
             .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
             .fixedSize(horizontal: true, vertical: false)
         }
 
-        Button(String(localized: "Open System Settings", comment: "")) {
+        Button(String(localized: "Open System Settings", bundle: .equinox, comment: "")) {
             appState.openCalendarPrivacySettings()
         }
         .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
@@ -154,7 +154,7 @@ struct PanelStateOverlay: View {
         EquinoxBanner(
             message: message,
             style: .warning,
-            actionTitle: String(localized: "Retry", comment: ""),
+            actionTitle: String(localized: "Retry", bundle: .equinox, comment: ""),
             action: { appState.events.retryFetchEvents() }
         )
     }
@@ -162,10 +162,10 @@ struct PanelStateOverlay: View {
     private func noCalendarsBanner(hasCalendars: Bool) -> some View {
         EquinoxBanner(
             message: hasCalendars
-                ? String(localized: "No calendars selected", comment: "No calendars banner")
-                : String(localized: "No calendars available", comment: "Calendar settings empty state"),
+                ? String(localized: "No calendars selected", bundle: .equinox, comment: "No calendars banner")
+                : String(localized: "No calendars available", bundle: .equinox, comment: "Calendar settings empty state"),
             style: .info,
-            actionTitle: String(localized: "Calendars…", comment: "Open calendars settings"),
+            actionTitle: String(localized: "Calendars…", bundle: .equinox, comment: "Open calendars settings"),
             action: { SettingsActivationHandler.openSettings(appState: appState, initialTab: .calendars) }
         )
     }

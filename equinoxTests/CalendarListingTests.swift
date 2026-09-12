@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class CalendarListingTests: XCTestCase {
     func testSortCalendarsGroupsBySource() {

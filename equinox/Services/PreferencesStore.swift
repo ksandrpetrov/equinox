@@ -8,6 +8,7 @@ final class PreferencesStore {
     private let notificationCenter: NotificationCenter
     private var isLoading = true
 
+    var isPinnedPanelVisible = false { didSet { persist(isPinnedPanelVisible, forKey: kPinnedPanelVisible) } }
     var isPanelPinned = false { didSet { persist(isPanelPinned, forKey: kPanelPinned) } }
     var showsAgenda = true {
         didSet {
@@ -170,6 +171,7 @@ final class PreferencesStore {
         let weekStart = min(max(cal.firstWeekday - 1, 0), 6)
         return [
             kPanelPinned: false,
+            kPinnedPanelVisible: false,
             kShowWeeks: false,
             kHighlightedDOWs: kDefaultHighlightedDOWs,
             kShowAgenda: true,
@@ -193,6 +195,7 @@ final class PreferencesStore {
     }
 
     private func loadFromDefaults() {
+        isPinnedPanelVisible = defaults.bool(forKey: kPinnedPanelVisible)
         isPanelPinned = defaults.bool(forKey: kPanelPinned)
         showsAgenda = defaults.bool(forKey: kShowAgenda)
         weekStartWeekday = normalizedInteger(forKey: kWeekStartDOW) { min(max($0, 0), 6) }

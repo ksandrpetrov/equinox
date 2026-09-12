@@ -8,22 +8,22 @@ struct PrivacySettingsTab: View {
         if let appState {
             privacyContent(appState: appState)
         } else {
-            SettingsDetailScaffold(title: String(localized: "Privacy", comment: "Privacy prefs tab label")) {
-                SettingsFooter(text: String(localized: "App state unavailable.", comment: ""))
+            SettingsDetailScaffold(title: String(localized: "Privacy", bundle: .equinox, comment: "Privacy prefs tab label")) {
+                SettingsFooter(text: String(localized: "App state unavailable.", bundle: .equinox, comment: ""))
             }
         }
     }
 
     @ViewBuilder
     private func privacyContent(appState: AppState) -> some View {
-        SettingsDetailScaffold(title: String(localized: "Privacy", comment: "Privacy prefs tab label")) {
+        SettingsDetailScaffold(title: String(localized: "Privacy", bundle: .equinox, comment: "Privacy prefs tab label")) {
             if SettingsSearchFilter.matches(
                 searchText: searchText,
                 keywords: "Privacy", "Calendar Access", "Request Access", "Open System Settings"
             ) {
                 SettingsSection(
-                    String(localized: "Calendar Access", comment: "Privacy section"),
-                    subtitle: String(localized: "Equinox reads events from your system calendars.", comment: "")
+                    String(localized: "Calendar Access", bundle: .equinox, comment: "Privacy section"),
+                    subtitle: String(localized: "Equinox reads events from your system calendars.", bundle: .equinox, comment: "")
                 ) {
                     LabeledContent {
                         HStack(spacing: EquinoxDesign.spacingXS) {
@@ -33,7 +33,7 @@ struct PrivacySettingsTab: View {
                                 .foregroundStyle(.secondary)
                         }
                     } label: {
-                        Text(String(localized: "Equinox app", comment: "App calendar access label"))
+                        Text(String(localized: "Equinox app", bundle: .equinox, comment: "App calendar access label"))
                     }
                     .padding(.vertical, SettingsDesign.rowVerticalPadding)
                     .accessibilityElement(children: .combine)
@@ -42,13 +42,13 @@ struct PrivacySettingsTab: View {
 
                     HStack(spacing: EquinoxDesign.spacingMD) {
                         if appState.events.calendarAccessStatus == .notDetermined {
-                            Button(String(localized: "Request Access", comment: "")) {
+                            Button(String(localized: "Request Access", bundle: .equinox, comment: "")) {
                                 appState.requestCalendarAccessIfNeeded()
                             }
                             .buttonStyle(EquinoxButtonStyle(variant: .prominent))
                         }
 
-                        Button(String(localized: "Open System Settings", comment: "")) {
+                        Button(String(localized: "Open System Settings", bundle: .equinox, comment: "")) {
                             appState.openCalendarPrivacySettings()
                         }
                         .buttonStyle(EquinoxButtonStyle(variant: .bordered))
@@ -70,9 +70,9 @@ struct PrivacySettingsTab: View {
 
     private var settingsSearchEmptyState: some View {
         ContentUnavailableView(
-            String(localized: "No Results", comment: "Settings search empty"),
+            String(localized: "No Results", bundle: .equinox, comment: "Settings search empty"),
             systemImage: "magnifyingglass",
-            description: Text(String(localized: "Try a different search term.", comment: ""))
+            description: Text(String(localized: "Try a different search term.", bundle: .equinox, comment: ""))
         )
         .frame(maxWidth: .infinity)
         .padding(.vertical, EquinoxDesign.spacingXL)
@@ -98,13 +98,13 @@ struct PrivacySettingsTab: View {
     private func accessGuidance(for status: CalendarAccessStatus) -> String {
         switch status {
         case .authorized:
-            String(localized: "Full calendar access is enabled.", comment: "Calendar privacy guidance")
+            String(localized: "Full calendar access is enabled.", bundle: .equinox, comment: "Calendar privacy guidance")
         case .notDetermined:
-            String(localized: "macOS will ask you to grant Full Access.", comment: "Calendar privacy guidance")
+            String(localized: "macOS will ask you to grant Full Access.", bundle: .equinox, comment: "Calendar privacy guidance")
         case .denied:
-            String(localized: "Enable Full Access for Equinox in System Settings.", comment: "Calendar privacy guidance")
+            String(localized: "Enable Full Access for Equinox in System Settings.", bundle: .equinox, comment: "Calendar privacy guidance")
         case .restricted:
-            String(localized: "Access is restricted by system policy and cannot be requested here.", comment: "Calendar privacy guidance")
+            String(localized: "Access is restricted by system policy and cannot be requested here.", bundle: .equinox, comment: "Calendar privacy guidance")
         }
     }
 }

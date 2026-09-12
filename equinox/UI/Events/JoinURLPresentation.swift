@@ -4,7 +4,7 @@ import Foundation
 enum JoinURLPresentation {
     static func meetingDisplayName(for url: URL) -> String {
         MeetingProviderRegistry.match(for: url)?.displayName
-            ?? String(localized: "Video call", comment: "Generic meeting provider name")
+            ?? String(localized: "Video call", bundle: .equinox, comment: "Generic meeting provider name")
     }
 
     static func meetingSystemImage(for url: URL) -> String {

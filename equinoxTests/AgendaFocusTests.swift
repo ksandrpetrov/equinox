@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class AgendaFocusTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)

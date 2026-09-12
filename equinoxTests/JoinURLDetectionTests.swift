@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class JoinURLDetectionTests: XCTestCase {
     func testDetectZoomInLocation() {
@@ -85,6 +85,33 @@ final class JoinURLDetectionTests: XCTestCase {
         XCTAssertEqual(
             JoinURLPresentation.notesForDisplay(notes: notes, excludingJoinURL: nil),
             "Bring laptop"
+        )
+    }
+
+    func testNotesRemovalPreservesOtherLinksWithTheSamePrefix() throws {
+        let join = try XCTUnwrap(URL(string: "https://zoom.us/j/123"))
+        let otherLinks = [
+            "https://zoom.us/j/123456789",
+            "https://zoom.us/j/123?pwd=secret",
+            "https://example.com/?next=https://zoom.us/j/123",
+        ]
+        for other in otherLinks {
+            let notes = "\(join.absoluteString)\nДругая встреча: \(other)"
+            XCTAssertEqual(
+                JoinURLPresentation.notesForDisplay(notes: notes, excludingJoinURL: join),
+                "Другая встреча: \(other)", other
+            )
+        }
+    }
+
+    func testNotesRemovalHandlesRepeatedLinksAndUnicodeRanges() throws {
+        let join = try XCTUnwrap(URL(string: "https://zoom.us/j/123"))
+        XCTAssertEqual(
+            JoinURLPresentation.notesForDisplay(
+                notes: "📅 Встреча\n\(join.absoluteString)\n\(join.absoluteString)\nПароль: 123",
+                excludingJoinURL: join
+            ),
+            "📅 Встреча\nПароль: 123"
         )
     }
 

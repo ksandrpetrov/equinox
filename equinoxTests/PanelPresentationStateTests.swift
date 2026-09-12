@@ -1,25 +1,58 @@
 import KeyboardShortcuts
 import AppKit
+import Carbon.HIToolbox
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 @MainActor
 final class PanelPresentationStateTests: XCTestCase {
-    func testSystemTimeNotificationsFromBackgroundThreadDoNotCrash() async {
-        // The test host runs the app's real StatusItemController observers.
-        // Foundation can deliver the midnight notification on a background queue.
+    func testSystemTimeNotificationsFromBackgroundThreadReachCalendarRefresh() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let center = NotificationCenter()
+        let workspaceCenter = NotificationCenter()
+        let controller = StatusItemController(appState: context.appState)
+        controller.setupSystemChangeObservers(notificationCenter: center, workspaceNotificationCenter: workspaceCenter)
+        defer { controller.stopObservingSystemChanges() }
         for name in [
             Notification.Name.NSCalendarDayChanged,
             .NSSystemClockDidChange,
             .NSSystemTimeZoneDidChange
         ] {
-            await postFromBackground(name, center: .default)
+            let refreshed = expectation(description: "Calendar time context invalidated for \(name.rawValue)")
+            context.store.onTimeInvalidation = { refreshed.fulfill() }
+            await postFromBackground(name, center: center)
+            await fulfillment(of: [refreshed], timeout: 2)
         }
-        await postFromBackground(NSWorkspace.didWakeNotification, center: NSWorkspace.shared.notificationCenter)
+        let wakeRefreshed = expectation(description: "Calendar time context invalidated after wake")
+        context.store.onTimeInvalidation = { wakeRefreshed.fulfill() }
+        await postFromBackground(NSWorkspace.didWakeNotification, center: workspaceCenter)
+        await fulfillment(of: [wakeRefreshed], timeout: 2)
+        XCTAssertEqual(context.store.timeInvalidationCount, 4)
+        XCTAssertEqual(context.store.accessRequestCount, 1, "Access is prepared once through the stub, not once per notification")
     }
 
-    func testLocaleNotificationFromBackgroundThreadDoesNotCrash() async {
-        await postFromBackground(NSLocale.currentLocaleDidChangeNotification, center: .default)
+    func testLocaleNotificationFromBackgroundThreadRefreshesCachedFormatters() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let center = NotificationCenter()
+        let controller = StatusItemController(appState: context.appState)
+        controller.setupSystemChangeObservers(notificationCenter: center, workspaceNotificationCenter: NotificationCenter())
+        defer { controller.stopObservingSystemChanges() }
+        let oldFormatter = EquinoxFormatters.formatter(key: "test.locale-observer") { $0.dateFormat = "HH" }
+        let refreshed = expectation(description: "Presentation refreshed after locale change")
+        context.appState.events.onMeetingIndicatorChanged = { refreshed.fulfill() }
+
+        await postFromBackground(NSLocale.currentLocaleDidChangeNotification, center: center)
+        await fulfillment(of: [refreshed], timeout: 2)
+
+        let newFormatter = EquinoxFormatters.formatter(key: "test.locale-observer") { $0.dateFormat = "hh" }
+        XCTAssertFalse(oldFormatter === newFormatter)
+        XCTAssertEqual(newFormatter.dateFormat, "hh")
+        XCTAssertEqual(context.store.accessRequestCount, 0)
+        XCTAssertEqual(context.store.timeInvalidationCount, 0)
     }
 
     private func postFromBackground(_ name: Notification.Name, center: NotificationCenter) async {
@@ -95,32 +128,13 @@ final class PanelPresentationStateTests: XCTestCase {
 
         XCTAssertEqual(
             button.accessibilityLabel(),
-            String(localized: "Equinox calendar", comment: "Menu bar status item accessibility label")
+            String(localized: "Equinox calendar", bundle: .equinox, comment: "Menu bar status item accessibility label")
         )
         let expectedHelp = String(
             localized: "Show or hide the Equinox panel from anywhere",
-            comment: "Menu bar status item accessibility help and tooltip"
+            bundle: .equinox, comment: "Menu bar status item accessibility help and tooltip"
         )
         XCTAssertEqual(button.accessibilityHelp(), expectedHelp)
         XCTAssertEqual(button.toolTip, expectedHelp)
-    }
-}
-
-@MainActor
-final class ShortcutCaptureLifecycleTests: XCTestCase {
-    func testLeavingRecorderWindowRestoresGlobalShortcuts() {
-        let originalEnabled = KeyboardShortcuts.isEnabled
-        defer { KeyboardShortcuts.isEnabled = originalEnabled }
-        KeyboardShortcuts.isEnabled = true
-        let window = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: true)
-        let button = ShortcutCaptureButton(frame: .zero)
-        window.contentView = button
-        XCTAssertTrue(button.becomeFirstResponder())
-        XCTAssertTrue(button.isRecording)
-        XCTAssertFalse(KeyboardShortcuts.isEnabled)
-        NotificationCenter.default.post(name: NSWindow.didResignKeyNotification, object: window)
-        XCTAssertFalse(button.isRecording)
-        XCTAssertTrue(KeyboardShortcuts.isEnabled)
-        window.contentView = nil
     }
 }

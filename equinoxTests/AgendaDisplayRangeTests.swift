@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class AgendaDisplayRangeTests: XCTestCase {
     func testInitialRangeAnchorsOnTodayWithPastAndFuture() {
@@ -61,6 +61,39 @@ final class AgendaDisplayRangeTests: XCTestCase {
 
 @MainActor
 final class AgendaScrollBoundaryTests: XCTestCase {
+    func testNewFocusSupersedesDeferredRepeatScroll() async {
+        let today = CalendarDate(year: 2026, monthIndex: 8, day: 12)
+        let context = SparseAgendaContext(today: today)
+        let coordinator = AgendaScrollCoordinator()
+        context.selectedDate = today.addingDays(1)
+        coordinator.scrollToFocus(events: context)
+        coordinator.scrollToFocus(events: context)
+        XCTAssertNil(coordinator.scrolledTarget)
+        context.selectedDate = today.addingDays(2)
+        coordinator.scrollToFocus(events: context)
+        let expected = AgendaScrollTarget.day(julian: context.selectedDate.julian)
+        XCTAssertEqual(coordinator.scrolledTarget, expected)
+
+        let drained = expectation(description: "Deferred scroll assignments completed")
+        DispatchQueue.main.async { drained.fulfill() }
+        await fulfillment(of: [drained], timeout: 2)
+
+        XCTAssertEqual(coordinator.scrolledTarget, expected)
+        XCTAssertTrue(context.synchronizedSelections.isEmpty)
+    }
+
+    func testRepeatedFocusStillScrollsWhenNotSuperseded() async {
+        let context = SparseAgendaContext(today: CalendarDate(year: 2026, monthIndex: 8, day: 12))
+        let coordinator = AgendaScrollCoordinator()
+        coordinator.scrollToFocus(events: context)
+        coordinator.scrollToFocus(events: context)
+        XCTAssertNil(coordinator.scrolledTarget)
+        let drained = expectation(description: "Repeated focus assigned")
+        DispatchQueue.main.async { drained.fulfill() }
+        await fulfillment(of: [drained], timeout: 2)
+        XCTAssertEqual(coordinator.scrolledTarget, .day(julian: context.selectedDate.julian))
+    }
+
     func testSparseAgendaBoundaryExtendsWithoutChangingSelection() {
         let today = CalendarDate(year: 2026, monthIndex: 5, day: 14)
         let context = SparseAgendaContext(today: today)

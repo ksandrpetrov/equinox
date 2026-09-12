@@ -32,10 +32,10 @@ struct EventDetailView: View {
 
     var body: some View {
         ModalSheetScaffold(
-            title: String(localized: "Event Details", comment: "Event detail sheet title"),
+            title: String(localized: "Event Details", bundle: .equinox, comment: "Event detail sheet title"),
             metrics: metrics,
             destructiveTitle: event.allowsDeletion
-                ? String(localized: "Delete", comment: "")
+                ? String(localized: "Delete", bundle: .equinox, comment: "")
                 : nil,
             isDestructiveInProgress: isDeleting,
             minHeight: nil,
@@ -86,7 +86,7 @@ struct EventDetailView: View {
             ModalConfirmDialog(
                 title: EventDeletionConfirmation.title(isRecurring: event.isRecurring),
                 message: event.title,
-                confirmTitle: String(localized: "Delete", comment: ""),
+                confirmTitle: String(localized: "Delete", bundle: .equinox, comment: ""),
                 onConfirm: {
                     isDeleteConfirmationPresented = false
                     deleteEvent()
@@ -105,14 +105,14 @@ struct EventDetailView: View {
 
     private func openURL(_ url: URL, fallback: URL? = nil) {
         actionError = URLOpener.open(url, fallback: fallback)
-            ? nil : String(localized: "Could not open the link.", comment: "URL open error")
+            ? nil : String(localized: "Could not open the link.", bundle: .equinox, comment: "URL open error")
     }
 
     private var metadataRows: [EventDetailMetadataRowModel] {
         var rows: [EventDetailMetadataRowModel] = [
             EventDetailMetadataRowModel(
                 symbol: "clock",
-                title: String(localized: "When", comment: "Event detail metadata label"),
+                title: String(localized: "When", bundle: .equinox, comment: "Event detail metadata label"),
                 value: whenString,
                 tint: .secondary
             )
@@ -122,7 +122,7 @@ struct EventDetailView: View {
             rows.append(
                 EventDetailMetadataRowModel(
                     symbol: "mappin.and.ellipse",
-                    title: String(localized: "Location", comment: "Event detail metadata label"),
+                    title: String(localized: "Location", bundle: .equinox, comment: "Event detail metadata label"),
                     value: location,
                     tint: .secondary
                 )
@@ -133,7 +133,7 @@ struct EventDetailView: View {
             rows.append(
                 EventDetailMetadataRowModel(
                     symbol: "person.crop.circle.badge.clock",
-                    title: String(localized: "Attendance", comment: "Event detail metadata label"),
+                    title: String(localized: "Attendance", bundle: .equinox, comment: "Event detail metadata label"),
                     value: status.detailStatusLabel,
                     tint: status.chipForeground
                 )
@@ -150,7 +150,7 @@ struct EventDetailView: View {
             let dates = appState.calendar.isDate(event.startDate, inSameDayAs: inclusiveEnd)
                 ? formatter.string(from: event.startDate)
                 : "\(formatter.string(from: event.startDate)) – \(formatter.string(from: inclusiveEnd))"
-            return "\(String(localized: "All-day", comment: "")) · \(dates)"
+            return "\(String(localized: "All-day", bundle: .equinox, comment: "")) · \(dates)"
         }
         return EquinoxFormatters.mediumDateTime(from: event.startDate, to: event.endDate)
     }
@@ -159,7 +159,7 @@ struct EventDetailView: View {
         guard !isDeleting else { return }
         actionError = nil
         guard let id = event.eventIdentifier else {
-            actionError = String(localized: "Could not delete event", comment: "Delete event failure")
+            actionError = String(localized: "Could not delete event", bundle: .equinox, comment: "Delete event failure")
             return
         }
         isDeleting = true
@@ -273,7 +273,7 @@ private struct EventDetailLinkButton: View {
                     )
 
                 VStack(alignment: .leading, spacing: EquinoxDesign.spacingMicro) {
-                    Text(String(localized: "Open Link", comment: "Event URL action"))
+                    Text(String(localized: "Open Link", bundle: .equinox, comment: "Event URL action"))
                         .font(.headline)
                     Text(url.host() ?? url.absoluteString)
                         .font(.caption)
@@ -299,7 +299,7 @@ private struct EventDetailLinkButton: View {
             EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion),
             value: isHovered
         )
-        .accessibilityLabel(String(localized: "Open Link", comment: "Event URL action"))
+        .accessibilityLabel(String(localized: "Open Link", bundle: .equinox, comment: "Event URL action"))
         .accessibilityHint(url.absoluteString)
     }
 }

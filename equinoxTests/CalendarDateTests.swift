@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class CalendarDateTests: XCTestCase {
     func testEverySupportedDayRoundTripsThroughJulianArithmetic() {
@@ -48,12 +48,6 @@ final class CalendarDateTests: XCTestCase {
                 boundary
             )
         }
-    }
-
-    func testJulianRoundTrip() {
-        let date = CalendarDate(year: 2024, monthIndex: 5, day: 15)
-        let roundTripped = CalendarDate(julian: date.julian)
-        XCTAssertEqual(date, roundTripped)
     }
 
     func testLeapYearFebruary() {

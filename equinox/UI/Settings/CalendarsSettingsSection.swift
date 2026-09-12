@@ -16,9 +16,9 @@ struct CalendarsSettingsSection: View {
                 calendarListEmptyState
             } else if filteredEntries.isEmpty && !filterText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 ContentUnavailableView(
-                    String(localized: "No Results", comment: "Settings search empty"),
+                    String(localized: "No Results", bundle: .equinox, comment: "Settings search empty"),
                     systemImage: "magnifyingglass",
-                    description: Text(String(localized: "Try a different search term.", comment: ""))
+                    description: Text(String(localized: "Try a different search term.", bundle: .equinox, comment: ""))
                 )
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, EquinoxDesign.spacingXL)
@@ -62,13 +62,13 @@ struct CalendarsSettingsSection: View {
         if !appState.events.calendarAccessStatus.isAuthorized {
             ContentUnavailableView {
                 Label(
-                    String(localized: "Calendar access required", comment: "Permission banner title"),
+                    String(localized: "Calendar access required", bundle: .equinox, comment: "Permission banner title"),
                     systemImage: "calendar.badge.exclamationmark"
                 )
             } description: {
-                Text(String(localized: "Enable Full Access for Equinox in System Settings.", comment: "Calendar privacy guidance"))
+                Text(String(localized: "Enable Full Access for Equinox in System Settings.", bundle: .equinox, comment: "Calendar privacy guidance"))
             } actions: {
-                Button(String(localized: "Open System Settings", comment: "")) {
+                Button(String(localized: "Open System Settings", bundle: .equinox, comment: "")) {
                     appState.openCalendarPrivacySettings()
                 }
                 .buttonStyle(EquinoxButtonStyle(variant: .bordered))
@@ -77,23 +77,23 @@ struct CalendarsSettingsSection: View {
             EquinoxBanner(
                 message: error,
                 style: .warning,
-                actionTitle: String(localized: "Retry", comment: ""),
+                actionTitle: String(localized: "Retry", bundle: .equinox, comment: ""),
                 action: { appState.events.retryFetchEvents() }
             )
         } else if appState.events.isFetchingEvents || !appState.events.hasCompletedInitialEventLoad {
             VStack(spacing: EquinoxDesign.spacingSM) {
                 ProgressView()
                     .controlSize(.small)
-                Text(String(localized: "Loading calendars", comment: "Calendar settings loading state"))
+                Text(String(localized: "Loading calendars", bundle: .equinox, comment: "Calendar settings loading state"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
         } else {
             ContentUnavailableView(
-                String(localized: "No calendars available", comment: "Calendar settings empty state"),
+                String(localized: "No calendars available", bundle: .equinox, comment: "Calendar settings empty state"),
                 systemImage: "calendar.badge.minus",
-                description: Text(String(localized: "No event calendars were found.", comment: "Calendar settings empty state"))
+                description: Text(String(localized: "No event calendars were found.", bundle: .equinox, comment: "Calendar settings empty state"))
             )
         }
     }

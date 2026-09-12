@@ -1,29 +1,6 @@
 import EventKit
 import Foundation
 
-struct CalendarStoreSnapshot: Sendable {
-    let accessStatus: CalendarAccessStatus
-    let eventsByDate: [CalendarDate: [DayEvent]]
-    let calendarEntries: [CalendarListEntry]
-    let defaultCalendarIdentifier: String?
-    let hasSelectedCalendars: Bool
-    let lastFetchError: String?
-    let hasCompletedInitialLoad: Bool
-}
-
-protocol CalendarEventStore: Sendable {
-    func snapshot() async -> CalendarStoreSnapshot
-    func setExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) async
-    func requestCalendarAccessIfNeeded() async -> Bool
-    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool) async -> Bool
-    func refetchAll(first: CalendarDate, last: CalendarDate) async -> Bool
-    func invalidateTimeContext() async
-    func createEvent(from draft: NewEventDraft) async throws
-    func deleteEvent(identifier: String, occurrenceStartDate: Date) async throws
-    func updateSelectedCalendar(identifier: String, selected: Bool) async
-    func resetCalendarSelection() async
-}
-
 actor CalendarStore: CalendarEventStore {
     private let store = EKEventStore()
     private let calendar: Calendar
@@ -163,7 +140,7 @@ actor CalendarStore: CalendarEventStore {
     }
 
     func createEvent(from draft: NewEventDraft) throws {
-        try draft.validate()
+        try draft.validate(calendar: calendar)
         guard hasCalendarAccess else { throw CalendarStoreError.calendarAccessRequired }
         guard let ekCalendar = store.calendar(withIdentifier: draft.calendarIdentifier) else {
             throw CalendarStoreError.calendarNotFound
@@ -278,7 +255,7 @@ actor CalendarStore: CalendarEventStore {
     ) async -> Bool {
         guard hasCalendarAccess else {
             fetchCache.clearEvents()
-            fetchCache.lastFetchError = String(localized: "Calendar access is required to load events.", comment: "Fetch error")
+            fetchCache.lastFetchError = String(localized: "Calendar access is required to load events.", bundle: .equinox, comment: "Fetch error")
             return false
         }
 
@@ -319,39 +296,4 @@ actor CalendarStore: CalendarEventStore {
         fetchCache.applyCalendarFilter(selectedCalendarIDs: calendarSelection.selectedCalendarIDs())
     }
 
-}
-
-enum CalendarStoreError: Error, LocalizedError, Equatable {
-    case eventNotFound
-    case calendarNotFound
-    case readOnlyCalendar
-    case endDateBeforeStart
-    case emptyTitle
-    case invalidURL
-    case invalidRecurrenceEnd
-    case invalidAlert
-    case calendarAccessRequired
-
-    var errorDescription: String? {
-        switch self {
-        case .emptyTitle:
-            return String(localized: "Enter an event title.", comment: "Create event title validation error")
-        case .invalidURL:
-            return String(localized: "Enter a valid URL including its scheme.", comment: "Create event URL validation error")
-        case .invalidRecurrenceEnd:
-            return String(localized: "Repeat end date cannot be before event start.", comment: "Create event recurrence validation error")
-        case .invalidAlert:
-            return String(localized: "Enter a valid event alert.", comment: "Create event alert validation error")
-        case .calendarAccessRequired:
-            return String(localized: "Calendar access required", comment: "Permission banner title")
-        case .eventNotFound:
-            return String(localized: "The event could not be found.", comment: "Delete event error")
-        case .calendarNotFound:
-            return String(localized: "The calendar could not be found.", comment: "Create event error")
-        case .readOnlyCalendar:
-            return String(localized: "This calendar is read-only.", comment: "Create event error")
-        case .endDateBeforeStart:
-            return String(localized: "End date must be after start date.", comment: "Create event validation error")
-        }
-    }
 }

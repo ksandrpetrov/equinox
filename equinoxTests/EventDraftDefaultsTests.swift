@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class EventDraftDefaultsTests: XCTestCase {
     private var calendar: Calendar {
@@ -197,6 +197,103 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(EventDraftDefaults.absoluteURL(from: "tel:+123")?.scheme, "tel")
     }
 
+    func testHTTPURLsRequireANonemptyHost() {
+        for value in ["https://:80/a", "http://:443/a", "https://user@:80/a", "https:///a"] {
+            XCTAssertNil(EventDraftDefaults.absoluteURL(from: value), value)
+        }
+        for value in ["https://example.com:8443/a", "http://localhost:80/a", "https://[::1]/a",
+                      "tel:+123", "mailto:test@example.com", "equinox://date/2026-09-12"] {
+            XCTAssertNotNil(EventDraftDefaults.absoluteURL(from: value), value)
+        }
+    }
+
+    func testDefaultStartPreservesBothOccurrencesOfRepeatedHour() throws {
+        var calendar = calendar
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let cases = [
+            ("2026-11-01T08:10:00Z", "2026-11-01T08:30:00Z"),
+            ("2026-11-01T09:10:00Z", "2026-11-01T09:30:00Z"),
+            ("2026-11-01T08:30:00Z", "2026-11-01T08:30:00Z"),
+            ("2026-11-01T09:30:00Z", "2026-11-01T09:30:00Z"),
+            ("2026-11-01T08:50:00Z", "2026-11-01T09:00:00Z"),
+            ("2026-11-01T09:30:01Z", "2026-11-01T10:00:00Z"),
+            ("2026-11-02T07:50:00Z", "2026-11-02T08:00:00Z"),
+            ("2026-03-08T09:50:00Z", "2026-03-08T10:00:00Z"),
+        ]
+        for (input, expected) in cases {
+            let now = try XCTUnwrap(ISO8601DateFormatter().date(from: input))
+            let expectedStart = try XCTUnwrap(ISO8601DateFormatter().date(from: expected))
+            for initialDate in [nil, CalendarDate(date: now, calendar: calendar)] {
+                let dates = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: initialDate, now: now)
+                XCTAssertEqual(dates.start, expectedStart, input)
+                XCTAssertGreaterThanOrEqual(dates.start, now, input)
+                XCTAssertEqual(dates.end.timeIntervalSince(dates.start), 3600, input)
+            }
+        }
+    }
+
+    func testDefaultStartRoundsFractionalSecondsAndKeepsExplicitOtherDay() throws {
+        let boundary = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-09-12T23:30:00Z"))
+        let dates = EventDraftDefaults.defaultStartAndEnd(
+            calendar: calendar, initialDate: nil, now: boundary.addingTimeInterval(0.25)
+        )
+        XCTAssertEqual(dates.start, boundary.addingTimeInterval(1800))
+        let chosenDay = CalendarDate(year: 2027, monthIndex: 0, day: 1)
+        let chosen = EventDraftDefaults.defaultStartAndEnd(
+            calendar: calendar, initialDate: chosenDay, now: boundary.addingTimeInterval(0.25)
+        )
+        XCTAssertEqual(chosen.start, chosenDay.date(in: calendar))
+    }
+
+    func testMovingAllDayDraftPreservesCivilDayCountRegardlessOfHiddenTimes() throws {
+        var calendar = calendar
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        for startDay in [7, 8, 9] {
+            for daySpan in [0, 1, 3] {
+                let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: startDay, hour: 23, minute: 30)))
+                let end = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: startDay + daySpan, hour: 0, minute: 30)))
+                for offset in [-2, 1, 7] {
+                    let newStart = try XCTUnwrap(calendar.date(byAdding: .day, value: offset, to: start))
+                    let newEnd = EventDraftDefaults.endDatePreservingDuration(
+                        previousStart: start, previousEnd: end, newStart: newStart, calendar: calendar, isAllDay: true
+                    )
+                    let normalized = try XCTUnwrap(EventDraftDefaults.normalizedDates(
+                        calendar: calendar, start: newStart, end: newEnd, isAllDay: true
+                    ))
+                    XCTAssertEqual(calendar.dateComponents([.day], from: normalized.start, to: normalized.end).day, daySpan + 1)
+                }
+            }
+        }
+    }
+
+    func testMovingTimedMultidayDraftPreservesSecondsAcrossDST() throws {
+        var calendar = calendar
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let start = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-31T07:30:00Z"))
+        let end = start.addingTimeInterval(49 * 3600)
+        let newStart = try XCTUnwrap(calendar.date(byAdding: .day, value: 5, to: start))
+        let newEnd = EventDraftDefaults.endDatePreservingDuration(
+            previousStart: start, previousEnd: end, newStart: newStart, calendar: calendar, isAllDay: false
+        )
+        XCTAssertEqual(newEnd.timeIntervalSince(newStart), 49 * 3600)
+    }
+
+    func testMovingAllDayDraftAcrossFallBackPreservesDaysInsteadOfHours() throws {
+        var calendar = calendar
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let start = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-11-01T06:30:00Z"))
+        let end = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: start))
+        XCTAssertEqual(end.timeIntervalSince(start), 25 * 3600)
+        let newStart = try XCTUnwrap(calendar.date(byAdding: .day, value: 5, to: start))
+        let newEnd = EventDraftDefaults.endDatePreservingDuration(
+            previousStart: start, previousEnd: end, newStart: newStart, calendar: calendar, isAllDay: true
+        )
+        let normalized = try XCTUnwrap(EventDraftDefaults.normalizedDates(
+            calendar: calendar, start: newStart, end: newEnd, isAllDay: true
+        ))
+        XCTAssertEqual(calendar.dateComponents([.day], from: normalized.start, to: normalized.end).day, 2)
+    }
+
     func testRecurrenceEndCoversTheSelectedCalendarDay() {
         let start = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 18))!
         let selectedEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 8))!
@@ -259,45 +356,5 @@ final class EventDraftDefaultsTests: XCTestCase {
             ),
             ""
         )
-    }
-}
-
-final class NewEventDraftValidationTests: XCTestCase {
-    private var draft: NewEventDraft {
-        NewEventDraft(title: "Meeting", location: "", isAllDay: false,
-                      startDate: Date(timeIntervalSince1970: 1_800_000_000),
-                      endDate: Date(timeIntervalSince1970: 1_800_003_600), calendarIdentifier: "work")
-    }
-
-    func testValidDraftPasses() {
-        XCTAssertNoThrow(try draft.validate())
-    }
-
-    func testInvalidDraftsAreRejectedBeforeEventKitMutation() {
-        let cases: [(CalendarStoreError, (inout NewEventDraft) -> Void)] = [
-            (.emptyTitle, { $0.title = " \n " }),
-            (.endDateBeforeStart, { $0.endDate = $0.startDate }),
-            (.endDateBeforeStart, { $0.startDate = Date(timeIntervalSince1970: .nan) }),
-            (.endDateBeforeStart, { $0.endDate = Date(timeIntervalSince1970: .infinity) }),
-            (.invalidURL, { $0.url = URL(string: "relative/path") }),
-            (.invalidRecurrenceEnd, { $0.recurrence = RecurrenceDraft(frequency: .daily, endDate: $0.startDate.addingTimeInterval(-1)) }),
-            (.invalidAlert, { $0.alertOffset = .infinity }),
-        ]
-        for (expected, mutate) in cases {
-            var invalid = draft
-            mutate(&invalid)
-            XCTAssertThrowsError(try invalid.validate()) { error in
-                XCTAssertEqual(error as? CalendarStoreError, expected)
-            }
-        }
-    }
-
-    func testNonFiniteDatesAreRejectedBeforeAllDayNormalization() {
-        for allDay in [false, true] {
-            XCTAssertNil(EventDraftDefaults.normalizedDates(
-                calendar: Calendar.equinoxGregorian(), start: draft.startDate,
-                end: Date(timeIntervalSince1970: .infinity), isAllDay: allDay
-            ))
-        }
     }
 }

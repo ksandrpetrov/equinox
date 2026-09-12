@@ -1,32 +1,36 @@
 import AppKit
 import SwiftUI
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+public final class AppDelegate: NSObject, NSApplicationDelegate {
     var appState: AppState!
     private var statusItemController: StatusItemController?
     private var pendingOpenURLs: [URL]?
 
-    func applicationWillFinishLaunching(_ notification: Notification) {
+    public func applicationWillFinishLaunching(_ notification: Notification) {
         PreferencesStore.shared.applyTheme()
         SettingsActivationHandler.install()
     }
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    public func applicationDidFinishLaunching(_ notification: Notification) {
         appState = AppState()
         statusItemController = StatusItemController(appState: appState)
         statusItemController?.setup()
-        appState.requestCalendarAccessIfNeeded()
+        Task { [appState] in
+            guard let appState else { return }
+            await appState.waitForInitialization()
+            appState.requestCalendarAccessIfNeeded()
+        }
         if let pendingOpenURLs {
             self.pendingOpenURLs = nil
             application(NSApp, open: pendingOpenURLs)
         }
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    public func applicationWillTerminate(_ notification: Notification) {
         statusItemController?.teardown()
     }
 
-    func applicationDidBecomeActive(_ notification: Notification) {
+    public func applicationDidBecomeActive(_ notification: Notification) {
         guard let appState else { return }
         Task { @MainActor in
             let previouslyAuthorized = appState.events.calendarAccessStatus.isAuthorized
@@ -37,7 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func application(_ application: NSApplication, open urls: [URL]) {
+    public func application(_ application: NSApplication, open urls: [URL]) {
         guard let url = urls.first,
               url.scheme?.lowercased() == "equinox",
               url.host == "date",

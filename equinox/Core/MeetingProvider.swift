@@ -63,17 +63,18 @@ enum MeetingProviderRegistry {
                 "zoommtg://zoom.us/join", "youcanbook.me/zoom/",
             ],
             nativeScheme: "zoommtg://",
-            displayName: String(localized: "Zoom", comment: "Meeting provider name"),
+            displayName: String(localized: "Zoom", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "video.fill"
         ),
         MeetingProvider(
             id: "teams",
             detectionSubstrings: [
                 "teams.microsoft.com/l/meetup-join/",
+                "teams.microsoft.com/meet/",
                 "msteams://teams.microsoft.com/l/meetup-join/",
             ],
             nativeScheme: "msteams://",
-            displayName: String(localized: "Microsoft Teams", comment: "Meeting provider name"),
+            displayName: String(localized: "Microsoft Teams", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "person.2.fill"
         ),
         MeetingProvider(
@@ -83,7 +84,7 @@ enum MeetingProviderRegistry {
                 "chime://meeting",
             ],
             nativeScheme: "chime://",
-            displayName: String(localized: "Amazon Chime", comment: "Meeting provider name"),
+            displayName: String(localized: "Amazon Chime", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "phone.fill"
         ),
         MeetingProvider(
@@ -93,28 +94,28 @@ enum MeetingProviderRegistry {
                 "hangouts.google.com/",
             ],
             nativeScheme: nil,
-            displayName: String(localized: "Google Meet", comment: "Meeting provider name"),
+            displayName: String(localized: "Google Meet", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "video.fill"
         ),
         MeetingProvider(
             id: "webex",
             detectionSubstrings: ["webex.com/"],
             nativeScheme: nil,
-            displayName: String(localized: "Webex", comment: "Meeting provider name"),
+            displayName: String(localized: "Webex", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "video.fill"
         ),
         MeetingProvider(
             id: "vk",
             detectionSubstrings: ["vk.com/call/"],
             nativeScheme: nil,
-            displayName: String(localized: "VK Calls", comment: "Meeting provider name"),
+            displayName: String(localized: "VK Calls", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "phone.fill"
         ),
         MeetingProvider(
             id: "facetime",
             detectionSubstrings: ["facetime.apple.com/join"],
             nativeScheme: nil,
-            displayName: String(localized: "FaceTime", comment: "Meeting provider name"),
+            displayName: String(localized: "FaceTime", bundle: .equinox, comment: "Meeting provider name"),
             systemImage: "facetime"
         ),
         MeetingProvider(
@@ -126,7 +127,7 @@ enum MeetingProviderRegistry {
                 "workplace.com/meet",
             ],
             nativeScheme: nil,
-            displayName: String(localized: "Video call", comment: "Generic meeting provider name"),
+            displayName: String(localized: "Video call", bundle: .equinox, comment: "Generic meeting provider name"),
             systemImage: "video.fill"
         ),
     ]

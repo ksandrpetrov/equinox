@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 @MainActor
 final class PreferencesStoreTests: XCTestCase {

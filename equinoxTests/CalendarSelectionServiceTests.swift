@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class CalendarSelectionServiceTests: XCTestCase {
     private var suiteName = ""
@@ -53,22 +53,41 @@ final class CalendarSelectionServiceTests: XCTestCase {
         XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
     }
 
-    func testTemporarilyEmptyStoreDoesNotCreateSelectNonePreference() {
-        XCTAssertFalse(
-            CalendarSelectionService.shouldPersistSelection(
-                discoveredCalendarCount: 0
-            )
-        )
-        XCTAssertFalse(
-            CalendarSelectionService.shouldPersistSelection(
-                discoveredCalendarCount: 0
-            )
-        )
-        XCTAssertTrue(
-            CalendarSelectionService.shouldPersistSelection(
-                discoveredCalendarCount: 1
-            )
-        )
+    func testDiscoverySelectionAndTemporaryDisappearanceRoundTrip() {
+        var service = CalendarSelectionService(defaults: defaults)
+        service.refresh(calendars: [])
+        XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+        let calendars = [calendar("a", source: ""), calendar("b", source: "Work")]
+        service.refresh(calendars: calendars)
+        XCTAssertEqual(service.selectedCalendarIDs(), ["a", "b"])
+        XCTAssertEqual(service.calendarEntries.first, .source(""))
+        service.updateSelectedCalendar(identifier: "a", selected: false)
+        service.refresh(calendars: [])
+        XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), ["b"])
+        service.refresh(calendars: calendars)
+        XCTAssertEqual(service.selectedCalendarIDs(), ["b"])
+        let restored = CalendarSelectionService(defaults: defaults)
+        var reloaded = restored
+        reloaded.refresh(calendars: calendars)
+        XCTAssertEqual(reloaded.selectedCalendarIDs(), ["b"])
+    }
+
+    func testExplicitSelectNoneSurvivesDiscoveryAndUnknownToggleDoesNotWrite() {
+        CalendarSelectionStorage.saveSelectedIDs([], to: defaults)
+        var service = CalendarSelectionService(defaults: defaults)
+        service.refresh(calendars: [calendar("a", source: "Work")])
+        service.updateSelectedCalendar(identifier: "missing", selected: true)
+        XCTAssertFalse(service.hasSelectedCalendars())
+        XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), [])
+        service.updateSelectedCalendar(identifier: "a", selected: true)
+        XCTAssertTrue(service.hasSelectedCalendars())
+        XCTAssertEqual(service.selectedCalendarIDs(), ["a"])
+    }
+
+    private func calendar(_ id: String, source: String) -> SelectableCalendar {
+        SelectableCalendar(id: id, title: id, sourceTitle: source, isSelected: false,
+                           colorRed: 0, colorGreen: 0, colorBlue: 1, colorAlpha: 1,
+                           allowsContentModifications: true)
     }
 
     func testPersistedSelectionKeepsCalendarsMissingFromTransientDiscovery() {

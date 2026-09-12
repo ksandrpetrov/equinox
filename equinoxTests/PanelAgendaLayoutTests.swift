@@ -1,7 +1,36 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class PanelAgendaLayoutTests: XCTestCase {
+    @MainActor
+    func testLayoutInvalidationUpdatesAgendaLimitBeforeApplyingGeometry() throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let controller = PanelWindowController(appState: context.appState)
+        for size in SizePreference.allCases {
+            context.appState.preferences.sizePreference = size.rawValue
+            for rowCount in Array(6...10) + [6] {
+                context.appState.preferences.calendarRowCount = rowCount
+                for screenHeight: CGFloat in [600, 700, 900] {
+                    let expected = PanelAgendaLayout.maxHeight(
+                        metrics: SizeMetrics.metrics(for: size), calendarRowCount: rowCount,
+                        screenVisibleHeight: screenHeight
+                    )
+                    var resized = false
+                    controller.updateLayout(screenVisibleHeight: screenHeight) {
+                        resized = true
+                        XCTAssertEqual(context.appState.layout.panelAgendaMaxHeight, expected,
+                                       "Geometry used a stale agenda limit for \(size), \(rowCount) rows")
+                    }
+                    XCTAssertTrue(resized)
+                }
+            }
+        }
+        controller.updateLayout(screenVisibleHeight: nil) {
+            XCTAssertEqual(context.appState.layout.panelAgendaMaxHeight, PanelAgendaLayout.agendaMaxHeightFallback)
+        }
+    }
+
     func testMaxHeightUsesDesignTokensAndMetrics() {
         let small = SizeMetrics.metrics(for: .small)
         let large = SizeMetrics.metrics(for: .large)

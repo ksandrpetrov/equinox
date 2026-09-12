@@ -19,13 +19,14 @@ enum AgendaContentState: Equatable {
         hasCompletedInitialLoad: Bool,
         hasFetchError: Bool,
         hasVisibleEvents: Bool,
-        hasSelectedCalendars: Bool = true
+        hasSelectedCalendars: Bool = true,
+        showEmptyDays: Bool = false
     ) -> AgendaContentState {
         guard accessStatus == .authorized, hasSelectedCalendars else {
             return .hidden
         }
         if hasCompletedInitialLoad {
-            return hasVisibleEvents ? .content : .empty
+            return hasVisibleEvents || showEmptyDays ? .content : .empty
         }
         return hasFetchError ? .hidden : .loading
     }
@@ -87,12 +88,12 @@ struct AgendaView: View {
                                             )
                                             .id(AgendaScrollTarget.event(id: event.id))
                                             .contextMenu {
-                                                Button(String(localized: "Show Details", comment: "Agenda context menu")) {
+                                                Button(String(localized: "Show Details", bundle: .equinox, comment: "Agenda context menu")) {
                                                     appState.panel.selectedEvent = event
                                                     appState.panel.isEventDetailPresented = true
                                                 }
                                                 if event.allowsDeletion, let eventIdentifier = event.eventIdentifier {
-                                                    Button(String(localized: "Delete…", comment: ""), role: .destructive) {
+                                                    Button(String(localized: "Delete…", bundle: .equinox, comment: ""), role: .destructive) {
                                                         pendingDelete = PendingDeleteEvent(
                                                             id: event.id,
                                                             eventIdentifier: eventIdentifier,
@@ -164,7 +165,7 @@ struct AgendaView: View {
             ModalConfirmDialog(
                 title: EventDeletionConfirmation.title(isRecurring: pending.isRecurring),
                 message: pending.title,
-                confirmTitle: String(localized: "Delete", comment: ""),
+                confirmTitle: String(localized: "Delete", bundle: .equinox, comment: ""),
                 onConfirm: {
                     let eventIdentifier = pending.eventIdentifier
                     let occurrenceStartDate = pending.occurrenceStartDate
@@ -218,7 +219,7 @@ struct AgendaView: View {
         HStack(spacing: EquinoxDesign.spacingSM) {
             Image(systemName: "calendar.badge.minus")
                 .foregroundStyle(.tertiary)
-            Text(String(localized: "No events", comment: "Agenda empty day"))
+            Text(String(localized: "No events", bundle: .equinox, comment: "Agenda empty day"))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
             Spacer(minLength: 0)
@@ -226,7 +227,7 @@ struct AgendaView: View {
                 Button {
                     presentNewEvent(on: date)
                 } label: {
-                    Label(String(localized: "New Event", comment: "Agenda empty day action"), systemImage: "plus")
+                    Label(String(localized: "New Event", bundle: .equinox, comment: "Agenda empty day action"), systemImage: "plus")
                 }
                 .buttonStyle(EquinoxButtonStyle(variant: .plain, size: .small))
             }
@@ -239,7 +240,7 @@ struct AgendaView: View {
         HStack(spacing: EquinoxDesign.spacingSM) {
             ProgressView()
                 .controlSize(.small)
-            Text(String(localized: "Loading events", comment: "Agenda initial loading state"))
+            Text(String(localized: "Loading events", bundle: .equinox, comment: "Agenda initial loading state"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -260,14 +261,14 @@ struct AgendaView: View {
                 HStack(spacing: EquinoxDesign.spacingSM) {
                     Image(systemName: "calendar.badge.plus")
                         .foregroundStyle(EquinoxDesign.ColorToken.action)
-                    Text(String(localized: "No events", comment: "Agenda empty day"))
+                    Text(String(localized: "No events", bundle: .equinox, comment: "Agenda empty day"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
                     Button {
                         presentNewEvent(on: appState.events.selectedDate)
                     } label: {
-                        Text(String(localized: "New Event", comment: "Empty agenda CTA"))
+                        Text(String(localized: "New Event", bundle: .equinox, comment: "Empty agenda CTA"))
                     }
                     .buttonStyle(EquinoxButtonStyle(variant: .prominent, size: .small))
                 }
@@ -284,7 +285,7 @@ struct AgendaView: View {
                     )
                 } label: {
                     HStack(spacing: EquinoxDesign.spacingXS) {
-                        Text(String(localized: "Show next 30 days", comment: "Extend empty agenda range"))
+                        Text(String(localized: "Show next 30 days", bundle: .equinox, comment: "Extend empty agenda range"))
                         Group {
                             if appState.events.isFetchingEvents {
                                 ProgressView()
@@ -299,7 +300,7 @@ struct AgendaView: View {
                 }
                 .buttonStyle(EquinoxButtonStyle(variant: .bordered, size: .small))
                 .accessibilityLabel(
-                    String(localized: "Show next 30 days", comment: "Extend empty agenda range")
+                    String(localized: "Show next 30 days", bundle: .equinox, comment: "Extend empty agenda range")
                 )
                 .disabled(
                     appState.events.isFetchingEvents
@@ -331,7 +332,8 @@ struct AgendaView: View {
             hasCompletedInitialLoad: appState.events.hasCompletedInitialEventLoad,
             hasFetchError: appState.events.lastFetchError != nil,
             hasVisibleEvents: hasVisibleEvents,
-            hasSelectedCalendars: appState.events.hasSelectedCalendars
+            hasSelectedCalendars: appState.events.hasSelectedCalendars,
+            showEmptyDays: prefs.showDaysWithNoEvents
         )
     }
 

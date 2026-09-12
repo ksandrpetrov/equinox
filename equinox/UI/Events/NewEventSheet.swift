@@ -40,37 +40,37 @@ struct NewEventSheet: View {
     }
 
     private let recurrenceOptions = [
-        String(localized: "None", comment: "Recurrence"),
-        String(localized: "Every Day", comment: ""),
-        String(localized: "Every Week", comment: ""),
-        String(localized: "Every 2 Weeks", comment: ""),
-        String(localized: "Every Month", comment: ""),
-        String(localized: "Every Year", comment: "")
+        String(localized: "None", bundle: .equinox, comment: "Recurrence"),
+        String(localized: "Every Day", bundle: .equinox, comment: ""),
+        String(localized: "Every Week", bundle: .equinox, comment: ""),
+        String(localized: "Every 2 Weeks", bundle: .equinox, comment: ""),
+        String(localized: "Every Month", bundle: .equinox, comment: ""),
+        String(localized: "Every Year", bundle: .equinox, comment: "")
     ]
 
     private let recurrenceEndOptions = [
-        String(localized: "Never", comment: ""),
-        String(localized: "On date", comment: "")
+        String(localized: "Never", bundle: .equinox, comment: ""),
+        String(localized: "On date", bundle: .equinox, comment: "")
     ]
 
     private let regularAlerts = [
-        String(localized: "None", comment: "Alert"),
-        String(localized: "At time of event", comment: ""),
-        String(localized: "5 minutes before", comment: ""),
-        String(localized: "10 minutes before", comment: ""),
-        String(localized: "15 minutes before", comment: ""),
-        String(localized: "30 minutes before", comment: ""),
-        String(localized: "1 hour before", comment: ""),
-        String(localized: "2 hours before", comment: ""),
-        String(localized: "1 day before", comment: ""),
-        String(localized: "2 days before", comment: "")
+        String(localized: "None", bundle: .equinox, comment: "Alert"),
+        String(localized: "At time of event", bundle: .equinox, comment: ""),
+        String(localized: "5 minutes before", bundle: .equinox, comment: ""),
+        String(localized: "10 minutes before", bundle: .equinox, comment: ""),
+        String(localized: "15 minutes before", bundle: .equinox, comment: ""),
+        String(localized: "30 minutes before", bundle: .equinox, comment: ""),
+        String(localized: "1 hour before", bundle: .equinox, comment: ""),
+        String(localized: "2 hours before", bundle: .equinox, comment: ""),
+        String(localized: "1 day before", bundle: .equinox, comment: ""),
+        String(localized: "2 days before", bundle: .equinox, comment: "")
     ]
 
     var body: some View {
         ModalSheetScaffold(
-            title: String(localized: "New Event", comment: ""),
+            title: String(localized: "New Event", bundle: .equinox, comment: ""),
             metrics: metrics,
-            confirmTitle: String(localized: "Add", comment: ""),
+            confirmTitle: String(localized: "Add", bundle: .equinox, comment: ""),
             confirmDisabled: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !hasModifiableCalendars || isSaving,
             isConfirming: isSaving,
             onCancel: { close() },
@@ -104,36 +104,43 @@ struct NewEventSheet: View {
 
     private var formContent: some View {
         Form {
-            Section(String(localized: "Event", comment: "")) {
-                TextField(String(localized: "Title", comment: ""), text: $title)
+            Section(String(localized: "Event", bundle: .equinox, comment: "")) {
+                TextField(String(localized: "Title", bundle: .equinox, comment: ""), text: $title)
                     .focused($focusedField, equals: .title)
             }
 
-            Section(String(localized: "Date & Time", comment: "")) {
-                Toggle(String(localized: "All-day", comment: ""), isOn: $isAllDay)
+            Section(String(localized: "Date & Time", bundle: .equinox, comment: "")) {
+                Toggle(String(localized: "All-day", bundle: .equinox, comment: ""), isOn: $isAllDay)
+                    .onChange(of: isAllDay) { _, _ in
+                        endDate = min(endDate, latestEndDate)
+                    }
 
-                DatePicker(String(localized: "Starts", comment: ""), selection: $startDate,
+                DatePicker(String(localized: "Starts", bundle: .equinox, comment: ""), selection: $startDate,
+                           in: supportedDates,
                            displayedComponents: isAllDay ? [.date] : [.date, .hourAndMinute])
                     .onChange(of: startDate) { old, new in
                         endDate = EventDraftDefaults.endDatePreservingDuration(
                             previousStart: old,
                             previousEnd: endDate,
                             newStart: new,
-                            calendar: appState.calendar
+                            calendar: appState.calendar,
+                            isAllDay: isAllDay
                         )
+                        endDate = min(endDate, latestEndDate)
                         let earliestRecurrenceEnd = appState.calendar.startOfDay(for: new)
                         if recurrenceEndDate < earliestRecurrenceEnd {
                             recurrenceEndDate = earliestRecurrenceEnd
                         }
                     }
 
-                DatePicker(String(localized: "Ends", comment: ""), selection: $endDate,
+                DatePicker(String(localized: "Ends", bundle: .equinox, comment: ""), selection: $endDate,
+                           in: supportedDates.lowerBound...latestEndDate,
                            displayedComponents: isAllDay ? [.date] : [.date, .hourAndMinute])
             }
 
-            Section(String(localized: "Calendar", comment: "")) {
+            Section(String(localized: "Calendar", bundle: .equinox, comment: "")) {
                 if hasModifiableCalendars {
-                    Picker(String(localized: "Calendar", comment: ""), selection: $selectedCalendarIdentifier) {
+                    Picker(String(localized: "Calendar", bundle: .equinox, comment: ""), selection: $selectedCalendarIdentifier) {
                         ForEach(modifiableCalendars) { calendar in
                             HStack {
                                 Circle()
@@ -148,52 +155,52 @@ struct NewEventSheet: View {
                     ModalErrorBanner(
                         message: String(
                             localized: "No writable calendars available. Check Calendar access in Privacy settings.",
-                            comment: "New event empty calendar warning"
+                            bundle: .equinox, comment: "New event empty calendar warning"
                         ),
                         style: .warning
                     )
                 }
             }
 
-            DisclosureGroup(String(localized: "Location & URL", comment: "New event section"), isExpanded: $showLocationSection) {
-                TextField(String(localized: "Location", comment: ""), text: $location)
-                TextField(String(localized: "URL", comment: ""), text: $urlString)
+            DisclosureGroup(String(localized: "Location & URL", bundle: .equinox, comment: "New event section"), isExpanded: $showLocationSection) {
+                TextField(String(localized: "Location", bundle: .equinox, comment: ""), text: $location)
+                TextField(String(localized: "URL", bundle: .equinox, comment: ""), text: $urlString)
             }
 
-            DisclosureGroup(String(localized: "Repeat", comment: ""), isExpanded: $showRepeatSection) {
-                Picker(String(localized: "Repeat", comment: ""), selection: $recurrenceIndex) {
+            DisclosureGroup(String(localized: "Repeat", bundle: .equinox, comment: ""), isExpanded: $showRepeatSection) {
+                Picker(String(localized: "Repeat", bundle: .equinox, comment: ""), selection: $recurrenceIndex) {
                     ForEach(recurrenceOptions.indices, id: \.self) { i in
                         Text(recurrenceOptions[i]).tag(i)
                     }
                 }
 
                 if recurrenceIndex > 0 {
-                    Picker(String(localized: "End repeat", comment: ""), selection: $recurrenceEndIndex) {
+                    Picker(String(localized: "End repeat", bundle: .equinox, comment: ""), selection: $recurrenceEndIndex) {
                         ForEach(recurrenceEndOptions.indices, id: \.self) { i in
                             Text(recurrenceEndOptions[i]).tag(i)
                         }
                     }
                     if recurrenceEndIndex == 1 {
                         DatePicker(
-                            String(localized: "End date", comment: ""),
+                            String(localized: "End date", bundle: .equinox, comment: ""),
                             selection: $recurrenceEndDate,
-                            in: earliestRecurrenceEndDate...Date.distantFuture,
+                            in: earliestRecurrenceEndDate...supportedDates.upperBound,
                             displayedComponents: [.date]
                         )
                     }
                 }
             }
 
-            DisclosureGroup(String(localized: "Alert", comment: ""), isExpanded: $showAlertSection) {
-                Picker(String(localized: "Alert", comment: ""), selection: $alertIndex) {
+            DisclosureGroup(String(localized: "Alert", bundle: .equinox, comment: ""), isExpanded: $showAlertSection) {
+                Picker(String(localized: "Alert", bundle: .equinox, comment: ""), selection: $alertIndex) {
                     ForEach(regularAlerts.indices, id: \.self) { i in
                         Text(regularAlerts[i]).tag(i)
                     }
                 }
             }
 
-            DisclosureGroup(String(localized: "Notes", comment: ""), isExpanded: $showNotesSection) {
-                TextField(String(localized: "Notes", comment: ""), text: $notes, axis: .vertical)
+            DisclosureGroup(String(localized: "Notes", bundle: .equinox, comment: ""), isExpanded: $showNotesSection) {
+                TextField(String(localized: "Notes", bundle: .equinox, comment: ""), text: $notes, axis: .vertical)
                     .lineLimit(3...6)
             }
         }
@@ -219,6 +226,14 @@ struct NewEventSheet: View {
         appState.calendar.startOfDay(for: startDate)
     }
 
+    private var supportedDates: ClosedRange<Date> {
+        EventDraftDefaults.supportedDateRange(calendar: appState.calendar)
+    }
+
+    private var latestEndDate: Date {
+        supportedDates.upperBound.addingTimeInterval(isAllDay ? 0 : 1)
+    }
+
     private func reconcileSelectedCalendar() {
         selectedCalendarIdentifier = EventDraftDefaults.preferredCalendarIdentifier(
             currentIdentifier: selectedCalendarIdentifier,
@@ -230,12 +245,12 @@ struct NewEventSheet: View {
     private func save() {
         guard !isSaving else { return }
         guard let calendar = modifiableCalendars.first(where: { $0.id == selectedCalendarIdentifier }) else {
-            saveError = String(localized: "The calendar could not be found.", comment: "Create event error")
+            saveError = String(localized: "The calendar could not be found.", bundle: .equinox, comment: "Create event error")
             return
         }
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty else {
-            saveError = String(localized: "Enter an event title.", comment: "Create event title validation error")
+            saveError = String(localized: "Enter an event title.", bundle: .equinox, comment: "Create event title validation error")
             return
         }
         guard let normalizedDates = EventDraftDefaults.normalizedDates(
@@ -244,7 +259,7 @@ struct NewEventSheet: View {
             end: endDate,
             isAllDay: isAllDay
         ) else {
-            saveError = String(localized: "End date must be after start date.", comment: "Create event validation error")
+            saveError = String(localized: "End date must be after start date.", bundle: .equinox, comment: "Create event validation error")
             return
         }
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -255,7 +270,7 @@ struct NewEventSheet: View {
         } else if let validURL = EventDraftDefaults.absoluteURL(from: trimmedURL) {
             eventURL = validURL
         } else {
-            saveError = String(localized: "Enter a valid URL including its scheme.", comment: "Create event URL validation error")
+            saveError = String(localized: "Enter a valid URL including its scheme.", bundle: .equinox, comment: "Create event URL validation error")
             return
         }
 
@@ -268,7 +283,7 @@ struct NewEventSheet: View {
                     eventStart: normalizedDates.start,
                     selectedEnd: recurrenceEndDate
                 ) else {
-                    saveError = String(localized: "Repeat end date cannot be before event start.", comment: "Create event recurrence validation error")
+                    saveError = String(localized: "Repeat end date cannot be before event start.", bundle: .equinox, comment: "Create event recurrence validation error")
                     return
                 }
                 recurrenceEnd = normalizedEnd

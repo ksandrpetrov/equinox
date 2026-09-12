@@ -8,13 +8,13 @@ struct ShortcutsSettingsTab: View {
     @State private var shortcutError: String?
 
     var body: some View {
-        SettingsDetailScaffold(title: String(localized: "Shortcuts", comment: "Settings section: shortcuts")) {
+        SettingsDetailScaffold(title: String(localized: "Shortcuts", bundle: .equinox, comment: "Settings section: shortcuts")) {
             if showsGlobalShortcutSection {
                 SettingsSection(
-                    String(localized: "Global Shortcut", comment: "Settings shortcuts section"),
-                    subtitle: String(localized: "Show or hide the Equinox panel from anywhere", comment: "Shortcut section subtitle")
+                    String(localized: "Global Shortcut", bundle: .equinox, comment: "Settings shortcuts section"),
+                    subtitle: String(localized: "Show or hide the Equinox panel from anywhere", bundle: .equinox, comment: "Shortcut section subtitle")
                 ) {
-                    SettingsRow(title: String(localized: "Keyboard shortcut", comment: "")) {
+                    SettingsRow(title: String(localized: "Keyboard shortcut", bundle: .equinox, comment: "")) {
                         EquinoxShortcutRecorder(validationMessage: $shortcutError)
                             .frame(width: EquinoxDesign.ControlWidth.shortcutRecorder, height: EquinoxDesign.ControlWidth.shortcutRecorderHeight)
                     }
@@ -27,14 +27,14 @@ struct ShortcutsSettingsTab: View {
             }
 
             if showsPanelShortcutsSection {
-                SettingsSection(String(localized: "Panel Shortcuts", comment: "Settings panel shortcuts section")) {
-                    shortcutRow(String(localized: "New Event", comment: ""), "⌘N")
+                SettingsSection(String(localized: "Panel Shortcuts", bundle: .equinox, comment: "Settings panel shortcuts section")) {
+                    shortcutRow(String(localized: "New Event", bundle: .equinox, comment: ""), "⌘N")
                     SettingsDivider()
-                    shortcutRow(String(localized: "Pin Equinox", comment: ""), "P")
+                    shortcutRow(String(localized: "Pin Equinox", bundle: .equinox, comment: ""), "P")
                     SettingsDivider()
-                    shortcutRow(String(localized: "Preferences…", comment: ""), "⌘,")
+                    shortcutRow(String(localized: "Preferences…", bundle: .equinox, comment: ""), "⌘,")
                     SettingsDivider()
-                    shortcutRow(String(localized: "Go to Today", comment: "Shortcut cheat sheet"), "T")
+                    shortcutRow(String(localized: "Go to Today", bundle: .equinox, comment: "Shortcut cheat sheet"), "T")
                 }
             }
 
@@ -60,9 +60,9 @@ struct ShortcutsSettingsTab: View {
 
     private var settingsSearchEmptyState: some View {
         ContentUnavailableView(
-            String(localized: "No Results", comment: "Settings search empty"),
+            String(localized: "No Results", bundle: .equinox, comment: "Settings search empty"),
             systemImage: "magnifyingglass",
-            description: Text(String(localized: "Try a different search term.", comment: ""))
+            description: Text(String(localized: "Try a different search term.", bundle: .equinox, comment: ""))
         )
         .frame(maxWidth: .infinity)
         .padding(.vertical, EquinoxDesign.spacingXL)
@@ -137,8 +137,8 @@ private final class ShortcutRecorderView: NSView {
         captureButton.bezelStyle = .rounded
         captureButton.setButtonType(.momentaryPushIn)
         captureButton.font = .monospacedSystemFont(ofSize: NSFont.smallSystemFontSize, weight: .medium)
-        captureButton.toolTip = String(localized: "Click to record a shortcut", comment: "Shortcut recorder help")
-        captureButton.setAccessibilityLabel(String(localized: "Keyboard shortcut", comment: ""))
+        captureButton.toolTip = String(localized: "Click to record a shortcut", bundle: .equinox, comment: "Shortcut recorder help")
+        captureButton.setAccessibilityLabel(String(localized: "Keyboard shortcut", bundle: .equinox, comment: ""))
         captureButton.onCommit = { [weak self] shortcut in
             self?.commit(shortcut)
         }
@@ -147,8 +147,8 @@ private final class ShortcutRecorderView: NSView {
         clearButton.isBordered = false
         clearButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: nil)
         clearButton.contentTintColor = .secondaryLabelColor
-        clearButton.toolTip = String(localized: "Clear shortcut", comment: "Shortcut recorder clear button")
-        clearButton.setAccessibilityLabel(String(localized: "Clear shortcut", comment: "Shortcut recorder clear button"))
+        clearButton.toolTip = String(localized: "Clear shortcut", bundle: .equinox, comment: "Shortcut recorder clear button")
+        clearButton.setAccessibilityLabel(String(localized: "Clear shortcut", bundle: .equinox, comment: "Shortcut recorder clear button"))
         clearButton.target = self
         clearButton.action = #selector(clearShortcut)
 
@@ -177,7 +177,7 @@ private final class ShortcutRecorderView: NSView {
         let shortcut = KeyboardShortcuts.getShortcut(for: name)
         captureButton.currentShortcut = shortcut
         if !captureButton.isRecording {
-            captureButton.title = shortcut?.description ?? String(localized: "Record Shortcut", comment: "Shortcut recorder empty state")
+            captureButton.title = shortcut?.description ?? String(localized: "Record Shortcut", bundle: .equinox, comment: "Shortcut recorder empty state")
         }
         clearButton.isHidden = shortcut == nil
     }
@@ -240,7 +240,10 @@ final class ShortcutCaptureButton: NSButton {
     }
 
     @objc private func beginRecording() {
-        window?.makeFirstResponder(self)
+        if window?.makeFirstResponder(self) == true {
+            // Resigning key stops capture but can leave this button first responder.
+            startCaptureIfNeeded()
+        }
     }
 
     private func startCaptureIfNeeded() {
@@ -248,7 +251,7 @@ final class ShortcutCaptureButton: NSButton {
         isRecording = true
         wasKeyboardShortcutsEnabled = KeyboardShortcuts.isEnabled
         KeyboardShortcuts.isEnabled = false
-        title = String(localized: "Press shortcut…", comment: "Shortcut recorder recording state")
+        title = String(localized: "Press shortcut…", bundle: .equinox, comment: "Shortcut recorder recording state")
         onValidation(nil)
 
         if let window {
@@ -288,10 +291,10 @@ final class ShortcutCaptureButton: NSButton {
             self.resignKeyObserver = nil
         }
         KeyboardShortcuts.isEnabled = wasKeyboardShortcutsEnabled
-        title = currentShortcut?.description ?? String(localized: "Record Shortcut", comment: "Shortcut recorder empty state")
+        title = currentShortcut?.description ?? String(localized: "Record Shortcut", bundle: .equinox, comment: "Shortcut recorder empty state")
     }
 
-    private func handleKeyEvent(_ event: NSEvent) {
+    func handleKeyEvent(_ event: NSEvent) {
         let modifiers = event.modifierFlags.intersection([.command, .control, .option, .shift])
         let hasPrimaryModifier = !modifiers.intersection([.command, .control, .option]).isEmpty
 
@@ -299,8 +302,13 @@ final class ShortcutCaptureButton: NSButton {
             window?.makeFirstResponder(nil)
             return
         }
-        if modifiers.isEmpty, event.keyCode == UInt16(kVK_Tab) {
-            window?.selectNextKeyView(self)
+        if !hasPrimaryModifier, event.keyCode == UInt16(kVK_Tab) {
+            stopCapture()
+            if modifiers.contains(.shift) {
+                window?.selectPreviousKeyView(self)
+            } else {
+                window?.selectNextKeyView(self)
+            }
             return
         }
         if modifiers.isEmpty,
@@ -313,17 +321,17 @@ final class ShortcutCaptureButton: NSButton {
 
         guard hasPrimaryModifier || Self.functionKeyCodes.contains(event.keyCode),
               let shortcut = KeyboardShortcuts.Shortcut(event: event) else {
-            reject(String(localized: "Use Command, Control, or Option with a key, or choose a function key.", comment: "Shortcut recorder validation"))
+            reject(String(localized: "Use Command, Control, or Option with a key, or choose a function key.", bundle: .equinox, comment: "Shortcut recorder validation"))
             return
         }
         guard !shortcut.isTakenBySystem else {
-            reject(String(localized: "This shortcut is already used by macOS.", comment: "Shortcut recorder validation"))
+            reject(String(localized: "This shortcut is already used by macOS.", bundle: .equinox, comment: "Shortcut recorder validation"))
             return
         }
         if shortcut != currentShortcut, let menuItem = matchingMenuItem(for: shortcut, in: NSApp.mainMenu) {
             reject(
                 String(
-                    format: String(localized: "This shortcut is already used by “%@”.", comment: "Shortcut recorder menu conflict"),
+                    format: String(localized: "This shortcut is already used by “%@”.", bundle: .equinox, comment: "Shortcut recorder menu conflict"),
                     menuItem.title
                 )
             )

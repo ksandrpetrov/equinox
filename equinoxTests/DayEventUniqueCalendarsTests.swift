@@ -1,6 +1,6 @@
 import SwiftUI
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class DayEventUniqueCalendarsTests: XCTestCase {
     private func makeEvent(calendarID: String, red: CGFloat) -> DayEvent {

@@ -28,13 +28,13 @@
 - Говорящие имена, маленькие функции, явные контракты (`CalendarDate`, `DayEvent`, `NewEventDraft`)
 - `SizeMetrics` передаётся параметром, не через environment
 - Чистые функции в `Core/` + XCTest в `equinoxTests/`; view вызывает `appState.createEvent(from:)`, не строит `EKEvent`
-- **UI access:** мутации через `AppState` facade; чтение и `@Bindable` — напрямую `appState.events` / `panel` / `plaud` (см. `ARCHITECTURE.md` § UI access patterns)
+- **UI access:** мутации через `AppState` facade; чтение и `@Bindable` — напрямую `appState.events` / `panel` (см. `ARCHITECTURE.md` § UI access patterns)
 
 ### 2.3. Отсутствие мёртвого кода
 
 Запрещены неиспользуемые компоненты, флаги, ветки, неактуальные комментарии, временные обходы без срока жизни, закомментированный код, абстракции «на будущее».
 
-При удалении фичи синхронно убрать: Swift view/controller, `k*`-ключи в `Constants.swift`, `PreferencesStore`, settings tab, assets, entitlements, тесты и локализацию. Для Plaud — весь стек (`PlaudCoordinator`, `PlaudService`, `PlaudLiveClient`, `PlaudRecordingsStore`, `PlaudMatchCache`, `PlaudOAuthClient`, `Core/Plaud*`, `PlaudSettingsTab`, `kPlaudEnabled`).
+При удалении фичи синхронно убрать: Swift view/controller, `k*`-ключи в `Constants.swift`, `PreferencesStore`, settings tab, assets, entitlements, тесты и локализацию.
 
 ### 2.4. Стабильность продукта
 
@@ -50,7 +50,7 @@
 
 - `DesignTokens.swift`, `PanelComponents`, `SettingsComponents`
 - Размеры S/M/L через `SizeMetrics` — не хардкодить пиксели
-- Строки — `String(localized:comment:)`; перевод — `ru.lproj` (workflow в [BUILD.md](BUILD.md))
+- Строки — `String(localized:bundle:comment:)` с `bundle: .equinox`; перевод — `ru.lproj` (workflow в [BUILD.md](BUILD.md))
 
 ---
 
@@ -74,7 +74,6 @@
 | UI панели | `UI/Main/`, `UI/Design/DesignTokens.swift` |
 | Настройки | `UI/Settings/`, `Services/PreferencesStore.swift`, `App/Constants.swift` |
 | Menu bar | `UI/MenuBar/StatusItemController.swift`, `MenuBarIconRenderer.swift` |
-| Plaud | `App/PlaudCoordinator.swift`, `Services/Plaud/`, `Core/PlaudEventMatching.swift` |
 | Privacy / TCC | `PrivacySettingsTab.swift`, `CalendarAccessMapping.swift`, `AppDelegate` |
 | Calendar mapping | `Services/EventKit/EventKitCalendarMapping.swift` — не дублировать в `CalendarStore` |
 
@@ -94,7 +93,10 @@ scripts/     — вспомогательные скрипты сборки и �
 | Таргет | Назначение |
 |--------|------------|
 | `equinox` | GUI |
-| `equinoxTests` | Unit-тесты |
+| `EquinoxKit` | Библиотека приложения и ресурсы |
+| `equinoxTests` | Тесты без запуска приложения |
+| `equinoxGraphicsHost` | Изолированный AppKit-host |
+| `equinoxGraphicsTests` | Рендеры и компоновка UI |
 
 ```bash
 cp Local.xcconfig.example Local.xcconfig
@@ -142,10 +144,10 @@ cp Local.xcconfig.example Local.xcconfig
 |----------|----------------|
 | Месячная сетка | `CalendarGridView`, `DayCellView`, `MonthGrid` |
 | Agenda | `AgendaView`, `AgendaComponents` |
-| Навигация / выбор дня | `AppState.monthDate`, `AppState.selectedDate`, `PanelCommandBar` |
+| Навигация / выбор дня | `AppState.events.monthDate`, `AppState.events.selectedDate`, `PanelCommandBar` |
 | Создание события | `NewEventSheet` → `NewEventDraft` → `AppState.createEvent(from:)` |
 | Просмотр/удаление | `EventDetailView` → `AppState.deleteEvent` |
-| RSVP | `EventRSVPBar` → `AppState.setParticipationStatus` → `CalendarStore` |
+| RSVP | Только чтение: `EventParticipationStatus` → сведения события |
 | **Редактирование в GUI** | **Не поддерживается** |
 | Фильтр календарей | Settings → Calendars, `CalendarSelectionStorage` |
 | Pin vs popover | `StatusItemController`, `kPanelPinned` |
@@ -153,11 +155,9 @@ cp Local.xcconfig.example Local.xcconfig
 | Meeting indicator | `kShowMeetingIndicator` |
 | Global shortcut | `KeyboardShortcuts`, `KeyboardShortcutNames`, `ShortcutsSettingsTab` |
 | Join meeting | `MeetingProviderRegistry`, `JoinURLDetection`, `NativeJoinURL` — новый провайдер добавляется только в реестр |
-| Plaud auto/manual match | `PlaudCoordinator`, `PlaudService`, `PlaudMatchCache` |
-| Plaud OAuth | `PlaudSettingsTab`, `PlaudOAuthClient`, `Core/PlaudOAuthPKCE` |
 | Privacy / TCC | `PrivacySettingsTab`, `AppDelegate` |
 | Deep link `equinox://date/yyyy-MM-dd` | `AppDelegate.application(_:open:)` |
-| Настройки (7 tabs) | `SettingsView`, `*SettingsTab` |
+| Настройки (6 tabs) | `SettingsView`, `*SettingsTab` |
 | Launch at login | `LaunchAtLogin.swift` |
 
 ### Edge cases
@@ -175,27 +175,29 @@ cp Local.xcconfig.example Local.xcconfig
 ## 7. Тестирование
 
 ```bash
+./scripts/test.sh                            # Debug + Release, unit + graphics, coverage
+./scripts/test.sh --configuration Debug --suite unit
 ./run.sh                                    # GUI Release
-. scripts/xcodebuild-local-settings.sh
-load_xcodebuild_local_settings Local.xcconfig
-xcodebuild -project equinox.xcodeproj -scheme equinox -configuration Debug \
-  -derivedDataPath build/DerivedData test "${XCODEBUILD_LOCAL_SETTINGS[@]}" # Swift tests
 ```
 
-Тесты: все `equinoxTests/*.swift` (не перечислять вручную — список гниёт).
+Тесты: все наборы `equinoxTests/` и `equinoxGraphicsTests/` (не перечислять вручную — список гниёт).
 
 | Изменено | Проверки |
 |----------|----------|
-| `equinox/Core/*` | `xcodebuild test` |
+| `equinox/Core/*` | `./scripts/test.sh` |
 | `CalendarStore`, `EventKitCalendarMapping` | test + `./run.sh` + fetch/create/delete |
-| Plaud (`Services/Plaud*`, `Core/Plaud*`) | test + `./run.sh` |
 | `PreferencesStore`, `Constants.swift` | `./run.sh` + persistence |
 | `equinox/UI/*` | `./run.sh` + UI чеклист (раздел 6) |
 | `project.pbxproj` | diff **без** `DEVELOPMENT_TEAM` |
 
-**Нет в проекте:** SwiftLint, ESLint, pre-commit, CI, XCUITest. Единственный автоматический контроль — `equinoxTests/DesignSystemComplianceTests.swift` (запрещает хардкод цветов, размеров шрифта и opacity вне `UI/Design/`), и он гоняется только вместе с остальными тестами. Не отмечать [x] без реального запуска.
+**Нет в проекте:** SwiftLint, ESLint, pre-commit, CI, XCUITest. Архитектурные ограничения проверяет `DesignSystemComplianceTests`; остальные XCTest проверяют поведение и компоновку. `scripts/test.sh` запускает оба набора и отвергает пропуски и пустые прогоны. Не отмечать [x] без реального запуска.
 
 ---
+
+Новые исходники добавлять в соответствующий target через Xcode: код без `@main` —
+`EquinoxKit`, обычные тесты — `equinoxTests`, графические — `equinoxGraphicsTests`.
+Не добавлять отдельный компилятор или список файлов для тестового раннера.
+`Package.resolved` коммитится; обновление версии зависимости — отдельное изменение.
 
 ## 8. Ревью и формат ответа
 
@@ -220,7 +222,7 @@ xcodebuild -project equinox.xcodeproj -scheme equinox -configuration Debug \
 5. Удалять мёртвый код синхронно
 6. Release = production (`./run.sh`)
 7. TCC-разрешение принадлежит приложению
-8. Локализация — `String(localized:comment:)`
+8. Локализация — `String(localized:bundle:comment:)` с `bundle: .equinox`
 
 ---
 

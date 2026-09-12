@@ -39,5 +39,10 @@ echo "${GREEN}Launching equinox...${NC}"
 pkill -x equinox 2>/dev/null || true
 sleep 1
 open "${APP_PATH}"
+sleep 1
+if ! pgrep -x equinox >/dev/null; then
+    echo "${RED}equinox exited during launch. Check Console / DiagnosticReports.${NC}" >&2
+    exit 1
+fi
 
 echo "${GREEN}Done.${NC} equinox is a menu bar app — look for its icon in the menu bar."

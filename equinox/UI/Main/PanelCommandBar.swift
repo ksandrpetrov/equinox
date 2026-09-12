@@ -39,7 +39,7 @@ struct PanelCommandBar: View {
                 HStack(spacing: EquinoxDesign.spacingMicro) {
                     PanelIconButton(
                         symbol: "chevron.left",
-                        help: String(localized: "Previous month", comment: ""),
+                        help: String(localized: "Previous month", bundle: .equinox, comment: ""),
                         buttonSize: metrics.toolbarButtonSize
                     ) {
                         appState.goToPreviousMonth()
@@ -47,7 +47,7 @@ struct PanelCommandBar: View {
                     .disabled(!appState.events.canGoToPreviousMonth)
                     PanelIconButton(
                         symbol: "chevron.right",
-                        help: String(localized: "Next month", comment: ""),
+                        help: String(localized: "Next month", bundle: .equinox, comment: ""),
                         buttonSize: metrics.toolbarButtonSize
                     ) {
                         appState.goToNextMonth()
@@ -57,20 +57,20 @@ struct PanelCommandBar: View {
             }
 
             HStack(spacing: EquinoxDesign.spacingXS) {
-                Button(String(localized: "Today", comment: "Return to today's date")) {
+                Button(String(localized: "Today", bundle: .equinox, comment: "Return to today's date")) {
                     appState.goToToday()
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .keyboardShortcut("t", modifiers: [])
-                .help(String(localized: "Go to Today   T", comment: ""))
+                .help(String(localized: "Go to Today   T", bundle: .equinox, comment: ""))
 
                 Spacer(minLength: EquinoxDesign.spacingSM)
 
                 PanelIconButton(
                     symbol: "plus",
-                    help: String(localized: "New Event   ⌘N", comment: ""),
-                    accessibilityLabel: String(localized: "New Event", comment: ""),
+                    help: String(localized: "New Event   ⌘N", bundle: .equinox, comment: ""),
+                    accessibilityLabel: String(localized: "New Event", bundle: .equinox, comment: ""),
                     isProminent: true,
                     buttonSize: metrics.toolbarButtonSize
                 ) {
@@ -82,11 +82,11 @@ struct PanelCommandBar: View {
                 PanelIconButton(
                     symbol: appState.isPinned ? "pin.fill" : "pin",
                     help: appState.isPinned
-                        ? String(localized: "Unpin Equinox   P", comment: "Pin button help when pinned")
-                        : String(localized: "Pin Equinox   P", comment: ""),
+                        ? String(localized: "Unpin Equinox   P", bundle: .equinox, comment: "Pin button help when pinned")
+                        : String(localized: "Pin Equinox   P", bundle: .equinox, comment: ""),
                     accessibilityLabel: appState.isPinned
-                        ? String(localized: "Unpin Equinox", comment: "")
-                        : String(localized: "Pin Equinox", comment: ""),
+                        ? String(localized: "Unpin Equinox", bundle: .equinox, comment: "")
+                        : String(localized: "Pin Equinox", bundle: .equinox, comment: ""),
                     isSelected: appState.isPinned,
                     buttonSize: metrics.toolbarButtonSize
                 ) {
@@ -97,26 +97,26 @@ struct PanelCommandBar: View {
 
                 PanelIconMenuButton(
                     symbol: "ellipsis",
-                    help: String(localized: "More actions", comment: ""),
-                    accessibilityLabel: String(localized: "More actions", comment: ""),
+                    help: String(localized: "More actions", bundle: .equinox, comment: ""),
+                    accessibilityLabel: String(localized: "More actions", bundle: .equinox, comment: ""),
                     buttonSize: metrics.toolbarButtonSize
                 ) {
-                    Button(String(localized: "Go to Today", comment: "")) {
+                    Button(String(localized: "Go to Today", bundle: .equinox, comment: "")) {
                         appState.goToToday()
                     }
                     .keyboardShortcut("t", modifiers: [])
                     Divider()
                     Toggle(
-                        String(localized: "Show agenda", comment: "Agenda visibility setting"),
+                        String(localized: "Show agenda", bundle: .equinox, comment: "Agenda visibility setting"),
                         isOn: showsAgendaBinding
                     )
                     Divider()
-                    Button(String(localized: "Preferences…", comment: "")) {
+                    Button(String(localized: "Preferences…", bundle: .equinox, comment: "")) {
                         SettingsActivationHandler.openSettings(appState: appState)
                     }
                     .keyboardShortcut(",", modifiers: .command)
                     Divider()
-                    Button(String(localized: "Quit Equinox", comment: "")) {
+                    Button(String(localized: "Quit Equinox", bundle: .equinox, comment: "")) {
                         NSApp.terminate(nil)
                     }
                     .keyboardShortcut("q", modifiers: .command)
@@ -132,7 +132,7 @@ struct PanelCommandBar: View {
                     .controlSize(.mini)
                     .tint(EquinoxDesign.ColorToken.action)
                     .padding(.horizontal, EquinoxDesign.spacingSM)
-                    .accessibilityLabel(String(localized: "Loading events", comment: ""))
+                    .accessibilityLabel(String(localized: "Loading events", bundle: .equinox, comment: ""))
             }
         }
     }
@@ -142,20 +142,20 @@ struct PanelCommandBar: View {
             Button {
                 navigateByMonths(-12)
             } label: {
-                Label(String(localized: "Previous year", comment: "Month navigator action"), systemImage: "chevron.backward.2")
+                Label(String(localized: "Previous year", bundle: .equinox, comment: "Month navigator action"), systemImage: "chevron.backward.2")
             }
             .disabled(appState.events.selectedDate.year <= CalendarDate.minYear)
 
             Button {
                 appState.goToToday()
             } label: {
-                Label(String(localized: "Go to Today", comment: ""), systemImage: "calendar")
+                Label(String(localized: "Go to Today", bundle: .equinox, comment: ""), systemImage: "calendar")
             }
 
             Button {
                 navigateByMonths(12)
             } label: {
-                Label(String(localized: "Next year", comment: "Month navigator action"), systemImage: "chevron.forward.2")
+                Label(String(localized: "Next year", bundle: .equinox, comment: "Month navigator action"), systemImage: "chevron.forward.2")
             }
             .disabled(appState.events.selectedDate.year >= CalendarDate.maxYear)
 
@@ -184,9 +184,9 @@ struct PanelCommandBar: View {
         }
         .menuIndicator(.hidden)
         .buttonStyle(PanelButtonStyle())
-        .help(String(localized: "Choose month", comment: "Month navigator help"))
+        .help(String(localized: "Choose month", bundle: .equinox, comment: "Month navigator help"))
         .accessibilityLabel("\(monthTitle) \(yearTitle)")
-        .accessibilityHint(String(localized: "Choose month", comment: "Month navigator help"))
+        .accessibilityHint(String(localized: "Choose month", bundle: .equinox, comment: "Month navigator help"))
         .accessibilityAddTraits(.isHeader)
     }
 

@@ -37,8 +37,8 @@ struct AgendaSectionHeader: View {
     }
 
     private func agendaSectionTitle(isToday: Bool, isTomorrow: Bool, nsDate: Date) -> String {
-        if isToday { return String(localized: "Today", comment: "") }
-        if isTomorrow { return String(localized: "Tomorrow", comment: "Agenda section header") }
+        if isToday { return String(localized: "Today", bundle: .equinox, comment: "") }
+        if isTomorrow { return String(localized: "Tomorrow", bundle: .equinox, comment: "Agenda section header") }
         return EquinoxFormatters.agendaHeader(nsDate)
     }
 
@@ -61,24 +61,24 @@ struct AgendaHorizonControl: View {
 
             Menu {
                 presetButton(
-                    String(localized: "Compact height", comment: "Compact agenda height"),
+                    String(localized: "Compact height", bundle: .equinox, comment: "Compact agenda height"),
                     ratio: AgendaLayout.minimumHeightRatio
                 )
                 presetButton(
-                    String(localized: "Balanced height", comment: "Balanced agenda height"),
+                    String(localized: "Balanced height", bundle: .equinox, comment: "Balanced agenda height"),
                     ratio: AgendaLayout.defaultHeightRatio
                 )
                 presetButton(
-                    String(localized: "Expanded height", comment: "Expanded agenda height"),
+                    String(localized: "Expanded height", bundle: .equinox, comment: "Expanded agenda height"),
                     ratio: AgendaLayout.maximumHeightRatio
                 )
                 Divider()
-                Button(String(localized: "Hide agenda", comment: "Agenda horizon action")) {
+                Button(String(localized: "Hide agenda", bundle: .equinox, comment: "Agenda horizon action")) {
                     onHide()
                 }
             } label: {
                 HStack(spacing: EquinoxDesign.spacingXS) {
-                    Text(String(localized: "Agenda", comment: "Agenda section label"))
+                    Text(String(localized: "Agenda", bundle: .equinox, comment: "Agenda section label"))
                         .font(.caption2.weight(.semibold))
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption2.weight(.semibold))
@@ -90,8 +90,8 @@ struct AgendaHorizonControl: View {
             }
             .menuIndicator(.hidden)
             .buttonStyle(PanelButtonStyle())
-            .help(String(localized: "Adjust agenda height", comment: "Agenda horizon help"))
-            .accessibilityLabel(String(localized: "Adjust agenda height", comment: "Agenda horizon accessibility"))
+            .help(String(localized: "Adjust agenda height", bundle: .equinox, comment: "Agenda horizon help"))
+            .accessibilityLabel(String(localized: "Adjust agenda height", bundle: .equinox, comment: "Agenda horizon accessibility"))
 
             horizonLine
         }
@@ -202,7 +202,7 @@ struct AgendaEventCard: View {
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityLabel(eventAccessibilityLabel)
-            .accessibilityHint(String(localized: "Show event details.", comment: "Agenda event hint"))
+            .accessibilityHint(String(localized: "Show event details.", bundle: .equinox, comment: "Agenda event hint"))
 
             if let url = event.joinURL {
                 EquinoxJoinButton(
@@ -226,15 +226,15 @@ struct AgendaEventCard: View {
         .help(eventHelp)
         .onHover { isHovered = $0 }
         .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-        .alert(String(localized: "Could not open the link.", comment: "URL open error"), isPresented: $showsOpenError) {
-            Button(String(localized: "OK", comment: "Dismiss alert"), role: .cancel) {}
+        .alert(String(localized: "Could not open the link.", bundle: .equinox, comment: "URL open error"), isPresented: $showsOpenError) {
+            Button(String(localized: "OK", bundle: .equinox, comment: "Dismiss alert"), role: .cancel) {}
         }
     }
 
     @ViewBuilder
     private var timeColumn: some View {
         if event.displaysAsAllDay {
-            Text(String(localized: "All-day", comment: ""))
+            Text(String(localized: "All-day", bundle: .equinox, comment: ""))
                 .font(EquinoxDesign.monoTimeFont(size: metrics.agendaTimeFontSize))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -342,7 +342,7 @@ struct AgendaEventCard: View {
     }
 
     private var timeRangeString: String {
-        if event.displaysAsAllDay { return String(localized: "All-day", comment: "") }
+        if event.displaysAsAllDay { return String(localized: "All-day", bundle: .equinox, comment: "") }
         return EquinoxFormatters.timeRange(from: event.slotStartDate, to: event.slotEndDate)
     }
 

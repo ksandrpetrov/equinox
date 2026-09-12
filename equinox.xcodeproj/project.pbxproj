@@ -6,145 +6,167 @@
 	objectVersion = 54;
 	objects = {
 
+
 /* Begin PBXBuildFile section */
-		1F31FF23BECD487AB547FC3D /* UI/Settings/GeneralSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6482D455E0F542C98215FB22 /* UI/Settings/GeneralSettingsTab.swift */; };
-		1F343D1442E04D48AF79E26E /* UI/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */; };
-		26345BB4077546858ED91E33 /* UI/Design/SizeMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = SMU002A1B2C3D4E5F6012346 /* UI/Design/SizeMetrics.swift */; };
-		34FD3198C5E746908583E04A /* App/AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63827DE05C3E4C1A9137EA18 /* App/AppDelegate.swift */; };
-		49F62D457C024006AE76EFC2 /* UI/Main/CalendarGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFB06C5DCD64C92A417DA16 /* UI/Main/CalendarGridView.swift */; };
-		6572A0BA3F5D47239DEFBD5D /* Services/PreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328F6CA845EE41999E852970 /* Services/PreferencesStore.swift */; };
-		69438ABDD27442EABE893584 /* UI/Settings/AboutSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BA8E6CEB1F48A18F12291C /* UI/Settings/AboutSettingsTab.swift */; };
-		743B1D7790894D11ACE66BBC /* UI/Main/AgendaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5EE2ACAC644A99A18E671E /* UI/Main/AgendaView.swift */; };
 		921181C722E0192A00591FDA /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 921181C622E0192A00591FDA /* Colors.xcassets */; };
 		922B6BBE1A87EDBD00DEA9CD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 922B6BC01A87EDBD00DEA9CD /* Localizable.strings */; };
 		922B6BC41A87EDBE00DEA9CD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 922B6BC61A87EDBE00DEA9CD /* InfoPlist.strings */; };
 		9242A5671A82A136005AA4B3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9242A5661A82A136005AA4B3 /* Images.xcassets */; };
-		96A0A7ECBC124CD696E33EA2 /* UI/Settings/AppearanceSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A62397CD381406ABD6477C5 /* UI/Settings/AppearanceSettingsTab.swift */; };
-		97986F0E0B454042872C3572 /* UI/Events/EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */; };
-		97D77956684C45C0AE5AE8F0 /* App/EquinoxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D2F77EE5AA4C8BA8ED6AB9 /* App/EquinoxApp.swift */; };
-		A11Y001A1B2C3D4E5F6012345 /* UI/Design/AccessibilityHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11Y001A1B2C3D4E5F6012346 /* UI/Design/AccessibilityHelpers.swift */; };
-		A1B2C3D401234567890ABCD3 /* App/Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401234567890ABCD4 /* App/Constants.swift */; };
-		A1B2C3D401234567890ABCD7 /* Services/Platform/LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D401234567890ABCD8 /* Services/Platform/LaunchAtLogin.swift */; };
-		A2BAAADA0CCA4971A1201CDE /* UI/Main/DayCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44FCB3CA1B3432E91849D32 /* UI/Main/DayCellView.swift */; };
 		A77E00012F5A123400000001 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = A77E00012F5A123400000002 /* Localizable.stringsdict */; };
-		ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */; };
-		ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */; };
-		AF001A1B2C3D4E5F6012345 /* Core/AgendaFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF001A1B2C3D4E5F6012346 /* Core/AgendaFocus.swift */; };
-		AFT001A1B2C3D4E5F6012345 /* AgendaFocusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFT001A1B2C3D4E5F6012346 /* AgendaFocusTests.swift */; };
-		AGL001A1B2C3D4E5F6012345 /* Core/AgendaLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AGL001A1B2C3D4E5F6012346 /* Core/AgendaLayout.swift */; };
-		ALTT001A1B2C3D4E5F6012345 /* AgendaLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ALTT001A1B2C3D4E5F6012346 /* AgendaLayoutTests.swift */; };
-		ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */; };
-		AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */; };
-		B2C3D4E501234567890ABCF5 /* UI/Settings/MenuBarIconPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */; };
-		B2C3D4E501234567890ABCF7 /* UI/Settings/CalendarsSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E501234567890ABCF8 /* UI/Settings/CalendarsSettingsSection.swift */; };
-		C029101F32D74115BDE35C1D /* App/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C1DCC2A9FE4B8B804C4770 /* App/AppState.swift */; };
-		C3D4E5F601234567890ABD01 /* UI/Main/PanelCommandBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */; };
-		C3D4E5F601234567890ABD07 /* UI/Settings/CalendarsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */; };
-		C3D4E5F601234567890ABD09 /* UI/Settings/ShortcutsSettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */; };
-		C3D4E5F601234567890ABD0B /* UI/Settings/WeekendHighlightPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD0C /* UI/Settings/WeekendHighlightPicker.swift */; };
-		C3D4E5F601234567890ABD0D /* UI/Settings/AppearancePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F601234567890ABD0E /* UI/Settings/AppearancePreview.swift */; };
-		C7EE699EF6FB4CA399A0263D /* UI/MenuBar/MenuBarIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59E0896503BF4EDBB707C1D2 /* UI/MenuBar/MenuBarIconRenderer.swift */; };
-		CAM001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarAccessMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAM001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarAccessMapping.swift */; };
-		CAMT001A1B2C3D4E5F6012345 /* CalendarAccessMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAMT001A1B2C3D4E5F6012346 /* CalendarAccessMappingTests.swift */; };
-		CAS001A1B2C3D4E5F6012345 /* Core/CalendarAccessStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAS001A1B2C3D4E5F6012346 /* Core/CalendarAccessStatus.swift */; };
-		CDP001A1B2C3D4E5F6012345 /* Core/CalendarDateParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDP001A1B2C3D4E5F6012346 /* Core/CalendarDateParsing.swift */; };
-		CDPT001A1B2C3D4E5F6012345 /* CalendarDateParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDPT001A1B2C3D4E5F6012346 /* CalendarDateParsingTests.swift */; };
-		CHX001A1B2C3D4E5F6012345 /* Core/ColorHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHX001A1B2C3D4E5F6012346 /* Core/ColorHex.swift */; };
-		CHXT001A1B2C3D4E5F6012345 /* ColorHexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHXT001A1B2C3D4E5F6012346 /* ColorHexTests.swift */; };
-		CLE001A1B2C3D4E5F6012345 /* Core/CalendarListEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLE001A1B2C3D4E5F6012346 /* Core/CalendarListEntry.swift */; };
-		CLI001A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */; };
-		CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */; };
-		CNC001A1B2C3D4E5F6012345 /* App/CalendarNavigationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNC001A1B2C3D4E5F6012346 /* App/CalendarNavigationCoordinator.swift */; };
-		CNCT001A1B2C3D4E5F6012345 /* CalendarNavigationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNCT001A1B2C3D4E5F6012346 /* CalendarNavigationCoordinatorTests.swift */; };
-		CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */; };
-		CSST001A1B2C3D4E5F6012345 /* CalendarSelectionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSST001A1B2C3D4E5F6012346 /* CalendarSelectionServiceTests.swift */; };
-		CSSVC001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CSSVC001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionService.swift */; };
-		D0E001A1B2C3D4E5F6012345 /* Core/CalendarDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */; };
-		D0E001B1B2C3D4E5F6012345 /* Core/EventDraftDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */; };
-		D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */; };
-		D0E003A1B2C3D4E5F6012345 /* Services/EventKit/CalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */; };
-		D0E004A1B2C3D4E5F6012345 /* Services/Platform/DateFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */; };
-		D0E005A1B2C3D4E5F6012345 /* Core/JoinURLDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E005A1B2C3D4E5F6012346 /* Core/JoinURLDetection.swift */; };
-		D0E006A1B2C3D4E5F6012345 /* Core/MonthGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E006A1B2C3D4E5F6012346 /* Core/MonthGrid.swift */; };
-		D0E007A1B2C3D4E5F6012345 /* Core/EventLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E007A1B2C3D4E5F6012346 /* Core/EventLayout.swift */; };
-		D0E008A1B2C3D4E5F6012345 /* UI/Design/DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E008A1B2C3D4E5F6012346 /* UI/Design/DesignTokens.swift */; };
-		D0E009A1B2C3D4E5F6012345 /* UI/Design/PanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E009A1B2C3D4E5F6012346 /* UI/Design/PanelComponents.swift */; };
-		D0E010A1B2C3D4E5F6012345 /* UI/Design/SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */; };
-		D0E011A1B2C3D4E5F6012345 /* UI/Main/AgendaComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E011A1B2C3D4E5F6012346 /* UI/Main/AgendaComponents.swift */; };
-		D32E536A574A4094924F19FF /* UI/Main/MainPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DD337E520F4A5C98A656EE /* UI/Main/MainPanelView.swift */; };
-		DDC001A1B2C3D4E5F6012345 /* Core/DayEventUniqueCalendars.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */; };
-		DE001A1B2C3D4E5F6012345 /* Core/DayEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */; };
-		DE002A1B2C3D4E5F6012345 /* Core/AgendaSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */; };
-		DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */; };
-		DEC001A1B2C3D4E5F6012345 /* UI/Design/DayEventColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC001A1B2C3D4E5F6012346 /* UI/Design/DayEventColors.swift */; };
-		DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */; };
-		E21BE351F94E4C22BC7FF0C0 /* UI/Events/NewEventSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CD76B61B3D540A2A2F4D695 /* UI/Events/NewEventSheet.swift */; };
-		ECST001A1B2C3D4E5F6012345 /* EventsCoordinatorSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECST001A1B2C3D4E5F6012346 /* EventsCoordinatorSyncTests.swift */; };
-		EDC001A1B2C3D4E5F6012345 /* UI/Events/EventDetailComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC001A1B2C3D4E5F6012346 /* UI/Events/EventDetailComponents.swift */; };
-		EDD001A1B2C3D4E5F6012345 /* EventDraftDefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD001A1B2C3D4E5F6012346 /* EventDraftDefaultsTests.swift */; };
-		EEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */; };
-		EFC001A1B2C3D4E5F6012345 /* Services/EventKit/EventFetchCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC001A1B2C3D4E5F6012346 /* Services/EventKit/EventFetchCache.swift */; };
-		EFCO001A1B2C3D4E5F6012345 /* App/EventFetchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */; };
-		EFCT001A1B2C3D4E5F6012345 /* EventFetchCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFCT001A1B2C3D4E5F6012346 /* EventFetchCacheTests.swift */; };
-		EFR001A1B2C3D4E5F6012345 /* Core/EventFetchRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */; };
-		EFT001A1B2C3D4E5F6012345 /* EventFetchRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFT001A1B2C3D4E5F6012346 /* EventFetchRangeTests.swift */; };
-		EKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */; };
-		EKM001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */; };
-		EKMT001A1B2C3D4E5F6012345 /* EventKitCalendarMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */; };
-		EKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */; };
-		EQX001A1B2C3D4E5F6012345 /* UI/Design/EquinoxComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = EQX001A1B2C3D4E5F6012346 /* UI/Design/EquinoxComponents.swift */; };
-		ESV001A1B2C3D4E5F6012345 /* UI/Design/EventStripeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ESV001A1B2C3D4E5F6012346 /* UI/Design/EventStripeView.swift */; };
-		EVC001A1B2C3D4E5F6012345 /* App/EventsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */; };
-		FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */; };
-		JUP001A1B2C3D4E5F6012345 /* UI/Events/JoinURLPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = JUP001A1B2C3D4E5F6012346 /* UI/Events/JoinURLPresentation.swift */; };
 		KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */; };
-		KSN001A1B2C3D4E5F6012345 /* App/KeyboardShortcutNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = KSN001A1B2C3D4E5F6012346 /* App/KeyboardShortcutNames.swift */; };
-		KYP001A1B2C3D4E5F6012345 /* UI/MenuBar/KeyablePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */; };
-		LIC001A1B2C3D4E5F6012345 /* App/LoadingIndicatorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */; };
-		LICT001A1B2C3D4E5F6012345 /* LoadingIndicatorControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = LICT001A1B2C3D4E5F6012346 /* LoadingIndicatorControllerTests.swift */; };
-		MOD001A1B2C3D4E5F6012345 /* UI/Design/ModalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */; };
-		MP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */; };
-		MPT001A1B2C3D4E5F6012345 /* MeetingProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */; };
-		MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */; };
-		MTT001A1B2C3D4E5F6012345 /* MeetingIndicatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = MTT001A1B2C3D4E5F6012346 /* MeetingIndicatorTests.swift */; };
-		NED001A1B2C3D4E5F6012345 /* Services/EventKit/NewEventDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = NED001A1B2C3D4E5F6012346 /* Services/EventKit/NewEventDraft.swift */; };
-		NJR001A1B2C3D4E5F6012345 /* Services/EventKit/NativeJoinURLResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */; };
-		NJU001A1B2C3D4E5F6012345 /* Core/NativeJoinURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = NJU001A1B2C3D4E5F6012346 /* Core/NativeJoinURL.swift */; };
-		PAL001A1B2C3D4E5F6012345 /* UI/Design/PanelAgendaLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = PAL001A1B2C3D4E5F6012346 /* UI/Design/PanelAgendaLayout.swift */; };
-		PALT001A1B2C3D4E5F6012345 /* PanelAgendaLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PALT001A1B2C3D4E5F6012346 /* PanelAgendaLayoutTests.swift */; };
-		PCS001A1B2C3D4E5F6012345 /* UI/Design/ParticipationChipStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = PCS001A1B2C3D4E5F6012346 /* UI/Design/ParticipationChipStyle.swift */; };
-		PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */; };
-		PLM001A1B2C3D4E5F6012345 /* App/PanelLayoutMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = PLM001A1B2C3D4E5F6012346 /* App/PanelLayoutMetrics.swift */; };
-		PPC001A1B2C3D4E5F6012345 /* App/PanelPresentationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = PPC001A1B2C3D4E5F6012346 /* App/PanelPresentationState.swift */; };
-		PPST001A1B2C3D4E5F6012345 /* PanelPresentationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PPST001A1B2C3D4E5F6012346 /* PanelPresentationStateTests.swift */; };
-		PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */; };
-		PRV001A1B2C3D4E5F6012345 /* UI/Settings/PrivacySettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */; };
-		PSO001A1B2C3D4E5F6012345 /* UI/Main/PanelStateOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = PSO001A1B2C3D4E5F6012346 /* UI/Main/PanelStateOverlay.swift */; };
-		PST001A1B2C3D4E5F6012345 /* PreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PST001A1B2C3D4E5F6012346 /* PreferencesStoreTests.swift */; };
-		PWC001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = PWC001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelWindowController.swift */; };
-		RSVP001A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */; };
-		SAH001A1B2C3D4E5F6012345 /* App/SettingsActivationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = SAH001A1B2C3D4E5F6012346 /* App/SettingsActivationHandler.swift */; };
-		SCC001A1B2C3D4E5F6012345 /* UI/Design/SelectableCalendarColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = SCC001A1B2C3D4E5F6012346 /* UI/Design/SelectableCalendarColors.swift */; };
-		SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar+EventKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar+EventKit.swift */; };
-		STB001A1B2C3D4E5F6012345 /* App/SettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = STB001A1B2C3D4E5F6012346 /* App/SettingsTab.swift */; };
-		T0E001A1B2C3D4E5F6012345 /* CalendarDateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E001A1B2C3D4E5F6012346 /* CalendarDateTests.swift */; };
-		T0E002A1B2C3D4E5F6012345 /* JoinURLDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E002A1B2C3D4E5F6012346 /* JoinURLDetectionTests.swift */; };
-		T0E003A1B2C3D4E5F6012345 /* EventLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E003A1B2C3D4E5F6012346 /* EventLayoutTests.swift */; };
-		T0E004A1B2C3D4E5F6012345 /* MonthGridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E004A1B2C3D4E5F6012346 /* MonthGridTests.swift */; };
-		T0E005A1B2C3D4E5F6012345 /* EventParticipationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E005A1B2C3D4E5F6012346 /* EventParticipationTests.swift */; };
-		T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */; };
-		T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */; };
-		URL001A1B2C3D4E5F6012345 /* Services/Platform/URLOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */; };
+		2680C18F8F9359ABB9092FEE = { isa = PBXBuildFile; fileRef = A530EE6A30C3ADDCA990B289; };
+		2E2D4D26611EC17FEAB1BF6A = { isa = PBXBuildFile; fileRef = 921181C622E0192A00591FDA; };
+		F9DE258537940687197B40A1 = { isa = PBXBuildFile; fileRef = 9242A5661A82A136005AA4B3; };
+		95D493E5739F371FA3B641AD = { isa = PBXBuildFile; fileRef = 922B6BC01A87EDBD00DEA9CD; };
+		5365768523247A9EE3CC12EA = { isa = PBXBuildFile; fileRef = A77E00012F5A123400000002; };
+		B222461DAE12C02CE8E21ADE = { isa = PBXBuildFile; fileRef = 51D7F01A5A72016EE970DC2A; };
+		62788A2E979F323ED4B34A34 = { isa = PBXBuildFile; fileRef = 5DD458D12250EF6D592271C9; };
+		0661040DEDBB8404C1A2F67B = { isa = PBXBuildFile; fileRef = 8072AA790D4AECB559B6CF77; };
+		3F424544D9A7842F8CB160C6 = { isa = PBXBuildFile; fileRef = B0166DF9D3D13C9695BFA0C7; };
+		D5DC1AE63E8BCC3B01378280 = { isa = PBXBuildFile; fileRef = D8C1FCA5E0A330179FC1F0D9; };
+		832A9C27AB47CE1628398780 = { isa = PBXBuildFile; fileRef = 1B37C247CB048C0DEDDFBD28; };
+		8E899044F21EFFEAFF7DAE08 = { isa = PBXBuildFile; fileRef = CBE94D258AF189D074C624A9; };
+		E572BE3E7731B1B4BA790861 = { isa = PBXBuildFile; fileRef = A2A514E79F3DB8C2EA74ADE8; };
+		4517E950089B2DAF3FBE602C = { isa = PBXBuildFile; fileRef = A2C818ADD7146C7D59D24D10; };
+		3BE1EE9A557877D3AB7CE2DA = { isa = PBXBuildFile; fileRef = 4B02CCCFCA8720365D096197; };
+		9C51197F596B902E111EF139 = { isa = PBXBuildFile; fileRef = D46FFB0EE1392E5B82B3C9E4; };
+		D3610A66ED9890FE8361CF29 = { isa = PBXBuildFile; fileRef = BAE68F9C5E563CA06009A34B; };
+		D0FA1D8AD92187E4D6988285 = { isa = PBXBuildFile; fileRef = 7D9414C8F4DBED4F815369B7; };
+		17A48173C4B9ADC89237F452 = { isa = PBXBuildFile; fileRef = 132F7DD0A189C6D0372DEB82; };
+		DE0E324882367572B03317FA = { isa = PBXBuildFile; fileRef = 03A51ADC2EE168AA865B6F52; };
+		FB8F0802F792009152D356E5 = { isa = PBXBuildFile; fileRef = 74DC44FD56CFC28A730D6A6E; };
+		D1ECC6AEEE47D5C86C344228 = { isa = PBXBuildFile; fileRef = A872BC2B454C653953237A75; };
+		42D48BE3BACA52668B027D84 = { isa = PBXBuildFile; fileRef = D2259BF521B451FAE8F2D73A; };
+		BEABDE3867AEDA4BFDCBC15D = { isa = PBXBuildFile; fileRef = FD243C28C9CA5E64D3FB1032; };
+		C8FE83A237B5BA4DE82955E3 = { isa = PBXBuildFile; fileRef = CE941BF9BA4C5995AF512AD3; };
+		5D55ECBE5F03D041BC66D8A9 = { isa = PBXBuildFile; fileRef = DC5F246F5F38E7AE19DD2088; };
+		4EF5DF6E266876AEB6F94A16 = { isa = PBXBuildFile; fileRef = 673FB21D1B8065F6C5CDC1B7; };
+		3E49C07A552998270FCECB74 = { isa = PBXBuildFile; fileRef = A914428650DC0EE025680366; };
+		AC0418D6BF1B3DEAFEE92D17 = { isa = PBXBuildFile; fileRef = 75FCA9B1CDD2408A7D642849; };
+		237E4680B5FA4BE2B39E08FA = { isa = PBXBuildFile; fileRef = A21E8B789DED8162ED170056; };
+		7CF9C5827085A24937A3B49A = { isa = PBXBuildFile; fileRef = D8D749325F7EB95C6F17A9B2; };
+		37A8970E06DE6A99F05B24A7 = { isa = PBXBuildFile; fileRef = 6267FCDD3A3A6AF1E1B2A858; };
+		637E232B19B079EFA960D3EF = { isa = PBXBuildFile; fileRef = F33BC0A374A78AEADC6D6F79; };
+		CE9B00A8759B4EC9E9E8A733 = { isa = PBXBuildFile; fileRef = FE0706F078498A9383E7FB0B; };
+		4D0398275DD0563C98CC586A = { isa = PBXBuildFile; fileRef = C69F93DC1E55643FF02BB6B8; };
+		12A37164BE7E40356A94FA6A = { isa = PBXBuildFile; fileRef = 8139A618BD36241416675CED; };
+		A7FD37299094F2D86924013C = { isa = PBXBuildFile; fileRef = F8E0F63B656DB4ACC024CFF4; };
+		BA197681DE3F0C0E1B0FA5B5 = { isa = PBXBuildFile; fileRef = 0A4B2B27129FA8E8D8179F63; };
+		8D1F20BC8B2285606D9CC39A = { isa = PBXBuildFile; fileRef = F67BCC302BC903E64AF5041F; };
+		F1223DCC8BF80E36D36F6767 = { isa = PBXBuildFile; fileRef = F69AC981021911C0D443082F; };
+		NED001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = NED001A1B2C3D4E5F6012346; };
+		8B112492D0E69157BA8EBE60 = { isa = PBXBuildFile; fileRef = D09696320F60B31E958CF77A; };
+		CD98FBCA7B8A00269599977C = { isa = PBXBuildFile; fileRef = 4CC06BB58628CDE5BE129911; };
+		F553F7BE151D02C834B64A26 = { isa = PBXBuildFile; fileRef = 7DFD01961E4F8675E164EC67; };
+		FAC9EA3B40955FE22BF4B303 = { isa = PBXBuildFile; fileRef = BE592A9CBAE0FEC5B9E5DF28; };
+		71AAA22BB36B6548E83005E4 = { isa = PBXBuildFile; fileRef = 9575238669321228F2B03E7A; };
+		C96F0FCC80E03E5513F96181 = { isa = PBXBuildFile; fileRef = 0C5091A0A0CDE62767AC7307; };
+		EDD226128C73976C5BF5C578 = { isa = PBXBuildFile; fileRef = 2FA8A2C8BDBCDAD638679404; };
+		A82AED9FB2CFE966BD28A19A = { isa = PBXBuildFile; fileRef = 13F983F1AD6BEDBA02AEF115; };
+		557E28A3CB7E1DA216531B8C = { isa = PBXBuildFile; fileRef = 9B7B3B036F55AC94F9BE9021; };
+		4417F1BA6A7A914BEEB5AF94 = { isa = PBXBuildFile; fileRef = 8362D9F5D64AB749C0998850; };
+		5B50E0730C12B892C5F3C841 = { isa = PBXBuildFile; fileRef = 04991DC4BFDB29F52EB27C00; };
+		EFD6DB01C906F11155B45660 = { isa = PBXBuildFile; fileRef = B8AD258159AFA44412E1CA4C; };
+		447EE70A942A8CD74F376EAF = { isa = PBXBuildFile; fileRef = 63D20567C7E97843F0999387; };
+		501D10A47C84E5550EE25440 = { isa = PBXBuildFile; fileRef = 5BD5F4ACC6B2479BC864C42F; };
+		B5035CC95ABCB49C426B1CEF = { isa = PBXBuildFile; fileRef = 4AA8F7349A1E5E6971F1F4F7; };
+		3A50635DA43C5C717B5D072A = { isa = PBXBuildFile; fileRef = F92F7F162F96242ED36DE805; };
+		FA4D67505AD280DE16BA8E53 = { isa = PBXBuildFile; fileRef = AFEE19209A222DC0DBFA4F7A; };
+		ECD9AFA6C8368C39E5CBE4C5 = { isa = PBXBuildFile; fileRef = 0D5BDBA50141929459A304D8; };
+		280A3D74E6C819D4D98425CE = { isa = PBXBuildFile; fileRef = B32B70B3CEE7B391F4B3CBB6; };
+		E82E1F8B90597AC82952D407 = { isa = PBXBuildFile; fileRef = CB98B3508FF48E670FD91CAC; };
+		02B8E41825E4A622830583D0 = { isa = PBXBuildFile; fileRef = 92CC122D2B6C33D04A87DD06; };
+		A5E85764F94248452C203FF6 = { isa = PBXBuildFile; fileRef = 46A9BCEBED4B591D2075C0E5; };
+		7237799DBB225C34B867A054 = { isa = PBXBuildFile; fileRef = B92E11E9744C1C85D2548424; };
+		8C38B4706D3DB7509CEC493D = { isa = PBXBuildFile; fileRef = C5378D84AD6DCA8A4C1EE394; };
+		15A298FA830C78AC4DD075FB = { isa = PBXBuildFile; fileRef = 5C245056E12865ED831DCAF0; };
+		47DC1AE0B8A9DDE6811E285B = { isa = PBXBuildFile; fileRef = 4B95A915CC5A9631DF8C9B5D; };
+		4558A155A6D4433F0D8F796E = { isa = PBXBuildFile; fileRef = EBA8163EB31E73516F748C4E; };
+		E0E4659C41F27523C508BC53 = { isa = PBXBuildFile; fileRef = 6F58891332F0E54D18090C56; };
+		22E51D6DED9A9A649ABAE141 = { isa = PBXBuildFile; fileRef = 00A9C23742BDA4CD9FF8AB97; };
+		F2402EEE10E950FF950C29BB = { isa = PBXBuildFile; fileRef = 670BB8AF47E86540D8DB64D9; };
+		39D3E28F804BA10D6B1D9109 = { isa = PBXBuildFile; fileRef = F46246EAFA7774CB79D4F866; };
+		9F51F9317DF18C5633B18937 = { isa = PBXBuildFile; fileRef = 0DB1E25C73E3E65C025A1E60; };
+		00B4D2D8565010ADE841F52B = { isa = PBXBuildFile; fileRef = DFEDF62DE4B013C2D07E7EAA; };
+		4415C77402DCA830A05E37F8 = { isa = PBXBuildFile; fileRef = F39EC15684F12C6C197DCDA3; };
+		959E685D7CC6C9B3DCDC6FD4 = { isa = PBXBuildFile; fileRef = 328E7869CAC3DDDB647D9EE7; };
+		CD61FAD85C1D3C7E0756AD85 = { isa = PBXBuildFile; fileRef = 610F2FD3774333C34FE48703; };
+		A34FE776D35C2C0B0CF2A273 = { isa = PBXBuildFile; fileRef = D3A8E257F65DAF41601EB6E2; };
+		93A76AFCCE131DBD842392F3 = { isa = PBXBuildFile; fileRef = F0028EFEB313FD35ADDD9B81; };
+		7BFB275FA9BA62F4D3E0BF77 = { isa = PBXBuildFile; fileRef = 408DBAB97681C9CDEFCC963A; };
+		CB3F5FF5383508B05DAE5C3A = { isa = PBXBuildFile; fileRef = DE495F9D8F57A7EDAF8E8175; };
+		AF4E645F764C2B9939F29C49 = { isa = PBXBuildFile; fileRef = 4E2508DB8A0CDF3BBF1C6456; };
+		ECC679926F29C7BE4E5A041C = { isa = PBXBuildFile; fileRef = 3DF45D58C7F8E03B4788D2D3; };
+		B82B3B06F6CE918CAD751696 = { isa = PBXBuildFile; fileRef = 0D128F860B41BF7622FA3C7C; };
+		FE67E55B85B671A8777F6374 = { isa = PBXBuildFile; fileRef = 5CAE1FC77DBE3B6303AE09B7; };
+		20B1B930D6E8AFC5C6A9B186 = { isa = PBXBuildFile; fileRef = 2E0BC2E5B2EA60645FE861FF; };
+		2C307B84524740C1A4B7AE58 = { isa = PBXBuildFile; fileRef = 3B31D591BE5D2E6F42B193DA; };
+		46F09EC1759D2E7F7702367E = { isa = PBXBuildFile; fileRef = D439A6DA68B6627E39D1F065; };
+		EF80A2788838B4392C987F36 = { isa = PBXBuildFile; fileRef = 5DB525EB9C25851F75EB7152; };
+		DEF1FFEDE0D9F2B86C6E1BCF = { isa = PBXBuildFile; fileRef = F20784B0BCE87748F07F5240; };
+		BFBF48F675EF0DC266130D9C = { isa = PBXBuildFile; fileRef = 720A0E88458C402EDAB25420; };
+		57F425585AEB9865A37E7BF1 = { isa = PBXBuildFile; fileRef = B156F2645970108310CF91C1; };
+		655FCEB1E5E75D1BC525DDA5 = { isa = PBXBuildFile; fileRef = 8672856039336FFD244FA420; };
+		AEFD83D1C739CB5287371CA0 = { isa = PBXBuildFile; fileRef = 10E7789109E7ECBE1FE63B7C; };
+		E1E1C653BD14913368A92F68 = { isa = PBXBuildFile; fileRef = 0DD7D722AF54F15A9A4C2B1D; };
+		A6BED3D34274DCB48227C658 = { isa = PBXBuildFile; fileRef = 434A84BAA9A5695A8273A7B6; };
+		AE4FCE9F86C0B8AC62E1B1ED = { isa = PBXBuildFile; fileRef = 8FB02F3AE6072FFDC74B956C; };
+		09FD99E36D95E413CF78ACE4 = { isa = PBXBuildFile; fileRef = 0B042E7F4846DB5E06538E09; };
+		B3558E15683275E39CA5E51F = { isa = PBXBuildFile; fileRef = F7027F5B43F1C21D26457DF7; };
+		9FA719F50B1DE0F66D9E7177 = { isa = PBXBuildFile; fileRef = F46809FA6C92D9796D1C8523; };
+		97D77956684C45C0AE5AE8F0 = { isa = PBXBuildFile; fileRef = 36D2F77EE5AA4C8BA8ED6AB9; };
+		3283385BCAE5805B50610E41 = { isa = PBXBuildFile; fileRef = E981D26A80EFEC13F777D2D1; };
+		B1E6A08DC8960A22F5572D40 = { isa = PBXBuildFile; fileRef = E981D26A80EFEC13F777D2D1; settings = { ATTRIBUTES = ( CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		97A9A2F3DC9BA5A1AD9394A0 = { isa = PBXBuildFile; fileRef = 322BD09EE6784458FF2BC0A3; };
+		ADRT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = ADRT001A1B2C3D4E5F6012346; };
+		AFT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = AFT001A1B2C3D4E5F6012346; };
+		ALTT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = ALTT001A1B2C3D4E5F6012346; };
+		AST001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = AST001A1B2C3D4E5F6012346; };
+		44754CDB1824C8422FD0547F = { isa = PBXBuildFile; fileRef = F6470AA2031A9C3CBC46BBD9; };
+		CAMT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = CAMT001A1B2C3D4E5F6012346; };
+		CDPT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = CDPT001A1B2C3D4E5F6012346; };
+		T0E001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E001A1B2C3D4E5F6012346; };
+		CLT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = CLT001A1B2C3D4E5F6012346; };
+		CNCT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = CNCT001A1B2C3D4E5F6012346; };
+		CSST001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = CSST001A1B2C3D4E5F6012346; };
+		79797EE04BD3654C34586C66 = { isa = PBXBuildFile; fileRef = 0C732BF694171FDB4CCC3501; };
+		CHXT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = CHXT001A1B2C3D4E5F6012346; };
+		D340C7B23C4CE4AF7E9DE673 = { isa = PBXBuildFile; fileRef = 49E237BA2A1D916C8FEB8887; };
+		T0E007A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E007A1B2C3D4E5F6012346; };
+		DSC001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = DSC001A1B2C3D4E5F6012346; };
+		EDD001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = EDD001A1B2C3D4E5F6012346; };
+		EFCT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = EFCT001A1B2C3D4E5F6012346; };
+		F8B78260E8331326A1865FED = { isa = PBXBuildFile; fileRef = 2263BDB329D55029A292316B; };
+		EFT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = EFT001A1B2C3D4E5F6012346; };
+		EKMT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = EKMT001A1B2C3D4E5F6012346; };
+		T0E003A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E003A1B2C3D4E5F6012346; };
+		T0E005A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E005A1B2C3D4E5F6012346; };
+		ECST001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = ECST001A1B2C3D4E5F6012346; };
+		T0E002A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E002A1B2C3D4E5F6012346; };
+		LICT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = LICT001A1B2C3D4E5F6012346; };
+		MTT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = MTT001A1B2C3D4E5F6012346; };
+		MPT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = MPT001A1B2C3D4E5F6012346; };
+		T0E004A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E004A1B2C3D4E5F6012346; };
+		T0E008A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = T0E008A1B2C3D4E5F6012346; };
+		D56EA006EAF1577B223CAB31 = { isa = PBXBuildFile; fileRef = 458480A97BEAD433AC844613; };
+		PALT001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = PALT001A1B2C3D4E5F6012346; };
+		PPST001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = PPST001A1B2C3D4E5F6012346; };
+		5C91BDD62525688CAA95319D = { isa = PBXBuildFile; fileRef = E6CFFCEFC04110C210B2C71B; };
+		7D38BD62CE4F5B03B8E6E219 = { isa = PBXBuildFile; fileRef = 75FAABCCB5767470BE8C897F; };
+		PST001A1B2C3D4E5F6012345 = { isa = PBXBuildFile; fileRef = PST001A1B2C3D4E5F6012346; };
+		74FBCA4EDB7ADEF7E1DCE14D = { isa = PBXBuildFile; fileRef = F21C2C3D113807010287B017; };
+		1EC90C7043F108DBEF91ACB1 = { isa = PBXBuildFile; fileRef = 01D8745F140C93617CC9CDED; };
+		868E68FAB6F0C27D39579837 = { isa = PBXBuildFile; fileRef = AFCFFCC4734D2881D3A2D663; };
+		2AC352B081B2D1F3CB4CFA0E = { isa = PBXBuildFile; fileRef = E981D26A80EFEC13F777D2D1; };
+		2773727FA2313B2D2756499F = { isa = PBXBuildFile; fileRef = 0E04077B5475F74B51AEFBC9; };
+		EB77F68E04F319A4EBD9E0EF = { isa = PBXBuildFile; fileRef = E981D26A80EFEC13F777D2D1; };
+		FD84ACFA00E78321C0EABAF0 = { isa = PBXBuildFile; fileRef = E981D26A80EFEC13F777D2D1; settings = { ATTRIBUTES = ( CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		791994C36FD8705360525DF9 = { isa = PBXBuildFile; fileRef = 5E56F4B7862359F5F634352E; };
+		565B60F6A0963AE140172C82 = { isa = PBXBuildFile; fileRef = E981D26A80EFEC13F777D2D1; };
+		C2B6E51FD1F87728019236DF = { isa = PBXBuildFile; fileRef = 36B4741F621E2783A8760EF5; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		T0E030A1B2C3D4E5F6012345 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9242A5541A82A136005AA4B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 9242A55B1A82A136005AA4B3;
-			remoteInfo = equinox;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -165,6 +187,28 @@
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A4D6D2F005202552DFE93A28 = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1E6A08DC8960A22F5572D40,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			name = "Embed Frameworks";
+		};
+		F3BC1D7953E3CD593B0A83DB = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FD84ACFA00E78321C0EABAF0,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			name = "Embed Frameworks";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -272,7 +316,7 @@
 		MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingProviderTests.swift; sourceTree = "<group>"; };
 		MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/MeetingIndicator.swift; sourceTree = "<group>"; };
 		MTT001A1B2C3D4E5F6012346 /* MeetingIndicatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingIndicatorTests.swift; sourceTree = "<group>"; };
-		NED001A1B2C3D4E5F6012346 /* Services/EventKit/NewEventDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/NewEventDraft.swift; sourceTree = "<group>"; };
+		NED001A1B2C3D4E5F6012346 = { path = equinox/Core/NewEventDraft.swift; isa = PBXFileReference; lastKnownFileType = sourcecode.swift; sourceTree = SOURCE_ROOT; };
 		NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EventKit/NativeJoinURLResolver.swift; sourceTree = "<group>"; };
 		NJU001A1B2C3D4E5F6012346 /* Core/NativeJoinURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/NativeJoinURL.swift; sourceTree = "<group>"; };
 		PAL001A1B2C3D4E5F6012346 /* UI/Design/PanelAgendaLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Design/PanelAgendaLayout.swift; sourceTree = "<group>"; };
@@ -303,145 +347,382 @@
 		T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeJoinURLTests.swift; sourceTree = "<group>"; };
 		T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = equinoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Platform/URLOpener.swift; sourceTree = "<group>"; };
+		A530EE6A30C3ADDCA990B289 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/EventKitMutationTests.swift; sourceTree = SOURCE_ROOT; };
+		51D7F01A5A72016EE970DC2A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/AgendaScrollCoordinator.swift; sourceTree = SOURCE_ROOT; };
+		5DD458D12250EF6D592271C9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/AppDelegate.swift; sourceTree = SOURCE_ROOT; };
+		8072AA790D4AECB559B6CF77 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/AppState.swift; sourceTree = SOURCE_ROOT; };
+		B0166DF9D3D13C9695BFA0C7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/CalendarNavigationCoordinator.swift; sourceTree = SOURCE_ROOT; };
+		D8C1FCA5E0A330179FC1F0D9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/Constants.swift; sourceTree = SOURCE_ROOT; };
+		1B37C247CB048C0DEDDFBD28 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/EventFetchCoordinator.swift; sourceTree = SOURCE_ROOT; };
+		CBE94D258AF189D074C624A9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/EventsCoordinator.swift; sourceTree = SOURCE_ROOT; };
+		A2A514E79F3DB8C2EA74ADE8 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/KeyboardShortcutNames.swift; sourceTree = SOURCE_ROOT; };
+		A2C818ADD7146C7D59D24D10 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/LoadingIndicatorController.swift; sourceTree = SOURCE_ROOT; };
+		4B02CCCFCA8720365D096197 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/PanelLayoutMetrics.swift; sourceTree = SOURCE_ROOT; };
+		D46FFB0EE1392E5B82B3C9E4 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/PanelPresentationState.swift; sourceTree = SOURCE_ROOT; };
+		BAE68F9C5E563CA06009A34B = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/SettingsActivationHandler.swift; sourceTree = SOURCE_ROOT; };
+		7D9414C8F4DBED4F815369B7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/App/SettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		132F7DD0A189C6D0372DEB82 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/AgendaDisplayRange.swift; sourceTree = SOURCE_ROOT; };
+		03A51ADC2EE168AA865B6F52 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/AgendaFocus.swift; sourceTree = SOURCE_ROOT; };
+		74DC44FD56CFC28A730D6A6E = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/AgendaLayout.swift; sourceTree = SOURCE_ROOT; };
+		A872BC2B454C653953237A75 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/AgendaSections.swift; sourceTree = SOURCE_ROOT; };
+		D2259BF521B451FAE8F2D73A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/CalendarAccessStatus.swift; sourceTree = SOURCE_ROOT; };
+		FD243C28C9CA5E64D3FB1032 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/CalendarDate.swift; sourceTree = SOURCE_ROOT; };
+		CE941BF9BA4C5995AF512AD3 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/CalendarDateParsing.swift; sourceTree = SOURCE_ROOT; };
+		DC5F246F5F38E7AE19DD2088 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/CalendarListEntry.swift; sourceTree = SOURCE_ROOT; };
+		673FB21D1B8065F6C5CDC1B7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/CalendarListing.swift; sourceTree = SOURCE_ROOT; };
+		75FCA9B1CDD2408A7D642849 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/ColorHex.swift; sourceTree = SOURCE_ROOT; };
+		A21E8B789DED8162ED170056 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/DayEvent.swift; sourceTree = SOURCE_ROOT; };
+		D8D749325F7EB95C6F17A9B2 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/DayEventUniqueCalendars.swift; sourceTree = SOURCE_ROOT; };
+		6267FCDD3A3A6AF1E1B2A858 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/EventDraftDefaults.swift; sourceTree = SOURCE_ROOT; };
+		F33BC0A374A78AEADC6D6F79 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/EventFetchRange.swift; sourceTree = SOURCE_ROOT; };
+		FE0706F078498A9383E7FB0B = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/EventLayout.swift; sourceTree = SOURCE_ROOT; };
+		C69F93DC1E55643FF02BB6B8 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/EventParticipation.swift; sourceTree = SOURCE_ROOT; };
+		8139A618BD36241416675CED = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/JoinURLDetection.swift; sourceTree = SOURCE_ROOT; };
+		F8E0F63B656DB4ACC024CFF4 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/MeetingIndicator.swift; sourceTree = SOURCE_ROOT; };
+		0A4B2B27129FA8E8D8179F63 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/MeetingProvider.swift; sourceTree = SOURCE_ROOT; };
+		F67BCC302BC903E64AF5041F = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/MonthGrid.swift; sourceTree = SOURCE_ROOT; };
+		F69AC981021911C0D443082F = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/NativeJoinURL.swift; sourceTree = SOURCE_ROOT; };
+		4CC06BB58628CDE5BE129911 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/CalendarAccessMapping.swift; sourceTree = SOURCE_ROOT; };
+		7DFD01961E4F8675E164EC67 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/CalendarSelectionService.swift; sourceTree = SOURCE_ROOT; };
+		BE592A9CBAE0FEC5B9E5DF28 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/CalendarSelectionStorage.swift; sourceTree = SOURCE_ROOT; };
+		9575238669321228F2B03E7A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/CalendarStore.swift; sourceTree = SOURCE_ROOT; };
+		0C5091A0A0CDE62767AC7307 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/DayEventBuilder.swift; sourceTree = SOURCE_ROOT; };
+		2FA8A2C8BDBCDAD638679404 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/DayEventMapping.swift; sourceTree = SOURCE_ROOT; };
+		13F983F1AD6BEDBA02AEF115 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/EventFetchCache.swift; sourceTree = SOURCE_ROOT; };
+		9B7B3B036F55AC94F9BE9021 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/EventKitCalendarMapping.swift; sourceTree = SOURCE_ROOT; };
+		8362D9F5D64AB749C0998850 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/EventKitEventExtensions.swift; sourceTree = SOURCE_ROOT; };
+		04991DC4BFDB29F52EB27C00 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/EventKitEventFields.swift; sourceTree = SOURCE_ROOT; };
+		B8AD258159AFA44412E1CA4C = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/EventKitMutation.swift; sourceTree = SOURCE_ROOT; };
+		63D20567C7E97843F0999387 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/EventKit/NativeJoinURLResolver.swift; sourceTree = SOURCE_ROOT; };
+		5BD5F4ACC6B2479BC864C42F = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "equinox/Services/EventKit/SelectableCalendar+EventKit.swift"; sourceTree = SOURCE_ROOT; };
+		4AA8F7349A1E5E6971F1F4F7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/Platform/DateFormatters.swift; sourceTree = SOURCE_ROOT; };
+		AFEE19209A222DC0DBFA4F7A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/Platform/LaunchAtLogin.swift; sourceTree = SOURCE_ROOT; };
+		0D5BDBA50141929459A304D8 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/Platform/URLOpener.swift; sourceTree = SOURCE_ROOT; };
+		B32B70B3CEE7B391F4B3CBB6 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/PreferencesStore.swift; sourceTree = SOURCE_ROOT; };
+		CB98B3508FF48E670FD91CAC = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/AccessibilityHelpers.swift; sourceTree = SOURCE_ROOT; };
+		92CC122D2B6C33D04A87DD06 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/DayEventColors.swift; sourceTree = SOURCE_ROOT; };
+		46A9BCEBED4B591D2075C0E5 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/DesignTokens.swift; sourceTree = SOURCE_ROOT; };
+		B92E11E9744C1C85D2548424 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/EquinoxComponents.swift; sourceTree = SOURCE_ROOT; };
+		C5378D84AD6DCA8A4C1EE394 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/EventStripeView.swift; sourceTree = SOURCE_ROOT; };
+		5C245056E12865ED831DCAF0 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/ModalComponents.swift; sourceTree = SOURCE_ROOT; };
+		4B95A915CC5A9631DF8C9B5D = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/PanelAgendaLayout.swift; sourceTree = SOURCE_ROOT; };
+		EBA8163EB31E73516F748C4E = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/PanelComponents.swift; sourceTree = SOURCE_ROOT; };
+		6F58891332F0E54D18090C56 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/ParticipationChipStyle.swift; sourceTree = SOURCE_ROOT; };
+		00A9C23742BDA4CD9FF8AB97 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/SelectableCalendarColors.swift; sourceTree = SOURCE_ROOT; };
+		670BB8AF47E86540D8DB64D9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/SettingsComponents.swift; sourceTree = SOURCE_ROOT; };
+		F46246EAFA7774CB79D4F866 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Design/SizeMetrics.swift; sourceTree = SOURCE_ROOT; };
+		0DB1E25C73E3E65C025A1E60 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Events/EventDetailComponents.swift; sourceTree = SOURCE_ROOT; };
+		DFEDF62DE4B013C2D07E7EAA = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Events/EventDetailView.swift; sourceTree = SOURCE_ROOT; };
+		F39EC15684F12C6C197DCDA3 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Events/JoinURLPresentation.swift; sourceTree = SOURCE_ROOT; };
+		328E7869CAC3DDDB647D9EE7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Events/NewEventSheet.swift; sourceTree = SOURCE_ROOT; };
+		610F2FD3774333C34FE48703 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/AgendaComponents.swift; sourceTree = SOURCE_ROOT; };
+		D3A8E257F65DAF41601EB6E2 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/AgendaView.swift; sourceTree = SOURCE_ROOT; };
+		F0028EFEB313FD35ADDD9B81 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/CalendarGridView.swift; sourceTree = SOURCE_ROOT; };
+		408DBAB97681C9CDEFCC963A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/DayCellView.swift; sourceTree = SOURCE_ROOT; };
+		DE495F9D8F57A7EDAF8E8175 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/MainPanelView.swift; sourceTree = SOURCE_ROOT; };
+		4E2508DB8A0CDF3BBF1C6456 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/PanelCommandBar.swift; sourceTree = SOURCE_ROOT; };
+		3DF45D58C7F8E03B4788D2D3 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Main/PanelStateOverlay.swift; sourceTree = SOURCE_ROOT; };
+		0D128F860B41BF7622FA3C7C = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/MenuBar/KeyablePanel.swift; sourceTree = SOURCE_ROOT; };
+		5CAE1FC77DBE3B6303AE09B7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/MenuBar/MenuBarIconRenderer.swift; sourceTree = SOURCE_ROOT; };
+		2E0BC2E5B2EA60645FE861FF = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/MenuBar/PanelDismissMonitor.swift; sourceTree = SOURCE_ROOT; };
+		3B31D591BE5D2E6F42B193DA = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/MenuBar/PanelWindowController.swift; sourceTree = SOURCE_ROOT; };
+		D439A6DA68B6627E39D1F065 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/MenuBar/PeriodicRefreshScheduler.swift; sourceTree = SOURCE_ROOT; };
+		5DB525EB9C25851F75EB7152 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/MenuBar/StatusItemController.swift; sourceTree = SOURCE_ROOT; };
+		F20784B0BCE87748F07F5240 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/AboutSettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		720A0E88458C402EDAB25420 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/AppearancePreview.swift; sourceTree = SOURCE_ROOT; };
+		B156F2645970108310CF91C1 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/AppearanceSettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		8672856039336FFD244FA420 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/CalendarsSettingsSection.swift; sourceTree = SOURCE_ROOT; };
+		10E7789109E7ECBE1FE63B7C = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/CalendarsSettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		0DD7D722AF54F15A9A4C2B1D = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/GeneralSettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		434A84BAA9A5695A8273A7B6 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/MenuBarIconPicker.swift; sourceTree = SOURCE_ROOT; };
+		8FB02F3AE6072FFDC74B956C = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/PrivacySettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		0B042E7F4846DB5E06538E09 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/SettingsView.swift; sourceTree = SOURCE_ROOT; };
+		F7027F5B43F1C21D26457DF7 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/ShortcutsSettingsTab.swift; sourceTree = SOURCE_ROOT; };
+		F46809FA6C92D9796D1C8523 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/UI/Settings/WeekendHighlightPicker.swift; sourceTree = SOURCE_ROOT; };
+		E981D26A80EFEC13F777D2D1 = { isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EquinoxKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A914428650DC0EE025680366 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Core/CalendarStoreError.swift; sourceTree = SOURCE_ROOT; };
+		D09696320F60B31E958CF77A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/CalendarEventStore.swift; sourceTree = SOURCE_ROOT; };
+		F92F7F162F96242ED36DE805 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinox/Services/Platform/EquinoxResources.swift; sourceTree = SOURCE_ROOT; };
+		322BD09EE6784458FF2BC0A3 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/AgendaContentStateTests.swift; sourceTree = SOURCE_ROOT; };
+		F6470AA2031A9C3CBC46BBD9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/AppStateCalendarTests.swift; sourceTree = SOURCE_ROOT; };
+		0C732BF694171FDB4CCC3501 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/CalendarTestContext.swift; sourceTree = SOURCE_ROOT; };
+		49E237BA2A1D916C8FEB8887 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/DateFormattersTests.swift; sourceTree = SOURCE_ROOT; };
+		2263BDB329D55029A292316B = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/EventFetchCoordinatorTests.swift; sourceTree = SOURCE_ROOT; };
+		458480A97BEAD433AC844613 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/NewEventDraftValidationTests.swift; sourceTree = SOURCE_ROOT; };
+		E6CFFCEFC04110C210B2C71B = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/PanelStateOverlayContentTests.swift; sourceTree = SOURCE_ROOT; };
+		75FAABCCB5767470BE8C897F = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/PeriodicRefreshSchedulerTests.swift; sourceTree = SOURCE_ROOT; };
+		F21C2C3D113807010287B017 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/ShortcutCaptureLifecycleTests.swift; sourceTree = SOURCE_ROOT; };
+		01D8745F140C93617CC9CDED = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/StubCalendarEventStore.swift; sourceTree = SOURCE_ROOT; };
+		AFCFFCC4734D2881D3A2D663 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxTests/URLOpenerTests.swift; sourceTree = SOURCE_ROOT; };
+		769B1740B941CA4F693FFDB0 = { isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = equinoxGraphicsHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E04077B5475F74B51AEFBC9 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxGraphicsHost/main.swift; sourceTree = SOURCE_ROOT; };
+		D91CE6427D3772697C0CED3C = { isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = equinoxGraphicsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E56F4B7862359F5F634352E = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxGraphicsTests/ComponentRenderingTests.swift; sourceTree = SOURCE_ROOT; };
+		36B4741F621E2783A8760EF5 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = equinoxGraphicsTests/SurfaceLayoutTests.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		9242A5591A82A136005AA4B3 /* Frameworks */ = {
+		9242A5591A82A136005AA4B3 = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				KSBLD001A1B2C3D4E5F601234 /* KeyboardShortcuts in Frameworks */,
+				3283385BCAE5805B50610E41,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		T0E070A1B2C3D4E5F6012345 /* Frameworks */ = {
+		634B21EE3C7257CCFA6B9DA5 = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				KSBLD001A1B2C3D4E5F601234,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1228425B5E011BF6A029C94E = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2AC352B081B2D1F3CB4CFA0E,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5F9FC7328B4F53CA1ECB77E7 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB77F68E04F319A4EBD9E0EF,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		50AC28D480BCB6A3BEF4A0EA = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565B60F6A0963AE140172C82,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		521D9DC4CEE24A9A986E31E2 /* Swift */ = {
+		521D9DC4CEE24A9A986E31E2 = {
 			isa = PBXGroup;
-			children = (
-				36D2F77EE5AA4C8BA8ED6AB9 /* App/EquinoxApp.swift */,
-				63827DE05C3E4C1A9137EA18 /* App/AppDelegate.swift */,
-				KSN001A1B2C3D4E5F6012346 /* App/KeyboardShortcutNames.swift */,
-				SAH001A1B2C3D4E5F6012346 /* App/SettingsActivationHandler.swift */,
-				A1B2C3D401234567890ABCD4 /* App/Constants.swift */,
-				STB001A1B2C3D4E5F6012346 /* App/SettingsTab.swift */,
-				PPC001A1B2C3D4E5F6012346 /* App/PanelPresentationState.swift */,
-				EVC001A1B2C3D4E5F6012346 /* App/EventsCoordinator.swift */,
-				CNC001A1B2C3D4E5F6012346 /* App/CalendarNavigationCoordinator.swift */,
-				LIC001A1B2C3D4E5F6012346 /* App/LoadingIndicatorController.swift */,
-				EFCO001A1B2C3D4E5F6012346 /* App/EventFetchCoordinator.swift */,
-				ASC001A1B2C3D4E5F6012346 /* App/AgendaScrollCoordinator.swift */,
-				PLM001A1B2C3D4E5F6012346 /* App/PanelLayoutMetrics.swift */,
-				B4C1DCC2A9FE4B8B804C4770 /* App/AppState.swift */,
-				D0E001A1B2C3D4E5F6012346 /* Core/CalendarDate.swift */,
-				CDP001A1B2C3D4E5F6012346 /* Core/CalendarDateParsing.swift */,
-				CLE001A1B2C3D4E5F6012346 /* Core/CalendarListEntry.swift */,
-				AGL001A1B2C3D4E5F6012346 /* Core/AgendaLayout.swift */,
-				DE001A1B2C3D4E5F6012346 /* Core/DayEvent.swift */,
-				CHX001A1B2C3D4E5F6012346 /* Core/ColorHex.swift */,
-				DDC001A1B2C3D4E5F6012346 /* Core/DayEventUniqueCalendars.swift */,
-				DE002A1B2C3D4E5F6012346 /* Core/AgendaSections.swift */,
-				ADR001A1B2C3D4E5F6012346 /* Core/AgendaDisplayRange.swift */,
-				AF001A1B2C3D4E5F6012346 /* Core/AgendaFocus.swift */,
-				EFR001A1B2C3D4E5F6012346 /* Core/EventFetchRange.swift */,
-				MTI001A1B2C3D4E5F6012346 /* Core/MeetingIndicator.swift */,
-				MP001A1B2C3D4E5F6012346 /* Core/MeetingProvider.swift */,
-				CLI001A1B2C3D4E5F6012346 /* Core/CalendarListing.swift */,
-				D0E001B1B2C3D4E5F6012346 /* Core/EventDraftDefaults.swift */,
-				D0E002A1B2C3D4E5F6012346 /* Services/EventKit/DayEventMapping.swift */,
-				CSS001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionStorage.swift */,
-				SEL001A1B2C3D4E5F6012346 /* Services/EventKit/SelectableCalendar+EventKit.swift */,
-				EKE001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventExtensions.swift */,
-				URL001A1B2C3D4E5F6012346 /* Services/Platform/URLOpener.swift */,
-				D0E003A1B2C3D4E5F6012346 /* Services/EventKit/CalendarStore.swift */,
-				EFC001A1B2C3D4E5F6012346 /* Services/EventKit/EventFetchCache.swift */,
-				CSSVC001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarSelectionService.swift */,
-				CAM001A1B2C3D4E5F6012346 /* Services/EventKit/CalendarAccessMapping.swift */,
-				CAS001A1B2C3D4E5F6012346 /* Core/CalendarAccessStatus.swift */,
-				EKMU001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitMutation.swift */,
-				NED001A1B2C3D4E5F6012346 /* Services/EventKit/NewEventDraft.swift */,
-				EEF001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitEventFields.swift */,
-				DEB001A1B2C3D4E5F6012346 /* Services/EventKit/DayEventBuilder.swift */,
-				EKM001A1B2C3D4E5F6012346 /* Services/EventKit/EventKitCalendarMapping.swift */,
-				NJR001A1B2C3D4E5F6012346 /* Services/EventKit/NativeJoinURLResolver.swift */,
-				D0E004A1B2C3D4E5F6012346 /* Services/Platform/DateFormatters.swift */,
-				D0E005A1B2C3D4E5F6012346 /* Core/JoinURLDetection.swift */,
-				NJU001A1B2C3D4E5F6012346 /* Core/NativeJoinURL.swift */,
-				D0E006A1B2C3D4E5F6012346 /* Core/MonthGrid.swift */,
-				D0E007A1B2C3D4E5F6012346 /* Core/EventLayout.swift */,
-				RSVP001A1B2C3D4E5F6012346 /* Core/EventParticipation.swift */,
-				A1B2C3D401234567890ABCD8 /* Services/Platform/LaunchAtLogin.swift */,
-				SMU002A1B2C3D4E5F6012346 /* UI/Design/SizeMetrics.swift */,
-				328F6CA845EE41999E852970 /* Services/PreferencesStore.swift */,
-				A11Y001A1B2C3D4E5F6012346 /* UI/Design/AccessibilityHelpers.swift */,
-				D0E008A1B2C3D4E5F6012346 /* UI/Design/DesignTokens.swift */,
-				PAL001A1B2C3D4E5F6012346 /* UI/Design/PanelAgendaLayout.swift */,
-				PCS001A1B2C3D4E5F6012346 /* UI/Design/ParticipationChipStyle.swift */,
-				DEC001A1B2C3D4E5F6012346 /* UI/Design/DayEventColors.swift */,
-				SCC001A1B2C3D4E5F6012346 /* UI/Design/SelectableCalendarColors.swift */,
-				D0E009A1B2C3D4E5F6012346 /* UI/Design/PanelComponents.swift */,
-				EQX001A1B2C3D4E5F6012346 /* UI/Design/EquinoxComponents.swift */,
-				ESV001A1B2C3D4E5F6012346 /* UI/Design/EventStripeView.swift */,
-				MOD001A1B2C3D4E5F6012346 /* UI/Design/ModalComponents.swift */,
-				D0E010A1B2C3D4E5F6012346 /* UI/Design/SettingsComponents.swift */,
-				C44FCB3CA1B3432E91849D32 /* UI/Main/DayCellView.swift */,
-				C3D4E5F601234567890ABD02 /* UI/Main/PanelCommandBar.swift */,
-				EDFB06C5DCD64C92A417DA16 /* UI/Main/CalendarGridView.swift */,
-				0C5EE2ACAC644A99A18E671E /* UI/Main/AgendaView.swift */,
-				D0E011A1B2C3D4E5F6012346 /* UI/Main/AgendaComponents.swift */,
-				PSO001A1B2C3D4E5F6012346 /* UI/Main/PanelStateOverlay.swift */,
-				11DD337E520F4A5C98A656EE /* UI/Main/MainPanelView.swift */,
-				7CD76B61B3D540A2A2F4D695 /* UI/Events/NewEventSheet.swift */,
-				1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */,
-				JUP001A1B2C3D4E5F6012346 /* UI/Events/JoinURLPresentation.swift */,
-				EDC001A1B2C3D4E5F6012346 /* UI/Events/EventDetailComponents.swift */,
-				FDC51E955644466E9CC923AF /* UI/Settings/SettingsView.swift */,
-				6482D455E0F542C98215FB22 /* UI/Settings/GeneralSettingsTab.swift */,
-				C3D4E5F601234567890ABD08 /* UI/Settings/CalendarsSettingsTab.swift */,
-				2A62397CD381406ABD6477C5 /* UI/Settings/AppearanceSettingsTab.swift */,
-				C3D4E5F601234567890ABD0A /* UI/Settings/ShortcutsSettingsTab.swift */,
-				PRV001A1B2C3D4E5F6012346 /* UI/Settings/PrivacySettingsTab.swift */,
-				A8BA8E6CEB1F48A18F12291C /* UI/Settings/AboutSettingsTab.swift */,
-				B2C3D4E501234567890ABCF6 /* UI/Settings/MenuBarIconPicker.swift */,
-				C3D4E5F601234567890ABD0C /* UI/Settings/WeekendHighlightPicker.swift */,
-				C3D4E5F601234567890ABD0E /* UI/Settings/AppearancePreview.swift */,
-				B2C3D4E501234567890ABCF8 /* UI/Settings/CalendarsSettingsSection.swift */,
-				59E0896503BF4EDBB707C1D2 /* UI/MenuBar/MenuBarIconRenderer.swift */,
-				KYP001A1B2C3D4E5F6012346 /* UI/MenuBar/KeyablePanel.swift */,
-				PWC001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelWindowController.swift */,
-				PDM001A1B2C3D4E5F6012346 /* UI/MenuBar/PanelDismissMonitor.swift */,
-				PRS001A1B2C3D4E5F6012346 /* UI/MenuBar/PeriodicRefreshScheduler.swift */,
-				2E1C4732A0A143C389228663 /* UI/MenuBar/StatusItemController.swift */,
-			);
 			name = Swift;
+			children = (
+				36D2F77EE5AA4C8BA8ED6AB9,
+				63827DE05C3E4C1A9137EA18,
+				KSN001A1B2C3D4E5F6012346,
+				SAH001A1B2C3D4E5F6012346,
+				A1B2C3D401234567890ABCD4,
+				STB001A1B2C3D4E5F6012346,
+				PPC001A1B2C3D4E5F6012346,
+				EVC001A1B2C3D4E5F6012346,
+				CNC001A1B2C3D4E5F6012346,
+				LIC001A1B2C3D4E5F6012346,
+				EFCO001A1B2C3D4E5F6012346,
+				ASC001A1B2C3D4E5F6012346,
+				PLM001A1B2C3D4E5F6012346,
+				B4C1DCC2A9FE4B8B804C4770,
+				D0E001A1B2C3D4E5F6012346,
+				CDP001A1B2C3D4E5F6012346,
+				CLE001A1B2C3D4E5F6012346,
+				AGL001A1B2C3D4E5F6012346,
+				DE001A1B2C3D4E5F6012346,
+				CHX001A1B2C3D4E5F6012346,
+				DDC001A1B2C3D4E5F6012346,
+				DE002A1B2C3D4E5F6012346,
+				ADR001A1B2C3D4E5F6012346,
+				AF001A1B2C3D4E5F6012346,
+				EFR001A1B2C3D4E5F6012346,
+				MTI001A1B2C3D4E5F6012346,
+				MP001A1B2C3D4E5F6012346,
+				CLI001A1B2C3D4E5F6012346,
+				D0E001B1B2C3D4E5F6012346,
+				D0E002A1B2C3D4E5F6012346,
+				CSS001A1B2C3D4E5F6012346,
+				SEL001A1B2C3D4E5F6012346,
+				EKE001A1B2C3D4E5F6012346,
+				URL001A1B2C3D4E5F6012346,
+				D0E003A1B2C3D4E5F6012346,
+				EFC001A1B2C3D4E5F6012346,
+				CSSVC001A1B2C3D4E5F6012346,
+				CAM001A1B2C3D4E5F6012346,
+				CAS001A1B2C3D4E5F6012346,
+				EKMU001A1B2C3D4E5F6012346,
+				EEF001A1B2C3D4E5F6012346,
+				DEB001A1B2C3D4E5F6012346,
+				EKM001A1B2C3D4E5F6012346,
+				NJR001A1B2C3D4E5F6012346,
+				D0E004A1B2C3D4E5F6012346,
+				D0E005A1B2C3D4E5F6012346,
+				NJU001A1B2C3D4E5F6012346,
+				D0E006A1B2C3D4E5F6012346,
+				D0E007A1B2C3D4E5F6012346,
+				RSVP001A1B2C3D4E5F6012346,
+				A1B2C3D401234567890ABCD8,
+				SMU002A1B2C3D4E5F6012346,
+				328F6CA845EE41999E852970,
+				A11Y001A1B2C3D4E5F6012346,
+				D0E008A1B2C3D4E5F6012346,
+				PAL001A1B2C3D4E5F6012346,
+				PCS001A1B2C3D4E5F6012346,
+				DEC001A1B2C3D4E5F6012346,
+				SCC001A1B2C3D4E5F6012346,
+				D0E009A1B2C3D4E5F6012346,
+				EQX001A1B2C3D4E5F6012346,
+				ESV001A1B2C3D4E5F6012346,
+				MOD001A1B2C3D4E5F6012346,
+				D0E010A1B2C3D4E5F6012346,
+				C44FCB3CA1B3432E91849D32,
+				C3D4E5F601234567890ABD02,
+				EDFB06C5DCD64C92A417DA16,
+				0C5EE2ACAC644A99A18E671E,
+				D0E011A1B2C3D4E5F6012346,
+				PSO001A1B2C3D4E5F6012346,
+				11DD337E520F4A5C98A656EE,
+				7CD76B61B3D540A2A2F4D695,
+				1EB99437FBBD4DB3A9F8C907,
+				JUP001A1B2C3D4E5F6012346,
+				EDC001A1B2C3D4E5F6012346,
+				FDC51E955644466E9CC923AF,
+				6482D455E0F542C98215FB22,
+				C3D4E5F601234567890ABD08,
+				2A62397CD381406ABD6477C5,
+				C3D4E5F601234567890ABD0A,
+				PRV001A1B2C3D4E5F6012346,
+				A8BA8E6CEB1F48A18F12291C,
+				B2C3D4E501234567890ABCF6,
+				C3D4E5F601234567890ABD0C,
+				C3D4E5F601234567890ABD0E,
+				B2C3D4E501234567890ABCF8,
+				59E0896503BF4EDBB707C1D2,
+				KYP001A1B2C3D4E5F6012346,
+				PWC001A1B2C3D4E5F6012346,
+				PDM001A1B2C3D4E5F6012346,
+				PRS001A1B2C3D4E5F6012346,
+				2E1C4732A0A143C389228663,
+			);
 			sourceTree = "<group>";
 		};
 		9242A5531A82A136005AA4B3 = {
 			isa = PBXGroup;
-			children = (
-				9242A55E1A82A136005AA4B3 /* equinox */,
-				T0E010A1B2C3D4E5F6012347 /* equinoxTests */,
-				9242A55D1A82A136005AA4B3 /* Products */,
-				PRJCFG001A82A136005AA4B3 /* Project.xcconfig */,
-				92CF00001A82A136005AA4B3 /* Local.xcconfig */,
-			);
 			sourceTree = "<group>";
-		};
-		9242A55D1A82A136005AA4B3 /* Products */ = {
-			isa = PBXGroup;
 			children = (
-				9242A55C1A82A136005AA4B3 /* equinox.app */,
-				T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */,
+				9242A55E1A82A136005AA4B3,
+				T0E010A1B2C3D4E5F6012347,
+				9242A55D1A82A136005AA4B3,
+				PRJCFG001A82A136005AA4B3,
+				92CF00001A82A136005AA4B3,
+				A914428650DC0EE025680366,
+				D09696320F60B31E958CF77A,
+				F92F7F162F96242ED36DE805,
+				0E04077B5475F74B51AEFBC9,
+				5E56F4B7862359F5F634352E,
+				51D7F01A5A72016EE970DC2A,
+				5DD458D12250EF6D592271C9,
+				8072AA790D4AECB559B6CF77,
+				B0166DF9D3D13C9695BFA0C7,
+				D8C1FCA5E0A330179FC1F0D9,
+				1B37C247CB048C0DEDDFBD28,
+				CBE94D258AF189D074C624A9,
+				A2A514E79F3DB8C2EA74ADE8,
+				A2C818ADD7146C7D59D24D10,
+				4B02CCCFCA8720365D096197,
+				D46FFB0EE1392E5B82B3C9E4,
+				BAE68F9C5E563CA06009A34B,
+				7D9414C8F4DBED4F815369B7,
+				132F7DD0A189C6D0372DEB82,
+				03A51ADC2EE168AA865B6F52,
+				74DC44FD56CFC28A730D6A6E,
+				A872BC2B454C653953237A75,
+				D2259BF521B451FAE8F2D73A,
+				FD243C28C9CA5E64D3FB1032,
+				CE941BF9BA4C5995AF512AD3,
+				DC5F246F5F38E7AE19DD2088,
+				673FB21D1B8065F6C5CDC1B7,
+				75FCA9B1CDD2408A7D642849,
+				A21E8B789DED8162ED170056,
+				D8D749325F7EB95C6F17A9B2,
+				6267FCDD3A3A6AF1E1B2A858,
+				F33BC0A374A78AEADC6D6F79,
+				FE0706F078498A9383E7FB0B,
+				C69F93DC1E55643FF02BB6B8,
+				8139A618BD36241416675CED,
+				F8E0F63B656DB4ACC024CFF4,
+				0A4B2B27129FA8E8D8179F63,
+				F67BCC302BC903E64AF5041F,
+				F69AC981021911C0D443082F,
+				4CC06BB58628CDE5BE129911,
+				7DFD01961E4F8675E164EC67,
+				BE592A9CBAE0FEC5B9E5DF28,
+				9575238669321228F2B03E7A,
+				0C5091A0A0CDE62767AC7307,
+				2FA8A2C8BDBCDAD638679404,
+				13F983F1AD6BEDBA02AEF115,
+				9B7B3B036F55AC94F9BE9021,
+				8362D9F5D64AB749C0998850,
+				04991DC4BFDB29F52EB27C00,
+				B8AD258159AFA44412E1CA4C,
+				63D20567C7E97843F0999387,
+				5BD5F4ACC6B2479BC864C42F,
+				4AA8F7349A1E5E6971F1F4F7,
+				AFEE19209A222DC0DBFA4F7A,
+				0D5BDBA50141929459A304D8,
+				B32B70B3CEE7B391F4B3CBB6,
+				CB98B3508FF48E670FD91CAC,
+				92CC122D2B6C33D04A87DD06,
+				46A9BCEBED4B591D2075C0E5,
+				B92E11E9744C1C85D2548424,
+				C5378D84AD6DCA8A4C1EE394,
+				5C245056E12865ED831DCAF0,
+				4B95A915CC5A9631DF8C9B5D,
+				EBA8163EB31E73516F748C4E,
+				6F58891332F0E54D18090C56,
+				00A9C23742BDA4CD9FF8AB97,
+				670BB8AF47E86540D8DB64D9,
+				F46246EAFA7774CB79D4F866,
+				0DB1E25C73E3E65C025A1E60,
+				DFEDF62DE4B013C2D07E7EAA,
+				F39EC15684F12C6C197DCDA3,
+				328E7869CAC3DDDB647D9EE7,
+				610F2FD3774333C34FE48703,
+				D3A8E257F65DAF41601EB6E2,
+				F0028EFEB313FD35ADDD9B81,
+				408DBAB97681C9CDEFCC963A,
+				DE495F9D8F57A7EDAF8E8175,
+				4E2508DB8A0CDF3BBF1C6456,
+				3DF45D58C7F8E03B4788D2D3,
+				0D128F860B41BF7622FA3C7C,
+				5CAE1FC77DBE3B6303AE09B7,
+				2E0BC2E5B2EA60645FE861FF,
+				3B31D591BE5D2E6F42B193DA,
+				D439A6DA68B6627E39D1F065,
+				5DB525EB9C25851F75EB7152,
+				F20784B0BCE87748F07F5240,
+				720A0E88458C402EDAB25420,
+				B156F2645970108310CF91C1,
+				8672856039336FFD244FA420,
+				10E7789109E7ECBE1FE63B7C,
+				0DD7D722AF54F15A9A4C2B1D,
+				434A84BAA9A5695A8273A7B6,
+				8FB02F3AE6072FFDC74B956C,
+				0B042E7F4846DB5E06538E09,
+				F7027F5B43F1C21D26457DF7,
+				F46809FA6C92D9796D1C8523,
+				NED001A1B2C3D4E5F6012346,
+				36B4741F621E2783A8760EF5,
 			);
+		};
+		9242A55D1A82A136005AA4B3 = {
+			isa = PBXGroup;
 			name = Products;
+			children = (
+				9242A55C1A82A136005AA4B3,
+				T0E009A1B2C3D4E5F6012346,
+				E981D26A80EFEC13F777D2D1,
+				769B1740B941CA4F693FFDB0,
+				D91CE6427D3772697C0CED3C,
+			);
 			sourceTree = "<group>";
 		};
 		9242A55E1A82A136005AA4B3 /* equinox */ = {
@@ -467,128 +748,200 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		T0E010A1B2C3D4E5F6012347 /* equinoxTests */ = {
+		T0E010A1B2C3D4E5F6012347 = {
+			path = equinoxTests;
 			isa = PBXGroup;
 			children = (
-				T0E001A1B2C3D4E5F6012346 /* CalendarDateTests.swift */,
-				T0E002A1B2C3D4E5F6012346 /* JoinURLDetectionTests.swift */,
-				T0E003A1B2C3D4E5F6012346 /* EventLayoutTests.swift */,
-				T0E004A1B2C3D4E5F6012346 /* MonthGridTests.swift */,
-				T0E005A1B2C3D4E5F6012346 /* EventParticipationTests.swift */,
-				EFT001A1B2C3D4E5F6012346 /* EventFetchRangeTests.swift */,
-				EFCT001A1B2C3D4E5F6012346 /* EventFetchCacheTests.swift */,
-				MTT001A1B2C3D4E5F6012346 /* MeetingIndicatorTests.swift */,
-				CLT001A1B2C3D4E5F6012346 /* CalendarListingTests.swift */,
-				EKMT001A1B2C3D4E5F6012346 /* EventKitCalendarMappingTests.swift */,
-				AST001A1B2C3D4E5F6012346 /* AgendaSectionsTests.swift */,
-				ADRT001A1B2C3D4E5F6012346 /* AgendaDisplayRangeTests.swift */,
-				AFT001A1B2C3D4E5F6012346 /* AgendaFocusTests.swift */,
-				ALTT001A1B2C3D4E5F6012346 /* AgendaLayoutTests.swift */,
-				T0E007A1B2C3D4E5F6012346 /* DayEventUniqueCalendarsTests.swift */,
-				T0E008A1B2C3D4E5F6012346 /* NativeJoinURLTests.swift */,
-				DSC001A1B2C3D4E5F6012346 /* DesignSystemComplianceTests.swift */,
-				EDD001A1B2C3D4E5F6012346 /* EventDraftDefaultsTests.swift */,
-				CAMT001A1B2C3D4E5F6012346 /* CalendarAccessMappingTests.swift */,
-				PST001A1B2C3D4E5F6012346 /* PreferencesStoreTests.swift */,
-				MPT001A1B2C3D4E5F6012346 /* MeetingProviderTests.swift */,
-				CNCT001A1B2C3D4E5F6012346 /* CalendarNavigationCoordinatorTests.swift */,
-				CDPT001A1B2C3D4E5F6012346 /* CalendarDateParsingTests.swift */,
-				CSST001A1B2C3D4E5F6012346 /* CalendarSelectionServiceTests.swift */,
-				LICT001A1B2C3D4E5F6012346 /* LoadingIndicatorControllerTests.swift */,
-				PALT001A1B2C3D4E5F6012346 /* PanelAgendaLayoutTests.swift */,
-				PPST001A1B2C3D4E5F6012346 /* PanelPresentationStateTests.swift */,
-				ECST001A1B2C3D4E5F6012346 /* EventsCoordinatorSyncTests.swift */,
-				CHXT001A1B2C3D4E5F6012346 /* ColorHexTests.swift */,
+				T0E001A1B2C3D4E5F6012346,
+				T0E002A1B2C3D4E5F6012346,
+				T0E003A1B2C3D4E5F6012346,
+				T0E004A1B2C3D4E5F6012346,
+				T0E005A1B2C3D4E5F6012346,
+				EFT001A1B2C3D4E5F6012346,
+				EFCT001A1B2C3D4E5F6012346,
+				MTT001A1B2C3D4E5F6012346,
+				CLT001A1B2C3D4E5F6012346,
+				EKMT001A1B2C3D4E5F6012346,
+				AST001A1B2C3D4E5F6012346,
+				ADRT001A1B2C3D4E5F6012346,
+				AFT001A1B2C3D4E5F6012346,
+				ALTT001A1B2C3D4E5F6012346,
+				T0E007A1B2C3D4E5F6012346,
+				T0E008A1B2C3D4E5F6012346,
+				DSC001A1B2C3D4E5F6012346,
+				EDD001A1B2C3D4E5F6012346,
+				CAMT001A1B2C3D4E5F6012346,
+				PST001A1B2C3D4E5F6012346,
+				MPT001A1B2C3D4E5F6012346,
+				CNCT001A1B2C3D4E5F6012346,
+				CDPT001A1B2C3D4E5F6012346,
+				CSST001A1B2C3D4E5F6012346,
+				LICT001A1B2C3D4E5F6012346,
+				PALT001A1B2C3D4E5F6012346,
+				PPST001A1B2C3D4E5F6012346,
+				ECST001A1B2C3D4E5F6012346,
+				CHXT001A1B2C3D4E5F6012346,
+				A530EE6A30C3ADDCA990B289,
+				322BD09EE6784458FF2BC0A3,
+				F6470AA2031A9C3CBC46BBD9,
+				0C732BF694171FDB4CCC3501,
+				49E237BA2A1D916C8FEB8887,
+				2263BDB329D55029A292316B,
+				458480A97BEAD433AC844613,
+				E6CFFCEFC04110C210B2C71B,
+				75FAABCCB5767470BE8C897F,
+				F21C2C3D113807010287B017,
+				01D8745F140C93617CC9CDED,
+				AFCFFCC4734D2881D3A2D663,
 			);
-			path = equinoxTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9242A55B1A82A136005AA4B3 /* equinox */ = {
+		9242A55B1A82A136005AA4B3 = {
+			buildConfigurationList = 9242A5791A82A136005AA4B3;
+			productReference = 9242A55C1A82A136005AA4B3;
+			productType = "com.apple.product-type.application";
+			productName = equinox;
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9242A5791A82A136005AA4B3 /* Build configuration list for PBXNativeTarget "equinox" */;
 			buildPhases = (
-				9242A5581A82A136005AA4B3 /* Sources */,
-				9242A5591A82A136005AA4B3 /* Frameworks */,
-				9242A55A1A82A136005AA4B3 /* Resources */,
-				9252DF361AFD3557007B079F /* CopyFiles */,
-				9291F8AB2AE2126B00E80F14 /* CopyFiles */,
-			);
-			buildRules = (
+				9242A5581A82A136005AA4B3,
+				9242A5591A82A136005AA4B3,
+				9242A55A1A82A136005AA4B3,
+				9252DF361AFD3557007B079F,
+				9291F8AB2AE2126B00E80F14,
+				A4D6D2F005202552DFE93A28,
 			);
 			dependencies = (
+				9DD51012103E67FA6A258C8C,
 			);
 			name = equinox;
-			packageProductDependencies = (
-				KSPROD001A1B2C3D4E5F601234 /* KeyboardShortcuts */,
+			buildRules = (
 			);
-			productName = equinox;
-			productReference = 9242A55C1A82A136005AA4B3 /* equinox.app */;
-			productType = "com.apple.product-type.application";
 		};
-		T0E020A1B2C3D4E5F6012345 /* equinoxTests */ = {
+		T0E020A1B2C3D4E5F6012345 = {
+			buildConfigurationList = T0E050A1B2C3D4E5F6012345;
+			productReference = T0E009A1B2C3D4E5F6012346;
+			productType = "com.apple.product-type.bundle.unit-test";
+			productName = equinoxTests;
 			isa = PBXNativeTarget;
-			buildConfigurationList = T0E050A1B2C3D4E5F6012345 /* Build configuration list for PBXNativeTarget "equinoxTests" */;
 			buildPhases = (
-				T0E060A1B2C3D4E5F6012345 /* Sources */,
-				T0E070A1B2C3D4E5F6012345 /* Frameworks */,
+				D2564C41F69E615B0541A0C6,
+				1228425B5E011BF6A029C94E,
+			);
+			dependencies = (
+				9DD51012103E67FA6A258C8C,
+			);
+			name = equinoxTests;
+			buildRules = (
+			);
+		};
+		EF5C6DCA82047B13676E1AA1 = {
+			isa = PBXNativeTarget;
+			name = EquinoxKit;
+			productName = EquinoxKit;
+			productReference = E981D26A80EFEC13F777D2D1;
+			productType = "com.apple.product-type.framework";
+			buildConfigurationList = A09990A505F04C5AABAC747A;
+			buildPhases = (
+				B796CC3973F14A4FDFBC95A2,
+				634B21EE3C7257CCFA6B9DA5,
+				BD79DC66F03F5FF1B366196F,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				T0E040A1B2C3D4E5F6012345 /* PBXTargetDependency */,
 			);
-			name = equinoxTests;
-			productName = equinoxTests;
-			productReference = T0E009A1B2C3D4E5F6012346 /* equinoxTests.xctest */;
+			packageProductDependencies = (
+				KSPROD001A1B2C3D4E5F601234,
+			);
+		};
+		A8DBE39406B11922A73292F1 = {
+			isa = PBXNativeTarget;
+			name = equinoxGraphicsHost;
+			productName = equinoxGraphicsHost;
+			productReference = 769B1740B941CA4F693FFDB0;
+			productType = "com.apple.product-type.application";
+			buildConfigurationList = 508B4C698B22CF45BE68826B;
+			buildPhases = (
+				59098E4415B6923EF68CFF28,
+				5F9FC7328B4F53CA1ECB77E7,
+				F3BC1D7953E3CD593B0A83DB,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9DD51012103E67FA6A258C8C,
+			);
+		};
+		C92F45D0AD9226A70F759D50 = {
+			isa = PBXNativeTarget;
+			name = equinoxGraphicsTests;
+			productName = equinoxGraphicsTests;
+			productReference = D91CE6427D3772697C0CED3C;
 			productType = "com.apple.product-type.bundle.unit-test";
+			buildConfigurationList = 711D41B58F1E6A34F6831F30;
+			buildPhases = (
+				3F682AAE29203697EBAF5C32,
+				50AC28D480BCB6A3BEF4A0EA,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9DD51012103E67FA6A258C8C,
+				38015427B7A93FE6CA8BFC6C,
+			);
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		9242A5541A82A136005AA4B3 /* Project object */ = {
-			isa = PBXProject;
-			attributes = {
-				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2650;
-				ORGANIZATIONNAME = equinox.com;
-				TargetAttributes = {
-					9242A55B1A82A136005AA4B3 = {
-						CreatedOnToolsVersion = 6.1.1;
-						SystemCapabilities = {
-							com.apple.HardenedRuntime = {
-								enabled = 1;
-							};
-						};
-					};
-					T0E020A1B2C3D4E5F6012345 = {
-						CreatedOnToolsVersion = 2620;
-						TestTargetID = 9242A55B1A82A136005AA4B3;
-					};
-				};
-			};
-			buildConfigurationList = 9242A5571A82A136005AA4B3 /* Build configuration list for PBXProject "equinox" */;
-			compatibilityVersion = "Xcode 3.2";
+		9242A5541A82A136005AA4B3 = {
+			buildConfigurationList = 9242A5571A82A136005AA4B3;
+			packageReferences = (
+				KSPKG001A1B2C3D4E5F601234,
+			);
+			targets = (
+				9242A55B1A82A136005AA4B3,
+				T0E020A1B2C3D4E5F6012345,
+				EF5C6DCA82047B13676E1AA1,
+				A8DBE39406B11922A73292F1,
+				C92F45D0AD9226A70F759D50,
+			);
 			developmentRegion = en;
-			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 				ru,
 			);
-			mainGroup = 9242A5531A82A136005AA4B3;
-			packageReferences = (
-				KSPKG001A1B2C3D4E5F601234 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
-			);
-			productRefGroup = 9242A55D1A82A136005AA4B3 /* Products */;
+			isa = PBXProject;
+			compatibilityVersion = "Xcode 3.2";
+			productRefGroup = 9242A55D1A82A136005AA4B3;
 			projectDirPath = "";
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2650;
+				ORGANIZATIONNAME = equinox.com;
+				TargetAttributes = {
+					T0E020A1B2C3D4E5F6012345 = {
+						CreatedOnToolsVersion = 2620;
+					};
+					9242A55B1A82A136005AA4B3 = {
+						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
+						};
+						CreatedOnToolsVersion = 6.1.1;
+					};
+					C92F45D0AD9226A70F759D50 = {
+						TestTargetID = A8DBE39406B11922A73292F1;
+					};
+				};
+			};
+			hasScannedForEncodings = 0;
 			projectRoot = "";
-			targets = (
-				9242A55B1A82A136005AA4B3 /* equinox */,
-				T0E020A1B2C3D4E5F6012345 /* equinoxTests */,
-			);
+			mainGroup = 9242A5531A82A136005AA4B3;
 		};
 /* End PBXProject section */
 
@@ -605,152 +958,207 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
-		9242A5581A82A136005AA4B3 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
+		BD79DC66F03F5FF1B366196F = {
+			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B2C3D401234567890ABCD3 /* App/Constants.swift in Sources */,
-				STB001A1B2C3D4E5F6012345 /* App/SettingsTab.swift in Sources */,
-				EKMU001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitMutation.swift in Sources */,
-				NED001A1B2C3D4E5F6012345 /* Services/EventKit/NewEventDraft.swift in Sources */,
-				EEF001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventFields.swift in Sources */,
-				PPC001A1B2C3D4E5F6012345 /* App/PanelPresentationState.swift in Sources */,
-				EVC001A1B2C3D4E5F6012345 /* App/EventsCoordinator.swift in Sources */,
-				CNC001A1B2C3D4E5F6012345 /* App/CalendarNavigationCoordinator.swift in Sources */,
-				LIC001A1B2C3D4E5F6012345 /* App/LoadingIndicatorController.swift in Sources */,
-				EFCO001A1B2C3D4E5F6012345 /* App/EventFetchCoordinator.swift in Sources */,
-				ASC001A1B2C3D4E5F6012345 /* App/AgendaScrollCoordinator.swift in Sources */,
-				PLM001A1B2C3D4E5F6012345 /* App/PanelLayoutMetrics.swift in Sources */,
-				D0E001A1B2C3D4E5F6012345 /* Core/CalendarDate.swift in Sources */,
-				CDP001A1B2C3D4E5F6012345 /* Core/CalendarDateParsing.swift in Sources */,
-				CLE001A1B2C3D4E5F6012345 /* Core/CalendarListEntry.swift in Sources */,
-				AGL001A1B2C3D4E5F6012345 /* Core/AgendaLayout.swift in Sources */,
-				DE001A1B2C3D4E5F6012345 /* Core/DayEvent.swift in Sources */,
-				CHX001A1B2C3D4E5F6012345 /* Core/ColorHex.swift in Sources */,
-				DDC001A1B2C3D4E5F6012345 /* Core/DayEventUniqueCalendars.swift in Sources */,
-				DE002A1B2C3D4E5F6012345 /* Core/AgendaSections.swift in Sources */,
-				ADR001A1B2C3D4E5F6012345 /* Core/AgendaDisplayRange.swift in Sources */,
-				AF001A1B2C3D4E5F6012345 /* Core/AgendaFocus.swift in Sources */,
-				EFR001A1B2C3D4E5F6012345 /* Core/EventFetchRange.swift in Sources */,
-				MTI001A1B2C3D4E5F6012345 /* Core/MeetingIndicator.swift in Sources */,
-				CLI001A1B2C3D4E5F6012345 /* Core/CalendarListing.swift in Sources */,
-				D0E001B1B2C3D4E5F6012345 /* Core/EventDraftDefaults.swift in Sources */,
-				MP001A1B2C3D4E5F6012345 /* Core/MeetingProvider.swift in Sources */,
-				DEB001A1B2C3D4E5F6012345 /* Services/EventKit/DayEventBuilder.swift in Sources */,
-				D0E002A1B2C3D4E5F6012345 /* Services/EventKit/DayEventMapping.swift in Sources */,
-				CSS001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionStorage.swift in Sources */,
-				SEL001A1B2C3D4E5F6012345 /* Services/EventKit/SelectableCalendar+EventKit.swift in Sources */,
-				EKE001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitEventExtensions.swift in Sources */,
-				URL001A1B2C3D4E5F6012345 /* Services/Platform/URLOpener.swift in Sources */,
-				D0E003A1B2C3D4E5F6012345 /* Services/EventKit/CalendarStore.swift in Sources */,
-				EFC001A1B2C3D4E5F6012345 /* Services/EventKit/EventFetchCache.swift in Sources */,
-				CSSVC001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarSelectionService.swift in Sources */,
-				CAM001A1B2C3D4E5F6012345 /* Services/EventKit/CalendarAccessMapping.swift in Sources */,
-				CAS001A1B2C3D4E5F6012345 /* Core/CalendarAccessStatus.swift in Sources */,
-				EKM001A1B2C3D4E5F6012345 /* Services/EventKit/EventKitCalendarMapping.swift in Sources */,
-				NJR001A1B2C3D4E5F6012345 /* Services/EventKit/NativeJoinURLResolver.swift in Sources */,
-				D0E004A1B2C3D4E5F6012345 /* Services/Platform/DateFormatters.swift in Sources */,
-				D0E005A1B2C3D4E5F6012345 /* Core/JoinURLDetection.swift in Sources */,
-				NJU001A1B2C3D4E5F6012345 /* Core/NativeJoinURL.swift in Sources */,
-				D0E006A1B2C3D4E5F6012345 /* Core/MonthGrid.swift in Sources */,
-				D0E007A1B2C3D4E5F6012345 /* Core/EventLayout.swift in Sources */,
-				RSVP001A1B2C3D4E5F6012345 /* Core/EventParticipation.swift in Sources */,
-				A1B2C3D401234567890ABCD7 /* Services/Platform/LaunchAtLogin.swift in Sources */,
-				97D77956684C45C0AE5AE8F0 /* App/EquinoxApp.swift in Sources */,
-				KSN001A1B2C3D4E5F6012345 /* App/KeyboardShortcutNames.swift in Sources */,
-				SAH001A1B2C3D4E5F6012345 /* App/SettingsActivationHandler.swift in Sources */,
-				34FD3198C5E746908583E04A /* App/AppDelegate.swift in Sources */,
-				C029101F32D74115BDE35C1D /* App/AppState.swift in Sources */,
-				26345BB4077546858ED91E33 /* UI/Design/SizeMetrics.swift in Sources */,
-				6572A0BA3F5D47239DEFBD5D /* Services/PreferencesStore.swift in Sources */,
-				A11Y001A1B2C3D4E5F6012345 /* UI/Design/AccessibilityHelpers.swift in Sources */,
-				D0E008A1B2C3D4E5F6012345 /* UI/Design/DesignTokens.swift in Sources */,
-				PAL001A1B2C3D4E5F6012345 /* UI/Design/PanelAgendaLayout.swift in Sources */,
-				PCS001A1B2C3D4E5F6012345 /* UI/Design/ParticipationChipStyle.swift in Sources */,
-				DEC001A1B2C3D4E5F6012345 /* UI/Design/DayEventColors.swift in Sources */,
-				SCC001A1B2C3D4E5F6012345 /* UI/Design/SelectableCalendarColors.swift in Sources */,
-				D0E009A1B2C3D4E5F6012345 /* UI/Design/PanelComponents.swift in Sources */,
-				ESV001A1B2C3D4E5F6012345 /* UI/Design/EventStripeView.swift in Sources */,
-				EQX001A1B2C3D4E5F6012345 /* UI/Design/EquinoxComponents.swift in Sources */,
-				MOD001A1B2C3D4E5F6012345 /* UI/Design/ModalComponents.swift in Sources */,
-				D0E010A1B2C3D4E5F6012345 /* UI/Design/SettingsComponents.swift in Sources */,
-				A2BAAADA0CCA4971A1201CDE /* UI/Main/DayCellView.swift in Sources */,
-				C3D4E5F601234567890ABD01 /* UI/Main/PanelCommandBar.swift in Sources */,
-				49F62D457C024006AE76EFC2 /* UI/Main/CalendarGridView.swift in Sources */,
-				743B1D7790894D11ACE66BBC /* UI/Main/AgendaView.swift in Sources */,
-				D0E011A1B2C3D4E5F6012345 /* UI/Main/AgendaComponents.swift in Sources */,
-				PSO001A1B2C3D4E5F6012345 /* UI/Main/PanelStateOverlay.swift in Sources */,
-				D32E536A574A4094924F19FF /* UI/Main/MainPanelView.swift in Sources */,
-				E21BE351F94E4C22BC7FF0C0 /* UI/Events/NewEventSheet.swift in Sources */,
-				97986F0E0B454042872C3572 /* UI/Events/EventDetailView.swift in Sources */,
-				JUP001A1B2C3D4E5F6012345 /* UI/Events/JoinURLPresentation.swift in Sources */,
-				EDC001A1B2C3D4E5F6012345 /* UI/Events/EventDetailComponents.swift in Sources */,
-				1F343D1442E04D48AF79E26E /* UI/Settings/SettingsView.swift in Sources */,
-				1F31FF23BECD487AB547FC3D /* UI/Settings/GeneralSettingsTab.swift in Sources */,
-				C3D4E5F601234567890ABD07 /* UI/Settings/CalendarsSettingsTab.swift in Sources */,
-				96A0A7ECBC124CD696E33EA2 /* UI/Settings/AppearanceSettingsTab.swift in Sources */,
-				C3D4E5F601234567890ABD09 /* UI/Settings/ShortcutsSettingsTab.swift in Sources */,
-				PRV001A1B2C3D4E5F6012345 /* UI/Settings/PrivacySettingsTab.swift in Sources */,
-				69438ABDD27442EABE893584 /* UI/Settings/AboutSettingsTab.swift in Sources */,
-				B2C3D4E501234567890ABCF5 /* UI/Settings/MenuBarIconPicker.swift in Sources */,
-				C3D4E5F601234567890ABD0B /* UI/Settings/WeekendHighlightPicker.swift in Sources */,
-				C3D4E5F601234567890ABD0D /* UI/Settings/AppearancePreview.swift in Sources */,
-				B2C3D4E501234567890ABCF7 /* UI/Settings/CalendarsSettingsSection.swift in Sources */,
-				C7EE699EF6FB4CA399A0263D /* UI/MenuBar/MenuBarIconRenderer.swift in Sources */,
-				KYP001A1B2C3D4E5F6012345 /* UI/MenuBar/KeyablePanel.swift in Sources */,
-				PWC001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelWindowController.swift in Sources */,
-				PDM001A1B2C3D4E5F6012345 /* UI/MenuBar/PanelDismissMonitor.swift in Sources */,
-				PRS001A1B2C3D4E5F6012345 /* UI/MenuBar/PeriodicRefreshScheduler.swift in Sources */,
-				FC67E0883FB2401380DB2CA3 /* UI/MenuBar/StatusItemController.swift in Sources */,
+				2E2D4D26611EC17FEAB1BF6A,
+				F9DE258537940687197B40A1,
+				95D493E5739F371FA3B641AD,
+				5365768523247A9EE3CC12EA,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		T0E060A1B2C3D4E5F6012345 /* Sources */ = {
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9242A5581A82A136005AA4B3 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				T0E001A1B2C3D4E5F6012345 /* CalendarDateTests.swift in Sources */,
-				T0E002A1B2C3D4E5F6012345 /* JoinURLDetectionTests.swift in Sources */,
-				T0E003A1B2C3D4E5F6012345 /* EventLayoutTests.swift in Sources */,
-				T0E004A1B2C3D4E5F6012345 /* MonthGridTests.swift in Sources */,
-				T0E005A1B2C3D4E5F6012345 /* EventParticipationTests.swift in Sources */,
-				EFT001A1B2C3D4E5F6012345 /* EventFetchRangeTests.swift in Sources */,
-				EFCT001A1B2C3D4E5F6012345 /* EventFetchCacheTests.swift in Sources */,
-				MTT001A1B2C3D4E5F6012345 /* MeetingIndicatorTests.swift in Sources */,
-				CLT001A1B2C3D4E5F6012345 /* CalendarListingTests.swift in Sources */,
-				EKMT001A1B2C3D4E5F6012345 /* EventKitCalendarMappingTests.swift in Sources */,
-				AST001A1B2C3D4E5F6012345 /* AgendaSectionsTests.swift in Sources */,
-				ADRT001A1B2C3D4E5F6012345 /* AgendaDisplayRangeTests.swift in Sources */,
-				AFT001A1B2C3D4E5F6012345 /* AgendaFocusTests.swift in Sources */,
-				ALTT001A1B2C3D4E5F6012345 /* AgendaLayoutTests.swift in Sources */,
-				T0E007A1B2C3D4E5F6012345 /* DayEventUniqueCalendarsTests.swift in Sources */,
-				T0E008A1B2C3D4E5F6012345 /* NativeJoinURLTests.swift in Sources */,
-				DSC001A1B2C3D4E5F6012345 /* DesignSystemComplianceTests.swift in Sources */,
-				EDD001A1B2C3D4E5F6012345 /* EventDraftDefaultsTests.swift in Sources */,
-				CAMT001A1B2C3D4E5F6012345 /* CalendarAccessMappingTests.swift in Sources */,
-				PST001A1B2C3D4E5F6012345 /* PreferencesStoreTests.swift in Sources */,
-				MPT001A1B2C3D4E5F6012345 /* MeetingProviderTests.swift in Sources */,
-				CNCT001A1B2C3D4E5F6012345 /* CalendarNavigationCoordinatorTests.swift in Sources */,
-				CDPT001A1B2C3D4E5F6012345 /* CalendarDateParsingTests.swift in Sources */,
-				CSST001A1B2C3D4E5F6012345 /* CalendarSelectionServiceTests.swift in Sources */,
-				LICT001A1B2C3D4E5F6012345 /* LoadingIndicatorControllerTests.swift in Sources */,
-				PALT001A1B2C3D4E5F6012345 /* PanelAgendaLayoutTests.swift in Sources */,
-				PPST001A1B2C3D4E5F6012345 /* PanelPresentationStateTests.swift in Sources */,
-				ECST001A1B2C3D4E5F6012345 /* EventsCoordinatorSyncTests.swift in Sources */,
-				CHXT001A1B2C3D4E5F6012345 /* ColorHexTests.swift in Sources */,
+				97D77956684C45C0AE5AE8F0,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B796CC3973F14A4FDFBC95A2 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B222461DAE12C02CE8E21ADE,
+				62788A2E979F323ED4B34A34,
+				0661040DEDBB8404C1A2F67B,
+				3F424544D9A7842F8CB160C6,
+				D5DC1AE63E8BCC3B01378280,
+				832A9C27AB47CE1628398780,
+				8E899044F21EFFEAFF7DAE08,
+				E572BE3E7731B1B4BA790861,
+				4517E950089B2DAF3FBE602C,
+				3BE1EE9A557877D3AB7CE2DA,
+				9C51197F596B902E111EF139,
+				D3610A66ED9890FE8361CF29,
+				D0FA1D8AD92187E4D6988285,
+				17A48173C4B9ADC89237F452,
+				DE0E324882367572B03317FA,
+				FB8F0802F792009152D356E5,
+				D1ECC6AEEE47D5C86C344228,
+				42D48BE3BACA52668B027D84,
+				BEABDE3867AEDA4BFDCBC15D,
+				C8FE83A237B5BA4DE82955E3,
+				5D55ECBE5F03D041BC66D8A9,
+				4EF5DF6E266876AEB6F94A16,
+				3E49C07A552998270FCECB74,
+				AC0418D6BF1B3DEAFEE92D17,
+				237E4680B5FA4BE2B39E08FA,
+				7CF9C5827085A24937A3B49A,
+				37A8970E06DE6A99F05B24A7,
+				637E232B19B079EFA960D3EF,
+				CE9B00A8759B4EC9E9E8A733,
+				4D0398275DD0563C98CC586A,
+				12A37164BE7E40356A94FA6A,
+				A7FD37299094F2D86924013C,
+				BA197681DE3F0C0E1B0FA5B5,
+				8D1F20BC8B2285606D9CC39A,
+				F1223DCC8BF80E36D36F6767,
+				NED001A1B2C3D4E5F6012345,
+				8B112492D0E69157BA8EBE60,
+				CD98FBCA7B8A00269599977C,
+				F553F7BE151D02C834B64A26,
+				FAC9EA3B40955FE22BF4B303,
+				71AAA22BB36B6548E83005E4,
+				C96F0FCC80E03E5513F96181,
+				EDD226128C73976C5BF5C578,
+				A82AED9FB2CFE966BD28A19A,
+				557E28A3CB7E1DA216531B8C,
+				4417F1BA6A7A914BEEB5AF94,
+				5B50E0730C12B892C5F3C841,
+				EFD6DB01C906F11155B45660,
+				447EE70A942A8CD74F376EAF,
+				501D10A47C84E5550EE25440,
+				B5035CC95ABCB49C426B1CEF,
+				3A50635DA43C5C717B5D072A,
+				FA4D67505AD280DE16BA8E53,
+				ECD9AFA6C8368C39E5CBE4C5,
+				280A3D74E6C819D4D98425CE,
+				E82E1F8B90597AC82952D407,
+				02B8E41825E4A622830583D0,
+				A5E85764F94248452C203FF6,
+				7237799DBB225C34B867A054,
+				8C38B4706D3DB7509CEC493D,
+				15A298FA830C78AC4DD075FB,
+				47DC1AE0B8A9DDE6811E285B,
+				4558A155A6D4433F0D8F796E,
+				E0E4659C41F27523C508BC53,
+				22E51D6DED9A9A649ABAE141,
+				F2402EEE10E950FF950C29BB,
+				39D3E28F804BA10D6B1D9109,
+				9F51F9317DF18C5633B18937,
+				00B4D2D8565010ADE841F52B,
+				4415C77402DCA830A05E37F8,
+				959E685D7CC6C9B3DCDC6FD4,
+				CD61FAD85C1D3C7E0756AD85,
+				A34FE776D35C2C0B0CF2A273,
+				93A76AFCCE131DBD842392F3,
+				7BFB275FA9BA62F4D3E0BF77,
+				CB3F5FF5383508B05DAE5C3A,
+				AF4E645F764C2B9939F29C49,
+				ECC679926F29C7BE4E5A041C,
+				B82B3B06F6CE918CAD751696,
+				FE67E55B85B671A8777F6374,
+				20B1B930D6E8AFC5C6A9B186,
+				2C307B84524740C1A4B7AE58,
+				46F09EC1759D2E7F7702367E,
+				EF80A2788838B4392C987F36,
+				DEF1FFEDE0D9F2B86C6E1BCF,
+				BFBF48F675EF0DC266130D9C,
+				57F425585AEB9865A37E7BF1,
+				655FCEB1E5E75D1BC525DDA5,
+				AEFD83D1C739CB5287371CA0,
+				E1E1C653BD14913368A92F68,
+				A6BED3D34274DCB48227C658,
+				AE4FCE9F86C0B8AC62E1B1ED,
+				09FD99E36D95E413CF78ACE4,
+				B3558E15683275E39CA5E51F,
+				9FA719F50B1DE0F66D9E7177,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D2564C41F69E615B0541A0C6 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97A9A2F3DC9BA5A1AD9394A0,
+				ADRT001A1B2C3D4E5F6012345,
+				AFT001A1B2C3D4E5F6012345,
+				ALTT001A1B2C3D4E5F6012345,
+				AST001A1B2C3D4E5F6012345,
+				44754CDB1824C8422FD0547F,
+				CAMT001A1B2C3D4E5F6012345,
+				CDPT001A1B2C3D4E5F6012345,
+				T0E001A1B2C3D4E5F6012345,
+				CLT001A1B2C3D4E5F6012345,
+				CNCT001A1B2C3D4E5F6012345,
+				CSST001A1B2C3D4E5F6012345,
+				79797EE04BD3654C34586C66,
+				CHXT001A1B2C3D4E5F6012345,
+				D340C7B23C4CE4AF7E9DE673,
+				T0E007A1B2C3D4E5F6012345,
+				DSC001A1B2C3D4E5F6012345,
+				EDD001A1B2C3D4E5F6012345,
+				EFCT001A1B2C3D4E5F6012345,
+				F8B78260E8331326A1865FED,
+				EFT001A1B2C3D4E5F6012345,
+				EKMT001A1B2C3D4E5F6012345,
+				2680C18F8F9359ABB9092FEE,
+				T0E003A1B2C3D4E5F6012345,
+				T0E005A1B2C3D4E5F6012345,
+				ECST001A1B2C3D4E5F6012345,
+				T0E002A1B2C3D4E5F6012345,
+				LICT001A1B2C3D4E5F6012345,
+				MTT001A1B2C3D4E5F6012345,
+				MPT001A1B2C3D4E5F6012345,
+				T0E004A1B2C3D4E5F6012345,
+				T0E008A1B2C3D4E5F6012345,
+				D56EA006EAF1577B223CAB31,
+				PALT001A1B2C3D4E5F6012345,
+				PPST001A1B2C3D4E5F6012345,
+				5C91BDD62525688CAA95319D,
+				7D38BD62CE4F5B03B8E6E219,
+				PST001A1B2C3D4E5F6012345,
+				74FBCA4EDB7ADEF7E1DCE14D,
+				1EC90C7043F108DBEF91ACB1,
+				868E68FAB6F0C27D39579837,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		59098E4415B6923EF68CFF28 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2773727FA2313B2D2756499F,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3F682AAE29203697EBAF5C32 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				791994C36FD8705360525DF9,
+				C2B6E51FD1F87728019236DF,
+				79797EE04BD3654C34586C66,
+				1EC90C7043F108DBEF91ACB1,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		T0E040A1B2C3D4E5F6012345 /* PBXTargetDependency */ = {
+		9DD51012103E67FA6A258C8C = {
 			isa = PBXTargetDependency;
-			target = 9242A55B1A82A136005AA4B3 /* equinox */;
-			targetProxy = T0E030A1B2C3D4E5F6012345 /* PBXContainerItemProxy */;
+			target = EF5C6DCA82047B13676E1AA1;
+		};
+		38015427B7A93FE6CA8BFC6C = {
+			isa = PBXTargetDependency;
+			target = A8DBE39406B11922A73292F1;
 		};
 /* End PBXTargetDependency section */
 
@@ -985,41 +1393,169 @@
 			};
 			name = Release;
 		};
-		T0E051A1B2C3D4E5F6012345 /* Debug */ = {
+		T0E051A1B2C3D4E5F6012345 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
+				MARKETING_VERSION = 1.0.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				GENERATE_INFOPLIST_FILE = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.equinoxTests;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.equinoxTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/equinox.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/equinox";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+					"@loader_path/../Frameworks",
+				);
 			};
 			name = Debug;
 		};
-		T0E052A1B2C3D4E5F6012345 /* Release */ = {
+		T0E052A1B2C3D4E5F6012345 = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
+				MARKETING_VERSION = 1.0.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				GENERATE_INFOPLIST_FILE = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.equinoxTests;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+					"@loader_path/../Frameworks",
+				);
+			};
+			name = Release;
+		};
+		F3AED93FE32CA82432D56ADB = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.equinoxTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/equinox.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/equinox";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				SKIP_INSTALL = YES;
+				DEFINES_MODULE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.EquinoxKit;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+				);
+			};
+			name = Debug;
+		};
+		60E45188924A4BB331FC0B46 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				SKIP_INSTALL = YES;
+				DEFINES_MODULE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.equinox.EquinoxKit;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+					"@executable_path/../Frameworks",
+				);
+			};
+			name = Release;
+		};
+		6F7837B76098CF2D006CA88C = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				SKIP_INSTALL = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.graphics-host";
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+			};
+			name = Debug;
+		};
+		2C125CC1DA1A77045DFFF56C = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				SKIP_INSTALL = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.graphics-host";
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+			};
+			name = Release;
+		};
+		41C0A2185AF295B4219DE89D = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				SKIP_INSTALL = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.graphics-tests";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/equinoxGraphicsHost.app/Contents/MacOS/equinoxGraphicsHost";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+			};
+			name = Debug;
+		};
+		1D5A286599F179204BE92F01 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				SKIP_INSTALL = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.graphics-tests";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/equinoxGraphicsHost.app/Contents/MacOS/equinoxGraphicsHost";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
 			};
 			name = Release;
 		};
@@ -1049,6 +1585,33 @@
 			buildConfigurations = (
 				T0E051A1B2C3D4E5F6012345 /* Debug */,
 				T0E052A1B2C3D4E5F6012345 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A09990A505F04C5AABAC747A = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3AED93FE32CA82432D56ADB,
+				60E45188924A4BB331FC0B46,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		508B4C698B22CF45BE68826B = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6F7837B76098CF2D006CA88C,
+				2C125CC1DA1A77045DFFF56C,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		711D41B58F1E6A34F6831F30 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				41C0A2185AF295B4219DE89D,
+				1D5A286599F179204BE92F01,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

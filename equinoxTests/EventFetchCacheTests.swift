@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class EventFetchCacheTests: XCTestCase {
     private let calendar = Calendar(identifier: .gregorian)

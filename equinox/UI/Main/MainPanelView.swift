@@ -62,7 +62,7 @@ struct MainPanelView: View {
                 EquinoxBanner(
                     message: feedback,
                     style: .error,
-                    actionTitle: String(localized: "Dismiss", comment: "Panel error dismiss action"),
+                    actionTitle: String(localized: "Dismiss", bundle: .equinox, comment: "Panel error dismiss action"),
                     action: { appState.panel.panelFeedback = nil }
                 )
                     .padding(.bottom, EquinoxDesign.spacingXS)

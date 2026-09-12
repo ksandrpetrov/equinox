@@ -29,6 +29,18 @@ flowchart TB
 | Settings | General, Calendars, Appearance, Privacy, Shortcuts, About |
 | Menu bar icon | Дата/день недели/месяц/часы, скрытая иконка, meeting indicator |
 
+## Сборочные модули
+
+`equinox.app` содержит только SwiftUI-точку входа и подключает `EquinoxKit.framework`.
+`EquinoxKit` объединяет существующие слои и ресурсы. Единственный открытый наружу
+тип — `AppDelegate`; внутренние модели и координаторы не становятся публичным API.
+Framework встраивается в Release-приложение; bundle ID и владелец TCC не меняются.
+
+Обычные XCTest импортируют `EquinoxKit` через `@testable` и не имеют `TEST_HOST`.
+Графические XCTest используют `equinoxGraphicsHost`, где нет AppDelegate,
+CalendarStore и запроса разрешений. Все targets используют сборочную модель Xcode;
+ручной второй компиляции Swift нет.
+
 ## Слои
 
 | Слой | Путь | Ответственность |
@@ -46,7 +58,7 @@ flowchart TB
 - `PreferencesStore.shared` — персистентные настройки (`k*`-ключи в `Constants.swift`)
 - `CalendarStore` — `actor`; единственный шлюз к EventKit
 - Синхронизация событий: `EventsCoordinator.syncFromCalendarStore()` получает единый `CalendarStoreSnapshot: Sendable` из actor после fetch/мутации/смены выбора календарей/выдачи доступа и внешних изменений EventKit. Снимок применяется без промежуточных `await`; запоздалые ответы синхронизации отбрасываются.
-- `CalendarEventStore` — контракт для подстановки сервиса в тестах; рабочая реализация — `CalendarStore`. Поколение кэша инвалидирует незавершённую обработку при изменении данных, выбора, доступа или временного контекста. Длинные запросы разбиваются на части до 366 дней, чтобы не попасть под четырёхлетнее ограничение EventKit.
+- `CalendarEventStore` в `Services/CalendarEventStore.swift` — контракт для подстановки сервиса в тестах; рабочая реализация — `CalendarStore`. Поколение кэша инвалидирует незавершённую обработку при изменении данных, выбора, доступа или временного контекста. Длинные запросы разбиваются на части до 366 дней, чтобы не попасть под четырёхлетнее ограничение EventKit.
 - Уведомления (только menu bar / appearance, не данные календаря):
   - `kEquinoxSizePreferenceChanged` — размер панели S/M/L
   - `kEquinoxMenuBarAppearanceChanged` — перерисовка иконки menu bar
@@ -80,9 +92,24 @@ flowchart TB
 
 General, Calendars, Appearance, **Privacy**, Shortcuts, About — см. `SettingsTab` в `equinox/App/SettingsTab.swift`.
 
+## Зависимости и тестируемость
+
+- `AppState` завершает регистрацию календарного обработчика и первый снимок в одной
+  задаче инициализации. `AppDelegate` ждёт её перед запросом разрешения.
+- Сброс настроек использует внедрённый `PreferencesStore` и операции сброса shortcut /
+  автозапуска. Состояние видимости закреплённой панели хранится там же.
+- `LoadingIndicatorController` принимает монотонное время и отложенный вызов.
+  Пересекающиеся запросы сохраняют исходный срок показа, отменённые действия
+  отбрасываются по поколению.
+- `CalendarSelectionService.refresh(calendars:)` принимает снимок значений;
+  `refresh(from:)` адаптирует EventKit к этому контракту.
+- `NewEventDraft` и ошибки находятся в `Core`; валидация не импортирует EventKit.
+- `Bundle.equinox` явно выбирает ресурсы библиотеки, в том числе в тестах.
+
 ## Тесты
 
-- `equinoxTests/` — unit-тесты Core и Services (без живого EventKit в unit-тестах)
+- `equinoxTests/` — чистая логика, координаторы, настройки и несохраняемые объекты адаптера EventKit
+- `equinoxGraphicsTests/` — компоновка и рендеры с синтетическими данными
 - Интеграционные/ручные — TCC, create/delete, выбор календарей
 
 См. [AGENTS.md](AGENTS.md) §7 для матрицы «изменение → тест».

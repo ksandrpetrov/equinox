@@ -220,19 +220,26 @@ final class PanelWindowController {
                   let statusItem = self.currentStatusItem,
                   let panel = self.panel,
                   panel.isVisible else { return }
-            self.applyGeometry(
-                statusItem: statusItem,
-                resize: true,
-                reposition: !self.appState.isPinned
-            )
-            if self.appState.isPinned {
-                var frame = panel.frame
-                self.clampPanelFrame(&frame, statusItem: statusItem)
-                panel.setFrame(frame, display: true)
+            self.updateLayout(screenVisibleHeight: self.screenForStatusItem(statusItem)?.visibleFrame.height) {
+                self.applyGeometry(
+                    statusItem: statusItem,
+                    resize: true,
+                    reposition: !self.appState.isPinned
+                )
+                if self.appState.isPinned {
+                    var frame = panel.frame
+                    self.clampPanelFrame(&frame, statusItem: statusItem)
+                    panel.setFrame(frame, display: true)
+                }
             }
         }
         layoutUpdateWorkItem = workItem
         DispatchQueue.main.async(execute: workItem)
+    }
+
+    func updateLayout(screenVisibleHeight: CGFloat?, applyGeometry: () -> Void) {
+        appState.layout.panelAgendaMaxHeight = agendaMaxHeight(screenVisibleHeight: screenVisibleHeight)
+        applyGeometry()
     }
 
     private func panelContentSize() -> NSSize {
@@ -280,17 +287,17 @@ final class PanelWindowController {
     }
 
     private func updatePanelAgendaMaxHeight(statusItem: NSStatusItem) {
-        appState.layout.panelAgendaMaxHeight = agendaMaxHeight(statusItem: statusItem)
+        appState.layout.panelAgendaMaxHeight = agendaMaxHeight(screenVisibleHeight: screenForStatusItem(statusItem)?.visibleFrame.height)
     }
 
-    private func agendaMaxHeight(statusItem: NSStatusItem) -> CGFloat {
-        guard let screen = screenForStatusItem(statusItem) else {
+    private func agendaMaxHeight(screenVisibleHeight: CGFloat?) -> CGFloat {
+        guard let screenVisibleHeight else {
             return PanelAgendaLayout.agendaMaxHeightFallback
         }
         return PanelAgendaLayout.maxHeight(
             metrics: sizeMetrics,
             calendarRowCount: appState.preferences.calendarRowCount,
-            screenVisibleHeight: screen.visibleFrame.height
+            screenVisibleHeight: screenVisibleHeight
         )
     }
 }

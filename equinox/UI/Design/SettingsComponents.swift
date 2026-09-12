@@ -6,7 +6,7 @@ enum SettingsSearchFilter {
         guard !query.isEmpty else { return true }
         return keywords
             .flatMap { keyword in
-                [keyword, Bundle.main.localizedString(forKey: keyword, value: keyword, table: nil)]
+                [keyword, Bundle.equinox.localizedString(forKey: keyword, value: keyword, table: nil)]
             }
             .contains { candidate in
                 candidate.localizedCaseInsensitiveContains(query) ||
@@ -152,7 +152,7 @@ struct SettingsSegmentedPicker: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
-        .accessibilityLabel(label.isEmpty ? String(localized: "Options", comment: "Segmented picker") : label)
+        .accessibilityLabel(label.isEmpty ? String(localized: "Options", bundle: .equinox, comment: "Segmented picker") : label)
         .accessibilityValue(options.indices.contains(selection) ? options[selection] : "")
     }
 }

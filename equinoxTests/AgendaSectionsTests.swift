@@ -1,5 +1,5 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class AgendaSectionsTests: XCTestCase {
     private func makeEvent(on date: CalendarDate, eventIdentifier: String? = "evt") -> DayEvent {
@@ -128,13 +128,13 @@ final class AgendaSectionsTests: XCTestCase {
     func testDeleteConfirmationTitleMatchesEventRecurrence() {
         XCTAssertEqual(
             EventDeletionConfirmation.title(isRecurring: false),
-            String(localized: "Delete event?", comment: "Delete event confirmation title")
+            String(localized: "Delete event?", bundle: .equinox, comment: "Delete event confirmation title")
         )
         XCTAssertEqual(
             EventDeletionConfirmation.title(isRecurring: true),
             String(
                 localized: "Delete this occurrence?",
-                comment: "Recurring event occurrence deletion confirmation title"
+                bundle: .equinox, comment: "Recurring event occurrence deletion confirmation title"
             )
         )
     }
@@ -157,6 +157,27 @@ final class AgendaSectionsTests: XCTestCase {
         XCTAssertEqual(calls, 1)
         XCTAssertEqual(events.values.flatMap { $0 }.count, 100)
         XCTAssertTrue(events.values.flatMap { $0 }.allSatisfy { $0.joinURL?.absoluteString == url })
+    }
+
+    func testShortTeamsMeetingKeepsWebJoinActionThroughEventMapping() async throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
+        let date = CalendarDate(year: 2026, monthIndex: 8, day: 12).date(in: calendar)
+        let url = try XCTUnwrap(URL(string: "https://teams.microsoft.com/meet/1234567890123?p=a%2Bb%2F%3D"))
+        let source = makeSource(
+            identifier: "teams", title: "Teams meeting", startDate: date,
+            endDate: date.addingTimeInterval(3600), location: url.absoluteString
+        )
+        let events = await DayEventBuilder.buildDayEvents(
+            from: [source], rangeStart: date, rangeEnd: date.addingTimeInterval(86400), calendar: calendar,
+            resolveNativeJoinURL: { url in
+                await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: { _ in
+                    XCTFail("Short Teams URLs must use the original web link without querying installed apps")
+                    return true
+                })
+            }
+        )
+        XCTAssertEqual(events[date]?.count, 1)
+        XCTAssertEqual(events[date]?.first?.joinURL, url)
     }
 
     private func makeSource(

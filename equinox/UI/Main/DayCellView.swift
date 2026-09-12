@@ -30,11 +30,11 @@ struct DayCellView: View {
     private var accessibilityValue: String {
         var values: [String] = []
         if isToday && isSelected {
-            values.append(String(localized: "Today, selected", comment: "Day cell accessibility"))
+            values.append(String(localized: "Today, selected", bundle: .equinox, comment: "Day cell accessibility"))
         } else if isToday {
-            values.append(String(localized: "Today", comment: ""))
+            values.append(String(localized: "Today", bundle: .equinox, comment: ""))
         } else if isSelected {
-            values.append(String(localized: "Selected", comment: "Day cell accessibility"))
+            values.append(String(localized: "Selected", bundle: .equinox, comment: "Day cell accessibility"))
         }
         values.append(EquinoxFormatters.eventCount(eventCount))
         return values.joined(separator: ", ")
@@ -113,7 +113,7 @@ struct DayCellView: View {
             Button {
                 if date.isValid { onDoubleClick() }
             } label: {
-                Label(String(localized: "New Event", comment: "Day cell context action"), systemImage: "plus")
+                Label(String(localized: "New Event", bundle: .equinox, comment: "Day cell context action"), systemImage: "plus")
             }
             .disabled(!date.isValid)
         }
@@ -121,10 +121,10 @@ struct DayCellView: View {
         .accessibilityLabel(accessibilityDateLabel)
         .accessibilityValue(accessibilityValue)
         .accessibilityHint(
-            String(localized: "Use the New Event action to create an event.", comment: "Day cell hint")
+            String(localized: "Use the New Event action to create an event.", bundle: .equinox, comment: "Day cell hint")
         )
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityAction(named: Text(String(localized: "New Event", comment: "Day cell accessibility action"))) {
+        .accessibilityAction(named: Text(String(localized: "New Event", bundle: .equinox, comment: "Day cell accessibility action"))) {
             if date.isValid { onDoubleClick() }
         }
     }

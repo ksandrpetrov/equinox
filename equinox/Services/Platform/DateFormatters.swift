@@ -81,11 +81,6 @@ enum EquinoxFormatters {
         return formatter.string(from: date)
     }
 
-    static func shortWeekday(_ date: Date) -> String {
-        let formatter = formatter(key: "weekday.short") { $0.dateFormat = "EEE" }
-        return formatter.string(from: date)
-    }
-
     static func weekdaySymbols() -> [String] {
         formatter(key: "weekday.veryShort") { _ in }.veryShortWeekdaySymbols
     }
@@ -98,19 +93,19 @@ enum EquinoxFormatters {
         let interval = eventStart.timeIntervalSince(now)
         let minutes = max(1, Int(ceil(interval / 60)))
         if interval < 60 * 60 {
-            return String(format: String(localized: "in %lld min", comment: "Relative event time"), minutes)
+            return String(format: String(localized: "in %lld min", bundle: .equinox, comment: "Relative event time"), minutes)
         }
         let hours = minutes / 60
-        return String(format: String(localized: "in %lld h", comment: "Relative event time hours"), hours)
+        return String(format: String(localized: "in %lld h", bundle: .equinox, comment: "Relative event time hours"), hours)
     }
 
     static func relativeTimeDuringEvent() -> String {
-        String(localized: "Now", comment: "Event happening now")
+        String(localized: "Now", bundle: .equinox, comment: "Event happening now")
     }
 
     static func eventCount(_ count: Int) -> String {
         String.localizedStringWithFormat(
-            String(localized: "%lld events", comment: "Event count"),
+            String(localized: "%lld events", bundle: .equinox, comment: "Event count"),
             Int64(count)
         )
     }

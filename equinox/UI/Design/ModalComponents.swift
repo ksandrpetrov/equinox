@@ -13,10 +13,10 @@ enum EventDeletionConfirmation {
         if isRecurring {
             return String(
                 localized: "Delete this occurrence?",
-                comment: "Recurring event occurrence deletion confirmation title"
+                bundle: .equinox, comment: "Recurring event occurrence deletion confirmation title"
             )
         }
-        return String(localized: "Delete event?", comment: "Delete event confirmation title")
+        return String(localized: "Delete event?", bundle: .equinox, comment: "Delete event confirmation title")
     }
 }
 
@@ -43,7 +43,7 @@ struct ModalErrorBanner: View {
 struct ModalSheetScaffold<Content: View>: View {
     let title: String
     let metrics: SizeMetrics
-    var cancelTitle: String = String(localized: "Cancel", comment: "Modal cancel button")
+    var cancelTitle: String = String(localized: "Cancel", bundle: .equinox, comment: "Modal cancel button")
     var confirmTitle: String?
     var confirmDisabled: Bool = false
     var isConfirming: Bool = false
@@ -94,7 +94,7 @@ struct ModalSheetScaffold<Content: View>: View {
                         }
                     } else {
                         ToolbarItem(placement: .confirmationAction) {
-                            Button(String(localized: "Done", comment: "Modal dismiss button"), action: onCancel)
+                            Button(String(localized: "Done", bundle: .equinox, comment: "Modal dismiss button"), action: onCancel)
                                 .disabled(isDestructiveInProgress)
                                 .keyboardShortcut(.defaultAction)
                         }
@@ -109,8 +109,8 @@ struct ModalSheetScaffold<Content: View>: View {
 struct ModalConfirmDialog: View {
     let title: String
     let message: String
-    var confirmTitle: String = String(localized: "Confirm", comment: "Modal confirm button")
-    var cancelTitle: String = String(localized: "Cancel", comment: "Modal cancel button")
+    var confirmTitle: String = String(localized: "Confirm", bundle: .equinox, comment: "Modal confirm button")
+    var cancelTitle: String = String(localized: "Cancel", bundle: .equinox, comment: "Modal cancel button")
     var isConfirming = false
     let onConfirm: () -> Void
     let onCancel: () -> Void

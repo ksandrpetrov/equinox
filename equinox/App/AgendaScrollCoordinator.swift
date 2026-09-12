@@ -95,10 +95,9 @@ final class AgendaScrollCoordinator {
         let generation = programmaticScrollGeneration
         let target = focusTarget(events: events)
         scrollAgenda(to: target)
-        DispatchQueue.main.asyncAfter(deadline: .now() + AgendaFocus.programmaticScrollSettleDelay) {
-            if self.programmaticScrollGeneration == generation {
-                self.isProgrammaticScroll = false
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + AgendaFocus.programmaticScrollSettleDelay) { [weak self] in
+            guard let self, self.programmaticScrollGeneration == generation else { return }
+            self.isProgrammaticScroll = false
         }
     }
 
@@ -169,7 +168,9 @@ final class AgendaScrollCoordinator {
             return
         }
         scrolledTarget = nil
-        DispatchQueue.main.async {
+        let generation = programmaticScrollGeneration
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.programmaticScrollGeneration == generation else { return }
             self.scrolledTarget = target
         }
     }

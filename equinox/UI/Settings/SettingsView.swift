@@ -24,37 +24,37 @@ struct SettingsView: View {
         NavigationSplitView {
             List(selection: $selectedTab) {
                 SettingsSidebarLabel(
-                    title: String(localized: "General", comment: "General prefs tab label"),
+                    title: String(localized: "General", bundle: .equinox, comment: "General prefs tab label"),
                     symbol: "gearshape"
                 )
                 .tag(SettingsTab.general)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "Calendars", comment: ""),
+                    title: String(localized: "Calendars", bundle: .equinox, comment: ""),
                     symbol: "calendar"
                 )
                 .tag(SettingsTab.calendars)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "Appearance", comment: "Appearance prefs tab label"),
+                    title: String(localized: "Appearance", bundle: .equinox, comment: "Appearance prefs tab label"),
                     symbol: "paintpalette"
                 )
                 .tag(SettingsTab.appearance)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "Privacy", comment: "Privacy prefs tab label"),
+                    title: String(localized: "Privacy", bundle: .equinox, comment: "Privacy prefs tab label"),
                     symbol: "hand.raised"
                 )
                 .tag(SettingsTab.privacy)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "Shortcuts", comment: "Settings section: shortcuts"),
+                    title: String(localized: "Shortcuts", bundle: .equinox, comment: "Settings section: shortcuts"),
                     symbol: "command"
                 )
                 .tag(SettingsTab.shortcuts)
 
                 SettingsSidebarLabel(
-                    title: String(localized: "About", comment: "About prefs tab label"),
+                    title: String(localized: "About", bundle: .equinox, comment: "About prefs tab label"),
                     symbol: "info.circle"
                 )
                 .tag(SettingsTab.about)
@@ -119,20 +119,20 @@ struct SettingsView: View {
         let sectionTitle: String
         switch selectedTab ?? .general {
         case .general:
-            sectionTitle = String(localized: "General", comment: "General prefs tab label")
+            sectionTitle = String(localized: "General", bundle: .equinox, comment: "General prefs tab label")
         case .calendars:
-            sectionTitle = String(localized: "Calendars", comment: "")
+            sectionTitle = String(localized: "Calendars", bundle: .equinox, comment: "")
         case .appearance:
-            sectionTitle = String(localized: "Appearance", comment: "Appearance prefs tab label")
+            sectionTitle = String(localized: "Appearance", bundle: .equinox, comment: "Appearance prefs tab label")
         case .privacy:
-            sectionTitle = String(localized: "Privacy", comment: "Privacy prefs tab label")
+            sectionTitle = String(localized: "Privacy", bundle: .equinox, comment: "Privacy prefs tab label")
         case .shortcuts:
-            sectionTitle = String(localized: "Shortcuts", comment: "Settings section: shortcuts")
+            sectionTitle = String(localized: "Shortcuts", bundle: .equinox, comment: "Settings section: shortcuts")
         case .about:
-            sectionTitle = String(localized: "About", comment: "About prefs tab label")
+            sectionTitle = String(localized: "About", bundle: .equinox, comment: "About prefs tab label")
         }
         return String(
-            format: String(localized: "Search %@", comment: "Settings search placeholder for current section"),
+            format: String(localized: "Search %@", bundle: .equinox, comment: "Settings search placeholder for current section"),
             sectionTitle
         )
     }

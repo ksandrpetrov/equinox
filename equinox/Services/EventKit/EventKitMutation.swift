@@ -6,9 +6,11 @@ enum EventKitMutation {
         event.title = draft.title
         event.location = draft.location.isEmpty ? nil : draft.location
         event.url = draft.url
-        event.isAllDay = draft.isAllDay
         event.startDate = draft.startDate
         event.endDate = draft.endDate
+        // Set dates as a timed interval first. On macOS, assigning endDate to an
+        // already all-day event includes that entire date, adding an unwanted day.
+        event.isAllDay = draft.isAllDay
         event.calendar = calendar
         event.notes = draft.notes
         event.timeZone = draft.isAllDay ? nil : TimeZone.current

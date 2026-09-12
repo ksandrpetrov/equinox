@@ -1,11 +1,18 @@
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 @MainActor
 final class CalendarNavigationCoordinatorTests: XCTestCase {
-    private let preferences = PreferencesStore.shared
+    private nonisolated let suite = "equinox.navigation.tests.\(UUID().uuidString)"
+    private lazy var defaults = UserDefaults(suiteName: suite)!
+    private lazy var preferences = PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter())
     private let calendar = Calendar(identifier: .gregorian)
     private lazy var navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences)
+
+    override func tearDown() {
+        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+        super.tearDown()
+    }
 
     func testSelectDateInSameMonthDoesNotChangeMonthDate() {
         let initialMonth = navigation.monthDate

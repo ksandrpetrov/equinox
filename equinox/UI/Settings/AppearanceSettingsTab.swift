@@ -5,13 +5,13 @@ struct AppearanceSettingsTab: View {
     @Bindable var prefs: PreferencesStore
 
     private let clockFormatOptions = [
-        (nil as String?, String(localized: "None", comment: "Clock format option")),
-        ("h:mm", String(localized: "12-hour", comment: "Clock format")),
-        ("HH:mm", String(localized: "24-hour", comment: "Clock format")),
+        (nil as String?, String(localized: "None", bundle: .equinox, comment: "Clock format option")),
+        ("h:mm", String(localized: "12-hour", bundle: .equinox, comment: "Clock format")),
+        ("HH:mm", String(localized: "24-hour", bundle: .equinox, comment: "Clock format")),
     ]
 
     var body: some View {
-        SettingsDetailScaffold(title: String(localized: "Appearance", comment: "Appearance prefs tab label")) {
+        SettingsDetailScaffold(title: String(localized: "Appearance", bundle: .equinox, comment: "Appearance prefs tab label")) {
             if showsPreview { AppearancePreview(prefs: prefs) }
             if showsTheme { themeSection }
             if showsMenuBar { menuBarSection }
@@ -22,39 +22,39 @@ struct AppearanceSettingsTab: View {
     }
 
     private var themeSection: some View {
-        SettingsSection(String(localized: "Theme", comment: "")) {
-            SettingsRow(title: String(localized: "Appearance", comment: "Appearance setting")) {
+        SettingsSection(String(localized: "Theme", bundle: .equinox, comment: "")) {
+            SettingsRow(title: String(localized: "Appearance", bundle: .equinox, comment: "Appearance setting")) {
                 SettingsSegmentedPicker(
-                    label: String(localized: "Appearance", comment: "Appearance setting"),
+                    label: String(localized: "Appearance", bundle: .equinox, comment: "Appearance setting"),
                     options: [
-                        String(localized: "System", comment: "Appearance option"),
-                        String(localized: "Light", comment: "Appearance option"),
-                        String(localized: "Dark", comment: "Appearance option")
+                        String(localized: "System", bundle: .equinox, comment: "Appearance option"),
+                        String(localized: "Light", bundle: .equinox, comment: "Appearance option"),
+                        String(localized: "Dark", bundle: .equinox, comment: "Appearance option")
                     ],
                     selection: $prefs.themePreference
                 )
                 .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
             }
             SettingsDivider()
-            SettingsRow(title: String(localized: "Background", comment: "Appearance setting")) {
+            SettingsRow(title: String(localized: "Background", bundle: .equinox, comment: "Appearance setting")) {
                 SettingsSegmentedPicker(
-                    label: String(localized: "Background", comment: "Appearance setting"),
+                    label: String(localized: "Background", bundle: .equinox, comment: "Appearance setting"),
                     options: [
-                        String(localized: "Glass", comment: "Appearance option"),
-                        String(localized: "Solid", comment: "Appearance option")
+                        String(localized: "Glass", bundle: .equinox, comment: "Appearance option"),
+                        String(localized: "Solid", bundle: .equinox, comment: "Appearance option")
                     ],
                     selection: $prefs.backgroundStyle
                 )
                 .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
             }
             SettingsDivider()
-            SettingsRow(title: String(localized: "Size", comment: "Appearance setting")) {
+            SettingsRow(title: String(localized: "Size", bundle: .equinox, comment: "Appearance setting")) {
                 SettingsSegmentedPicker(
-                    label: String(localized: "Size", comment: "Appearance setting"),
+                    label: String(localized: "Size", bundle: .equinox, comment: "Appearance setting"),
                     options: [
-                        String(localized: "Small", comment: "Appearance option"),
-                        String(localized: "Medium", comment: "Appearance option"),
-                        String(localized: "Large", comment: "Appearance option")
+                        String(localized: "Small", bundle: .equinox, comment: "Appearance option"),
+                        String(localized: "Medium", bundle: .equinox, comment: "Appearance option"),
+                        String(localized: "Large", bundle: .equinox, comment: "Appearance option")
                     ],
                     selection: $prefs.sizePreference
                 )
@@ -64,38 +64,38 @@ struct AppearanceSettingsTab: View {
     }
 
     private var menuBarSection: some View {
-        SettingsSection(String(localized: "Menu Bar", comment: "")) {
+        SettingsSection(String(localized: "Menu Bar", bundle: .equinox, comment: "")) {
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
-                Text(String(localized: "Menu Bar Icon", comment: "Settings section: menu bar icon"))
+                Text(String(localized: "Menu Bar Icon", bundle: .equinox, comment: "Settings section: menu bar icon"))
                     .font(.body)
                 MenuBarIconPicker(prefs: prefs)
             }
             .padding(.vertical, SettingsDesign.rowVerticalPadding)
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Show month in icon", comment: "Appearance setting"),
+                title: String(localized: "Show month in icon", bundle: .equinox, comment: "Appearance setting"),
                 isOn: $prefs.showMonthInIcon
             )
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Show day of week in icon", comment: "Appearance setting"),
+                title: String(localized: "Show day of week in icon", bundle: .equinox, comment: "Appearance setting"),
                 isOn: $prefs.showDayOfWeekInIcon
             )
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Hide date icon", comment: "Appearance setting"),
-                subtitle: String(localized: "Keep the clock and meeting indicator when enabled", comment: "Menu bar hidden date setting"),
+                title: String(localized: "Hide date icon", bundle: .equinox, comment: "Appearance setting"),
+                subtitle: String(localized: "Keep the clock and meeting indicator when enabled", bundle: .equinox, comment: "Menu bar hidden date setting"),
                 isOn: $prefs.isIconHidden
             )
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Show meeting indicator", comment: "Appearance setting"),
-                subtitle: String(localized: "Camera icon when a meeting is starting soon", comment: "Meeting indicator toggle subtitle"),
+                title: String(localized: "Show meeting indicator", bundle: .equinox, comment: "Appearance setting"),
+                subtitle: String(localized: "Camera icon when a meeting is starting soon", bundle: .equinox, comment: "Meeting indicator toggle subtitle"),
                 isOn: $prefs.showMeetingIndicator
             )
             SettingsDivider()
-            SettingsRow(title: String(localized: "Clock format", comment: "")) {
-                Picker(String(localized: "Clock format", comment: ""), selection: clockFormatBinding) {
+            SettingsRow(title: String(localized: "Clock format", bundle: .equinox, comment: "")) {
+                Picker(String(localized: "Clock format", bundle: .equinox, comment: ""), selection: clockFormatBinding) {
                     ForEach(clockFormatOptions.indices, id: \.self) { i in
                         Text(clockFormatOptions[i].1).tag(i)
                     }
@@ -107,40 +107,40 @@ struct AppearanceSettingsTab: View {
     }
 
     private var calendarSection: some View {
-        SettingsSection(String(localized: "Calendar Display", comment: "Settings calendar display section")) {
-            SettingsRow(title: String(localized: "First day of week:", comment: "")) {
-                Picker(String(localized: "First day of week", comment: ""), selection: Binding(
+        SettingsSection(String(localized: "Calendar Display", bundle: .equinox, comment: "Settings calendar display section")) {
+            SettingsRow(title: String(localized: "First day of week:", bundle: .equinox, comment: "")) {
+                Picker(String(localized: "First day of week", bundle: .equinox, comment: ""), selection: Binding(
                     get: { prefs.weekStartWeekday },
                     set: { prefs.weekStartWeekday = $0 }
                 )) {
-                    Text(String(localized: "Sunday", comment: "")).tag(0)
-                    Text(String(localized: "Monday", comment: "")).tag(1)
-                    Text(String(localized: "Tuesday", comment: "")).tag(2)
-                    Text(String(localized: "Wednesday", comment: "")).tag(3)
-                    Text(String(localized: "Thursday", comment: "")).tag(4)
-                    Text(String(localized: "Friday", comment: "")).tag(5)
-                    Text(String(localized: "Saturday", comment: "")).tag(6)
+                    Text(String(localized: "Sunday", bundle: .equinox, comment: "")).tag(0)
+                    Text(String(localized: "Monday", bundle: .equinox, comment: "")).tag(1)
+                    Text(String(localized: "Tuesday", bundle: .equinox, comment: "")).tag(2)
+                    Text(String(localized: "Wednesday", bundle: .equinox, comment: "")).tag(3)
+                    Text(String(localized: "Thursday", bundle: .equinox, comment: "")).tag(4)
+                    Text(String(localized: "Friday", bundle: .equinox, comment: "")).tag(5)
+                    Text(String(localized: "Saturday", bundle: .equinox, comment: "")).tag(6)
                 }
                 .labelsHidden()
                 .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
             }
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Show event dots", comment: "Appearance setting"),
+                title: String(localized: "Show event dots", bundle: .equinox, comment: "Appearance setting"),
                 isOn: $prefs.showEventDots
             )
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Show calendar weeks", comment: "Appearance setting"),
+                title: String(localized: "Show calendar weeks", bundle: .equinox, comment: "Appearance setting"),
                 isOn: $prefs.showWeeks
             )
             SettingsDivider()
             SettingsLabeledToggle(
-                title: String(localized: "Show month boundaries", comment: "Appearance setting"),
+                title: String(localized: "Show month boundaries", bundle: .equinox, comment: "Appearance setting"),
                 isOn: $prefs.showMonthBoundaries
             )
             SettingsDivider()
-            SettingsRow(title: String(localized: "Calendar rows", comment: "Number of rows in month grid")) {
+            SettingsRow(title: String(localized: "Calendar rows", bundle: .equinox, comment: "Number of rows in month grid")) {
                 Stepper(value: $prefs.calendarRowCount, in: 6...10) {
                     Text("\(prefs.calendarRowCount)")
                         .monospacedDigit()
@@ -149,7 +149,7 @@ struct AppearanceSettingsTab: View {
             }
             SettingsDivider()
             VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
-                Text(String(localized: "Highlight days", comment: "Weekend highlight picker label"))
+                Text(String(localized: "Highlight days", bundle: .equinox, comment: "Weekend highlight picker label"))
                 WeekendHighlightPicker(preferences: prefs)
             }
             .padding(.vertical, SettingsDesign.rowVerticalPadding)
@@ -157,24 +157,24 @@ struct AppearanceSettingsTab: View {
     }
 
     private var agendaSection: some View {
-        SettingsSection(String(localized: "Agenda", comment: "Agenda section label")) {
+        SettingsSection(String(localized: "Agenda", bundle: .equinox, comment: "Agenda section label")) {
             SettingsLabeledToggle(
-                title: String(localized: "Show agenda", comment: "Agenda visibility setting"),
+                title: String(localized: "Show agenda", bundle: .equinox, comment: "Agenda visibility setting"),
                 isOn: $prefs.showsAgenda
             )
             Group {
                 SettingsDivider()
                 SettingsLabeledToggle(
-                    title: String(localized: "Show event location", comment: "Appearance setting"),
+                    title: String(localized: "Show event location", bundle: .equinox, comment: "Appearance setting"),
                     isOn: $prefs.showLocation
                 )
                 SettingsDivider()
                 SettingsLabeledToggle(
-                    title: String(localized: "Show days with no events", comment: "Appearance setting"),
+                    title: String(localized: "Show days with no events", bundle: .equinox, comment: "Appearance setting"),
                     isOn: $prefs.showDaysWithNoEvents
                 )
                 SettingsDivider()
-                SettingsRow(title: String(localized: "Agenda height", comment: "")) {
+                SettingsRow(title: String(localized: "Agenda height", bundle: .equinox, comment: "")) {
                     Slider(value: $prefs.agendaHeightRatio, in: AgendaLayout.minimumHeightRatio...AgendaLayout.maximumHeightRatio)
                         .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
                 }
@@ -216,9 +216,9 @@ struct AppearanceSettingsTab: View {
 
     private var settingsSearchEmptyState: some View {
         ContentUnavailableView(
-            String(localized: "No Results", comment: "Settings search empty"),
+            String(localized: "No Results", bundle: .equinox, comment: "Settings search empty"),
             systemImage: "magnifyingglass",
-            description: Text(String(localized: "Try a different search term.", comment: ""))
+            description: Text(String(localized: "Try a different search term.", bundle: .equinox, comment: ""))
         )
         .frame(maxWidth: .infinity)
         .padding(.vertical, EquinoxDesign.spacingXL)

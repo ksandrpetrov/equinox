@@ -9,9 +9,12 @@ import SwiftUI
 @Observable
 @MainActor
 final class AppState {
-    let preferences = PreferencesStore.shared
+    private let resetShortcuts: () -> Void
+    private let disableLaunchAtLogin: () throws -> Void
+    let preferences: PreferencesStore
     let panel = PanelPresentationState()
     let layout = PanelLayoutMetrics()
+    private var initialization: Task<Void, Never>?
     let events: EventsCoordinator
 
     var calendar: Calendar { events.calendar }
@@ -55,18 +58,17 @@ final class AppState {
     func resetPreferencesToDefaults() async -> String? {
         let wasPinned = isPinned
         preferences.resetToDefaults()
-        UserDefaults.standard.set(false, forKey: kPinnedPanelVisible)
-        KeyboardShortcuts.reset(.togglePanel)
+        resetShortcuts()
         if wasPinned != isPinned {
             panel.onPinStateChanged?()
         }
         await events.resetCalendarSelection()
         do {
-            try LaunchAtLogin.setEnabled(false)
+            try disableLaunchAtLogin()
             return nil
         } catch {
             return String(
-                format: String(localized: "Could not update Launch at Login: %@", comment: "Launch at login error"),
+                format: String(localized: "Could not update Launch at Login: %@", bundle: .equinox, comment: "Launch at login error"),
                 error.localizedDescription
             )
         }
@@ -135,21 +137,27 @@ final class AppState {
         return true
     }
 
-    init() {
+    convenience init() {
         let calendar = Calendar.equinoxGregorian()
-        let calendarStore = CalendarStore(calendar: calendar)
+        self.init(calendar: calendar, calendarStore: CalendarStore(calendar: calendar), preferences: .shared)
+    }
+
+    init(
+        calendar: Calendar,
+        calendarStore: any CalendarEventStore,
+        preferences: PreferencesStore,
+        resetShortcuts: @escaping () -> Void = { KeyboardShortcuts.reset(.togglePanel) },
+        disableLaunchAtLogin: @escaping () throws -> Void = { try LaunchAtLogin.setEnabled(false) }
+    ) {
+        self.resetShortcuts = resetShortcuts
+        self.disableLaunchAtLogin = disableLaunchAtLogin
+        self.preferences = preferences
 
         events = EventsCoordinator(
             calendar: calendar,
             calendarStore: calendarStore,
             preferences: preferences
         )
-
-        events.registerExternalChangeHandler { [weak self] in
-            Task { @MainActor in
-                self?.events.retryFetchEvents()
-            }
-        }
 
         events.isPanelVisible = { [weak self] in
             self?.panel.isPanelVisible == true
@@ -159,7 +167,16 @@ final class AppState {
             self?.refreshSelectedEventFromSnapshot()
         }
 
-        Task { await events.refreshCalendarAccessStatus() }
+        initialization = Task { [weak self, events] in
+            await calendarStore.setExternalChangeHandler { [weak self] in
+                Task { @MainActor in self?.events.retryFetchEvents() }
+            }
+            await events.refreshCalendarAccessStatus()
+        }
+    }
+
+    func waitForInitialization() async {
+        await initialization?.value
     }
 
     func openCalendarPrivacySettings() {
@@ -177,6 +194,13 @@ final class AppState {
 
     private func refreshSelectedEventFromSnapshot() {
         guard let selectedEvent = panel.selectedEvent else { return }
+        // Time-context invalidation clears the cache before its replacement arrives.
+        // An incomplete authorized snapshot cannot establish that an event was deleted.
+        if events.calendarAccessStatus.isAuthorized,
+           events.hasSelectedCalendars,
+           !events.hasCompletedInitialEventLoad {
+            return
+        }
         let refreshedEvent = events.eventsByDate.values
             .lazy
             .joined()

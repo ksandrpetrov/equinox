@@ -12,12 +12,12 @@ struct GeneralSettingsTab: View {
     @State private var isResetting = false
 
     var body: some View {
-        SettingsDetailScaffold(title: String(localized: "General", comment: "General prefs tab label")) {
+        SettingsDetailScaffold(title: String(localized: "General", bundle: .equinox, comment: "General prefs tab label")) {
             if SettingsSearchFilter.matches(searchText: searchText, keywords: "Startup", "Launch at login", "Open Equinox when you sign in") {
-                SettingsSection(String(localized: "Startup", comment: "Settings section: startup")) {
+                SettingsSection(String(localized: "Startup", bundle: .equinox, comment: "Settings section: startup")) {
                     SettingsLabeledToggle(
-                        title: String(localized: "Launch at login", comment: ""),
-                        subtitle: String(localized: "Open Equinox when you sign in", comment: "Launch at login subtitle"),
+                        title: String(localized: "Launch at login", bundle: .equinox, comment: ""),
+                        subtitle: String(localized: "Open Equinox when you sign in", bundle: .equinox, comment: "Launch at login subtitle"),
                         isOn: Binding(
                             get: { launchAtLogin },
                             set: { updateLaunchAtLogin($0) }
@@ -34,10 +34,10 @@ struct GeneralSettingsTab: View {
             }
 
             if SettingsSearchFilter.matches(searchText: searchText, keywords: "Panel", "Pin panel by default") {
-                SettingsSection(String(localized: "Panel", comment: "Panel settings section")) {
+                SettingsSection(String(localized: "Panel", bundle: .equinox, comment: "Panel settings section")) {
                     SettingsLabeledToggle(
-                        title: String(localized: "Pin panel by default", comment: ""),
-                        subtitle: String(localized: "Keep the calendar panel open as a floating window", comment: ""),
+                        title: String(localized: "Pin panel by default", bundle: .equinox, comment: ""),
+                        subtitle: String(localized: "Keep the calendar panel open as a floating window", bundle: .equinox, comment: ""),
                         isOn: Binding(
                             get: { appState.isPinned },
                             set: { appState.setPinned($0) }
@@ -47,8 +47,8 @@ struct GeneralSettingsTab: View {
             }
 
             if SettingsSearchFilter.matches(searchText: searchText, keywords: "Advanced", "Reset", "Reset All Settings to Defaults") {
-                SettingsSection(String(localized: "Advanced", comment: "")) {
-                    Button(String(localized: "Reset All Settings to Defaults", comment: ""), role: .destructive) {
+                SettingsSection(String(localized: "Advanced", bundle: .equinox, comment: "")) {
+                    Button(String(localized: "Reset All Settings to Defaults", bundle: .equinox, comment: ""), role: .destructive) {
                         showResetConfirmation = true
                     }
                     .padding(.vertical, SettingsDesign.rowVerticalPadding)
@@ -61,9 +61,9 @@ struct GeneralSettingsTab: View {
         }
         .sheet(isPresented: $showResetConfirmation) {
             ModalConfirmDialog(
-                title: String(localized: "Reset all settings?", comment: ""),
-                message: String(localized: "This restores all preferences to their default values.", comment: ""),
-                confirmTitle: String(localized: "Reset", comment: ""),
+                title: String(localized: "Reset all settings?", bundle: .equinox, comment: ""),
+                message: String(localized: "This restores all preferences to their default values.", bundle: .equinox, comment: ""),
+                confirmTitle: String(localized: "Reset", bundle: .equinox, comment: ""),
                 isConfirming: isResetting,
                 onConfirm: {
                     guard !isResetting else { return }
@@ -101,14 +101,14 @@ struct GeneralSettingsTab: View {
             if enabled, status == .requiresApproval {
                 launchAtLoginMessage = String(
                     localized: "Allow Equinox in System Settings → General → Login Items.",
-                    comment: "Launch at login approval guidance"
+                    bundle: .equinox, comment: "Launch at login approval guidance"
                 )
             }
         } catch {
             launchAtLogin = LaunchAtLogin.isEnabled
             launchAtLoginMessageIsError = true
             launchAtLoginMessage = String(
-                format: String(localized: "Could not update Launch at Login: %@", comment: "Launch at login error"),
+                format: String(localized: "Could not update Launch at Login: %@", bundle: .equinox, comment: "Launch at login error"),
                 error.localizedDescription
             )
         }
@@ -122,9 +122,9 @@ struct GeneralSettingsTab: View {
 
     private var settingsSearchEmptyState: some View {
         ContentUnavailableView(
-            String(localized: "No Results", comment: "Settings search empty"),
+            String(localized: "No Results", bundle: .equinox, comment: "Settings search empty"),
             systemImage: "magnifyingglass",
-            description: Text(String(localized: "Try a different search term.", comment: ""))
+            description: Text(String(localized: "Try a different search term.", bundle: .equinox, comment: ""))
         )
         .frame(maxWidth: .infinity)
         .padding(.vertical, EquinoxDesign.spacingXL)

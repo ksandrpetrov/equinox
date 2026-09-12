@@ -1,4 +1,5 @@
 import SwiftUI
+import EquinoxKit
 
 @main
 struct EquinoxApp: App {

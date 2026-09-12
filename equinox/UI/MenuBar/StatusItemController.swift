@@ -13,6 +13,8 @@ final class StatusItemController: NSObject {
     private var statusItemMoveWorkItem: DispatchWorkItem?
     private var shortcutEventsTask: Task<Void, Never>?
     private var notificationObservers: [NSObjectProtocol] = []
+    private var systemNotificationCenter: NotificationCenter?
+    private var workspaceNotificationCenter: NotificationCenter?
     private var iconDateFormatter = DateFormatter()
 
     init(appState: AppState) {
@@ -69,14 +71,14 @@ final class StatusItemController: NSObject {
         notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
         notificationObservers = []
         NotificationCenter.default.removeObserver(self)
-        NSWorkspace.shared.notificationCenter.removeObserver(self)
-        UserDefaults.standard.set(appState.isPinned && isPanelActuallyVisible, forKey: kPinnedPanelVisible)
+        stopObservingSystemChanges()
+        appState.preferences.isPinnedPanelVisible = appState.isPinned && isPanelActuallyVisible
         KeyboardShortcuts.disable(.togglePanel)
     }
 
     private func restorePinnedPanelIfNeeded() {
         guard appState.isPinned,
-              UserDefaults.standard.bool(forKey: kPinnedPanelVisible) else { return }
+              appState.preferences.isPinnedPanelVisible else { return }
         DispatchQueue.main.async { [weak self] in
             self?.showPanel()
         }
@@ -113,10 +115,10 @@ final class StatusItemController: NSObject {
     static func configureAccessibility(for button: NSButton) {
         let help = String(
             localized: "Show or hide the Equinox panel from anywhere",
-            comment: "Menu bar status item accessibility help and tooltip"
+            bundle: .equinox, comment: "Menu bar status item accessibility help and tooltip"
         )
         button.setAccessibilityLabel(
-            String(localized: "Equinox calendar", comment: "Menu bar status item accessibility label")
+            String(localized: "Equinox calendar", bundle: .equinox, comment: "Menu bar status item accessibility label")
         )
         button.setAccessibilityHelp(help)
         button.toolTip = help
@@ -186,37 +188,53 @@ final class StatusItemController: NSObject {
         panelController.handleSizePreferenceChanged(statusItem: statusItem)
     }
 
-    private func setupSystemChangeObservers() {
-        NSWorkspace.shared.notificationCenter.addObserver(
+    func setupSystemChangeObservers(
+        notificationCenter: NotificationCenter = .default,
+        workspaceNotificationCenter: NotificationCenter = NSWorkspace.shared.notificationCenter
+    ) {
+        guard systemNotificationCenter == nil else { return }
+        self.systemNotificationCenter = notificationCenter
+        self.workspaceNotificationCenter = workspaceNotificationCenter
+        workspaceNotificationCenter.addObserver(
             self,
             selector: #selector(significantTimeChanged),
             name: NSWorkspace.didWakeNotification,
             object: nil
         )
-        NotificationCenter.default.addObserver(
+        notificationCenter.addObserver(
             self,
             selector: #selector(significantTimeChanged),
             name: Notification.Name.NSSystemClockDidChange,
             object: nil
         )
-        NotificationCenter.default.addObserver(
+        notificationCenter.addObserver(
             self,
             selector: #selector(significantTimeChanged),
             name: Notification.Name.NSSystemTimeZoneDidChange,
             object: nil
         )
-        NotificationCenter.default.addObserver(
+        notificationCenter.addObserver(
             self,
             selector: #selector(significantTimeChanged),
             name: Notification.Name.NSCalendarDayChanged,
             object: nil
         )
-        NotificationCenter.default.addObserver(
+        notificationCenter.addObserver(
             self,
             selector: #selector(localeChanged),
             name: NSLocale.currentLocaleDidChangeNotification,
             object: nil
         )
+    }
+
+    func stopObservingSystemChanges() {
+        for name in [Notification.Name.NSSystemClockDidChange, .NSSystemTimeZoneDidChange,
+                     .NSCalendarDayChanged, NSLocale.currentLocaleDidChangeNotification] {
+            systemNotificationCenter?.removeObserver(self, name: name, object: nil)
+        }
+        workspaceNotificationCenter?.removeObserver(self, name: NSWorkspace.didWakeNotification, object: nil)
+        systemNotificationCenter = nil
+        workspaceNotificationCenter = nil
     }
 
     // System notifications, including the midnight rollover, can arrive off the main thread.

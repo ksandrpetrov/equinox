@@ -7,9 +7,9 @@ struct MenuBarIconPicker: View {
     private var selection: Int { prefs.menuBarIconType }
 
     private let styleNames = [
-        String(localized: "Minimal", comment: "Menu bar icon style"),
-        String(localized: "Classic", comment: "Menu bar icon style"),
-        String(localized: "Compact", comment: "Menu bar icon style"),
+        String(localized: "Minimal", bundle: .equinox, comment: "Menu bar icon style"),
+        String(localized: "Classic", bundle: .equinox, comment: "Menu bar icon style"),
+        String(localized: "Compact", bundle: .equinox, comment: "Menu bar icon style"),
     ]
 
     private let columns = [

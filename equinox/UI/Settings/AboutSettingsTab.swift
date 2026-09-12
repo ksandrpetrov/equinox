@@ -12,42 +12,42 @@ struct AboutSettingsTab: View {
                 aboutContent
             } else {
                 ContentUnavailableView(
-                    String(localized: "No Results", comment: "Settings search empty"),
+                    String(localized: "No Results", bundle: .equinox, comment: "Settings search empty"),
                     systemImage: "magnifyingglass",
-                    description: Text(String(localized: "Try a different search term.", comment: ""))
+                    description: Text(String(localized: "Try a different search term.", bundle: .equinox, comment: ""))
                 )
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle(String(localized: "About", comment: "About prefs tab label"))
+        .navigationTitle(String(localized: "About", bundle: .equinox, comment: "About prefs tab label"))
     }
 
     private var aboutContent: some View {
         VStack(spacing: EquinoxDesign.spacingLG) {
             Spacer()
 
-            Image("AppLogo")
+            Image("AppLogo", bundle: .equinox)
                 .resizable()
                 .interpolation(.high)
                 .frame(width: EquinoxDesign.ControlWidth.aboutLogo, height: EquinoxDesign.ControlWidth.aboutLogo)
 
-            Text(String(localized: "Equinox", comment: "App name"))
+            Text(String(localized: "Equinox", bundle: .equinox, comment: "App name"))
                 .font(EquinoxDesign.aboutTitleFont())
 
             if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-                Text("\(String(localized: "Version", comment: "")) \(version) (\(build))")
+                Text("\(String(localized: "Version", bundle: .equinox, comment: "")) \(version) (\(build))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
-            Text(String(localized: "MIT License", comment: "About license line"))
+            Text(String(localized: "MIT License", bundle: .equinox, comment: "About license line"))
                 .font(.footnote)
                 .foregroundStyle(.tertiary)
 
             Link(
-                String(localized: "View on GitHub", comment: "About link"),
-                destination: URL(string: "https://github.com/aleksandr/equinox")!
+                String(localized: "View on GitHub", bundle: .equinox, comment: "About link"),
+                destination: URL(string: "https://github.com/ksandrpetrov/equinox")!
             )
             .font(.footnote)
             .foregroundStyle(EquinoxDesign.ColorToken.semanticBlue)

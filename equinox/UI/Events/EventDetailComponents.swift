@@ -119,7 +119,7 @@ struct EventDetailNotesCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) {
-            Label(String(localized: "Notes", comment: "Event detail notes section"), systemImage: "note.text")
+            Label(String(localized: "Notes", bundle: .equinox, comment: "Event detail notes section"), systemImage: "note.text")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
 

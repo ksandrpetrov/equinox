@@ -1,6 +1,6 @@
 import EventKit
 import XCTest
-@testable import equinox
+@testable import EquinoxKit
 
 final class CalendarAccessMappingTests: XCTestCase {
     func testCalendarAccessStatusFromWriteOnlyIsDenied() {
