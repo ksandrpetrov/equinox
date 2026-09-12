@@ -10,6 +10,10 @@ final class StubCalendarEventStore: CalendarEventStore {
     var deleteError: CalendarStoreError?
     var deletedOccurrences: [(identifier: String, start: Date)] = []
     var accessRequestCount = 0
+    var accessGranted = true
+    var fetchResult = true
+    var refetchResult = true
+    var fetchedRanges: [(first: CalendarDate, last: CalendarDate)] = []
     var snapshotCount = 0
     var timeInvalidationCount = 0
     var onTimeInvalidation: () -> Void = {}
@@ -20,12 +24,13 @@ final class StubCalendarEventStore: CalendarEventStore {
         status: CalendarAccessStatus,
         events: [CalendarDate: [DayEvent]] = [:],
         hasSelectedCalendars: Bool = true,
-        hasCompletedInitialLoad: Bool = true
+        hasCompletedInitialLoad: Bool = true,
+        lastFetchError: String? = nil
     ) -> CalendarStoreSnapshot {
         CalendarStoreSnapshot(
             accessStatus: status, eventsByDate: status.isAuthorized ? events : [:], calendarEntries: [],
             defaultCalendarIdentifier: status.isAuthorized ? "work" : nil,
-            hasSelectedCalendars: status.isAuthorized && hasSelectedCalendars, lastFetchError: nil,
+            hasSelectedCalendars: status.isAuthorized && hasSelectedCalendars, lastFetchError: lastFetchError,
             hasCompletedInitialLoad: status.isAuthorized && hasCompletedInitialLoad
         )
     }
@@ -36,13 +41,16 @@ final class StubCalendarEventStore: CalendarEventStore {
     func setExternalChangeHandler(_ handler: @escaping @Sendable () -> Void) async { externalChangeHandler = handler }
     func requestCalendarAccessIfNeeded() async -> Bool {
         accessRequestCount += 1
-        return true
+        return accessGranted
     }
-    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool) async -> Bool { true }
+    func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool) async -> Bool {
+        fetchedRanges.append((first, last))
+        return fetchResult
+    }
     func refetchAll(first: CalendarDate, last: CalendarDate) async -> Bool {
         operations.append("refetch")
         refetchedRanges.append((first, last))
-        return true
+        return refetchResult
     }
     func invalidateTimeContext() async {
         timeInvalidationCount += 1

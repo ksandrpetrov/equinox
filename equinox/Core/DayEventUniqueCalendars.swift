@@ -11,11 +11,6 @@ extension DayEvent {
                 if unique.count == 3 { break }
             }
         }
-        switch unique.count {
-        case 0: return nil
-        case 1: return [unique[0]]
-        case 2: return [unique[0], unique[1]]
-        default: return [unique[0], unique[1], unique[2]]
-        }
+        return unique
     }
 }

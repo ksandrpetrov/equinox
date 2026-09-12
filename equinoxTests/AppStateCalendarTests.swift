@@ -3,6 +3,62 @@ import XCTest
 
 @MainActor
 final class AppStateCalendarTests: XCTestCase {
+    func testSuccessfulCreateWithFailedReloadDoesNotRepeatMutationOnRetry() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let day = context.appState.events.todayDate
+        let start = day.date(in: context.appState.calendar)
+        let draft = NewEventDraft(
+            title: "Saved meeting", location: "", isAllDay: false,
+            startDate: start, endDate: start.addingTimeInterval(3600), calendarIdentifier: "work"
+        )
+        context.store.refetchResult = false
+        context.store.readSnapshot = {
+            StubCalendarEventStore.snapshot(status: .authorized, lastFetchError: "Reload failed")
+        }
+
+        let error = await context.appState.createEvent(from: draft)
+        XCTAssertNil(error, "The save succeeded; reporting a save failure could cause a duplicate event")
+        XCTAssertEqual(context.appState.events.lastFetchError, "Reload failed")
+        XCTAssertEqual(context.store.operations, ["create", "refetch"])
+        XCTAssertFalse(context.appState.events.isFetchingEvents)
+
+        let saved = context.event(start: start, title: draft.title)
+        context.store.refetchResult = true
+        context.store.readSnapshot = {
+            StubCalendarEventStore.snapshot(status: .authorized, events: [day: [saved]])
+        }
+        let refreshed = expectation(description: "Retry applied the saved event")
+        context.appState.events.onEventsSnapshotChanged = { refreshed.fulfill() }
+        context.appState.events.retryFetchEvents()
+        await fulfillment(of: [refreshed], timeout: 2)
+        XCTAssertEqual(context.appState.events.events(for: day), [saved])
+        XCTAssertNil(context.appState.events.lastFetchError)
+        XCTAssertEqual(context.store.operations, ["create", "refetch", "refetch"])
+    }
+
+    func testSuccessfulDeleteClosesDetailsEvenWhenReloadFails() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let day = context.appState.events.todayDate
+        let event = context.event(start: day.date(in: context.appState.calendar))
+        context.appState.panel.selectedEvent = event
+        context.appState.panel.isEventDetailPresented = true
+        context.store.refetchResult = false
+        context.store.readSnapshot = {
+            StubCalendarEventStore.snapshot(status: .authorized, events: [day: [event]], lastFetchError: "Reload failed")
+        }
+
+        let error = await context.appState.deleteEvent(identifier: "event", occurrenceStartDate: event.startDate)
+        XCTAssertNil(error)
+        XCTAssertNil(context.appState.panel.selectedEvent)
+        XCTAssertFalse(context.appState.panel.isEventDetailPresented)
+        XCTAssertEqual(context.appState.events.lastFetchError, "Reload failed")
+        XCTAssertEqual(context.store.operations, ["delete", "refetch"])
+    }
+
     func testIncompleteReloadPreservesDetailsUntilAnAuthoritativeSnapshotArrives() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }

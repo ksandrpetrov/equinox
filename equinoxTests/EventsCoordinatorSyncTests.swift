@@ -3,6 +3,30 @@ import XCTest
 
 @MainActor
 final class EventsCoordinatorSyncTests: XCTestCase {
+    func testAgendaRefocusWaitsForSuccessfulFetchAndIsConsumedOnce() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let events = context.appState.events
+        context.appState.panel.isPanelVisible = true
+        events.requestAgendaScroll()
+        let requestedToken = events.agendaScrollToken
+
+        await events.refreshCalendarAccessStatus()
+        XCTAssertEqual(events.agendaScrollToken, requestedToken, "A snapshot read is not a completed fetch")
+
+        context.store.refetchResult = false
+        await events.resetCalendarSelection()
+        XCTAssertEqual(events.agendaScrollToken, requestedToken, "A failed fetch must keep the pending focus")
+
+        context.store.refetchResult = true
+        await events.resetCalendarSelection()
+        XCTAssertEqual(events.agendaScrollToken, requestedToken + 1)
+
+        await events.resetCalendarSelection()
+        XCTAssertEqual(events.agendaScrollToken, requestedToken + 1, "Background refresh must not scroll again")
+    }
+
     func testCreateNavigatesBeforeReloadAndMutationsUseFetchQueue() async throws {
         let suite = "equinox.sync.tests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

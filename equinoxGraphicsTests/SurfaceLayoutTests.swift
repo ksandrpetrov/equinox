@@ -52,8 +52,23 @@ final class SurfaceLayoutTests: XCTestCase {
         view.layoutSubtreeIfNeeded()
         XCTAssertTrue(view.fittingSize.width.isFinite)
         XCTAssertTrue(view.fittingSize.height.isFinite)
+        XCTAssertGreaterThan(view.fittingSize.width, 0, name)
+        XCTAssertGreaterThan(view.fittingSize.height, 0, name)
+        XCTAssertLessThanOrEqual(view.fittingSize.width, width + 1, "Horizontal overflow: \(name)")
+        XCTAssertLessThanOrEqual(view.fittingSize.height, height + 1, "Vertical overflow: \(name)")
         let bitmap = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
         view.cacheDisplay(in: view.bounds, to: bitmap)
+        var minimumBrightness: CGFloat = 1
+        var maximumBrightness: CGFloat = 0
+        for y in stride(from: 0, to: bitmap.pixelsHigh, by: max(1, bitmap.pixelsHigh / 32)) {
+            for x in stride(from: 0, to: bitmap.pixelsWide, by: max(1, bitmap.pixelsWide / 32)) {
+                let color = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
+                let brightness = (color.redComponent + color.greenComponent + color.blueComponent) / 3
+                minimumBrightness = min(minimumBrightness, brightness)
+                maximumBrightness = max(maximumBrightness, brightness)
+            }
+        }
+        XCTAssertGreaterThan(maximumBrightness - minimumBrightness, 0.05, "Blank or uniform render: \(name)")
         let attachment = XCTAttachment(data: try XCTUnwrap(bitmap.representation(using: .png, properties: [:])), uniformTypeIdentifier: "public.png")
         attachment.name = name
         attachment.lifetime = .keepAlways

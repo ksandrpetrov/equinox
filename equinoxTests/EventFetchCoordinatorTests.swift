@@ -3,6 +3,45 @@ import XCTest
 
 @MainActor
 final class EventFetchCoordinatorTests: XCTestCase {
+    func testAccessCanBePreparedAgainAfterDenial() async {
+        let store = StubCalendarEventStore()
+        store.accessGranted = false
+        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let day = CalendarDate.minimumSupported
+        let denied = await coordinator.fetch(range: (day, day), refetch: true)
+        XCTAssertFalse(denied)
+        XCTAssertTrue(store.refetchedRanges.isEmpty)
+        XCTAssertTrue(store.fetchedRanges.isEmpty)
+
+        store.accessGranted = true
+        let granted = await coordinator.fetch(range: (day, day), refetch: true, preparesCalendarAccess: true)
+        XCTAssertTrue(granted)
+        XCTAssertEqual(store.accessRequestCount, 2)
+        XCTAssertEqual(store.refetchedRanges.count, 1)
+    }
+
+    func testFailedFetchFinishesLoadingAndRetrySynchronizesSuccess() async {
+        let store = StubCalendarEventStore()
+        store.fetchResult = false
+        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let day = CalendarDate.minimumSupported
+        var results: [Bool] = []
+        var isFetching = false
+        coordinator.onSyncComplete = { results.append($0) }
+        coordinator.onPresentationUpdate = { _, fetching in isFetching = fetching }
+
+        let failed = await coordinator.fetch(range: (day, day))
+        XCTAssertFalse(failed)
+        XCTAssertFalse(isFetching)
+        XCTAssertEqual(store.fetchedRanges.count, 1)
+
+        let retried = await coordinator.fetch(range: (day, day), refetch: true)
+        XCTAssertTrue(retried)
+        XCTAssertFalse(isFetching)
+        XCTAssertEqual(results, [false, true])
+        XCTAssertEqual(store.refetchedRanges.count, 1)
+    }
+
     func testSupersededPendingRequestDoesNotReportSuccessfulFetch() async {
         let day = CalendarDate(year: 2026, monthIndex: 0, day: 1)
         var release: CheckedContinuation<Void, Never>?

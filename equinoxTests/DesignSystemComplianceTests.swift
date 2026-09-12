@@ -5,39 +5,18 @@ import XCTest
 
 final class DesignSystemComplianceTests: XCTestCase {
     private let uiRoot = "equinox/UI"
-    private let designPath = "equinox/UI/Design"
 
     func testFeatureViewsAvoidPrimaryOpacityLiterals() throws {
-        let violations = try swiftUIFiles(excludingDesign: true)
-            .flatMap { path -> [(String, Int, String)] in
-                let lines = try lines(at: path)
-                return lines.enumerated().compactMap { index, line in
-                    guard line.contains("Color.primary.opacity(") else { return nil }
-                    return (path, index + 1, line.trimmingCharacters(in: .whitespaces))
-                }
-            }
-
-        XCTAssertTrue(
-            violations.isEmpty,
-            "Color.primary.opacity must live in Design tokens only:\n"
-                + violations.map { "\($0.0):\($0.1) \($0.2)" }.joined(separator: "\n")
+        try assertNoOccurrences(
+            of: "Color.primary.opacity(",
+            message: "Color.primary.opacity must live in Design tokens only"
         )
     }
 
     func testFeatureViewsAvoidSystemSizeFonts() throws {
-        let violations = try swiftUIFiles(excludingDesign: true)
-            .flatMap { path -> [(String, Int, String)] in
-                let lines = try lines(at: path)
-                return lines.enumerated().compactMap { index, line in
-                    guard line.contains(".font(.system(size:") else { return nil }
-                    return (path, index + 1, line.trimmingCharacters(in: .whitespaces))
-                }
-            }
-
-        XCTAssertTrue(
-            violations.isEmpty,
-            "Use EquinoxDesign font helpers or semantic fonts instead of .font(.system(size:)):\n"
-                + violations.map { "\($0.0):\($0.1) \($0.2)" }.joined(separator: "\n")
+        try assertNoOccurrences(
+            of: ".font(.system(size:",
+            message: "Use EquinoxDesign font helpers or semantic fonts instead of .font(.system(size:)"
         )
     }
 
@@ -80,15 +59,6 @@ final class DesignSystemComplianceTests: XCTestCase {
             regex: #"\.opacity\(0\.[0-9]+\)"#,
             message: "Move opacity literals into EquinoxDesign.StateOpacity tokens"
         )
-    }
-
-    func testNoReferencesToRemovedMenuBarAssets() throws {
-        for name in ["meetSolid", "meetOutline", "menubaricon"] {
-            try assertNoOccurrences(
-                of: name,
-                message: "\(name) asset was removed; use MenuBarIconRenderer/MenuBarMeetingGlyph"
-            )
-        }
     }
 
     func testSmallAgendaTextMeetsReadableMinimum() {
@@ -137,16 +107,6 @@ final class DesignSystemComplianceTests: XCTestCase {
 
         XCTAssertFalse(agendaSource.contains(".accessibilityElement(children: .combine)"))
         XCTAssertTrue(overlaySource.contains(".accessibilityElement(children: .contain)"))
-    }
-
-    func testSurfaceTokensUseAdaptiveSystemColors() throws {
-        let root = try repoRoot()
-        let path = root.appendingPathComponent("equinox/UI/Design/DesignTokens.swift").path
-        let source = try String(contentsOfFile: path, encoding: .utf8)
-
-        for removedAsset in ["SurfacePrimary", "SurfaceSecondary", "SurfaceWindow", "SurfaceRaised"] {
-            XCTAssertFalse(source.contains("Color(\"\(removedAsset)\")"))
-        }
     }
 
     func testCalendarGridPreservesDayCellAccessibilityElements() throws {

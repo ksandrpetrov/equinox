@@ -4,6 +4,27 @@ import XCTest
 
 final class ComponentRenderingTests: XCTestCase {
     @MainActor
+    func testSurfaceColorsAdaptToLightAndDarkAppearance() throws {
+        let colors = [
+            EquinoxDesign.ColorToken.surfacePrimary,
+            EquinoxDesign.ColorToken.surfaceSecondary,
+            EquinoxDesign.ColorToken.surfaceWindow,
+            EquinoxDesign.ColorToken.surfaceRaised,
+        ]
+        for color in colors {
+            var brightness: [CGFloat] = []
+            for scheme in [ColorScheme.light, .dark] {
+                let renderer = ImageRenderer(content: color.frame(width: 8, height: 8).environment(\.colorScheme, scheme))
+                let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
+                let sample = try XCTUnwrap(bitmap.colorAt(x: 4, y: 4)?.usingColorSpace(.sRGB))
+                XCTAssertGreaterThan(sample.alphaComponent, 0.99)
+                brightness.append((sample.redComponent + sample.greenComponent + sample.blueComponent) / 3)
+            }
+            XCTAssertGreaterThan(brightness[0] - brightness[1], 0.2, "Surface must visibly adapt to the appearance")
+        }
+    }
+
+    @MainActor
     func testMenuBarIconsRenderForEveryStyleAndMeetingState() throws {
         let suite = "equinox.graphics.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

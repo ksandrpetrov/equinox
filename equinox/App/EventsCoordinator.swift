@@ -88,8 +88,13 @@ final class EventsCoordinator {
             self.shouldShowLoadingIndicator = shouldShow
             self.isFetchingEvents = isFetching
         }
-        fetchCoordinator.onSyncComplete = { [weak self] _ in
-            await self?.syncFromCalendarStore()
+        fetchCoordinator.onSyncComplete = { [weak self] successfulFetch in
+            guard let self else { return }
+            await self.syncFromCalendarStore()
+            if successfulFetch, self.calendarAccessStatus.isAuthorized,
+               self.hasCompletedInitialEventLoad, self.lastFetchError == nil {
+                self.navigation.refocusAgendaAfterFetch()
+            }
         }
 
         preferences.onVisibleGridPreferencesChanged = { [weak self] in
@@ -134,7 +139,6 @@ final class EventsCoordinator {
         lastFetchError = snapshot.lastFetchError
         updateMeetingIndicator()
         onEventsSnapshotChanged()
-        maybeRefocusAgendaAfterFetch()
     }
 
     func refreshFetchRange(reason: FetchRangeRefreshReason) {
@@ -333,13 +337,6 @@ final class EventsCoordinator {
         lhs.first == rhs?.first && lhs.last == rhs?.last
     }
 
-    private func maybeRefocusAgendaAfterFetch() {
-        guard navigation.awaitingAgendaFocusAfterFetch,
-              isPanelVisible(),
-              selectedDate == todayDate else { return }
-        navigation.clearAwaitingAgendaFocusAfterFetch()
-        navigation.requestAgendaScroll()
-    }
 }
 
 enum FetchRangeRefreshReason {

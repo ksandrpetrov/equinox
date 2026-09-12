@@ -141,6 +141,32 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
         XCTAssertGreaterThan(navigation.agendaScrollToken, tokenBefore)
     }
 
+    func testManualAgendaScrollCancelsPendingRefocusEvenOnSameDay() {
+        navigation.isPanelVisible = { true }
+        navigation.requestAgendaScroll()
+        let token = navigation.agendaScrollToken
+        navigation.syncSelectionFromAgendaScroll(navigation.selectedDate)
+        navigation.refocusAgendaAfterFetch()
+        XCTAssertEqual(navigation.agendaScrollToken, token)
+    }
+
+    func testCompletedFocusDoesNotSurviveHiddenPanelOrDifferentSelection() {
+        var visible = true
+        navigation.isPanelVisible = { visible }
+        navigation.requestAgendaScroll()
+        let token = navigation.agendaScrollToken
+        visible = false
+        navigation.refocusAgendaAfterFetch()
+        visible = true
+        navigation.refocusAgendaAfterFetch()
+        XCTAssertEqual(navigation.agendaScrollToken, token)
+
+        navigation.selectDate(navigation.todayDate.addingDays(1))
+        let selectionToken = navigation.agendaScrollToken
+        navigation.refocusAgendaAfterFetch()
+        XCTAssertEqual(navigation.agendaScrollToken, selectionToken)
+    }
+
     func testRefreshTodayIfNeededUpdatesTodayDateWhenDayChanges() {
         let staleToday = navigation.todayDate.addingDays(-1)
         navigation.todayDate = staleToday

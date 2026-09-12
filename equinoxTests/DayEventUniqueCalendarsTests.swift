@@ -35,19 +35,19 @@ final class DayEventUniqueCalendarsTests: XCTestCase {
         XCTAssertNil(DayEvent.makeSwiftUIDotColors(for: []))
     }
 
-    func testDeduplicatesCalendars() {
+    func testDotColorsPreserveFirstCalendarOrderAndComponents() {
         let events = [
-            makeEvent(calendarID: "a", red: 1),
-            makeEvent(calendarID: "a", red: 1),
-            makeEvent(calendarID: "b", red: 0.5),
+            makeEvent(calendarID: "a", red: 0.2),
+            makeEvent(calendarID: "a", red: 0.9),
+            makeEvent(calendarID: "b", red: 0.4),
+            makeEvent(calendarID: "c", red: 0.6),
+            makeEvent(calendarID: "d", red: 0.8),
         ]
-        let colors = DayEvent.makeSwiftUIDotColors(for: events)
-        XCTAssertEqual(colors?.count, 2)
-    }
-
-    func testCapsAtThreeColors() {
-        let events = (0..<5).map { makeEvent(calendarID: "cal-\($0)", red: CGFloat($0) / 5) }
-        XCTAssertEqual(DayEvent.makeSwiftUIDotColors(for: events)?.count, 3)
+        XCTAssertEqual(DayEvent.makeSwiftUIDotColors(for: events), [
+            Color(red: 0.2, green: 0, blue: 0, opacity: 1),
+            Color(red: 0.4, green: 0, blue: 0, opacity: 1),
+            Color(red: 0.6, green: 0, blue: 0, opacity: 1),
+        ])
     }
 
     func testMakeUniqueCalendarEventsReturnsNilForEmpty() {

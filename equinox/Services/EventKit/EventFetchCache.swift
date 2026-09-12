@@ -88,10 +88,7 @@ struct EventFetchCache {
         var filtered: [Date: [DayEvent]] = [:]
         for (date, events) in eventsForDate {
             for event in events where selectedCalendarIDs.contains(event.calendarIdentifier) {
-                if filtered[date] == nil {
-                    filtered[date] = []
-                }
-                filtered[date]?.append(event)
+                filtered[date, default: []].append(event)
             }
         }
         selectedCalendarEventsByDate = filtered

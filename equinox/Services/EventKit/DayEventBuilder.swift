@@ -82,10 +82,7 @@ enum DayEventBuilder {
                     joinURL: joinURL,
                     dayKey: slot.dayStart
                 )
-                if newEventsForDate[slot.dayStart] == nil {
-                    newEventsForDate[slot.dayStart] = []
-                }
-                newEventsForDate[slot.dayStart]?.append(dayEvent)
+                newEventsForDate[slot.dayStart, default: []].append(dayEvent)
             }
         }
 

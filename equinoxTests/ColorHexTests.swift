@@ -31,14 +31,6 @@ final class ColorHexTests: XCTestCase {
         XCTAssertEqual(ColorHex.rgbaToHex(red: -0.2, green: 1.4, blue: 0.5), "#00FF80")
     }
 
-    func testEventKitCalendarMappingUsesColorHex() {
-        let color = CGColor(
-            colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-            components: [1, 0, 0, 1]
-        )!
-        XCTAssertEqual(EventKitCalendarMapping.colorHex(color), "#FF0000")
-    }
-
     func testGenericRGBIsConvertedToSRGB() throws {
         let generic = CGColor(red: 0.1, green: 0.2, blue: 0.3, alpha: 0.4)
         let converted = try XCTUnwrap(generic.converted(

@@ -19,7 +19,7 @@ final class CalendarNavigationCoordinator {
     var isPanelVisible: () -> Bool = { false }
     var onVisibleGridRangeChanged: (CalendarDate, CalendarDate) -> Void = { _, _ in }
 
-    private(set) var awaitingAgendaFocusAfterFetch = false
+    private var awaitingAgendaFocusAfterFetch = false
 
     enum MonthNavigationDirection {
         case forward
@@ -50,8 +50,12 @@ final class CalendarNavigationCoordinator {
         }
     }
 
-    func clearAwaitingAgendaFocusAfterFetch() {
+    func refocusAgendaAfterFetch() {
+        guard awaitingAgendaFocusAfterFetch else { return }
         awaitingAgendaFocusAfterFetch = false
+        guard isPanelVisible(), selectedDate == todayDate else { return }
+        // Consume the request without arming another focus on the next refresh.
+        agendaScrollToken &+= 1
     }
 
     func goToToday(isInitialVisibleRange: Bool) {
@@ -86,6 +90,7 @@ final class CalendarNavigationCoordinator {
 
     /// Updates calendar selection from agenda scroll without re-scrolling the agenda.
     func syncSelectionFromAgendaScroll(_ date: CalendarDate) {
+        awaitingAgendaFocusAfterFetch = false
         applySelection(date, scrollAgenda: false)
     }
 
