@@ -141,6 +141,30 @@ swift scripts/regenerate-design-assets.swift
 
 ## Нотаризация и распространение
 
+### Mac App Store
+
+App Sandbox включён для target `equinox` в Debug и Release. Файл
+`equinox/equinox.entitlements` содержит `com.apple.security.app-sandbox = true`
+и `com.apple.security.personal-information.calendars = true` для доступа к EventKit.
+Разрешение пользователя на полный доступ к календарям по-прежнему требуется.
+
+После изменения entitlements создайте новый архив через **Product → Archive**
+и в Organizer выберите **Distribute App → App Store Connect**. Уже созданный
+архив или `.pkg` не получает новые entitlements автоматически.
+
+Перед загрузкой проверьте entitlements в подписи приложения из нового архива
+(подставьте путь к своему `.xcarchive`):
+
+```bash
+codesign -d --entitlements - /path/to/equinox.xcarchive/Products/Applications/equinox.app
+```
+
+Оба ключа должны иметь Boolean-значение `true`. После включения Sandbox
+проверьте доступ к календарям и сохранение настроек при обновлении существующей
+установки. Подробнее: [App Sandbox](https://developer.apple.com/documentation/security/app-sandbox).
+
+### Developer ID
+
 Ручной процесс через Xcode:
 
 1. Product → Archive.
