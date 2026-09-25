@@ -10,9 +10,9 @@ final class AgendaLayoutTests: XCTestCase {
             AgendaLayout.agendaHeight(maxHeight: 400, heightRatio: AgendaLayout.defaultHeightRatio)
         )
     }
-    func testMinimumRatioUsesMinimumHeight() {
+    func testLegacyCompactRatioUsesStandardHeight() {
         let height = AgendaLayout.agendaHeight(maxHeight: 400, heightRatio: 0.15)
-        XCTAssertEqual(height, AgendaLayout.minHeight)
+        XCTAssertEqual(height, AgendaLayout.agendaHeight(maxHeight: 400, heightRatio: AgendaLayout.defaultHeightRatio))
     }
 
     func testMaximumRatioUsesMaximumHeight() {

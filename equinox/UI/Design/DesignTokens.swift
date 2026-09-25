@@ -12,7 +12,7 @@ enum EquinoxDesign {
     static let radiusLG: CGFloat = 14
     static let chipRadius: CGFloat = 4
 
-    static let panelCornerRadius: CGFloat = 14
+    static let panelCornerRadius: CGFloat = 18
     static let panelPadding: CGFloat = 16
     static let panelAgendaMaxHeight: CGFloat = 400
     static let panelDefaultHeight: CGFloat = 520
@@ -21,7 +21,8 @@ enum EquinoxDesign {
     static let sectionSpacing: CGFloat = 8
 
     static let cellRadius: CGFloat = 8
-    static let cardRadius: CGFloat = 10
+    static let cardRadius: CGFloat = 12
+    static let hairlineWidth: CGFloat = 0.5
     static let monthBoundaryWidth: CGFloat = 0.5
     static let selectionStrokeWidth: CGFloat = 1
     static let focusStrokeWidth: CGFloat = 2
@@ -31,9 +32,9 @@ enum EquinoxDesign {
     static let minimumReadableFontSize: CGFloat = 10
 
     static let settingsSidebarWidth: CGFloat = 220
-    static let settingsSectionSpacing: CGFloat = 20
-    static let settingsDetailPadding: CGFloat = 20
-    static let settingsRowVerticalPadding: CGFloat = 8
+    static let settingsSectionSpacing: CGFloat = 24
+    static let settingsDetailPadding: CGFloat = 24
+    static let settingsRowVerticalPadding: CGFloat = 10
     static let settingsCalendarListMinHeight: CGFloat = 200
 
     static let hoverAnimation = Animation.snappy(duration: 0.2)
@@ -46,14 +47,6 @@ enum EquinoxDesign {
         reduceMotion ? nil : animation
     }
 
-    static func monthTransition(forward: Bool) -> AnyTransition {
-        let insertion = AnyTransition.move(edge: forward ? .trailing : .leading)
-            .combined(with: .opacity)
-        let removal = AnyTransition.move(edge: forward ? .leading : .trailing)
-            .combined(with: .opacity)
-        return .asymmetric(insertion: insertion, removal: removal)
-    }
-
     enum ColorToken {
         static let accent = Color("AccentColor", bundle: .equinox)
         static let accentStrong = Color("AccentStrong", bundle: .equinox)
@@ -61,10 +54,11 @@ enum EquinoxDesign {
         static var action: Color { accent }
         static var actionStrong: Color { accentStrong }
         static var present: Color { solar }
-        static let surfacePrimary = Color(nsColor: .windowBackgroundColor)
-        static let surfaceSecondary = Color(nsColor: .controlBackgroundColor)
-        static let surfaceWindow = Color(nsColor: .windowBackgroundColor)
-        static let surfaceRaised = Color(nsColor: .textBackgroundColor)
+        static let surfacePrimary = surfaceColor(light: 0xEFF0F2, dark: 0x343638)
+        static let surfaceSecondary = surfaceColor(light: 0xE8EAED, dark: 0x393C40)
+        static let surfaceWindow = surfacePrimary
+        static let surfaceRaised = surfaceColor(light: 0xF8F9FA, dark: 0x42464B)
+        static let textPrimary = surfaceColor(light: 0x1D1D1F, dark: 0xF5F5F7)
         static let weekendTint = Color("WeekendTint", bundle: .equinox)
         static let monthBoundary = Color("MonthBoundary", bundle: .equinox)
         static let semanticRed = Color("SemanticRed", bundle: .equinox)
@@ -79,8 +73,8 @@ enum EquinoxDesign {
         static var accentRing: Color { accent }
         static let focusRing = Color(nsColor: .keyboardFocusIndicatorColor)
 
-        static let hairlineBorder = Color.primary.opacity(0.06)
-        static let separator = Color.primary.opacity(0.10)
+        static let hairlineBorder = Color.primary.opacity(0.12)
+        static let separator = Color.primary.opacity(0.12)
         static let interactionRest = Color.primary.opacity(0.06)
         static let interactionHover = Color.primary.opacity(0.08)
         static let interactionPress = Color.primary.opacity(0.10)
@@ -88,6 +82,18 @@ enum EquinoxDesign {
         static let pickerUnselected = Color.primary.opacity(0.03)
 
         static var weekdayDimmed: Color { Color.secondary.opacity(EquinoxDesign.StateOpacity.weekdayDimmed) }
+
+        private static func surfaceColor(light: UInt32, dark: UInt32) -> Color {
+            Color(nsColor: NSColor(name: nil) { appearance in
+                let hex = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
+                return NSColor(
+                    srgbRed: Double((hex >> 16) & 0xff) / 255,
+                    green: Double((hex >> 8) & 0xff) / 255,
+                    blue: Double(hex & 0xff) / 255,
+                    alpha: 1
+                )
+            })
+        }
     }
 
     enum EventStripe {
@@ -98,11 +104,6 @@ enum EquinoxDesign {
 
     enum ChipMetrics {
         static let detailDotSize: CGFloat = 7
-        static let spacing: CGFloat = 4
-        static let horizontalPadding: CGFloat = 6
-        static let verticalPadding: CGFloat = 3
-        static let detailHorizontalPadding: CGFloat = 8
-        static let detailVerticalPadding: CGFloat = 4
         static let badgeHorizontalPadding: CGFloat = 7
         static let badgeVerticalPadding: CGFloat = 3
     }
@@ -128,8 +129,8 @@ enum EquinoxDesign {
         static let declinedTitle: Double = 0.55
         static let notesBody: Double = 0.9
         static let joinSubtitle: Double = 0.85
-        static let chipBackground: Double = 0.14
-        static let weekendHighlight: Double = 0.25
+        static let weekendHighlight: Double = 0.10
+        static let glassTint: Double = 0.55
         static let badgeTint: Double = 0.12
         static let badgeBorder: Double = 0.25
         static let chipForegroundSubtle: Double = 0.85
@@ -204,6 +205,9 @@ enum MenuBarDesign {
     static let barHeight: CGFloat = 16
     static let badgeRadius: CGFloat = EquinoxDesign.chipRadius
     static let badgeHorizontalPadding: CGFloat = EquinoxDesign.spacingXS
+    static let classicBadgeHorizontalPadding: CGFloat = EquinoxDesign.spacingXS + EquinoxDesign.spacingMicro
+    static let classicBadgeVerticalPadding: CGFloat = EquinoxDesign.spacingMicro
+    static let classicBadgeOutlineWidth: CGFloat = 0.5
     static let dateFontSize: CGFloat = 11.5
     static let clockFontSize: CGFloat = 13
     static let meetingIconSize: CGFloat = 14

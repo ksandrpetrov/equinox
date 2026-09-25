@@ -37,8 +37,8 @@ final class StatusItemController: NSObject {
         appState.events.onMeetingIndicatorChanged = { [weak self] in
             self?.updateMenuBarIcon()
         }
-        appState.onRequestPresentPanel = { [weak self] resetToToday in
-            self?.showPanelIfHidden(resetToToday: resetToToday)
+        appState.onRequestPresentPanel = { [weak self] in
+            self?.showPanelIfHidden()
         }
         notificationObservers.append(NotificationCenter.default.addObserver(
             forName: kEquinoxSizePreferenceChanged,
@@ -89,7 +89,7 @@ final class StatusItemController: NSObject {
         statusItem.autosaveName = "equinoxStatusItem"
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked)
-        statusItem.button?.sendAction(on: [.leftMouseDown])
+        statusItem.button?.sendAction(on: [.leftMouseUp])
         if let button = statusItem.button {
             Self.configureAccessibility(for: button)
         }
@@ -132,6 +132,10 @@ final class StatusItemController: NSObject {
         panelController.isVisible
     }
 
+    private var statusItemScreenFrame: NSRect? {
+        statusItem.button?.window?.frame
+    }
+
     private var isPanelModalPresented: Bool {
         appState.panel.isModalSheetPresented || panelController.window?.attachedSheet != nil
     }
@@ -157,16 +161,13 @@ final class StatusItemController: NSObject {
         }
     }
 
-    private func showPanel(resetToToday: Bool = true) {
-        if resetToToday {
-            appState.goToToday()
-        }
+    private func showPanel() {
         panelController.show(statusItem: statusItem, isPinned: appState.isPinned)
         updateDismissMonitoring()
     }
 
-    private func showPanelIfHidden(resetToToday: Bool = true) {
-        if !isPanelActuallyVisible { showPanel(resetToToday: resetToToday) }
+    private func showPanelIfHidden() {
+        if !isPanelActuallyVisible { showPanel() }
     }
 
     private func hidePanel() {
@@ -341,6 +342,9 @@ final class StatusItemController: NSObject {
                 guard let self else { return false }
                 return self.panelController.isEquinoxCalendarWindow(window, statusItem: self.statusItem)
             },
+            statusItemFrame: { [weak self] in
+                self?.statusItemScreenFrame
+            },
             onOutsideClick: { [weak self] in
                 self?.handleOutsideClick()
             }
@@ -359,6 +363,7 @@ final class StatusItemController: NSObject {
             guard !self.appState.isPinned, self.isPanelActuallyVisible else { return }
             if self.panelController.window?.attachedSheet != nil { return }
             if self.appState.panel.isModalSheetPresented { return }
+            if self.dismissMonitor.isStatusItemClickInProgress { return }
             guard !NSApp.isActive else { return }
             self.hidePanel()
         }

@@ -5,6 +5,7 @@ struct DayCellView: View {
     let isToday: Bool
     let isSelected: Bool
     var isKeyboardFocused = false
+    var selectionNamespace: Namespace.ID?
     let isInCurrentMonth: Bool
     let isHighlighted: Bool
     let isMonthBoundaryStart: Bool
@@ -56,7 +57,7 @@ struct DayCellView: View {
                 }
 
                 RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                    .fill(isSelected ? EquinoxDesign.ColorToken.action : (isHovered ? EquinoxDesign.ColorToken.interactionHover : .clear))
+                    .fill(isHovered && !isSelected ? EquinoxDesign.ColorToken.interactionHover : .clear)
                     .overlay {
                         if isToday && !isSelected {
                             RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
@@ -64,6 +65,11 @@ struct DayCellView: View {
                         }
                     }
                     .padding(.horizontal, EquinoxDesign.spacingMicro)
+
+                if isSelected {
+                    selectedBackground
+                        .transition(.identity)
+                }
 
                 VStack(spacing: EquinoxDesign.spacingMicro) {
                     Text("\(date.day)")
@@ -93,13 +99,12 @@ struct DayCellView: View {
             }
             .overlay {
                 if isKeyboardFocused {
-                    RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
-                        .strokeBorder(EquinoxDesign.ColorToken.focusRing, lineWidth: EquinoxDesign.focusStrokeWidth)
+                    keyboardFocusRing
+                        .transition(.identity)
                 }
             }
             .contentShape(Rectangle())
             .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isHovered)
-            .animation(EquinoxDesign.animation(EquinoxDesign.hoverAnimation, reduceMotion: reduceMotion), value: isSelected)
         }
         .buttonStyle(.plain)
         .focusable(false)
@@ -126,6 +131,29 @@ struct DayCellView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityAction(named: Text(String(localized: "New Event", bundle: .equinox, comment: "Day cell accessibility action"))) {
             if date.isValid { onDoubleClick() }
+        }
+    }
+
+    @ViewBuilder
+    private var selectedBackground: some View {
+        let shape = RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
+            .fill(EquinoxDesign.ColorToken.action)
+            .padding(.horizontal, EquinoxDesign.spacingMicro)
+        if let selectionNamespace {
+            shape.matchedGeometryEffect(id: "selected-day", in: selectionNamespace)
+        } else {
+            shape
+        }
+    }
+
+    @ViewBuilder
+    private var keyboardFocusRing: some View {
+        let shape = RoundedRectangle(cornerRadius: metrics.cellRadius, style: .continuous)
+            .strokeBorder(EquinoxDesign.ColorToken.focusRing, lineWidth: EquinoxDesign.focusStrokeWidth)
+        if let selectionNamespace {
+            shape.matchedGeometryEffect(id: "focused-day", in: selectionNamespace)
+        } else {
+            shape
         }
     }
 

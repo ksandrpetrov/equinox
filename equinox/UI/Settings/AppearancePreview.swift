@@ -70,14 +70,14 @@ struct AppearancePreview: View {
 
     private var previewEventRow: some View {
         HStack(alignment: .center, spacing: 0) {
-            VStack(alignment: .trailing, spacing: EquinoxDesign.spacingMicro) {
+            VStack(alignment: .center, spacing: EquinoxDesign.spacingMicro) {
                 Text(verbatim: "09:00")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                 Text(verbatim: "10:00")
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
             .font(EquinoxDesign.monoTimeFont(size: previewMetrics.agendaTimeFontSize))
-            .frame(width: previewMetrics.agendaTimeColumnWidth, alignment: .trailing)
+            .frame(width: previewMetrics.agendaTimeColumnWidth, alignment: .center)
 
             AgendaTimelineMarker(
                 calendarColor: previewEventColor,

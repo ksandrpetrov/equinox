@@ -1,6 +1,18 @@
 import Foundation
 
 enum AgendaSections {
+    /// Header offsets are relative to the top of the agenda viewport. A pinned
+    /// header owns the visible events until the next header reaches the top.
+    static func topVisibleDate(headerOffsets: [CalendarDate: Double]) -> CalendarDate? {
+        let offsets = headerOffsets.filter { $0.key.isValid && $0.value.isFinite }
+        let preceding = offsets.filter { $0.value <= 0 }.max {
+            $0.value == $1.value ? $0.key < $1.key : $0.value < $1.value
+        }
+        return preceding?.key ?? offsets.min {
+            $0.value == $1.value ? $0.key < $1.key : $0.value < $1.value
+        }?.key
+    }
+
     static func sections(
         from startDate: CalendarDate,
         days: Int,

@@ -2,7 +2,6 @@ import Foundation
 
 enum AgendaLayout {
     static let minHeight: CGFloat = 120
-    static let minimumHeightRatio: Double = 0.15
     static let defaultHeightRatio: Double = 0.35
     static let maximumHeightRatio: Double = 0.65
 
@@ -10,11 +9,12 @@ enum AgendaLayout {
         guard maxHeight.isFinite, maxHeight > 0 else { return 0 }
 
         let ratio = heightRatio.isFinite ? heightRatio : defaultHeightRatio
-        let clampedRatio = min(max(ratio, minimumHeightRatio), maximumHeightRatio)
-        let ratioProgress = (clampedRatio - minimumHeightRatio)
-            / (maximumHeightRatio - minimumHeightRatio)
+        let clampedRatio = min(max(ratio, defaultHeightRatio), maximumHeightRatio)
+        let ratioProgress = (clampedRatio - defaultHeightRatio)
+            / (maximumHeightRatio - defaultHeightRatio)
         let availableMinimum = min(minHeight, maxHeight)
+        let standardHeight = availableMinimum + (maxHeight - availableMinimum) * 0.4
 
-        return availableMinimum + (maxHeight - availableMinimum) * CGFloat(ratioProgress)
+        return standardHeight + (maxHeight - standardHeight) * CGFloat(ratioProgress)
     }
 }

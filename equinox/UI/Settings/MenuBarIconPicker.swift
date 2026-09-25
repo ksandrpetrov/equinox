@@ -49,7 +49,7 @@ struct MenuBarIconPicker: View {
                     RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM, style: .continuous)
                         .strokeBorder(
                             selection == index ? EquinoxDesign.ColorToken.accentRing : EquinoxDesign.ColorToken.hairlineBorder,
-                            lineWidth: selection == index ? 2 : 1
+                            lineWidth: selection == index ? 1 : EquinoxDesign.hairlineWidth
                         )
                 }
         }

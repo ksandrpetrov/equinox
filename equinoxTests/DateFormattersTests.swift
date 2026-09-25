@@ -2,6 +2,27 @@ import XCTest
 @testable import EquinoxKit
 
 final class DateFormattersTests: XCTestCase {
+    func testSameDayEventShowsItsDateOnlyOnce() {
+        let calendar = Calendar.equinoxGregorian()
+        let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: 28, hour: 11))!
+        let end = start.addingTimeInterval(3600)
+        let date = EquinoxFormatters.formatter(key: "test.date-only") { $0.dateStyle = .medium }.string(from: start)
+        let text = EquinoxFormatters.mediumDateTime(from: start, to: end)
+        XCTAssertEqual(text.components(separatedBy: date).count - 1, 1)
+        XCTAssertTrue(text.contains(EquinoxFormatters.shortTime(start)))
+        XCTAssertTrue(text.hasSuffix(EquinoxFormatters.shortTime(end)))
+    }
+
+    func testOvernightEventKeepsBothDates() {
+        let calendar = Calendar.equinoxGregorian()
+        let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: 28, hour: 23))!
+        let end = start.addingTimeInterval(7200)
+        let date = EquinoxFormatters.formatter(key: "test.date-only") { $0.dateStyle = .medium }
+        let text = EquinoxFormatters.mediumDateTime(from: start, to: end)
+        XCTAssertTrue(text.contains(date.string(from: start)))
+        XCTAssertTrue(text.contains(date.string(from: end)))
+    }
+
     func testLocaleNotificationCanInvalidateFormattersWithoutChangingLocaleIdentifier() {
         let first = EquinoxFormatters.formatter(key: "test.locale-overrides") { $0.dateFormat = "HH" }
         EquinoxFormatters.invalidateCache()

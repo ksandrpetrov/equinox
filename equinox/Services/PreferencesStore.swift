@@ -94,7 +94,14 @@ final class PreferencesStore {
         didSet { persist(showMonthBoundaries, forKey: kShowMonthBoundaries) }
     }
     var agendaHeightRatio = AgendaLayout.defaultHeightRatio {
-        didSet { persist(agendaHeightRatio, forKey: kAgendaHeightRatio) }
+        didSet {
+            let normalized = Self.clampedAgendaHeightRatio(agendaHeightRatio)
+            if agendaHeightRatio != normalized {
+                agendaHeightRatio = normalized
+                return
+            }
+            persist(agendaHeightRatio, forKey: kAgendaHeightRatio)
+        }
     }
     var hasSeenShortcutTip = false { didSet { persist(hasSeenShortcutTip, forKey: kHasSeenShortcutTip) } }
 
@@ -137,7 +144,7 @@ final class PreferencesStore {
     private static func clampedAgendaHeightRatio(_ ratio: Double) -> Double {
         guard ratio.isFinite, ratio != 0 else { return AgendaLayout.defaultHeightRatio }
         return min(
-            max(ratio, AgendaLayout.minimumHeightRatio),
+            max(ratio, AgendaLayout.defaultHeightRatio),
             AgendaLayout.maximumHeightRatio
         )
     }

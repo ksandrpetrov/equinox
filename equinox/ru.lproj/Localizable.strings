@@ -14,7 +14,6 @@
 /* Appearance prefs tab label */
 "Appearance" = "Оформление";
 "At time of event" = "В момент начала события";
-"Awaiting response" = "Ожидается ответ";
 "Background" = "Фон";
 "Calendar" = "Календарь";
 "Calendars" = "Календари";
@@ -26,7 +25,6 @@
 "Delete event?" = "Удалить событие?";
 "Delete this occurrence?" = "Удалить только это событие?";
 "Delete…" = "Удалить…";
-"Declined" = "Отклонено";
 "Dismiss" = "Закрыть";
 "Done" = "Готово";
 "End date" = "Дата окончания";
@@ -44,7 +42,6 @@
 /* General prefs tab label */
 "General" = "Основные";
 "Glass" = "Стеклянный";
-"Going" = "Пойду";
 "Join Meeting" = "Присоединиться к встрече";
 "Open Link" = "Открыть ссылку";
 "Keyboard shortcut" = "Горячая клавиша";
@@ -54,7 +51,6 @@
 "Light" = "Светлая";
 "Location" = "Место";
 "Medium" = "Средний";
-"Maybe" = "Возможно";
 "Menu Bar" = "Строка меню";
 "Menu Bar Icon" = "Значок в строке меню";
 "Monday" = "Понедельник";
@@ -167,8 +163,7 @@
 "Agenda height" = "Высота списка событий";
 "Agenda" = "Расписание";
 "Adjust agenda height" = "Настроить высоту расписания";
-"Compact height" = "Компактная";
-"Balanced height" = "Оптимальная";
+"Standard height" = "Обычная";
 "Expanded height" = "Увеличенная";
 "Hide agenda" = "Скрыть расписание";
 "Default proportion of the agenda section" = "Доля панели под список событий";
@@ -209,7 +204,6 @@
 "View on GitHub" = "Открыть на GitHub";
 /* Event detail & modals */
 "When" = "Когда";
-"Attendance" = "Ваш ответ";
 "Confirm" = "Подтвердить";
 /* Create event errors */
 "The calendar could not be found." = "Календарь не найден.";
@@ -254,9 +248,6 @@
 "This shortcut is already used by macOS." = "Это сочетание уже используется macOS.";
 "This shortcut is already used by “%@”." = "Это сочетание уже используется командой «%@».";
 /* Additional RSVP statuses */
-"Delegated" = "Передано";
-"Completed" = "Завершено";
-"In progress" = "В процессе";
 "You delegated this invitation" = "Вы передали это приглашение";
 "Participation completed" = "Участие завершено";
 "Participation in progress" = "Участие в процессе";

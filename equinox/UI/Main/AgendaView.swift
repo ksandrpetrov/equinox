@@ -40,8 +40,12 @@ struct AgendaView: View {
     @State private var pendingDelete: PendingDeleteEvent?
     @State private var scrollCoordinator = AgendaScrollCoordinator()
     @State private var sectionHeaderHeight: CGFloat = 0
+    @Namespace private var scrollViewport
 
     private var prefs: PreferencesStore { appState.preferences }
+    private var backgroundStyle: BackgroundStyle {
+        BackgroundStyle(rawValue: prefs.backgroundStyle) ?? .glass
+    }
     var body: some View {
         let displayRange = scrollCoordinator.displayRange(anchor: appState.events.todayDate)
         let sections = agendaSections
@@ -118,8 +122,8 @@ struct AgendaView: View {
                                     .background {
                                         GeometryReader { geometry in
                                             Color.clear.preference(
-                                                key: AgendaSectionHeaderHeightKey.self,
-                                                value: geometry.size.height
+                                                key: AgendaSectionFramesKey.self,
+                                                value: [section.date: geometry.frame(in: .named(scrollViewport))]
                                             )
                                         }
                                     }
@@ -129,16 +133,26 @@ struct AgendaView: View {
                         }
                         .scrollTargetLayout()
                     }
-                    .scrollIndicators(.automatic)
+                    .coordinateSpace(name: scrollViewport)
+                    .scrollIndicators(.hidden)
                     .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
-                    .onPreferenceChange(AgendaSectionHeaderHeightKey.self) { height in
-                        sectionHeaderHeight = height
+                    .onPreferenceChange(AgendaSectionFramesKey.self) { frames in
+                        let measuredHeight = frames.values.map(\.height).max() ?? 0
+                        if measuredHeight > 0, sectionHeaderHeight != measuredHeight {
+                            sectionHeaderHeight = measuredHeight
+                        }
+                        scrollCoordinator.updateVisibleDate(
+                            AgendaSections.topVisibleDate(headerOffsets: frames.mapValues { Double($0.minY) }),
+                            events: appState.events
+                        )
                     }
                     .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
                         scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, events: appState.events)
                     }
                     .onScrollPhaseChange { _, newPhase in
-                        if newPhase == .idle {
+                        if newPhase == .interacting {
+                            scrollCoordinator.beginUserScroll(events: appState.events)
+                        } else if newPhase == .idle {
                             scrollCoordinator.commitScrollSettle(events: appState.events)
                         }
                     }
@@ -159,7 +173,7 @@ struct AgendaView: View {
             }
         }
         .onChange(of: appState.events.agendaScrollToken) { _, _ in
-            scrollCoordinator.scrollToFocus(events: appState.events)
+            scrollCoordinator.scheduleScrollToFocus(events: appState.events)
         }
         .sheet(item: $pendingDelete) { pending in
             ModalConfirmDialog(
@@ -184,12 +198,12 @@ struct AgendaView: View {
                     pendingDelete = nil
                 }
             )
-            .equinoxSheetPresentation()
+            .equinoxSheetPresentation(style: backgroundStyle)
         }
     }
 
     private var agendaScrollAnchor: UnitPoint {
-        if case .event = scrollCoordinator.scrolledTarget {
+        if case .event = scrollCoordinator.requestedTarget {
             guard height > 0 else { return .top }
             return UnitPoint(x: 0.5, y: min(0.5, agendaHeaderClearance / height))
         }
@@ -362,10 +376,10 @@ struct AgendaView: View {
     }
 }
 
-private struct AgendaSectionHeaderHeightKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
+struct AgendaSectionFramesKey: PreferenceKey {
+    static let defaultValue: [CalendarDate: CGRect] = [:]
 
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
+    static func reduce(value: inout [CalendarDate: CGRect], nextValue: () -> [CalendarDate: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
 }

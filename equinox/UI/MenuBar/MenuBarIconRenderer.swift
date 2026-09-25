@@ -28,7 +28,7 @@ struct MenuBarIconView: View {
             }
             dateBadge
         }
-        .frame(height: MenuBarDesign.barHeight)
+        .frame(height: MenuBarDesign.barHeight + (outline ? MenuBarDesign.classicBadgeVerticalPadding * 2 : 0))
         .foregroundStyle(ink)
     }
 
@@ -36,15 +36,17 @@ struct MenuBarIconView: View {
     private var dateBadge: some View {
         let textView = Text(text)
             .font(MenuBarDesign.dateFont(minimal: iconStyle == .minimal))
-            .padding(.horizontal, MenuBarDesign.badgeHorizontalPadding)
+            .padding(.horizontal, outline ? MenuBarDesign.classicBadgeHorizontalPadding : MenuBarDesign.badgeHorizontalPadding)
 
         if plain {
             textView
         } else if outline {
-            textView.background {
-                RoundedRectangle(cornerRadius: MenuBarDesign.badgeRadius, style: .continuous)
-                    .strokeBorder(ink, lineWidth: 1)
-            }
+            textView
+                .padding(.vertical, MenuBarDesign.classicBadgeVerticalPadding)
+                .background {
+                    RoundedRectangle(cornerRadius: MenuBarDesign.badgeRadius, style: .continuous)
+                        .strokeBorder(ink, lineWidth: MenuBarDesign.classicBadgeOutlineWidth)
+                }
         } else {
             ZStack {
                 RoundedRectangle(cornerRadius: MenuBarDesign.badgeRadius, style: .continuous)

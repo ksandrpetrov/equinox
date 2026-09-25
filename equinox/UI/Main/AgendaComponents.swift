@@ -13,14 +13,16 @@ struct AgendaSectionHeader: View {
         let isTomorrow = calendar.isDateInTomorrow(nsDate)
         let context = sectionContext(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate)
 
-        HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
-            Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
-                .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
-                .foregroundStyle(isSelected ? EquinoxDesign.ColorToken.action : .primary)
-            if !context.isEmpty {
-                Text(context)
-                    .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
-                    .foregroundStyle(.secondary)
+        HStack(spacing: EquinoxDesign.spacingSM) {
+            HStack(alignment: .firstTextBaseline, spacing: EquinoxDesign.spacingSM) {
+                Text(agendaSectionTitle(isToday: isToday, isTomorrow: isTomorrow, nsDate: nsDate))
+                    .font(EquinoxDesign.agendaSectionTitleFont(size: metrics.fontSize))
+                    .foregroundStyle(isSelected ? EquinoxDesign.ColorToken.action : .primary)
+                if !context.isEmpty {
+                    Text(context)
+                        .font(EquinoxDesign.agendaSectionSubtitleFont(size: metrics.fontSize))
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer(minLength: 0)
             if eventCount > 0 {
@@ -32,7 +34,16 @@ struct AgendaSectionHeader: View {
         }
         .padding(.horizontal, EquinoxDesign.spacingSM)
         .padding(.vertical, EquinoxDesign.spacingSM)
-        .background(EquinoxDesign.ColorToken.surfaceWindow)
+        .background {
+            // Pinned headers must obscure the rows scrolling underneath them.
+            EquinoxSurface(style: .solid, cornerRadius: EquinoxDesign.radiusSM, showsBorder: false)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(EquinoxDesign.ColorToken.separator)
+                .frame(height: EquinoxDesign.hairlineWidth)
+                .padding(.horizontal, EquinoxDesign.spacingSM)
+        }
         .accessibilityAddTraits(.isHeader)
     }
 
@@ -61,11 +72,7 @@ struct AgendaHorizonControl: View {
 
             Menu {
                 presetButton(
-                    String(localized: "Compact height", bundle: .equinox, comment: "Compact agenda height"),
-                    ratio: AgendaLayout.minimumHeightRatio
-                )
-                presetButton(
-                    String(localized: "Balanced height", bundle: .equinox, comment: "Balanced agenda height"),
+                    String(localized: "Standard height", bundle: .equinox, comment: "Standard agenda height"),
                     ratio: AgendaLayout.defaultHeightRatio
                 )
                 presetButton(
@@ -168,11 +175,11 @@ struct AgendaEventCard: View {
     }
 
     var body: some View {
-        HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
+        HStack(alignment: .center, spacing: 0) {
             Button {
                 onTap?()
             } label: {
-                HStack(alignment: showsSecondaryDetails ? .top : .center, spacing: 0) {
+                HStack(alignment: .center, spacing: 0) {
                     timeColumn
 
                     AgendaTimelineMarker(
@@ -217,7 +224,6 @@ struct AgendaEventCard: View {
                     showsOpenError = !URLOpener.open(url, fallback: fallback)
                 }
                 .padding(.trailing, EquinoxDesign.spacingSM)
-                .padding(.top, showsSecondaryDetails ? EquinoxDesign.spacingXS : 2)
             }
         }
         .equinoxCard(style: isHappeningNow ? .activeTimeline : .timeline, isHovered: isHovered)
@@ -239,17 +245,17 @@ struct AgendaEventCard: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
-                .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
+                .frame(width: metrics.agendaTimeColumnWidth, alignment: .center)
         } else {
-            VStack(alignment: .trailing, spacing: EquinoxDesign.spacingMicro) {
+            VStack(alignment: .center, spacing: EquinoxDesign.spacingMicro) {
                 Text(EquinoxFormatters.shortTime(event.slotStartDate))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                 Text(EquinoxFormatters.shortTime(event.slotEndDate))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
             }
             .font(EquinoxDesign.monoTimeFont(size: metrics.agendaTimeFontSize))
             .lineLimit(1)
-            .frame(width: metrics.agendaTimeColumnWidth, alignment: .trailing)
+            .frame(width: metrics.agendaTimeColumnWidth, alignment: .center)
         }
     }
 

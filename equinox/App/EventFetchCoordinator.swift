@@ -45,6 +45,7 @@ final class EventFetchCoordinator {
     private var pendingFetch: PendingFetch?
     private var isDrainingQueue = false
     private var hasPreparedCalendarAccess = false
+    private var pendingNavigation: Task<Void, Never>?
 
     var onPresentationUpdate: ((_ shouldShowLoadingIndicator: Bool, _ isFetchingEvents: Bool) -> Void)?
     var onSyncComplete: ((_ successfulFetch: Bool) async -> Void)?
@@ -73,6 +74,18 @@ final class EventFetchCoordinator {
         self.refetchEvents = refetchEvents
         loadingIndicator.onUpdate = { [weak self] shouldShow, isFetching in
             self?.onPresentationUpdate?(shouldShow, isFetching)
+        }
+    }
+
+    func scheduleNavigationFetch(range: (first: CalendarDate, last: CalendarDate)) {
+        pendingNavigation?.cancel()
+        pendingNavigation = Task { [weak self] in
+            do {
+                try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+            } catch {
+                return
+            }
+            self?.scheduleFetch(range: range)
         }
     }
 
@@ -110,6 +123,8 @@ final class EventFetchCoordinator {
         preparesCalendarAccess: Bool,
         completion: CheckedContinuation<Bool, Never>?
     ) {
+        pendingNavigation?.cancel()
+        pendingNavigation = nil
         guard range.first.isValid, range.last.isValid, range.first <= range.last else {
             completion?.resume(returning: false)
             return

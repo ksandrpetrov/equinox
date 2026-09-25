@@ -44,9 +44,7 @@ final class EventsCoordinator {
     var hasCompletedInitialEventLoad = false
 
     var agendaScrollToken: Int { navigation.agendaScrollToken }
-    var monthNavigationDirection: CalendarNavigationCoordinator.MonthNavigationDirection {
-        navigation.monthNavigationDirection
-    }
+    var agendaFocusesDayStart: Bool { navigation.agendaFocusesDayStart }
     var canGoToPreviousMonth: Bool { navigation.canGoToPreviousMonth }
     var canGoToNextMonth: Bool { navigation.canGoToNextMonth }
     var hasCalendars: Bool {
@@ -184,10 +182,6 @@ final class EventsCoordinator {
         )
     }
 
-    func requestAgendaScroll() {
-        navigation.requestAgendaScroll()
-    }
-
     func goToToday() {
         navigation.goToToday(isInitialVisibleRange: visibleGridRange == nil)
     }
@@ -281,7 +275,7 @@ final class EventsCoordinator {
         visibleGridRange = (gridFirst, gridLast)
         let range = fetchRange(coveringGridFrom: gridFirst, through: gridLast)
         currentFetchRange = range
-        fetchCoordinator.scheduleFetch(range: range)
+        fetchCoordinator.scheduleNavigationFetch(range: range)
     }
 
     private func applyAgendaFetchExtensionIfNeeded() {

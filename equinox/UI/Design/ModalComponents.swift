@@ -140,7 +140,7 @@ struct ModalConfirmDialog: View {
         .interactiveDismissDisabled(isConfirming)
         .frame(width: ModalDesign.confirmWidth)
         .presentationSizing(.fitted)
-        .presentationBackground(.background)
+        .equinoxSheetPresentation()
     }
 }
 
@@ -159,7 +159,9 @@ extension View {
         }
     }
 
-    func equinoxSheetPresentation() -> some View {
-        presentationBackground(.background)
+    func equinoxSheetPresentation(style: BackgroundStyle = .glass) -> some View {
+        presentationBackground {
+            EquinoxSurface(style: style, showsBorder: false)
+        }
     }
 }

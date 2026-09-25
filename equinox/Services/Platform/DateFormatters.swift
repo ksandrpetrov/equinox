@@ -73,6 +73,9 @@ enum EquinoxFormatters {
             $0.dateStyle = .medium
             $0.timeStyle = .short
         }
+        if formatter.calendar.isDate(start, inSameDayAs: end) {
+            return "\(formatter.string(from: start)) – \(shortTime(end))"
+        }
         return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
     }
 

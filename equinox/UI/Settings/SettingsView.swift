@@ -60,6 +60,7 @@ struct SettingsView: View {
                 .tag(SettingsTab.about)
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
             .navigationSplitViewColumnWidth(
                 min: SettingsDesign.sidebarWidth,
                 ideal: SettingsDesign.sidebarWidth
@@ -71,9 +72,15 @@ struct SettingsView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
-        .background(SettingsDesign.ColorToken.surfaceWindow)
+        .background {
+            EquinoxSurface(
+                style: BackgroundStyle(rawValue: preferencesStore.backgroundStyle) ?? .glass,
+                cornerRadius: 0,
+                showsBorder: false
+            )
+        }
         .searchable(text: $searchText, prompt: searchPrompt)
-        .toolbarBackground(.visible, for: .windowToolbar)
+        .toolbarBackground(.hidden, for: .windowToolbar)
         .frame(minWidth: SettingsDesign.windowMinWidth, minHeight: SettingsDesign.windowMinHeight)
         .environment(\.appState, appState)
         .onAppear {

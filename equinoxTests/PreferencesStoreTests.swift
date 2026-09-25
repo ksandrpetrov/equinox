@@ -139,6 +139,19 @@ final class PreferencesStoreTests: XCTestCase {
         }
     }
 
+    func testLegacyCompactAgendaHeightMigratesToStandardAndPersists() {
+        withIsolatedDefaults { defaults in
+            defaults.set(0.15, forKey: kAgendaHeightRatio)
+            let store = PreferencesStore(defaults: defaults)
+            XCTAssertEqual(store.agendaHeightRatio, AgendaLayout.defaultHeightRatio)
+            XCTAssertEqual(defaults.double(forKey: kAgendaHeightRatio), AgendaLayout.defaultHeightRatio)
+
+            store.agendaHeightRatio = 0.2
+            XCTAssertEqual(store.agendaHeightRatio, AgendaLayout.defaultHeightRatio)
+            XCTAssertEqual(defaults.double(forKey: kAgendaHeightRatio), AgendaLayout.defaultHeightRatio)
+        }
+    }
+
     func testResetUsesInjectedDefaultsAndClearsInjectedCalendarSelection() {
         let standardSelection = CalendarSelectionStorage.loadSelectedIDs()
 

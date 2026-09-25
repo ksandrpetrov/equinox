@@ -15,47 +15,48 @@ struct EventDetailHeroHeader: View {
                 .opacity(isDeclined ? EquinoxDesign.StateOpacity.declined : 1)
                 .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: EquinoxDesign.spacingXS) {
-                EventDetailCalendarChip(
-                    title: event.calendarTitle,
-                    color: event.swiftUIColor
-                )
-
-                if let status = event.participationStatus {
-                    EventDetailStatusChip(status: status)
-                }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: EquinoxDesign.spacingMD) { eventLabels }
+                VStack(alignment: .leading, spacing: EquinoxDesign.spacingSM) { eventLabels }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+
+    @ViewBuilder
+    private var eventLabels: some View {
+        EventDetailCalendarLabel(title: event.calendarTitle, color: event.swiftUIColor)
+        if let status = event.participationStatus {
+            EventDetailStatusLabel(status: status)
+        }
+    }
 }
 
-struct EventDetailCalendarChip: View {
+struct EventDetailCalendarLabel: View {
     let title: String
     let color: Color
 
     var body: some View {
-        EquinoxChip(
-            text: title,
-            dotColor: color,
-            foreground: .secondary,
-            background: EquinoxDesign.ColorToken.interactionRest,
-            usesCapsule: true
-        )
+        HStack(spacing: EquinoxDesign.spacingXS) {
+            Circle()
+                .fill(color)
+                .frame(width: EquinoxDesign.ChipMetrics.detailDotSize, height: EquinoxDesign.ChipMetrics.detailDotSize)
+            Text(title)
+                .lineLimit(1)
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
     }
 }
 
-struct EventDetailStatusChip: View {
+struct EventDetailStatusLabel: View {
     let status: EventParticipationStatus
 
     var body: some View {
-        EquinoxChip(
-            text: status.localizedLabel,
-            symbol: status.detailSymbolName,
-            foreground: status.chipForeground,
-            background: status.chipBackground,
-            usesCapsule: true
-        )
+        Label(status.detailStatusLabel, systemImage: status.detailSymbolName)
+            .font(.caption)
+            .foregroundStyle(status.chipForeground)
+            .fixedSize()
     }
 }
 
@@ -67,15 +68,12 @@ struct EventDetailMetadataCard: View {
             ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                 EventDetailMetadataRow(model: row)
                 if index < rows.count - 1 {
-                    Rectangle()
-                        .fill(EquinoxDesign.ColorToken.separator)
-                        .frame(height: 1)
-                        .padding(.leading, EquinoxDesign.ControlWidth.metadataIcon + EquinoxDesign.spacingMD)
+                    SettingsDivider()
                 }
             }
         }
         .padding(.vertical, EquinoxDesign.spacingXS)
-        .background { EventDetailCardBackground() }
+        .overlay(alignment: .top) { SettingsDivider() }
     }
 }
 
@@ -109,7 +107,7 @@ struct EventDetailMetadataRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, EquinoxDesign.spacingMD)
+        .padding(.horizontal, EquinoxDesign.spacingXS)
         .padding(.vertical, EquinoxDesign.spacingSM + EquinoxDesign.spacingMicro)
     }
 }
@@ -129,9 +127,10 @@ struct EventDetailNotesCard: View {
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(EquinoxDesign.spacingMD)
+        .padding(.vertical, EquinoxDesign.spacingMD)
+        .padding(.horizontal, EquinoxDesign.spacingXS)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background { EventDetailCardBackground() }
+        .overlay(alignment: .top) { SettingsDivider() }
     }
 }
 

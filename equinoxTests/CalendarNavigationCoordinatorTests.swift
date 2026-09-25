@@ -31,15 +31,15 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
         XCTAssertEqual(navigation.monthDate.year, target.year)
     }
 
-    func testSelectionUpdatesMonthTransitionDirection() {
+    func testSelectionMovesBetweenMonthsAndYears() {
         navigation.monthDate = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         navigation.selectedDate = CalendarDate(year: 2026, monthIndex: 5, day: 14)
 
         navigation.selectDate(CalendarDate(year: 2026, monthIndex: 4, day: 14))
-        XCTAssertEqual(navigation.monthNavigationDirection, .backward)
+        XCTAssertEqual(navigation.monthDate, CalendarDate(year: 2026, monthIndex: 4, day: 1))
 
         navigation.selectDate(CalendarDate(year: 2027, monthIndex: 0, day: 14))
-        XCTAssertEqual(navigation.monthNavigationDirection, .forward)
+        XCTAssertEqual(navigation.monthDate, CalendarDate(year: 2027, monthIndex: 0, day: 1))
     }
 
     func testSyncSelectionFromAgendaScrollDoesNotBumpScrollToken() {
@@ -57,14 +57,16 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
         XCTAssertGreaterThan(navigation.agendaScrollToken, tokenBefore)
     }
 
-    func testGoToPreviousMonthSetsBackwardDirection() {
+    func testGoToPreviousMonthPreservesSelectedDay() {
+        navigation.selectDate(CalendarDate(year: 2026, monthIndex: 5, day: 14))
         navigation.goToPreviousMonth()
-        XCTAssertEqual(navigation.monthNavigationDirection, .backward)
+        XCTAssertEqual(navigation.selectedDate, CalendarDate(year: 2026, monthIndex: 4, day: 14))
     }
 
-    func testGoToNextMonthSetsForwardDirection() {
+    func testGoToNextMonthClampsSelectedDayToDestinationMonth() {
+        navigation.selectDate(CalendarDate(year: 2026, monthIndex: 0, day: 31))
         navigation.goToNextMonth()
-        XCTAssertEqual(navigation.monthNavigationDirection, .forward)
+        XCTAssertEqual(navigation.selectedDate, CalendarDate(year: 2026, monthIndex: 1, day: 28))
     }
 
     func testNavigationDoesNotLeaveSupportedDateRange() {

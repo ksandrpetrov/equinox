@@ -81,7 +81,7 @@ struct GeneralSettingsTab: View {
                     showResetConfirmation = false
                 }
             )
-            .equinoxSheetPresentation()
+            .equinoxSheetPresentation(style: BackgroundStyle(rawValue: prefs.backgroundStyle) ?? .glass)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             launchAtLogin = LaunchAtLogin.isEnabled

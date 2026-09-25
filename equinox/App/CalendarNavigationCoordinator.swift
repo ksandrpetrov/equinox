@@ -10,21 +10,15 @@ final class CalendarNavigationCoordinator {
     var selectedDate: CalendarDate
     var todayDate: CalendarDate
 
-    /// Bumped after navigation or panel reopen that should scroll the agenda to `selectedDate`.
+    /// Bumped after explicit navigation that should scroll the agenda to `selectedDate`.
     private(set) var agendaScrollToken = 0
-
-    /// Direction of the last month navigation for grid transition animation.
-    private(set) var monthNavigationDirection: MonthNavigationDirection = .forward
+    /// The Today command keeps the day header as its target, including after a fetch.
+    private(set) var agendaFocusesDayStart = false
 
     var isPanelVisible: () -> Bool = { false }
     var onVisibleGridRangeChanged: (CalendarDate, CalendarDate) -> Void = { _, _ in }
 
     private var awaitingAgendaFocusAfterFetch = false
-
-    enum MonthNavigationDirection {
-        case forward
-        case backward
-    }
 
     var canGoToPreviousMonth: Bool {
         monthDate.year > CalendarDate.minYear || monthDate.monthIndex > 0
@@ -62,10 +56,10 @@ final class CalendarNavigationCoordinator {
         let newToday = CalendarDate.today(calendar: calendar)
         let monthChanged = newToday.monthIndex != monthDate.monthIndex || newToday.year != monthDate.year
 
-        updateNavigationDirection(toward: newToday)
         todayDate = newToday
         monthDate = newToday
         selectedDate = newToday
+        agendaFocusesDayStart = true
         if monthChanged || isInitialVisibleRange {
             refreshVisibleGridRange()
         }
@@ -74,13 +68,11 @@ final class CalendarNavigationCoordinator {
 
     func goToPreviousMonth() {
         guard canGoToPreviousMonth else { return }
-        monthNavigationDirection = .backward
         selectDate(selectedDate.addingMonthsPreservingDay(-1, calendar: calendar))
     }
 
     func goToNextMonth() {
         guard canGoToNextMonth else { return }
-        monthNavigationDirection = .forward
         selectDate(selectedDate.addingMonthsPreservingDay(1, calendar: calendar))
     }
 
@@ -122,6 +114,9 @@ final class CalendarNavigationCoordinator {
 
     private func applySelection(_ date: CalendarDate, scrollAgenda: Bool) {
         guard date.isValid else { return }
+        if scrollAgenda {
+            agendaFocusesDayStart = false
+        }
         let newMonthDate = CalendarDate(year: date.year, monthIndex: date.monthIndex, day: 1)
         let monthChanged = date.monthIndex != monthDate.monthIndex || date.year != monthDate.year
         let selectionChanged = selectedDate != date
@@ -138,7 +133,6 @@ final class CalendarNavigationCoordinator {
             selectedDate = date
         }
         if monthDateChanged {
-            updateNavigationDirection(toward: newMonthDate)
             monthDate = newMonthDate
             refreshVisibleGridRange()
         }
@@ -147,8 +141,4 @@ final class CalendarNavigationCoordinator {
         }
     }
 
-    private func updateNavigationDirection(toward date: CalendarDate) {
-        guard date.year != monthDate.year || date.monthIndex != monthDate.monthIndex else { return }
-        monthNavigationDirection = date < monthDate ? .backward : .forward
-    }
 }

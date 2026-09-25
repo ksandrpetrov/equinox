@@ -6,6 +6,114 @@ import XCTest
 
 @MainActor
 final class PanelPresentationStateTests: XCTestCase {
+    func testReopeningPanelPreservesMonthDayAndAgendaPosition() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        state.goToNextMonth()
+        let selectedDate = state.events.selectedDate
+        let monthDate = state.events.monthDate
+        let scrollToken = state.events.agendaScrollToken
+
+        state.panel.isPanelVisible = false
+        state.panel.isPanelVisible = true
+        state.panelDidOpen()
+
+        XCTAssertEqual(state.events.selectedDate, selectedDate)
+        XCTAssertEqual(state.events.monthDate, monthDate)
+        XCTAssertEqual(state.events.agendaScrollToken, scrollToken)
+        state.goToToday()
+        XCTAssertEqual(state.events.selectedDate, state.events.todayDate)
+    }
+
+    func testStatusItemClickWithoutWindowLeavesDismissalToButtonToggle() {
+        let monitor = PanelDismissMonitor()
+        defer { monitor.teardown() }
+        var isPanelVisible = true
+        var outsideClicks = 0
+        var statusFrame = NSRect(x: 800, y: 900, width: 40, height: 24)
+        monitor.updateMonitoring(
+            isPinned: false,
+            isPanelVisible: true,
+            isModalSheetPresented: { false },
+            isEquinoxWindow: { _ in false },
+            statusItemFrame: { statusFrame },
+            onOutsideClick: {
+                outsideClicks += 1
+                isPanelVisible = false
+            }
+        )
+
+        monitor.handleMouseDown(window: nil, screenLocation: NSPoint(x: statusFrame.midX, y: statusFrame.midY))
+        XCTAssertTrue(monitor.isStatusItemClickInProgress)
+        monitor.handleMouseUp()
+        XCTAssertFalse(monitor.isStatusItemClickInProgress)
+        isPanelVisible.toggle()
+
+        XCTAssertFalse(isPanelVisible, "Outside-click dismissal must not hide the panel before its button toggles it")
+        XCTAssertEqual(outsideClicks, 0)
+
+        // The status item can move to another display while the monitor is installed.
+        statusFrame.origin = NSPoint(x: -600, y: 1200)
+        monitor.handleMouseDown(window: nil, screenLocation: NSPoint(x: statusFrame.midX, y: statusFrame.midY))
+        isPanelVisible.toggle()
+
+        XCTAssertTrue(isPanelVisible)
+        XCTAssertEqual(outsideClicks, 0)
+        monitor.handleMouseDown(window: nil, screenLocation: NSPoint(x: 820, y: 912))
+        XCTAssertFalse(isPanelVisible)
+        XCTAssertEqual(outsideClicks, 1, "The old status item position is an outside click after moving")
+    }
+
+    func testDismissMonitorPreservesPanelAndModalInteractions() {
+        let monitor = PanelDismissMonitor()
+        defer { monitor.teardown() }
+        let panel = NSPanel(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: false)
+        let otherWindow = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: false)
+        var isModalPresented = false
+        var outsideClicks = 0
+        monitor.updateMonitoring(
+            isPinned: false,
+            isPanelVisible: true,
+            isModalSheetPresented: { isModalPresented },
+            isEquinoxWindow: { $0 === panel },
+            statusItemFrame: { nil },
+            onOutsideClick: { outsideClicks += 1 }
+        )
+
+        monitor.handleMouseDown(window: panel, screenLocation: .zero)
+        XCTAssertEqual(outsideClicks, 0)
+        monitor.handleMouseDown(window: otherWindow, screenLocation: .zero)
+        monitor.handleMouseDown(window: nil, screenLocation: .zero)
+        XCTAssertEqual(outsideClicks, 2, "Local and global outside clicks both dismiss the panel")
+
+        isModalPresented = true
+        monitor.handleMouseDown(window: otherWindow, screenLocation: .zero)
+        monitor.handleMouseDown(window: nil, screenLocation: .zero)
+        XCTAssertEqual(outsideClicks, 2, "Outside clicks must preserve an open event sheet")
+
+        monitor.teardown()
+        isModalPresented = false
+        monitor.handleMouseDown(window: nil, screenLocation: .zero)
+        XCTAssertEqual(outsideClicks, 2)
+    }
+
+    func testStatusItemHitAreaIncludesTopScreenEdgeAndCorners() {
+        let frame = NSRect(x: 800, y: 900, width: 40, height: 24)
+        for point in [
+            NSPoint(x: frame.midX, y: frame.maxY),
+            NSPoint(x: frame.minX, y: frame.maxY),
+            NSPoint(x: frame.maxX, y: frame.maxY),
+            NSPoint(x: frame.midX, y: frame.minY)
+        ] {
+            XCTAssertTrue(PanelDismissMonitor.containsStatusItemPoint(point, frame: frame))
+        }
+        XCTAssertFalse(PanelDismissMonitor.containsStatusItemPoint(NSPoint(x: frame.minX - 1, y: frame.maxY), frame: frame))
+        XCTAssertFalse(PanelDismissMonitor.containsStatusItemPoint(NSPoint(x: frame.midX, y: frame.minY - 1), frame: frame))
+        XCTAssertFalse(PanelDismissMonitor.containsStatusItemPoint(.zero, frame: nil))
+    }
+
     func testSystemTimeNotificationsFromBackgroundThreadReachCalendarRefresh() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }

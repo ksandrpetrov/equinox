@@ -175,7 +175,7 @@ struct AppearanceSettingsTab: View {
                 )
                 SettingsDivider()
                 SettingsRow(title: String(localized: "Agenda height", bundle: .equinox, comment: "")) {
-                    Slider(value: $prefs.agendaHeightRatio, in: AgendaLayout.minimumHeightRatio...AgendaLayout.maximumHeightRatio)
+                    Slider(value: $prefs.agendaHeightRatio, in: AgendaLayout.defaultHeightRatio...AgendaLayout.maximumHeightRatio)
                         .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
                 }
             }

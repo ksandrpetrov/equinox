@@ -40,12 +40,12 @@ struct MainPanelView: View {
             .frame(width: metrics.panelWidth)
             .sheet(isPresented: modalSheetBinding(\.panel.isNewEventSheetPresented)) {
                 NewEventSheet(appState: appState, metrics: metrics)
-                    .equinoxSheetPresentation()
+                    .equinoxSheetPresentation(style: backgroundStyle)
             }
             .sheet(isPresented: modalSheetBinding(\.panel.isEventDetailPresented)) {
                 if let event = appState.panel.selectedEvent {
                     EventDetailView(appState: appState, event: event, metrics: metrics)
-                        .equinoxSheetPresentation()
+                        .equinoxSheetPresentation(style: backgroundStyle)
                 }
             }
             .onChange(of: panelLayoutState) { _, _ in

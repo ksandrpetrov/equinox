@@ -13,7 +13,4 @@ extension EventParticipationStatus {
         }
     }
 
-    var chipBackground: Color {
-        chipForeground.opacity(EquinoxDesign.StateOpacity.chipBackground)
-    }
 }

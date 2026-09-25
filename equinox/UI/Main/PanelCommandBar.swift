@@ -60,7 +60,7 @@ struct PanelCommandBar: View {
                 Button(String(localized: "Today", bundle: .equinox, comment: "Return to today's date")) {
                     appState.goToToday()
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(EquinoxButtonStyle(variant: .plain, size: .small))
                 .controlSize(.small)
                 .keyboardShortcut("t", modifiers: [])
                 .help(String(localized: "Go to Today   T", bundle: .equinox, comment: ""))
@@ -71,7 +71,6 @@ struct PanelCommandBar: View {
                     symbol: "plus",
                     help: String(localized: "New Event   ⌘N", bundle: .equinox, comment: ""),
                     accessibilityLabel: String(localized: "New Event", bundle: .equinox, comment: ""),
-                    isProminent: true,
                     buttonSize: metrics.toolbarButtonSize
                 ) {
                     appState.panel.newEventInitialDate = appState.events.selectedDate

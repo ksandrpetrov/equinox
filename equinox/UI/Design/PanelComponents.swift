@@ -1,26 +1,44 @@
 import SwiftUI
 
-extension View {
-    func panelBackground(style: BackgroundStyle, reduceTransparency: Bool = false) -> some View {
-        let effectiveStyle: BackgroundStyle = (style == .glass && reduceTransparency) ? .solid : style
-        let shape = RoundedRectangle(cornerRadius: EquinoxDesign.panelCornerRadius, style: .continuous)
-        return background {
-            Group {
-                if effectiveStyle == .solid {
-                    shape.fill(EquinoxDesign.ColorToken.surfacePrimary)
-                } else {
-                    shape.fill(.regularMaterial)
-                }
-            }
-            .overlay {
-                shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: 0.5)
-            }
+struct EquinoxSurface: View {
+    var style: BackgroundStyle = .glass
+    var cornerRadius: CGFloat = EquinoxDesign.panelCornerRadius
+    var showsBorder = true
+    var reduceTransparency = false
+    @Environment(\.accessibilityReduceTransparency) private var systemReduceTransparency
 
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        Group {
+            if style == .solid || reduceTransparency || systemReduceTransparency {
+                shape.fill(EquinoxDesign.ColorToken.surfacePrimary)
+            } else {
+                shape.fill(.regularMaterial)
+                    .overlay {
+                        shape.fill(EquinoxDesign.ColorToken.surfacePrimary.opacity(EquinoxDesign.StateOpacity.glassTint))
+                    }
+            }
+        }
+        .overlay {
+            if showsBorder {
+                shape.strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: EquinoxDesign.hairlineWidth)
+            }
+        }
+    }
+}
+
+extension View {
+    func panelBackground(
+        style: BackgroundStyle,
+        reduceTransparency: Bool = false,
+        cornerRadius: CGFloat = EquinoxDesign.panelCornerRadius
+    ) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        return background {
+            EquinoxSurface(style: style, cornerRadius: cornerRadius, reduceTransparency: reduceTransparency)
         }
         .clipShape(shape)
     }
-
-
 }
 
 struct PanelButtonStyle: ButtonStyle {

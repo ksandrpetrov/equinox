@@ -10,25 +10,6 @@ enum EventParticipationStatus: Int, Sendable, Equatable, CaseIterable {
     case completed = 6
     case inProcess = 7
 
-    var localizedLabel: String {
-        switch self {
-        case .unknown, .pending:
-            return String(localized: "Awaiting response", bundle: .equinox, comment: "RSVP status badge")
-        case .accepted:
-            return String(localized: "Going", bundle: .equinox, comment: "RSVP status accepted")
-        case .tentative:
-            return String(localized: "Maybe", bundle: .equinox, comment: "RSVP status tentative")
-        case .declined:
-            return String(localized: "Declined", bundle: .equinox, comment: "RSVP status declined")
-        case .delegated:
-            return String(localized: "Delegated", bundle: .equinox, comment: "RSVP status delegated")
-        case .completed:
-            return String(localized: "Completed", bundle: .equinox, comment: "RSVP status completed")
-        case .inProcess:
-            return String(localized: "In progress", bundle: .equinox, comment: "RSVP status in process")
-        }
-    }
-
     var detailStatusLabel: String {
         switch self {
         case .unknown, .pending:

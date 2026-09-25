@@ -69,7 +69,7 @@ struct EquinoxCardModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(
                         borderColor,
-                        lineWidth: 1
+                        lineWidth: EquinoxDesign.hairlineWidth
                     )
             }
     }
@@ -133,61 +133,6 @@ struct EquinoxBadge: View {
                             .strokeBorder(tint.opacity(EquinoxDesign.StateOpacity.badgeBorder), lineWidth: 0.5)
                     }
             }
-    }
-}
-
-struct EquinoxChip: View {
-    let text: String
-    var dotColor: Color? = nil
-    var symbol: String? = nil
-    var foreground: Color = .secondary
-    var background: Color = EquinoxDesign.ColorToken.interactionSubtle
-    var border: Color = EquinoxDesign.ColorToken.hairlineBorder
-    var usesCapsule = false
-
-    var body: some View {
-        HStack(spacing: EquinoxDesign.ChipMetrics.spacing) {
-            if let dotColor {
-                Circle()
-                    .fill(dotColor)
-                    .frame(
-                        width: EquinoxDesign.ChipMetrics.detailDotSize,
-                        height: EquinoxDesign.ChipMetrics.detailDotSize
-                    )
-            }
-            if let symbol {
-                Image(systemName: symbol)
-                    .font(.caption2.weight(.semibold))
-            }
-            Text(text)
-                .font(.caption.weight(.medium))
-                .lineLimit(1)
-        }
-        .foregroundStyle(foreground)
-        .padding(.horizontal, EquinoxDesign.ChipMetrics.detailHorizontalPadding)
-        .padding(.vertical, EquinoxDesign.ChipMetrics.detailVerticalPadding)
-        .background {
-            if usesCapsule {
-                Capsule(style: .continuous)
-                    .fill(background)
-            } else {
-                RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
-                    .fill(background)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: EquinoxDesign.chipRadius, style: .continuous)
-                            .strokeBorder(border, lineWidth: 0.5)
-                    }
-            }
-        }
-    }
-}
-
-// MARK: - Event detail card
-
-struct EventDetailCardBackground: View {
-    var body: some View {
-        RoundedRectangle(cornerRadius: EquinoxDesign.cardRadius, style: .continuous)
-            .fill(EquinoxDesign.ColorToken.surfaceSecondary)
     }
 }
 
@@ -330,7 +275,7 @@ struct EquinoxJoinButton: View {
                 .font(.caption.weight(.bold))
                 .opacity(EquinoxDesign.StateOpacity.joinSubtitle)
         }
-        .foregroundStyle(EquinoxDesign.onAccentForeground)
+        .foregroundStyle(.primary)
         .padding(.horizontal, EquinoxDesign.spacingMD)
         .padding(.vertical, EquinoxDesign.spacingMD)
         .background { joinBackground }
@@ -352,6 +297,11 @@ struct EquinoxJoinButton: View {
     }
 
     private var joinBackgroundColor: Color {
+        if variant == .full {
+            return isHovered
+                ? EquinoxDesign.ColorToken.interactionHover
+                : EquinoxDesign.ColorToken.interactionRest
+        }
         if variant == .compact, !isProminent {
             return isHovered
                 ? EquinoxDesign.ColorToken.interactionHover

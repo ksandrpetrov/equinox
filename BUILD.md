@@ -131,13 +131,13 @@ Release-тестам нужен `ENABLE_TESTABILITY=YES` (скрипт пере�
 описания TCC остаются в bundle `equinox.app`.
 
 
-`AppIcon` и `AppLogo` в `equinox/Images.xcassets` генерируются из геометрического исходника `drawEquinoxMark` в Swift-скрипте (он также сохраняет `scripts/assets/equinox-mark.png`):
+`AppIcon` и `AppLogo` в `equinox/Images.xcassets` генерируются из прозрачного мастер-изображения `scripts/assets/equinox-mark.png`:
 
 ```bash
 swift scripts/regenerate-design-assets.swift
 ```
 
-Скрипт перезаписывает все размеры appiconset, оба масштаба `AppLogo` и его `Contents.json`. Геометрический исходник знака находится в `drawEquinoxMark` этого скрипта; PNG знака, AppIcon и AppLogo генерируются вместе. Не правьте PNG по отдельности.
+Скрипт перезаписывает все размеры appiconset, оба масштаба `AppLogo` и его `Contents.json`, сохраняя прозрачность и одинаковые безопасные поля. Меняйте мастер, затем запускайте скрипт; не правьте производные PNG по отдельности. Описание и запрос генерации мастера — в `scripts/assets/equinox-mark.md`.
 
 ## Нотаризация и распространение
 

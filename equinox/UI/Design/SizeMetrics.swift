@@ -22,7 +22,7 @@ struct SizeMetrics {
     static func metrics(for preference: SizePreference) -> SizeMetrics {
         switch preference {
         case .small:
-            return SizeMetrics(fontSize: 11, calendarTitleFontSize: 13, cellSize: 30,
+            return SizeMetrics(fontSize: 11, calendarTitleFontSize: 16, cellSize: 30,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaTimeColumnWidth: 54, agendaTimelineColumnWidth: 16,
                                agendaEventTitleFontSize: 12, agendaEventMetaFontSize: 10,
@@ -30,7 +30,7 @@ struct SizeMetrics {
                                panelWidth: 340, sheetWidth: 340, toolbarButtonSize: 28,
                                weekColumnWidth: 24)
         case .medium:
-            return SizeMetrics(fontSize: 13, calendarTitleFontSize: 15, cellSize: 36,
+            return SizeMetrics(fontSize: 13, calendarTitleFontSize: 18, cellSize: 36,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4,
                                agendaTimeColumnWidth: 60, agendaTimelineColumnWidth: 18,
                                agendaEventTitleFontSize: 13, agendaEventMetaFontSize: 11,
@@ -38,7 +38,7 @@ struct SizeMetrics {
                                panelWidth: 380, sheetWidth: 380, toolbarButtonSize: 30,
                                weekColumnWidth: 24)
         case .large:
-            return SizeMetrics(fontSize: 15, calendarTitleFontSize: 17, cellSize: 40,
+            return SizeMetrics(fontSize: 15, calendarTitleFontSize: 20, cellSize: 40,
                                cellRadius: EquinoxDesign.cellRadius, cellDotWidth: 4.5,
                                agendaTimeColumnWidth: 68, agendaTimelineColumnWidth: 20,
                                agendaEventTitleFontSize: 14, agendaEventMetaFontSize: 12,

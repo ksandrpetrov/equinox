@@ -5,6 +5,7 @@ enum AgendaDisplayRange {
     static let initialFutureDays = 45
     static let extensionChunkDays = 30
     static let extendThresholdDays = 10
+    static let maximumNavigationSpanDays = initialPastDays + initialFutureDays + extensionChunkDays * 2
 
     /// Initial agenda window: a little past, mostly future, anchored on the launch day (today).
     static func initialRange(anchor: CalendarDate) -> (first: CalendarDate, last: CalendarDate) {
@@ -37,6 +38,7 @@ enum AgendaDisplayRange {
         last: CalendarDate
     ) -> (first: CalendarDate, last: CalendarDate) {
         guard date.isValid else { return (first, last) }
+        guard date < first || date > last else { return (first, last) }
 
         // A deep link can jump centuries. Re-anchor instead of asking EventKit to fetch
         // every day between the old and new selection.
@@ -68,6 +70,11 @@ enum AgendaDisplayRange {
             )
         } else {
             expandedLast = last
+        }
+        // Month-button navigation should not retain every previously visited month.
+        // Scrolling still extends the current window while its visible date stays inside it.
+        if expandedLast.compare(expandedFirst) > maximumNavigationSpanDays {
+            return initialRange(anchor: date)
         }
         return (expandedFirst, expandedLast)
     }

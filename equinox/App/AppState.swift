@@ -84,7 +84,6 @@ final class AppState {
 
     func panelDidOpen() {
         events.refreshForPanelPresentation()
-        events.requestAgendaScroll()
     }
 
     func createEvent(from draft: NewEventDraft) async -> String? {
@@ -114,14 +113,14 @@ final class AppState {
     }
 
     /// Presents the menu bar panel when set by `StatusItemController` during setup.
-    var onRequestPresentPanel: ((Bool) -> Void)?
+    var onRequestPresentPanel: (() -> Void)?
 
-    /// Navigates the calendar to `date` and optionally presents the panel (`resetToToday: false`).
+    /// Navigates the calendar to `date` and optionally presents the panel.
     func navigateToDate(_ date: Date, presentPanel: Bool = true) {
         let calendarDate = CalendarDate(date: date, calendar: calendar)
         events.selectDate(calendarDate)
         if presentPanel {
-            onRequestPresentPanel?(false)
+            onRequestPresentPanel?()
         }
     }
 
@@ -132,7 +131,7 @@ final class AppState {
         }
         events.selectDate(calendarDate)
         if presentPanel {
-            onRequestPresentPanel?(false)
+            onRequestPresentPanel?()
         }
         return true
     }

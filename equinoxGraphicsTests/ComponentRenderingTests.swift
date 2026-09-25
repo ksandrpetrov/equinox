@@ -41,6 +41,17 @@ final class ComponentRenderingTests: XCTestCase {
             }
         }
         XCTAssertNotNil(MenuBarIconRenderer.meetingIndicatorImage(scale: 2))
+        for scheme in [ColorScheme.light, .dark] {
+            prefs.showMonthInIcon = true
+            prefs.showDayOfWeekInIcon = true
+            prefs.menuBarIconType = MenuBarIconStyle.classic.rawValue
+            let picker = MenuBarIconPicker(prefs: prefs)
+                .padding(EquinoxDesign.spacingLG)
+                .frame(width: 500)
+                .background(EquinoxDesign.ColorToken.surfaceWindow)
+                .environment(\.colorScheme, scheme)
+            try exportDesignPreview(picker, name: "menu-bar-icons-\(scheme)", width: 500)
+        }
     }
 
     @MainActor

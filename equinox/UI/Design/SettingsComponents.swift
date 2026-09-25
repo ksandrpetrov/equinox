@@ -27,7 +27,13 @@ struct SettingsSidebarLabel: View {
     let symbol: String
 
     var body: some View {
-        Label(title, systemImage: symbol)
+        Label {
+            Text(title)
+                .foregroundStyle(EquinoxDesign.ColorToken.textPrimary)
+        } icon: {
+            Image(systemName: symbol)
+                .foregroundStyle(EquinoxDesign.ColorToken.textPrimary)
+        }
     }
 }
 
@@ -56,13 +62,12 @@ struct SettingsSection<Content: View>: View {
                 }
             }
 
-            GroupBox {
-                VStack(spacing: 0) {
-                    content()
-                }
-                .padding(.horizontal, EquinoxDesign.spacingXS)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: 0) {
+                content()
             }
+            .padding(.vertical, EquinoxDesign.spacingXS)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .overlay(alignment: .top) { SettingsDivider() }
         }
     }
 }
@@ -97,6 +102,7 @@ struct SettingsDetailScaffold<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .settingsToolbarScrollWorkaround()
+        .scrollIndicators(.hidden)
         .navigationTitle(title)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -129,7 +135,7 @@ struct SettingsDivider: View {
     var body: some View {
         Rectangle()
             .fill(EquinoxDesign.ColorToken.separator)
-            .frame(height: 1)
+            .frame(height: EquinoxDesign.hairlineWidth)
     }
 }
 

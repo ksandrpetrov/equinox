@@ -2,6 +2,25 @@ import XCTest
 @testable import EquinoxKit
 
 final class AgendaSectionsTests: XCTestCase {
+    func testTopVisibleDateFollowsPinnedHeaderUntilNextDayReachesTop() {
+        let day = CalendarDate(year: 2026, monthIndex: 10, day: 27)
+        let next = day.addingDays(1)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 0, next: 180]), day)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: -12, next: 20]), day)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: -32, next: 0]), next)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 0, next: 0]), next)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 0, next: 20]), day)
+    }
+
+    func testTopVisibleDateHandlesUnpinnedHeadersAndOverscroll() {
+        let day = CalendarDate(year: 2026, monthIndex: 11, day: 31)
+        let next = day.addingDays(1)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: -250, next: -40]), next)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 15, next: 90]), day)
+        XCTAssertNil(AgendaSections.topVisibleDate(headerOffsets: [:]))
+        XCTAssertNil(AgendaSections.topVisibleDate(headerOffsets: [day: .nan, next: .infinity]))
+    }
+
     private func makeEvent(on date: CalendarDate, eventIdentifier: String? = "evt") -> DayEvent {
         DayEvent(
             id: "e-\(date.julian)",

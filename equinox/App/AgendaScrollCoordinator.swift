@@ -4,6 +4,8 @@ import Foundation
 protocol AgendaScrollContext: AnyObject {
     var todayDate: CalendarDate { get }
     var selectedDate: CalendarDate { get }
+    var agendaScrollToken: Int { get }
+    var agendaFocusesDayStart: Bool { get }
     var eventsByDate: [CalendarDate: [DayEvent]] { get }
     func events(for date: CalendarDate) -> [DayEvent]
     func syncSelectionFromAgendaScroll(_ date: CalendarDate)
@@ -22,11 +24,14 @@ enum AgendaScrollTarget: Hashable {
 @MainActor
 final class AgendaScrollCoordinator {
     var scrolledTarget: AgendaScrollTarget?
+    private(set) var requestedTarget: AgendaScrollTarget?
     private(set) var rangeFirst: CalendarDate?
     private(set) var rangeLast: CalendarDate?
 
-    private var isProgrammaticScroll = false
+    private var userScrollToken: Int?
+    private var topVisibleDate: CalendarDate?
     private var programmaticScrollGeneration = 0
+    private var pendingFocus: Task<Void, Never>?
 
     func displayRange(anchor: CalendarDate) -> (first: CalendarDate, last: CalendarDate) {
         if let rangeFirst, let rangeLast {
@@ -84,21 +89,58 @@ final class AgendaScrollCoordinator {
         }
     }
 
+    func scheduleScrollToFocus(events: AgendaScrollContext) {
+        pendingFocus?.cancel()
+        pendingFocus = Task { [weak self] in
+            do {
+                try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+            } catch {
+                return
+            }
+            self?.scrollToFocus(events: events)
+        }
+    }
+
     func scrollToFocus(events: AgendaScrollContext) {
+        pendingFocus?.cancel()
+        pendingFocus = nil
         let anchor = events.todayDate
         let selected = events.selectedDate
         bootstrapRangeIfNeeded(anchor: anchor)
         ensureDateInRange(selected, anchor: anchor)
         commitAgendaToCoordinator(events, anchor: anchor)
-        isProgrammaticScroll = true
+        userScrollToken = nil
         programmaticScrollGeneration &+= 1
-        let generation = programmaticScrollGeneration
         let target = focusTarget(events: events)
+        requestedTarget = target
         scrollAgenda(to: target)
-        DispatchQueue.main.asyncAfter(deadline: .now() + AgendaFocus.programmaticScrollSettleDelay) { [weak self] in
-            guard let self, self.programmaticScrollGeneration == generation else { return }
-            self.isProgrammaticScroll = false
+    }
+
+    func beginUserScroll(events: AgendaScrollContext) {
+        pendingFocus?.cancel()
+        pendingFocus = nil
+        if userScrollToken != events.agendaScrollToken {
+            programmaticScrollGeneration &+= 1
+            userScrollToken = events.agendaScrollToken
         }
+        // Cancel a pending fetch-driven refocus even if the first visible day
+        // still matches the selection when the user starts scrolling.
+        events.syncSelectionFromAgendaScroll(events.selectedDate)
+        synchronizeVisibleDate(events: events)
+    }
+
+    func updateVisibleDate(_ date: CalendarDate?, events: AgendaScrollContext) {
+        topVisibleDate = date
+        synchronizeVisibleDate(events: events)
+    }
+
+    private func synchronizeVisibleDate(events: AgendaScrollContext) {
+        guard userScrollToken == events.agendaScrollToken,
+              let date = topVisibleDate, date.isValid else { return }
+        if events.selectedDate != date {
+            events.syncSelectionFromAgendaScroll(date)
+        }
+        extendRangeIfNeeded(for: date, anchor: events.todayDate)
     }
 
     func handleAgendaScroll(to target: AgendaScrollTarget?, anchor: CalendarDate, events: AgendaScrollContext) {
@@ -107,35 +149,21 @@ final class AgendaScrollCoordinator {
     }
 
     func commitScrollSettle(events: AgendaScrollContext) {
-        if isProgrammaticScroll {
-            isProgrammaticScroll = false
-            return
-        }
-        guard let target = scrolledTarget,
-              let visibleDate = visibleDate(for: target, events: events) else { return }
-        if case .boundary = target {
-            extendRangeIfNeeded(for: visibleDate, anchor: events.todayDate)
+        if case .boundary(let julian) = scrolledTarget {
+            extendRangeIfNeeded(for: CalendarDate(julian: julian), anchor: events.todayDate)
             commitAgendaToCoordinator(events, anchor: events.todayDate)
             return
         }
-        events.syncSelectionFromAgendaScroll(visibleDate)
-        let anchor = events.todayDate
-        let range = displayRange(anchor: anchor)
-        if visibleDate == range.first {
-            extendRangeIfNeeded(for: visibleDate, anchor: anchor)
-        }
-        commitAgendaToCoordinator(events, anchor: anchor)
+        guard userScrollToken == events.agendaScrollToken else { return }
+        synchronizeVisibleDate(events: events)
+        commitAgendaToCoordinator(events, anchor: events.todayDate)
     }
 
     private func focusTarget(events: AgendaScrollContext) -> AgendaScrollTarget {
         let selected = events.selectedDate
         let today = events.todayDate
-        if selected == today,
-           let eventID = AgendaFocus.focusEventID(
-               from: today,
-               through: displayRange(anchor: today).last,
-               eventsFor: events.events(for:)
-           ) {
+        if !events.agendaFocusesDayStart, selected == today,
+           let eventID = AgendaFocus.focusEventID(in: events.events(for: today)) {
             return .event(id: eventID)
         }
         return .day(julian: selected.julian)

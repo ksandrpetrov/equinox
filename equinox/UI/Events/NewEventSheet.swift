@@ -205,6 +205,8 @@ struct NewEventSheet: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
     }
 
     private func close() {

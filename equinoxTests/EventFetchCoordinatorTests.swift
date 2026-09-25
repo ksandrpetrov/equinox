@@ -3,6 +3,35 @@ import XCTest
 
 @MainActor
 final class EventFetchCoordinatorTests: XCTestCase {
+    func testRapidNavigationFetchesOnlyFinalRange() async {
+        let store = StubCalendarEventStore()
+        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let fetched = expectation(description: "Final navigation range fetched")
+        coordinator.onSyncComplete = { _ in fetched.fulfill() }
+        let start = CalendarDate(year: 2026, monthIndex: 0, day: 1)
+        for month in 1...24 {
+            let first = start.addingMonths(month)
+            coordinator.scheduleNavigationFetch(range: (first, first.addingDays(41)))
+        }
+        XCTAssertTrue(store.fetchedRanges.isEmpty)
+        await fulfillment(of: [fetched], timeout: 2)
+        XCTAssertEqual(store.fetchedRanges.count, 1)
+        XCTAssertEqual(store.fetchedRanges.first?.first, start.addingMonths(24))
+    }
+
+    func testExplicitRefreshSupersedesDelayedNavigation() async throws {
+        let store = StubCalendarEventStore()
+        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let day = CalendarDate(year: 2026, monthIndex: 0, day: 1)
+        coordinator.scheduleNavigationFetch(range: (day, day.addingDays(30)))
+        let succeeded = await coordinator.fetch(range: (day, day.addingDays(60)), refetch: true)
+        XCTAssertTrue(succeeded)
+        try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay + .milliseconds(50))
+        XCTAssertTrue(store.fetchedRanges.isEmpty)
+        XCTAssertEqual(store.refetchedRanges.count, 1)
+        XCTAssertEqual(store.refetchedRanges.first?.last, day.addingDays(60))
+    }
+
     func testAccessCanBePreparedAgainAfterDenial() async {
         let store = StubCalendarEventStore()
         store.accessGranted = false

@@ -9,7 +9,7 @@ final class EventsCoordinatorSyncTests: XCTestCase {
         await context.finishInitialization()
         let events = context.appState.events
         context.appState.panel.isPanelVisible = true
-        events.requestAgendaScroll()
+        events.selectDate(events.selectedDate)
         let requestedToken = events.agendaScrollToken
 
         await events.refreshCalendarAccessStatus()

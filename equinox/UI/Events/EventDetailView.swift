@@ -74,6 +74,7 @@ struct EventDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxHeight: EventDetailLayout.maxScrollableHeight)
+            .scrollIndicators(.hidden)
         }
         .background {
             EventDetailParentClickDismissMonitor(
@@ -95,7 +96,7 @@ struct EventDetailView: View {
                     isDeleteConfirmationPresented = false
                 }
             )
-            .equinoxSheetPresentation()
+            .equinoxSheetPresentation(style: BackgroundStyle(rawValue: appState.preferences.backgroundStyle) ?? .glass)
         }
     }
 
@@ -125,17 +126,6 @@ struct EventDetailView: View {
                     title: String(localized: "Location", bundle: .equinox, comment: "Event detail metadata label"),
                     value: location,
                     tint: .secondary
-                )
-            )
-        }
-
-        if let status = event.participationStatus {
-            rows.append(
-                EventDetailMetadataRowModel(
-                    symbol: "person.crop.circle.badge.clock",
-                    title: String(localized: "Attendance", bundle: .equinox, comment: "Event detail metadata label"),
-                    value: status.detailStatusLabel,
-                    tint: status.chipForeground
                 )
             )
         }

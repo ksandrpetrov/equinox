@@ -5,21 +5,124 @@ import XCTest
 
 @MainActor
 final class SurfaceLayoutTests: XCTestCase {
+    func testTodayPlacesDayHeaderAtTopOfAgenda() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let state = context.appState
+        let today = state.events.todayDate
+        var events: [CalendarDate: [DayEvent]] = [:]
+        for offset in -5...40 {
+            let day = today.addingDays(offset)
+            events[day] = (9...13).map { hour in
+                context.event(start: day.date(in: state.calendar).addingTimeInterval(Double(hour) * 3600))
+            }
+        }
+        events[today]?.append(context.event(start: Date().addingTimeInterval(-300)))
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: events) }
+        await context.finishInitialization()
+        state.panel.isPanelVisible = true
+        state.goToNextMonth()
+
+        let geometry = AgendaGeometryProbe()
+        let metrics = SizeMetrics.metrics(for: .medium)
+        let view = NSHostingView(rootView: AgendaView(appState: state, metrics: metrics, height: 280)
+            .onPreferenceChange(AgendaSectionFramesKey.self) { frames in
+                Task { @MainActor in geometry.frames = frames }
+            })
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: metrics.panelWidth, height: 320),
+                              styleMask: [.borderless], backing: .buffered, defer: false)
+        window.contentView = view
+        defer { window.orderOut(nil); window.contentView = nil }
+        window.orderFront(nil)
+        view.layoutSubtreeIfNeeded()
+        try await Task.sleep(for: .milliseconds(350))
+
+        state.goToToday()
+        try await Task.sleep(for: .milliseconds(350))
+        view.layoutSubtreeIfNeeded()
+        let header = try XCTUnwrap(geometry.frames[today])
+        XCTAssertEqual(header.minY, 0, accuracy: 1, "Today must align its section header with the top of the scroll viewport")
+        let bitmap = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+        let attachment = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
+        attachment.name = "today-at-agenda-top"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testRapidMonthNavigationWithPopulatedAgenda() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let state = context.appState
+        let start = CalendarDate(year: 2026, monthIndex: 0, day: 15)
+        var events: [CalendarDate: [DayEvent]] = [:]
+        for offset in -30...800 {
+            let day = start.addingDays(offset)
+            events[day] = (9...13).map { hour in
+                context.event(start: day.date(in: state.calendar).addingTimeInterval(Double(hour) * 3600))
+            }
+        }
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: events) }
+        await context.finishInitialization()
+        state.preferences.showDaysWithNoEvents = true
+        state.panel.isPanelVisible = true
+        state.selectDate(start)
+
+        let view = NSHostingView(rootView: MainPanelView(appState: state))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 800),
+                              styleMask: [.borderless], backing: .buffered, defer: false)
+        window.contentView = view
+        defer { window.orderOut(nil); window.contentView = nil }
+        window.orderFront(nil)
+        view.layoutSubtreeIfNeeded()
+        try await Task.sleep(for: .milliseconds(300))
+        let fetchesBeforeNavigation = context.store.fetchedRanges.count
+
+        var frameDurations: [Double] = []
+        for _ in 0..<24 {
+            let began = Date.timeIntervalSinceReferenceDate
+            state.goToNextMonth()
+            view.layoutSubtreeIfNeeded()
+            window.displayIfNeeded()
+            frameDurations.append(Date.timeIntervalSinceReferenceDate - began)
+            try await Task.sleep(for: .milliseconds(25))
+        }
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertEqual(state.events.selectedDate, start.addingMonthsPreservingDay(24, calendar: state.calendar))
+        XCTAssertLessThanOrEqual(context.store.fetchedRanges.count - fetchesBeforeNavigation, 2,
+                                 "A burst must load the final month, not fetch and redraw all 24 intermediate agendas")
+        let timing = "Month navigation frames (seconds): \(frameDurations); total: \(frameDurations.reduce(0, +)); worst: \(frameDurations.max() ?? 0)"
+        print(timing)
+        let attachment = XCTAttachment(string: timing)
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testPanelAndEventSheetsLayoutAcrossSizesAndThemes() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
-        await context.finishInitialization()
         let state = context.appState
-        let event = context.event(start: state.events.selectedDate.date(in: state.calendar))
+        let day = state.events.selectedDate
+        let event = context.event(start: day.date(in: state.calendar).addingTimeInterval(11 * 3600),
+                                  title: "Обсуждение запуска", location: "Переговорная, 4 этаж", participationStatus: .accepted)
+        var events: [CalendarDate: [DayEvent]] = [day: [event]]
+        for offset in 1...4 {
+            let date = day.addingDays(offset)
+            events[date] = [context.event(start: date.date(in: state.calendar), title: "Отпуск", isAllDay: true),
+                            context.event(start: date.date(in: state.calendar).addingTimeInterval(13 * 3600), title: "Встреча команды")]
+        }
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: events) }
+        await context.finishInitialization()
         for size in SizePreference.allCases {
             state.preferences.sizePreference = size.rawValue
             let metrics = SizeMetrics.metrics(for: size)
             for scheme in [ColorScheme.light, .dark] {
-                try check(MainPanelView(appState: state).environment(\.colorScheme, scheme),
+                try await check(MainPanelView(appState: state).environment(\.colorScheme, scheme),
                           width: metrics.panelWidth, height: 750, scheme: scheme, name: "panel-\(size)-\(scheme)")
-                try check(NewEventSheet(appState: state, metrics: metrics).environment(\.colorScheme, scheme),
+                try await check(NewEventSheet(appState: state, metrics: metrics).environment(\.colorScheme, scheme),
                           width: metrics.sheetWidth, height: 750, scheme: scheme, name: "create-\(size)-\(scheme)")
-                try check(EventDetailView(appState: state, event: event, metrics: metrics).environment(\.colorScheme, scheme),
+                try await check(EventDetailView(appState: state, event: event, metrics: metrics).environment(\.colorScheme, scheme),
                           width: metrics.sheetWidth, height: 750, scheme: scheme, name: "details-\(size)-\(scheme)")
             }
         }
@@ -32,7 +135,7 @@ final class SurfaceLayoutTests: XCTestCase {
         for tab in SettingsTab.allCases {
             for scheme in [ColorScheme.light, .dark] {
                 context.appState.panel.settingsInitialTab = tab
-                try check(SettingsView(initialTab: tab)
+                try await check(SettingsView(initialTab: tab)
                     .environment(\.appState, context.appState)
                     .environment(\.colorScheme, scheme),
                           width: 850, height: 700, scheme: scheme, name: "settings-\(tab)-\(scheme)")
@@ -41,14 +144,18 @@ final class SurfaceLayoutTests: XCTestCase {
         }
     }
 
-    private func check<Content: View>(_ content: Content, width: CGFloat, height: CGFloat, scheme: ColorScheme, name: String) throws {
-        let view = NSHostingView(rootView: content)
+    private func check<Content: View>(_ content: Content, width: CGFloat, height: CGFloat, scheme: ColorScheme, name: String) async throws {
+        let view = NSHostingView(rootView: content.background {
+            EquinoxSurface(style: .solid, showsBorder: false).environment(\.colorScheme, scheme)
+        })
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: height),
                               styleMask: [.borderless], backing: .buffered, defer: true)
         window.appearance = NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
         window.contentView = view
         defer { window.contentView = nil }
         view.frame = NSRect(x: 0, y: 0, width: width, height: height)
+        view.layoutSubtreeIfNeeded()
+        await Task.yield()
         view.layoutSubtreeIfNeeded()
         XCTAssertTrue(view.fittingSize.width.isFinite)
         XCTAssertTrue(view.fittingSize.height.isFinite)
@@ -69,9 +176,18 @@ final class SurfaceLayoutTests: XCTestCase {
             }
         }
         XCTAssertGreaterThan(maximumBrightness - minimumBrightness, 0.05, "Blank or uniform render: \(name)")
-        let attachment = XCTAttachment(data: try XCTUnwrap(bitmap.representation(using: .png, properties: [:])), uniformTypeIdentifier: "public.png")
+        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("equinox-surface-previews")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try png.write(to: folder.appendingPathComponent(name + ".png"))
+        let attachment = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+}
+
+@MainActor
+private final class AgendaGeometryProbe {
+    var frames: [CalendarDate: CGRect] = [:]
 }

@@ -209,7 +209,4 @@ final class AgendaFocusTests: XCTestCase {
         )
     }
 
-    func testProgrammaticScrollSettleDelayIsPositive() {
-        XCTAssertGreaterThan(AgendaFocus.programmaticScrollSettleDelay, 0)
-    }
 }

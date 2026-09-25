@@ -6,6 +6,7 @@ struct CalendarGridView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @FocusState private var isGridFocused: Bool
+    @Namespace private var daySelection
 
     private var prefs: PreferencesStore { appState.preferences }
     private var numRows: Int { prefs.calendarRowCount }
@@ -26,8 +27,13 @@ struct CalendarGridView: View {
             weekdayHeaderRow
 
             gridBody
-                .id(appState.events.monthDate.julian)
-                .transition(EquinoxDesign.monthTransition(forward: appState.events.monthNavigationDirection == .forward))
+                .animation(
+                    EquinoxDesign.animation(EquinoxDesign.expandAnimation, reduceMotion: reduceMotion),
+                    value: appState.events.selectedDate.julian
+                )
+                .transaction(value: appState.events.monthDate.julian) { transaction in
+                    transaction.disablesAnimations = true
+                }
         }
         .padding(EquinoxDesign.spacingXS)
         .focusable()
@@ -45,10 +51,6 @@ struct CalendarGridView: View {
                 isGridFocused = true
             }
         }
-        .animation(
-            EquinoxDesign.animation(EquinoxDesign.expandAnimation, reduceMotion: reduceMotion),
-            value: appState.events.monthDate.julian
-        )
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(localized: "Calendar grid", bundle: .equinox, comment: ""))
         .accessibilityHint(
@@ -96,6 +98,7 @@ struct CalendarGridView: View {
                             isSelected: date.isSameCalendarDay(as: appState.events.selectedDate),
                             isKeyboardFocused: isGridFocused
                                 && date.isSameCalendarDay(as: appState.events.selectedDate),
+                            selectionNamespace: daySelection,
                             isInCurrentMonth: date.monthIndex == appState.events.monthDate.monthIndex
                                 && date.year == appState.events.monthDate.year,
                             isHighlighted: prefs.isWeekdayHighlighted(col, weekStartWeekday: prefs.weekStartWeekday),
@@ -114,7 +117,6 @@ struct CalendarGridView: View {
                                 appState.panel.isNewEventSheetPresented = true
                             }
                         )
-                        .id(date.julian)
                     }
                 }
             }
