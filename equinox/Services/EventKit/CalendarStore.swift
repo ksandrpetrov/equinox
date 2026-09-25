@@ -174,7 +174,18 @@ actor CalendarStore: CalendarEventStore {
         guard event.calendar.allowsContentModifications else {
             throw CalendarStoreError.readOnlyCalendar
         }
-        try store.remove(event, span: .thisEvent, commit: true)
+        var eventCalendar = calendar
+        if let timeZone = event.timeZone { eventCalendar.timeZone = timeZone }
+        let isFinalDay = isFinalRecurrenceDay(
+            occurrenceDate: event.occurrenceDate ?? occurrenceStartDate,
+            ruleEndDates: (event.recurrenceRules ?? []).map { $0.recurrenceEnd?.endDate },
+            isDetached: event.isDetached,
+            calendar: eventCalendar
+        )
+        // On macOS, removing the final dated occurrence with .thisEvent can restore
+        // excluded earlier dates as a standalone event. Truncation preserves those
+        // exclusions and affects only this occurrence when every rule ends on its day.
+        try store.remove(event, span: isFinalDay ? .futureEvents : .thisEvent, commit: true)
         invalidateEvents()
     }
 

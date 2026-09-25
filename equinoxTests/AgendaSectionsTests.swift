@@ -158,6 +158,33 @@ final class AgendaSectionsTests: XCTestCase {
         )
     }
 
+    func testFinalRecurrenceDayRequiresEveryRuleToEndOnTheSelectedDay() {
+        let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
+        let first = CalendarDate(year: 2026, monthIndex: 9, day: 5).date(in: calendar)
+        let last = CalendarDate(year: 2026, monthIndex: 9, day: 7).date(in: calendar)
+        let end = last.addingTimeInterval(86400 - 1)
+        XCTAssertFalse(isFinalRecurrenceDay(occurrenceDate: first, ruleEndDates: [end], isDetached: false, calendar: calendar))
+        XCTAssertFalse(isFinalRecurrenceDay(occurrenceDate: first.addingTimeInterval(86400), ruleEndDates: [end], isDetached: false, calendar: calendar))
+        XCTAssertTrue(isFinalRecurrenceDay(occurrenceDate: last, ruleEndDates: [end], isDetached: false, calendar: calendar))
+        for ends: [Date?] in [[], [nil], [end, nil], [end, end.addingTimeInterval(86400)],
+                              [last.addingTimeInterval(-1)], [Date(timeIntervalSinceReferenceDate: .infinity)]] {
+            XCTAssertFalse(isFinalRecurrenceDay(occurrenceDate: last, ruleEndDates: ends, isDetached: false, calendar: calendar))
+        }
+        XCTAssertFalse(isFinalRecurrenceDay(occurrenceDate: last, ruleEndDates: [end], isDetached: true, calendar: calendar))
+        XCTAssertFalse(isFinalRecurrenceDay(occurrenceDate: Date(timeIntervalSinceReferenceDate: .nan), ruleEndDates: [end], isDetached: false, calendar: calendar))
+    }
+
+    func testFinalRecurrenceDayUsesTheEventsTimeZoneAcrossDST() {
+        for zone in ["Europe/Moscow", "America/Los_Angeles"] {
+            let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(identifier: zone)!)
+            let start = CalendarDate(year: 2026, monthIndex: 10, day: 1).date(in: calendar)
+            let nextDay = calendar.date(byAdding: .day, value: 1, to: start)!
+            let end = nextDay.addingTimeInterval(-1)
+            XCTAssertTrue(isFinalRecurrenceDay(occurrenceDate: start, ruleEndDates: [end], isDetached: false, calendar: calendar))
+            XCTAssertFalse(isFinalRecurrenceDay(occurrenceDate: start, ruleEndDates: [nextDay], isDetached: false, calendar: calendar))
+        }
+    }
+
     func testRecurringMeetingResolvesSharedURLOnceAndSkipsOutOfRangeSources() async {
         let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
         let date = CalendarDate(year: 2026, monthIndex: 5, day: 10).date(in: calendar)
