@@ -78,10 +78,12 @@ final class LoadingIndicatorControllerTests: XCTestCase {
 
     func testPendingActionDoesNotRetainController() {
         let clock = ManualSchedule()
-        var controller: LoadingIndicatorController? = clock.controller()
-        weak var reference = controller
-        controller?.beginFetch()
-        controller = nil
+        weak var reference: LoadingIndicatorController?
+        do {
+            let controller = clock.controller()
+            reference = controller
+            controller.beginFetch()
+        }
         clock.advance(by: 1)
         XCTAssertNil(reference)
     }

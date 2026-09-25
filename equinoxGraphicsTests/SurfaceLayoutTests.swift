@@ -5,6 +5,143 @@ import XCTest
 
 @MainActor
 final class SurfaceLayoutTests: XCTestCase {
+    func testEventDrawerPreservesCalendarHeightAndWindowRightEdge() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        state.isPinned = true
+        let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        defer { NSStatusBar.system.removeStatusItem(statusItem) }
+        let controller = PanelWindowController(appState: state)
+        defer { controller.hide() }
+        for size in SizePreference.allCases {
+            state.preferences.sizePreference = size.rawValue
+            let metrics = SizeMetrics.metrics(for: size)
+            controller.show(statusItem: statusItem, isPinned: true)
+            controller.handleSizePreferenceChanged(statusItem: statusItem)
+            try await Task.sleep(for: .milliseconds(300))
+            let window = try XCTUnwrap(controller.window)
+            let screen = try XCTUnwrap(window.screen).visibleFrame
+            window.setFrameOrigin(NSPoint(x: screen.maxX - metrics.panelWidth - EquinoxDesign.panelScreenMargin,
+                                          y: screen.maxY - window.frame.height - EquinoxDesign.panelScreenMargin))
+            let collapsed = window.frame
+            let content = try XCTUnwrap(window.contentView)
+            let geometry = WindowGeometryProbe()
+            content.postsFrameChangedNotifications = true
+            let observer = NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: content, queue: .main) { _ in
+                MainActor.assumeIsolated {
+                    geometry.maximumWidthMismatch = max(geometry.maximumWidthMismatch,
+                        abs(content.frame.width - window.contentLayoutRect.width))
+                }
+            }
+            state.panel.isNewEventSheetPresented = true
+            try await Task.sleep(for: .milliseconds(500))
+            let expanded = window.frame
+            XCTAssertEqual(expanded.width, metrics.panelWidth + metrics.sheetWidth, accuracy: 1)
+            XCTAssertEqual(expanded.height, collapsed.height, accuracy: 1, "The form must scroll within the calendar height")
+            XCTAssertEqual(expanded.maxX, collapsed.maxX, accuracy: 1, "The drawer expands to the left")
+            XCTAssertEqual(expanded.maxY, collapsed.maxY, accuracy: 1)
+            XCTAssertNil(window.attachedSheet, "Creating an event must not cover the calendar with a sheet")
+            state.dismissEventDrawer()
+            try await Task.sleep(for: .milliseconds(500))
+            XCTAssertEqual(window.frame.width, metrics.panelWidth, accuracy: 1)
+            XCTAssertEqual(window.frame.maxX, collapsed.maxX, accuracy: 1)
+            NotificationCenter.default.removeObserver(observer)
+            XCTAssertLessThanOrEqual(geometry.maximumWidthMismatch, 1, "Content must resize with the window, without an intermediate jump")
+        }
+    }
+
+    func testAppearanceSegmentsRemainInsideSettingsContent() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let width = SettingsDesign.windowMinWidth - SettingsDesign.sidebarWidth
+        let view = NSHostingView(rootView: AppearanceSettingsTab(searchText: "Theme", prefs: context.appState.preferences))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: 400),
+                              styleMask: [.borderless], backing: .buffered, defer: false)
+        window.contentView = view
+        defer { window.contentView = nil }
+        view.frame = NSRect(x: 0, y: 0, width: width, height: 400)
+        view.layoutSubtreeIfNeeded()
+        await Task.yield()
+        view.layoutSubtreeIfNeeded()
+
+        func segmentedControls(in parent: NSView) -> [NSSegmentedControl] {
+            parent.subviews.flatMap { child in
+                (child as? NSSegmentedControl).map { [$0] } ?? segmentedControls(in: child)
+            }
+        }
+        let controls = segmentedControls(in: view)
+        XCTAssertEqual(controls.count, 3)
+        for control in controls {
+            let frame = control.convert(control.bounds, to: view)
+            XCTAssertGreaterThanOrEqual(frame.minX, SettingsDesign.detailPadding - 1)
+            XCTAssertLessThanOrEqual(frame.maxX, width - SettingsDesign.detailPadding + 1,
+                                     "Segmented options must not overflow their row: \(frame)")
+        }
+    }
+
+    func testDrawersAcrossSizesBackgroundsAndAppearances() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        let event = context.event(start: Date(), title: "Very long event title — Обсуждение запуска новой версии приложения и планов команды",
+                                  location: "Long meeting location — Переговорная на четвёртом этаже")
+        let day = CalendarDate(date: event.startDate, calendar: state.calendar)
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: [event]]) }
+        await state.events.syncFromCalendarStore()
+        for size in SizePreference.allCases {
+            state.preferences.sizePreference = size.rawValue
+            let metrics = SizeMetrics.metrics(for: size)
+            for background in [BackgroundStyle.glass, .solid] {
+                state.preferences.backgroundStyle = background.rawValue
+                for scheme in [ColorScheme.light, .dark] {
+                    state.panel.isNewEventSheetPresented = true
+                    try await check(MainPanelView(appState: state).environment(\.colorScheme, scheme),
+                                    width: metrics.panelWidth + metrics.sheetWidth, height: 850, scheme: scheme,
+                                    name: "drawer-create-\(size)-\(background)-\(scheme)")
+                    state.panel.isNewEventSheetPresented = false
+                    state.panel.selectedEvent = event
+                    state.panel.isEventDetailPresented = true
+                    try await check(MainPanelView(appState: state).environment(\.colorScheme, scheme),
+                                    width: metrics.panelWidth + metrics.sheetWidth, height: 850, scheme: scheme,
+                                    name: "drawer-details-\(size)-\(background)-\(scheme)")
+                    XCTAssertTrue(state.panel.isEventDetailPresented)
+                    state.dismissEventDrawer()
+                }
+            }
+        }
+    }
+
+    func testPermissionLoadingEmptyAndErrorSurfaces() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        let scenarios: [(String, CalendarStoreSnapshot)] = [
+            ("not-determined", StubCalendarEventStore.snapshot(status: .notDetermined)),
+            ("denied", StubCalendarEventStore.snapshot(status: .denied)),
+            ("restricted", StubCalendarEventStore.snapshot(status: .restricted)),
+            ("loading", StubCalendarEventStore.snapshot(status: .authorized, hasCompletedInitialLoad: false)),
+            ("empty", StubCalendarEventStore.snapshot(status: .authorized, hasSelectedCalendars: false)),
+            ("error", StubCalendarEventStore.snapshot(status: .authorized, lastFetchError: "Unable to load calendars. Повторите попытку после восстановления доступа к календарям."))
+        ]
+        for (name, snapshot) in scenarios {
+            context.store.readSnapshot = { snapshot }
+            await state.events.syncFromCalendarStore()
+            state.events.shouldShowLoadingIndicator = name == "loading"
+            for size in SizePreference.allCases {
+                state.preferences.sizePreference = size.rawValue
+                for scheme in [ColorScheme.light, .dark] {
+                    try await check(MainPanelView(appState: state).environment(\.colorScheme, scheme),
+                                    width: SizeMetrics.metrics(for: size).panelWidth, height: 900, scheme: scheme,
+                                    name: "state-\(name)-\(size)-\(scheme)")
+                }
+            }
+        }
+    }
+
     func testTodayPlacesDayHeaderAtTopOfAgenda() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
@@ -124,6 +261,11 @@ final class SurfaceLayoutTests: XCTestCase {
                           width: metrics.sheetWidth, height: 750, scheme: scheme, name: "create-\(size)-\(scheme)")
                 try await check(EventDetailView(appState: state, event: event, metrics: metrics).environment(\.colorScheme, scheme),
                           width: metrics.sheetWidth, height: 750, scheme: scheme, name: "details-\(size)-\(scheme)")
+                try await check(EventDateCalendar(selection: .constant(event.startDate),
+                                                  range: EventDraftDefaults.supportedDateRange(calendar: state.calendar),
+                                                  calendar: state.calendar, weekStartWeekday: 1, metrics: metrics, onClose: {})
+                    .environment(\.colorScheme, scheme),
+                                width: metrics.sheetWidth, height: 450, scheme: scheme, name: "date-picker-\(size)-\(scheme)")
             }
         }
     }
@@ -190,4 +332,9 @@ final class SurfaceLayoutTests: XCTestCase {
 @MainActor
 private final class AgendaGeometryProbe {
     var frames: [CalendarDate: CGRect] = [:]
+}
+
+@MainActor
+private final class WindowGeometryProbe {
+    var maximumWidthMismatch: CGFloat = 0
 }

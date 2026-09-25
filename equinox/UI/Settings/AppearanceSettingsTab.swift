@@ -33,7 +33,7 @@ struct AppearanceSettingsTab: View {
                     ],
                     selection: $prefs.themePreference
                 )
-                .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
+                .fixedSize()
             }
             SettingsDivider()
             SettingsRow(title: String(localized: "Background", bundle: .equinox, comment: "Appearance setting")) {
@@ -45,7 +45,7 @@ struct AppearanceSettingsTab: View {
                     ],
                     selection: $prefs.backgroundStyle
                 )
-                .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
+                .fixedSize()
             }
             SettingsDivider()
             SettingsRow(title: String(localized: "Size", bundle: .equinox, comment: "Appearance setting")) {
@@ -58,7 +58,7 @@ struct AppearanceSettingsTab: View {
                     ],
                     selection: $prefs.sizePreference
                 )
-                .frame(width: EquinoxDesign.ControlWidth.settingsPicker)
+                .fixedSize()
             }
         }
     }

@@ -25,7 +25,7 @@ flowchart TB
 | Поверхность | Пользовательские возможности |
 |-------------|------------------------------|
 | Menu bar panel | Месячная сетка, agenda, выбор дня, навигация по месяцам, Today, popover/pinned panel |
-| Event sheets | Создание события с датой/временем, all-day, календарём, location, URL, notes, recurrence и alert; просмотр деталей; удаление writable событий; read-only RSVP-статус |
+| Event drawer | Создание события с датой/временем, all-day, календарём, location, URL, notes, recurrence и alert; просмотр деталей; удаление writable событий; read-only RSVP-статус |
 | Settings | General, Calendars, Appearance, Privacy, Shortcuts, About |
 | Menu bar icon | Дата/день недели/месяц/часы, скрытая иконка, meeting indicator |
 
@@ -77,6 +77,8 @@ CalendarStore и запроса разрешений. Все targets испол�
 Навигация по датам/месяцам вынесена в `CalendarNavigationCoordinator`; `EventsCoordinator` делегирует и re-export'ит flat API (`monthDate`, `selectDate`, …) без изменения call sites.
 
 ## Ключевые потоки
+
+Формы создания и просмотра события раскрываются слева внутри того же окна. Высота календаря сохраняется; длинная форма прокручивается. Стрелка сворачивает форму, Escape сначала закрывает календарь выбора даты, затем форму. Основной календарь временно недоступен, пока форма открыта; во время сохранения/удаления закрытие заблокировано. Подтверждение удаления остаётся отдельным sheet.
 
 **Создание события (GUI):** `NewEventSheet` → `NewEventDraft` → `AppState.createEvent` → `CalendarStore.createEvent` → EventKit
 

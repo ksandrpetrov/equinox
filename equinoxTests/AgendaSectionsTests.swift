@@ -133,13 +133,13 @@ final class AgendaSectionsTests: XCTestCase {
         XCTAssertTrue(
             EventKitEventFields.isRecurring(
                 hasRecurrenceRules: false,
-                occurrenceDate: Date()
+                isDetached: true
             )
         )
         XCTAssertFalse(
             EventKitEventFields.isRecurring(
                 hasRecurrenceRules: false,
-                occurrenceDate: nil
+                isDetached: false
             )
         )
     }

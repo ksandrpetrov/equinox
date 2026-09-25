@@ -1,11 +1,9 @@
-import AppKit
 import SwiftUI
 
 struct EventDetailView: View {
     @Bindable var appState: AppState
     let event: DayEvent
     let metrics: SizeMetrics
-    @Environment(\.dismiss) private var dismiss
     @State private var isDeleting = false
     @State private var isDeleteConfirmationPresented = false
     @State private var actionError: String?
@@ -31,15 +29,14 @@ struct EventDetailView: View {
     }
 
     var body: some View {
-        ModalSheetScaffold(
+        EventDrawerScaffold(
             title: String(localized: "Event Details", bundle: .equinox, comment: "Event detail sheet title"),
             metrics: metrics,
             destructiveTitle: event.allowsDeletion
                 ? String(localized: "Delete", bundle: .equinox, comment: "")
                 : nil,
             isDestructiveInProgress: isDeleting,
-            minHeight: nil,
-            onCancel: { dismiss() },
+            onCancel: { appState.dismissEventDrawer() },
             onDestructive: event.allowsDeletion ? { isDeleteConfirmationPresented = true } : nil
         ) {
             ScrollView {
@@ -73,15 +70,7 @@ struct EventDetailView: View {
                 .padding(ModalDesign.contentPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxHeight: EventDetailLayout.maxScrollableHeight)
             .scrollIndicators(.hidden)
-        }
-        .background {
-            EventDetailParentClickDismissMonitor(
-                isDismissEnabled: !isDeleteConfirmationPresented && !isDeleting,
-                onDismiss: { dismiss() }
-            )
-            .allowsHitTesting(false)
         }
         .sheet(isPresented: $isDeleteConfirmationPresented) {
             ModalConfirmDialog(
@@ -136,7 +125,7 @@ struct EventDetailView: View {
     private var whenString: String {
         if event.isEventAllDay {
             let formatter = EquinoxFormatters.formatter(key: "date.medium") { $0.dateStyle = .medium }
-            let inclusiveEnd = appState.calendar.date(byAdding: .day, value: -1, to: event.endDate) ?? event.endDate
+            let inclusiveEnd = inclusiveAllDayEnd(start: event.startDate, end: event.endDate, calendar: appState.calendar)
             let dates = appState.calendar.isDate(event.startDate, inSameDayAs: inclusiveEnd)
                 ? formatter.string(from: event.startDate)
                 : "\(formatter.string(from: event.startDate)) – \(formatter.string(from: inclusiveEnd))"
@@ -162,84 +151,8 @@ struct EventDetailView: View {
                 isDeleting = false
             } else {
                 isDeleting = false
-                dismiss()
+                appState.dismissEventDrawer()
             }
-        }
-    }
-}
-
-private struct EventDetailParentClickDismissMonitor: NSViewRepresentable {
-    let isDismissEnabled: Bool
-    let onDismiss: @MainActor () -> Void
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(isDismissEnabled: isDismissEnabled, onDismiss: onDismiss)
-    }
-
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView(frame: .zero)
-        context.coordinator.install(for: view)
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        context.coordinator.isDismissEnabled = isDismissEnabled
-        context.coordinator.onDismiss = onDismiss
-    }
-
-    static func dismantleNSView(_ nsView: NSView, coordinator: Coordinator) {
-        coordinator.teardown()
-    }
-
-    @MainActor
-    final class Coordinator {
-        var isDismissEnabled: Bool
-        var onDismiss: @MainActor () -> Void
-
-        private weak var sheetContentView: NSView?
-        private var eventMonitor: Any?
-        private var isDismissPending = false
-
-        init(isDismissEnabled: Bool, onDismiss: @escaping @MainActor () -> Void) {
-            self.isDismissEnabled = isDismissEnabled
-            self.onDismiss = onDismiss
-        }
-
-        func install(for view: NSView) {
-            sheetContentView = view
-            guard eventMonitor == nil else { return }
-
-            eventMonitor = NSEvent.addLocalMonitorForEvents(
-                matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
-            ) { [weak self] event in
-                guard let self else { return event }
-                let shouldConsume = MainActor.assumeIsolated {
-                    guard self.isDismissEnabled,
-                          !self.isDismissPending,
-                          let sheetWindow = self.sheetContentView?.window,
-                          let sheetParent = sheetWindow.sheetParent,
-                          event.window === sheetParent,
-                          sheetWindow.attachedSheet == nil else {
-                        return false
-                    }
-
-                    self.isDismissPending = true
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self, self.isDismissEnabled, self.sheetContentView?.window != nil else { return }
-                        self.onDismiss()
-                    }
-                    return true
-                }
-                return shouldConsume ? nil : event
-            }
-        }
-
-        func teardown() {
-            if let eventMonitor {
-                NSEvent.removeMonitor(eventMonitor)
-                self.eventMonitor = nil
-            }
-            sheetContentView = nil
         }
     }
 }
@@ -291,13 +204,5 @@ private struct EventDetailLinkButton: View {
         )
         .accessibilityLabel(String(localized: "Open Link", bundle: .equinox, comment: "Event URL action"))
         .accessibilityHint(url.absoluteString)
-    }
-}
-
-private enum EventDetailLayout {
-    static var maxScrollableHeight: CGFloat {
-        let fallbackHeight: CGFloat = 720
-        let visibleHeight = NSScreen.main?.visibleFrame.height ?? fallbackHeight
-        return max(360, min(fallbackHeight, visibleHeight - 96))
     }
 }

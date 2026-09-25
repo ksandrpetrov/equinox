@@ -1,6 +1,15 @@
 import Foundation
 
 enum EventDraftDefaults {
+    static func replacingDay(of date: Date, with day: CalendarDate, calendar: Calendar) -> Date {
+        guard day.isValid else { return date }
+        var components = calendar.dateComponents([.hour, .minute, .second], from: date)
+        components.year = day.year
+        components.month = day.monthIndex + 1
+        components.day = day.day
+        return calendar.date(from: components) ?? day.date(in: calendar)
+    }
+
     /// Picker bounds; the following midnight remains a valid exclusive event end.
     static func supportedDateRange(calendar: Calendar) -> ClosedRange<Date> {
         CalendarDate.minimumSupported.date(in: calendar)...CalendarDate.maximumSupported
@@ -119,6 +128,22 @@ enum EventDraftDefaults {
         }
         let resolvedEndDate = endDateIndex == 1 ? endDate : nil
         return RecurrenceDraft(frequency: frequency, endDate: resolvedEndDate)
+    }
+
+    static func endDateAfterChangingAllDay(
+        start: Date,
+        end: Date,
+        isAllDay: Bool,
+        calendar: Calendar
+    ) -> Date {
+        // Moving an all-day draft removes hidden clock values from its inclusive end.
+        // Restore a positive timed duration when switching back from that state.
+        let resolvedEnd = isAllDay ? end : endDatePreservingDuration(
+            previousStart: start, previousEnd: end, newStart: start, calendar: calendar
+        )
+        let latestEnd = supportedDateRange(calendar: calendar).upperBound
+            .addingTimeInterval(isAllDay ? 0 : 1)
+        return min(resolvedEnd, latestEnd)
     }
 
     static func alertOffset(forPickerIndex index: Int) -> TimeInterval? {

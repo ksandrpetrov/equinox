@@ -2,6 +2,21 @@ import XCTest
 @testable import EquinoxKit
 
 final class EventLayoutTests: XCTestCase {
+    func testAllDayDisplayEndAcceptsInclusiveAndExclusiveEventKitDates() throws {
+        for zone in ["UTC", "America/Los_Angeles", "Europe/Moscow"] {
+            let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: zone)))
+            let start = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 8)))
+            for days in [1, 3] {
+                let exclusiveEnd = try XCTUnwrap(calendar.date(byAdding: .day, value: days, to: start))
+                let expected = try XCTUnwrap(calendar.date(byAdding: .day, value: days - 1, to: start))
+                for end in [exclusiveEnd, exclusiveEnd.addingTimeInterval(-1)] {
+                    XCTAssertEqual(inclusiveAllDayEnd(start: start, end: end, calendar: calendar), expected)
+                }
+            }
+            XCTAssertEqual(inclusiveAllDayEnd(start: start, end: start, calendar: calendar), start)
+        }
+    }
+
     private let calendar = Calendar(identifier: .gregorian)
 
     func testSlotsPartitionClippedEventsAcrossTimeZoneTransitions() throws {

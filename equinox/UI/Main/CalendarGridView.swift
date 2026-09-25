@@ -47,9 +47,7 @@ struct CalendarGridView: View {
             isGridFocused = true
         }
         .onChange(of: appState.panel.isModalSheetPresented) { _, isPresented in
-            if !isPresented {
-                isGridFocused = true
-            }
+            isGridFocused = !isPresented
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(localized: "Calendar grid", bundle: .equinox, comment: ""))

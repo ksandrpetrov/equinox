@@ -74,25 +74,13 @@ final class PanelWindowController {
             resize: true,
             reposition: appState.panel.isPanelVisible && !appState.isPinned
         )
-        if appState.isPinned, let panel, panel.isVisible {
-            var frame = panel.frame
-            clampPanelFrame(&frame, statusItem: statusItem)
-            panel.setFrame(frame, display: true)
-        }
     }
 
     func repositionUnderStatusItem(_ statusItem: NSStatusItem) {
         currentStatusItem = statusItem
         guard let panel, panel.isVisible else { return }
         updatePanelAgendaMaxHeight(statusItem: statusItem)
-        resizePanel(panel)
-        if appState.isPinned {
-            var frame = panel.frame
-            clampPanelFrame(&frame, statusItem: statusItem)
-            panel.setFrame(frame, display: true)
-        } else {
-            positionPanel(panel, statusItem: statusItem)
-        }
+        applyGeometry(statusItem: statusItem, resize: true, reposition: !appState.isPinned)
     }
 
     func retainFocusAfterModalDismiss(isPinned: Bool) {
@@ -105,13 +93,7 @@ final class PanelWindowController {
         currentStatusItem = statusItem
         guard let panel, panel.isVisible else { return }
         configurePanelMode(panel, isPinned: isPinned)
-        if isPinned {
-            var frame = panel.frame
-            clampPanelFrame(&frame, statusItem: statusItem)
-            panel.setFrame(frame, display: true)
-        } else {
-            positionPanel(panel, statusItem: statusItem)
-        }
+        applyGeometry(statusItem: statusItem, reposition: !isPinned)
     }
 
     func isEquinoxCalendarWindow(_ window: NSWindow, statusItem: NSStatusItem) -> Bool {
@@ -187,6 +169,11 @@ final class PanelWindowController {
         }
         let hc = NSHostingController(rootView: MainPanelView(appState: appState))
         hc.sizingOptions = [.intrinsicContentSize]
+        // Native material and sheet dimming layers must share the panel's contour.
+        hc.view.wantsLayer = true
+        hc.view.layer?.cornerRadius = EquinoxDesign.panelCornerRadius
+        hc.view.layer?.cornerCurve = .continuous
+        hc.view.layer?.masksToBounds = true
         hostingController = hc
         return hc
     }
@@ -197,20 +184,22 @@ final class PanelWindowController {
         reposition: Bool = false
     ) {
         guard let panel else { return }
+        var frame = panel.frame
         if resize {
-            resizePanel(panel)
+            let topEdge = frame.maxY
+            let rightEdge = frame.maxX
+            frame.size = panelContentSize()
+            frame.origin.x = rightEdge - frame.width
+            frame.origin.y = topEdge - frame.height
         }
         if reposition {
-            positionPanel(panel, statusItem: statusItem)
+            positionPanelFrame(&frame, statusItem: statusItem)
         }
-    }
-
-    private func resizePanel(_ panel: NSPanel) {
-        var frame = panel.frame
-        let topEdge = frame.maxY
-        frame.size = panelContentSize()
-        frame.origin.y = topEdge - frame.height
-        panel.setFrame(frame, display: panel.isVisible)
+        // Resolve screen constraints before animation, so there is no second jump.
+        clampPanelFrame(&frame, statusItem: statusItem)
+        let animate = panel.isVisible && panel.frame.width != frame.width
+            && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        panel.setFrame(frame, display: panel.isVisible, animate: animate)
     }
 
     private func scheduleLayoutUpdate() {
@@ -226,11 +215,6 @@ final class PanelWindowController {
                     resize: true,
                     reposition: !self.appState.isPinned
                 )
-                if self.appState.isPinned {
-                    var frame = panel.frame
-                    self.clampPanelFrame(&frame, statusItem: statusItem)
-                    panel.setFrame(frame, display: true)
-                }
             }
         }
         layoutUpdateWorkItem = workItem
@@ -243,11 +227,10 @@ final class PanelWindowController {
     }
 
     private func panelContentSize() -> NSSize {
-        let width = sizeMetrics.panelWidth
+        let width = sizeMetrics.panelWidth + eventDrawerWidth
         guard let view = hostingController?.view else {
             return NSSize(width: width, height: EquinoxDesign.panelDefaultHeight)
         }
-        view.frame.size.width = width
         view.layoutSubtreeIfNeeded()
         let height = ceil(view.fittingSize.height)
         return NSSize(
@@ -256,16 +239,19 @@ final class PanelWindowController {
         )
     }
 
-    private func positionPanel(_ panel: NSPanel, statusItem: NSStatusItem) {
+    private func positionPanelFrame(_ panelFrame: inout NSRect, statusItem: NSStatusItem) {
         guard let button = statusItem.button, let window = button.window else { return }
-        let frame = window.convertToScreen(button.frame)
-        let panelWidth = sizeMetrics.panelWidth
-        let origin = NSPoint(x: frame.midX - panelWidth / 2, y: frame.minY - panel.frame.height - EquinoxDesign.panelPopoverOffset)
-        var panelFrame = panel.frame
-        panelFrame.size.width = panelWidth
-        panelFrame.origin = origin
-        clampPanelFrame(&panelFrame, statusItem: statusItem)
-        panel.setFrame(panelFrame, display: panel.isVisible)
+        let statusFrame = window.convertToScreen(button.frame)
+        let calendarWidth = sizeMetrics.panelWidth
+        panelFrame.size.width = calendarWidth + eventDrawerWidth
+        panelFrame.origin = NSPoint(
+            x: statusFrame.midX - calendarWidth / 2 - eventDrawerWidth,
+            y: statusFrame.minY - panelFrame.height - EquinoxDesign.panelPopoverOffset
+        )
+    }
+
+    private var eventDrawerWidth: CGFloat {
+        appState.panel.isModalSheetPresented ? sizeMetrics.sheetWidth : 0
     }
 
     private func clampPanelFrame(_ frame: inout NSRect, statusItem: NSStatusItem) {

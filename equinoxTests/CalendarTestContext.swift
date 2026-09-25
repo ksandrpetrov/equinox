@@ -10,8 +10,7 @@ final class CalendarTestContext {
 
     init() throws {
         defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
         appState = AppState(
             calendar: calendar, calendarStore: store,
             preferences: PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter()),

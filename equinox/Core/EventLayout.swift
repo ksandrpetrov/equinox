@@ -13,6 +13,12 @@ struct EventDaySlot: Sendable, Equatable {
     let displaysAsAllDay: Bool
 }
 
+/// EventKit on macOS can return 23:59:59 for an all-day end, while imported
+/// events can use the following midnight. Both identify the same last day.
+func inclusiveAllDayEnd(start: Date, end: Date, calendar: Calendar) -> Date {
+    calendar.startOfDay(for: max(start, end.addingTimeInterval(-1)))
+}
+
 /// Buckets a single event into per-day slots within a fetch range.
 func layoutEventDaySlots(
     event: EventLayoutInput,

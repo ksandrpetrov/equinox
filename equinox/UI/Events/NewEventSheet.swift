@@ -3,7 +3,6 @@ import SwiftUI
 struct NewEventSheet: View {
     @Bindable var appState: AppState
     let metrics: SizeMetrics
-    @Environment(\.dismiss) private var dismiss
     @FocusState private var focusedField: Field?
 
     enum Field: Hashable {
@@ -27,6 +26,7 @@ struct NewEventSheet: View {
     @State private var showAlertSection = false
     @State private var showNotesSection = false
     @State private var isSaving = false
+    @State private var isDatePickerPresented = false
     @State private var saveError: String?
 
     init(appState: AppState, metrics: SizeMetrics) {
@@ -67,12 +67,13 @@ struct NewEventSheet: View {
     ]
 
     var body: some View {
-        ModalSheetScaffold(
+        EventDrawerScaffold(
             title: String(localized: "New Event", bundle: .equinox, comment: ""),
             metrics: metrics,
             confirmTitle: String(localized: "Add", bundle: .equinox, comment: ""),
             confirmDisabled: title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !hasModifiableCalendars || isSaving,
             isConfirming: isSaving,
+            isCancelShortcutEnabled: !isDatePickerPresented,
             onCancel: { close() },
             onConfirm: { save() }
         ) {
@@ -88,6 +89,9 @@ struct NewEventSheet: View {
         }
         .onAppear {
             reconcileSelectedCalendar()
+        }
+        .task {
+            await Task.yield()
             focusedField = .title
         }
         .onChange(of: modifiableCalendarIdentifiers) { _, _ in
@@ -111,13 +115,14 @@ struct NewEventSheet: View {
 
             Section(String(localized: "Date & Time", bundle: .equinox, comment: "")) {
                 Toggle(String(localized: "All-day", bundle: .equinox, comment: ""), isOn: $isAllDay)
-                    .onChange(of: isAllDay) { _, _ in
-                        endDate = min(endDate, latestEndDate)
+                    .onChange(of: isAllDay) { _, isAllDay in
+                        endDate = EventDraftDefaults.endDateAfterChangingAllDay(
+                            start: startDate, end: endDate, isAllDay: isAllDay, calendar: appState.calendar
+                        )
                     }
 
-                DatePicker(String(localized: "Starts", bundle: .equinox, comment: ""), selection: $startDate,
-                           in: supportedDates,
-                           displayedComponents: isAllDay ? [.date] : [.date, .hourAndMinute])
+                eventDatePicker(String(localized: "Starts", bundle: .equinox, comment: ""), selection: $startDate,
+                                range: supportedDates, showsTime: !isAllDay)
                     .onChange(of: startDate) { old, new in
                         endDate = EventDraftDefaults.endDatePreservingDuration(
                             previousStart: old,
@@ -133,9 +138,8 @@ struct NewEventSheet: View {
                         }
                     }
 
-                DatePicker(String(localized: "Ends", bundle: .equinox, comment: ""), selection: $endDate,
-                           in: supportedDates.lowerBound...latestEndDate,
-                           displayedComponents: isAllDay ? [.date] : [.date, .hourAndMinute])
+                eventDatePicker(String(localized: "Ends", bundle: .equinox, comment: ""), selection: $endDate,
+                                range: supportedDates.lowerBound...latestEndDate, showsTime: !isAllDay)
             }
 
             Section(String(localized: "Calendar", bundle: .equinox, comment: "")) {
@@ -181,11 +185,11 @@ struct NewEventSheet: View {
                         }
                     }
                     if recurrenceEndIndex == 1 {
-                        DatePicker(
+                        eventDatePicker(
                             String(localized: "End date", bundle: .equinox, comment: ""),
                             selection: $recurrenceEndDate,
-                            in: earliestRecurrenceEndDate...supportedDates.upperBound,
-                            displayedComponents: [.date]
+                            range: earliestRecurrenceEndDate...supportedDates.upperBound,
+                            showsTime: false
                         )
                     }
                 }
@@ -210,7 +214,13 @@ struct NewEventSheet: View {
     }
 
     private func close() {
-        dismiss()
+        appState.dismissEventDrawer()
+    }
+
+    private func eventDatePicker(_ title: String, selection: Binding<Date>, range: ClosedRange<Date>, showsTime: Bool) -> some View {
+        EventDatePicker(title: title, selection: selection, range: range, showsTime: showsTime,
+                        calendar: appState.calendar, weekStartWeekday: appState.preferences.weekStartWeekday,
+                        metrics: metrics, onPresentationChange: { isDatePickerPresented = $0 })
     }
 
     private var modifiableCalendars: [SelectableCalendar] {
@@ -325,5 +335,191 @@ struct NewEventSheet: View {
                 close()
             }
         }
+    }
+}
+
+struct EventDatePicker: View {
+    let title: String
+    @Binding var selection: Date
+    let range: ClosedRange<Date>
+    let showsTime: Bool
+    let calendar: Calendar
+    let weekStartWeekday: Int
+    let metrics: SizeMetrics
+    let onPresentationChange: (Bool) -> Void
+    @State private var isCalendarPresented = false
+
+    var body: some View {
+        HStack {
+            Text(title)
+            Spacer(minLength: EquinoxDesign.spacingSM)
+            HStack(spacing: EquinoxDesign.spacingSM) {
+                Button {
+                    isCalendarPresented = true
+                } label: {
+                    HStack(spacing: EquinoxDesign.spacingXS) {
+                        Text(selection, format: .dateTime.day().month(.twoDigits).year())
+                            .monospacedDigit()
+                        Image(systemName: "calendar")
+                    }
+                }
+                .buttonStyle(EquinoxButtonStyle(size: .small))
+                .accessibilityLabel(title)
+                .accessibilityValue(selection.formatted(date: .complete, time: .omitted))
+                .popover(isPresented: $isCalendarPresented, arrowEdge: .trailing) {
+                    EventDateCalendar(selection: $selection, range: range, calendar: calendar,
+                                      weekStartWeekday: weekStartWeekday, metrics: metrics,
+                                      onClose: { isCalendarPresented = false })
+                }
+                if showsTime {
+                    DatePicker(title, selection: $selection, in: range, displayedComponents: [.hourAndMinute])
+                        .datePickerStyle(.field)
+                        .labelsHidden()
+                        .fixedSize()
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .environment(\.calendar, calendar)
+        .environment(\.timeZone, calendar.timeZone)
+        .onChange(of: isCalendarPresented) { _, isPresented in
+            onPresentationChange(isPresented)
+        }
+    }
+}
+
+struct EventDateCalendar: View {
+    @Binding var selection: Date
+    let range: ClosedRange<Date>
+    let calendar: Calendar
+    let weekStartWeekday: Int
+    let metrics: SizeMetrics
+    let onClose: () -> Void
+    @State private var month: CalendarDate
+    @FocusState private var isGridFocused: Bool
+
+    init(selection: Binding<Date>, range: ClosedRange<Date>, calendar: Calendar,
+         weekStartWeekday: Int, metrics: SizeMetrics, onClose: @escaping () -> Void) {
+        _selection = selection
+        self.range = range
+        self.calendar = calendar
+        self.weekStartWeekday = weekStartWeekday
+        self.metrics = metrics
+        self.onClose = onClose
+        let initial = CalendarDate(date: selection.wrappedValue, calendar: calendar)
+        _month = State(initialValue: CalendarDate(julian: min(max(initial.julian, CalendarDate.minimumSupported.julian), CalendarDate.maximumSupported.julian)))
+    }
+
+    private var selectedDay: CalendarDate { CalendarDate(date: selection, calendar: calendar) }
+    private var firstDay: CalendarDate { CalendarDate(date: range.lowerBound, calendar: calendar) }
+    private var lastDay: CalendarDate {
+        CalendarDate(julian: min(CalendarDate(date: range.upperBound, calendar: calendar).julian, CalendarDate.maximumSupported.julian))
+    }
+    private var dates: [CalendarDate] {
+        monthGridDates(monthDate: month, weekStartWeekday: weekStartWeekday, numRows: 6)
+    }
+
+    var body: some View {
+        VStack(spacing: EquinoxDesign.spacingSM) {
+            HStack(spacing: EquinoxDesign.spacingXS) {
+                PanelIconButton(symbol: "chevron.left",
+                                help: String(localized: "Previous month", bundle: .equinox, comment: ""),
+                                buttonSize: metrics.toolbarButtonSize) { month = month.addingMonths(-1) }
+                    .disabled(month.addingMonths(-1).julian < firstDay.addingMonths(0).julian)
+                Menu {
+                    ForEach(0..<12, id: \.self) { index in
+                        Button(calendar.standaloneMonthSymbols[index]) {
+                            month = boundedMonth(year: month.year, monthIndex: index)
+                        }
+                    }
+                } label: {
+                    Text(calendar.standaloneMonthSymbols[month.monthIndex])
+                        .lineLimit(1)
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                TextField(String(localized: "Year", bundle: .equinox, comment: "Date picker year"), value: Binding(
+                    get: { month.year },
+                    set: { month = boundedMonth(year: $0, monthIndex: month.monthIndex) }
+                ), format: .number.grouping(.never))
+                .textFieldStyle(.roundedBorder)
+                .frame(width: metrics.toolbarButtonSize * 2)
+                PanelIconButton(symbol: "chevron.right",
+                                help: String(localized: "Next month", bundle: .equinox, comment: ""),
+                                buttonSize: metrics.toolbarButtonSize) { month = month.addingMonths(1) }
+                    .disabled(month.addingMonths(1).julian > lastDay.addingMonths(0).julian)
+            }
+            VStack(spacing: EquinoxDesign.spacingMicro) {
+                HStack(spacing: 0) {
+                    ForEach(0..<7, id: \.self) { column in
+                        Text(calendar.shortStandaloneWeekdaySymbols[weekdayForColumn(startDOW: weekStartWeekday, col: column)].uppercased())
+                            .font(EquinoxDesign.weekdayHeaderFont())
+                            .foregroundStyle(.secondary)
+                            .frame(width: metrics.cellSize)
+                    }
+                }
+                ForEach(0..<6, id: \.self) { row in
+                    HStack(spacing: 0) {
+                        ForEach(Array(dates[(row * 7)..<(row * 7 + 7)]), id: \.julian) { day in
+                            Button {
+                                select(day)
+                                onClose()
+                            } label: {
+                                Text("\(day.day)")
+                                    .font(EquinoxDesign.dayNumeralFont(size: metrics.fontSize))
+                                    .foregroundStyle(day.monthIndex == month.monthIndex ? Color.primary : .secondary)
+                                    .frame(width: metrics.cellSize, height: metrics.cellSize)
+                            }
+                            .buttonStyle(PanelButtonStyle(isSelected: day == selectedDay))
+                            .disabled(!isSelectable(day))
+                            .focusable(false)
+                            .accessibilityLabel(day.date(in: calendar).formatted(date: .complete, time: .omitted))
+                            .accessibilityAddTraits(day == selectedDay ? .isSelected : [])
+                        }
+                    }
+                }
+            }
+            .focusable()
+            .focused($isGridFocused)
+            .focusEffectDisabled()
+            .accessibilityElement(children: .contain)
+            .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow, .return]) { press in
+                let offset: Int
+                switch press.key {
+                case .leftArrow: offset = -1
+                case .rightArrow: offset = 1
+                case .upArrow: offset = -7
+                case .downArrow: offset = 7
+                case .return: onClose(); return .handled
+                default: return .ignored
+                }
+                let next = selectedDay.addingDays(offset)
+                if isSelectable(next) { select(next); month = next }
+                return .handled
+            }
+            Button(String(localized: "Today", bundle: .equinox, comment: "")) {
+                select(CalendarDate.today(calendar: calendar))
+                onClose()
+            }
+            .buttonStyle(EquinoxButtonStyle(variant: .plain, size: .small))
+            .disabled(!isSelectable(CalendarDate.today(calendar: calendar)))
+        }
+        .padding(EquinoxDesign.spacingMD)
+        .onAppear { isGridFocused = true }
+        .onExitCommand(perform: onClose)
+    }
+
+    private func boundedMonth(year: Int, monthIndex: Int) -> CalendarDate {
+        let proposed = CalendarDate(year: min(max(year, firstDay.year), lastDay.year), monthIndex: monthIndex, day: 1)
+        return CalendarDate(julian: min(max(proposed.julian, firstDay.addingMonths(0).julian), lastDay.addingMonths(0).julian))
+    }
+
+    private func isSelectable(_ day: CalendarDate) -> Bool {
+        day.isValid && day.julian >= firstDay.julian && day.julian <= lastDay.julian
+    }
+
+    private func select(_ day: CalendarDate) {
+        guard isSelectable(day) else { return }
+        selection = min(max(EventDraftDefaults.replacingDay(of: selection, with: day, calendar: calendar), range.lowerBound), range.upperBound)
     }
 }

@@ -259,3 +259,6 @@
 "Could not open the link." = "Не удалось открыть ссылку.";
 "OK" = "ОК";
 "Event dates must be between 1583 and 3333." = "Даты события должны быть в пределах 1583–3333 годов.";
+
+"Collapse event panel" = "Свернуть панель события";
+"Year" = "Год";

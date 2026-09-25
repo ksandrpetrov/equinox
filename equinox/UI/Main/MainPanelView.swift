@@ -36,21 +36,41 @@ struct MainPanelView: View {
 
     var body: some View {
         panelContent
-            .panelBackground(style: backgroundStyle, reduceTransparency: reduceTransparency)
             .frame(width: metrics.panelWidth)
-            .sheet(isPresented: modalSheetBinding(\.panel.isNewEventSheetPresented)) {
-                NewEventSheet(appState: appState, metrics: metrics)
-                    .equinoxSheetPresentation(style: backgroundStyle)
-            }
-            .sheet(isPresented: modalSheetBinding(\.panel.isEventDetailPresented)) {
-                if let event = appState.panel.selectedEvent {
-                    EventDetailView(appState: appState, event: event, metrics: metrics)
-                        .equinoxSheetPresentation(style: backgroundStyle)
+            .disabled(appState.panel.isModalSheetPresented)
+            .padding(.leading, appState.panel.isModalSheetPresented ? metrics.sheetWidth : 0)
+            .overlay(alignment: .leading) {
+                if appState.panel.isModalSheetPresented {
+                    eventDrawer
+                        .frame(width: metrics.sheetWidth)
+                        .frame(maxHeight: .infinity)
+                        .background(alignment: .trailing) {
+                            Rectangle()
+                                .fill(EquinoxDesign.ColorToken.separator)
+                                .frame(width: EquinoxDesign.hairlineWidth)
+                        }
                 }
             }
+            .panelBackground(style: backgroundStyle, reduceTransparency: reduceTransparency)
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .trailing)
             .onChange(of: panelLayoutState) { _, _ in
                 appState.layout.invalidatePanelSize()
             }
+            .onChange(of: appState.panel.isModalSheetPresented) { _, isPresented in
+                appState.layout.invalidatePanelSize()
+                if !isPresented {
+                    appState.panel.onModalSheetDismissed?()
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var eventDrawer: some View {
+        if appState.panel.isNewEventSheetPresented {
+            NewEventSheet(appState: appState, metrics: metrics)
+        } else if let event = appState.panel.selectedEvent {
+            EventDetailView(appState: appState, event: event, metrics: metrics)
+        }
     }
 
     private var panelContent: some View {
@@ -85,18 +105,6 @@ struct MainPanelView: View {
         .padding(EquinoxDesign.panelPadding)
     }
 
-    private func modalSheetBinding(_ keyPath: ReferenceWritableKeyPath<AppState, Bool>) -> Binding<Bool> {
-        Binding(
-            get: { appState[keyPath: keyPath] },
-            set: { newValue in
-                let wasPresented = appState[keyPath: keyPath]
-                appState[keyPath: keyPath] = newValue
-                if wasPresented, !newValue {
-                    appState.panel.onModalSheetDismissed?()
-                }
-            }
-        )
-    }
 }
 
 private struct PanelLayoutState: Equatable {

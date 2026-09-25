@@ -90,6 +90,13 @@ final class AppState {
         await events.createEvent(from: draft)
     }
 
+    func dismissEventDrawer() {
+        panel.isNewEventSheetPresented = false
+        panel.isEventDetailPresented = false
+        panel.newEventInitialDate = nil
+        panel.selectedEvent = nil
+    }
+
     func deleteEvent(identifier: String, occurrenceStartDate: Date) async -> String? {
         let result = await events.deleteEvent(
             identifier: identifier,

@@ -1,7 +1,6 @@
 import SwiftUI
 
-// Shared modal primitives for panel sheets and settings confirms.
-// Settings window uses SettingsDetailScaffold; panel modals use ModalSheetScaffold.
+// Shared event drawer and confirmation components.
 
 enum ModalBannerStyle {
     case error
@@ -40,69 +39,80 @@ struct ModalErrorBanner: View {
     }
 }
 
-struct ModalSheetScaffold<Content: View>: View {
+struct EventDrawerScaffold<Content: View>: View {
     let title: String
     let metrics: SizeMetrics
-    var cancelTitle: String = String(localized: "Cancel", bundle: .equinox, comment: "Modal cancel button")
     var confirmTitle: String?
-    var confirmDisabled: Bool = false
-    var isConfirming: Bool = false
+    var confirmDisabled = false
+    var isConfirming = false
     var destructiveTitle: String?
-    var isDestructiveInProgress: Bool = false
-    var minHeight: CGFloat? = ModalDesign.minHeight
+    var isDestructiveInProgress = false
+    var isCancelShortcutEnabled = true
     let onCancel: () -> Void
     var onConfirm: (() -> Void)?
     var onDestructive: (() -> Void)?
     @ViewBuilder let content: () -> Content
 
-    var body: some View {
-        NavigationStack {
-            content()
-                .navigationTitle(title)
-                .toolbar {
-                    if let destructiveTitle, let onDestructive {
-                        ToolbarItem(placement: .destructiveAction) {
-                            Button(role: .destructive, action: onDestructive) {
-                                if isDestructiveInProgress {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                } else {
-                                    Text(destructiveTitle)
-                                }
-                            }
-                            .disabled(isDestructiveInProgress)
-                        }
-                    }
+    private var isBusy: Bool { isConfirming || isDestructiveInProgress }
 
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: EquinoxDesign.spacingSM) {
+                Text(title)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .frame(minHeight: metrics.toolbarButtonSize)
+                Spacer(minLength: 0)
+            }
+            .padding(EquinoxDesign.panelPadding)
+            Divider()
+            content()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if onConfirm != nil || onDestructive != nil {
+                Divider()
+                HStack {
+                    if let destructiveTitle, let onDestructive {
+                        Button(destructiveTitle, role: .destructive, action: onDestructive)
+                            .buttonStyle(.bordered)
+                            .disabled(isBusy)
+                    }
+                    Spacer()
+                    if isBusy {
+                        ProgressView().controlSize(.small)
+                    }
                     if let confirmTitle, let onConfirm {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(cancelTitle, action: onCancel)
-                                .disabled(isConfirming)
-                                .keyboardShortcut(.cancelAction)
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button(action: onConfirm) {
-                                if isConfirming {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                } else {
-                                    Text(confirmTitle)
-                                }
-                            }
-                                .disabled(confirmDisabled || isConfirming)
-                                .keyboardShortcut(.defaultAction)
-                        }
-                    } else {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button(String(localized: "Done", bundle: .equinox, comment: "Modal dismiss button"), action: onCancel)
-                                .disabled(isDestructiveInProgress)
-                                .keyboardShortcut(.defaultAction)
-                        }
+                        Button(confirmTitle, action: onConfirm)
+                            .buttonStyle(EquinoxButtonStyle(variant: .prominent))
+                            .disabled(confirmDisabled || isBusy)
+                            .keyboardShortcut(.defaultAction)
                     }
                 }
+                .padding(EquinoxDesign.panelPadding)
+            }
         }
-        .equinoxSheetChrome(metrics: metrics, minHeight: minHeight)
-        .interactiveDismissDisabled(isConfirming || isDestructiveInProgress)
+        .frame(width: metrics.sheetWidth)
+        .overlay(alignment: .trailing) {
+            Button(action: onCancel) {
+                Image(systemName: "chevron.right")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: EquinoxDesign.spacingMD, height: metrics.toolbarButtonSize * 4)
+                    .background(EquinoxDesign.ColorToken.surfaceRaised)
+                    .clipShape(RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: EquinoxDesign.radiusSM)
+                            .strokeBorder(EquinoxDesign.ColorToken.hairlineBorder, lineWidth: EquinoxDesign.hairlineWidth)
+                    }
+                    .frame(width: metrics.toolbarButtonSize)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(isBusy)
+            .keyboardShortcut(isCancelShortcutEnabled ? .cancelAction : nil)
+            .accessibilityLabel(String(localized: "Collapse event panel", bundle: .equinox, comment: "Close the event drawer"))
+            .help(String(localized: "Collapse event panel", bundle: .equinox, comment: "Close the event drawer"))
+            .offset(x: metrics.toolbarButtonSize / 2)
+        }
     }
 }
 
@@ -145,23 +155,9 @@ struct ModalConfirmDialog: View {
 }
 
 extension View {
-    func equinoxSheetChrome(metrics: SizeMetrics, minHeight: CGFloat? = ModalDesign.minHeight) -> some View {
-        Group {
-            if let minHeight {
-                frame(width: metrics.sheetWidth)
-                    .presentationSizing(.fitted)
-                    .frame(minHeight: minHeight)
-            } else {
-                frame(width: metrics.sheetWidth)
-                    .presentationSizing(.fitted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
     func equinoxSheetPresentation(style: BackgroundStyle = .glass) -> some View {
         presentationBackground {
-            EquinoxSurface(style: style, showsBorder: false)
+            EquinoxSurface(style: style, cornerRadius: 0, showsBorder: false)
         }
     }
 }

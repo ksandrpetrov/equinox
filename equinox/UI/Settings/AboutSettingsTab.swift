@@ -43,7 +43,7 @@ struct AboutSettingsTab: View {
 
             Text(String(localized: "MIT License", bundle: .equinox, comment: "About license line"))
                 .font(.footnote)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
 
             Link(
                 String(localized: "View on GitHub", bundle: .equinox, comment: "About link"),

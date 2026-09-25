@@ -235,8 +235,6 @@ enum MenuBarDesign {
 enum ModalDesign {
     static var contentPadding: CGFloat { EquinoxDesign.spacingXL }
     static var sectionSpacing: CGFloat { EquinoxDesign.spacingLG }
-    static let minHeight: CGFloat = 320
-    static var cornerRadius: CGFloat { EquinoxDesign.radiusLG }
     static let confirmWidth: CGFloat = 280
 }
 

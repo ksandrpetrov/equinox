@@ -6,6 +6,9 @@ import XCTest
 
 @MainActor
 final class PanelPresentationStateTests: XCTestCase {
+    private var statusFrame = NSRect(x: 800, y: 900, width: 40, height: 24)
+    private var isModalPresented = false
+
     func testReopeningPanelPreservesMonthDayAndAgendaPosition() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
@@ -32,13 +35,12 @@ final class PanelPresentationStateTests: XCTestCase {
         defer { monitor.teardown() }
         var isPanelVisible = true
         var outsideClicks = 0
-        var statusFrame = NSRect(x: 800, y: 900, width: 40, height: 24)
         monitor.updateMonitoring(
             isPinned: false,
             isPanelVisible: true,
             isModalSheetPresented: { false },
             isEquinoxWindow: { _ in false },
-            statusItemFrame: { statusFrame },
+            statusItemFrame: { self.statusFrame },
             onOutsideClick: {
                 outsideClicks += 1
                 isPanelVisible = false
@@ -71,12 +73,11 @@ final class PanelPresentationStateTests: XCTestCase {
         defer { monitor.teardown() }
         let panel = NSPanel(contentRect: .zero, styleMask: [.nonactivatingPanel], backing: .buffered, defer: false)
         let otherWindow = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: false)
-        var isModalPresented = false
         var outsideClicks = 0
         monitor.updateMonitoring(
             isPinned: false,
             isPanelVisible: true,
-            isModalSheetPresented: { isModalPresented },
+            isModalSheetPresented: { self.isModalPresented },
             isEquinoxWindow: { $0 === panel },
             statusItemFrame: { nil },
             onOutsideClick: { outsideClicks += 1 }

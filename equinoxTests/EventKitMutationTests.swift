@@ -35,6 +35,7 @@ final class EventKitMutationTests: XCTestCase {
             XCTAssertEqual(rule.interval, interval)
             XCTAssertEqual(rule.recurrenceEnd?.endDate, repeatEnd)
             XCTAssertEqual(event.alarms?.map(\.relativeOffset), [-900])
+            XCTAssertTrue(EventKitEventFields.extract(from: event).isRecurring)
         }
     }
 
@@ -56,11 +57,15 @@ final class EventKitMutationTests: XCTestCase {
         )
         XCTAssertEqual(slots.count, 2, "EventKit must not include the exclusive end date as a third day")
         XCTAssertEqual(slots.last?.dayStart, Calendar.current.date(byAdding: .day, value: 1, to: start))
+        XCTAssertEqual(inclusiveAllDayEnd(start: event.startDate, end: event.endDate, calendar: .current),
+                       Calendar.current.date(byAdding: .day, value: 1, to: start))
         XCTAssertNil(event.timeZone)
         XCTAssertNil(event.location)
         XCTAssertNil(event.url)
         XCTAssertNil(event.notes)
         XCTAssertTrue(event.recurrenceRules?.isEmpty ?? true)
+        XCTAssertFalse(EventKitEventFields.extract(from: event).isRecurring,
+                       "A standalone event must not use occurrence-only deletion wording")
         XCTAssertTrue(event.alarms?.isEmpty ?? true)
     }
 }

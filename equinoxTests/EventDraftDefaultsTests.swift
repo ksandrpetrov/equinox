@@ -2,6 +2,58 @@ import XCTest
 @testable import EquinoxKit
 
 final class EventDraftDefaultsTests: XCTestCase {
+    func testCalendarPickerPreservesWallTimeAcrossLeapDayAndDST() throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")))
+        let source = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 7, hour: 14, minute: 30)))
+        for day in [CalendarDate(year: 2028, monthIndex: 1, day: 29), CalendarDate(year: 2026, monthIndex: 2, day: 8), .maximumSupported] {
+            let replaced = EventDraftDefaults.replacingDay(of: source, with: day, calendar: calendar)
+            XCTAssertEqual(CalendarDate(date: replaced, calendar: calendar), day)
+            XCTAssertEqual(calendar.component(.hour, from: replaced), 14)
+            XCTAssertEqual(calendar.component(.minute, from: replaced), 30)
+        }
+        let nonexistentTime = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 7, hour: 2, minute: 30)))
+        let springDay = CalendarDate(year: 2026, monthIndex: 2, day: 8)
+        let shifted = EventDraftDefaults.replacingDay(of: nonexistentTime, with: springDay, calendar: calendar)
+        XCTAssertEqual(CalendarDate(date: shifted, calendar: calendar), springDay)
+        XCTAssertEqual(calendar.component(.hour, from: shifted), 3)
+        XCTAssertEqual(calendar.component(.minute, from: shifted), 30)
+        XCTAssertEqual(EventDraftDefaults.replacingDay(of: source, with: .maximumSupported.addingDays(1), calendar: calendar), source)
+    }
+
+    func testMovedAllDayDraftRegainsPositiveDurationWhenReturningToTimed() throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")))
+        let previousStart = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 7, hour: 14)))
+        let newStart = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: previousStart))
+        let allDayEnd = EventDraftDefaults.endDatePreservingDuration(
+            previousStart: previousStart, previousEnd: previousStart.addingTimeInterval(3600),
+            newStart: newStart, calendar: calendar, isAllDay: true
+        )
+        XCTAssertLessThan(allDayEnd, newStart, "Moving an all-day draft clears its hidden end time")
+        let timedEnd = EventDraftDefaults.endDateAfterChangingAllDay(
+            start: newStart, end: allDayEnd, isAllDay: false, calendar: calendar
+        )
+        XCTAssertEqual(timedEnd.timeIntervalSince(newStart), 3600)
+        XCTAssertNotNil(EventDraftDefaults.normalizedDates(calendar: calendar, start: newStart, end: timedEnd, isAllDay: false))
+    }
+
+    func testAllDayTogglePreservesValidDurationAndClampsSupportedBoundary() throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "UTC")))
+        let start = CalendarDate(year: 2026, monthIndex: 8, day: 26).date(in: calendar)
+        for duration in [3600.0, 172800.0] {
+            XCTAssertEqual(EventDraftDefaults.endDateAfterChangingAllDay(
+                start: start, end: start.addingTimeInterval(duration), isAllDay: false, calendar: calendar
+            ), start.addingTimeInterval(duration))
+        }
+        let lastSecond = EventDraftDefaults.supportedDateRange(calendar: calendar).upperBound
+        let exclusiveEnd = lastSecond.addingTimeInterval(1)
+        XCTAssertEqual(EventDraftDefaults.endDateAfterChangingAllDay(
+            start: lastSecond, end: lastSecond, isAllDay: false, calendar: calendar
+        ), exclusiveEnd)
+        XCTAssertEqual(EventDraftDefaults.endDateAfterChangingAllDay(
+            start: lastSecond, end: exclusiveEnd, isAllDay: true, calendar: calendar
+        ), lastSecond)
+    }
+
     private var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(secondsFromGMT: 0)!

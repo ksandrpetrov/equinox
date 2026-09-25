@@ -35,14 +35,15 @@ struct EventKitEventFields: Sendable {
             calendarTitle: event.calendar.title,
             isRecurring: isRecurring(
                 hasRecurrenceRules: event.hasRecurrenceRules,
-                occurrenceDate: event.occurrenceDate
+                isDetached: event.isDetached
             ),
             allowsContentModifications: event.calendar.allowsContentModifications,
             participationRawValue: event.equinoxParticipationRawValue
         )
     }
 
-    static func isRecurring(hasRecurrenceRules: Bool, occurrenceDate: Date?) -> Bool {
-        hasRecurrenceRules || occurrenceDate != nil
+    static func isRecurring(hasRecurrenceRules: Bool, isDetached: Bool) -> Bool {
+        // macOS can populate occurrenceDate for standalone events too.
+        hasRecurrenceRules || isDetached
     }
 }
