@@ -68,7 +68,7 @@ struct CalendarGridView: View {
                 Text(symbol.uppercased())
                     .font(EquinoxDesign.weekdayHeaderFont())
                     .tracking(EquinoxDesign.weekdayHeaderTracking())
-                    .foregroundStyle(prefs.isWeekdayHighlighted(index, weekStartWeekday: prefs.weekStartWeekday) ? Color.secondary : EquinoxDesign.ColorToken.weekdayDimmed)
+                    .foregroundStyle(prefs.isWeekdayHighlighted(index, weekStartWeekday: prefs.weekStartWeekday) ? EquinoxDesign.ColorToken.textPrimary : EquinoxDesign.ColorToken.weekdayDimmed)
                     .frame(maxWidth: .infinity)
             }
         }

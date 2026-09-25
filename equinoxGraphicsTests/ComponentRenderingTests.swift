@@ -4,6 +4,66 @@ import XCTest
 
 final class ComponentRenderingTests: XCTestCase {
     @MainActor
+    func testWeekdayLabelsHaveReadableContrastOnPanelSurface() throws {
+        func sample(_ color: Color, scheme: ColorScheme) throws -> NSColor {
+            let renderer = ImageRenderer(content: color.frame(width: 8, height: 8)
+                .background(EquinoxDesign.ColorToken.surfaceWindow)
+                .environment(\.colorScheme, scheme))
+            let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
+            return try XCTUnwrap(bitmap.colorAt(x: 4, y: 4)?.usingColorSpace(.sRGB))
+        }
+        for scheme in [ColorScheme.light, .dark] {
+            let foreground = try luminance(sample(EquinoxDesign.ColorToken.weekdayDimmed, scheme: scheme))
+            let background = try luminance(sample(EquinoxDesign.ColorToken.surfaceWindow, scheme: scheme))
+            let ratio = (max(foreground, background) + 0.05) / (min(foreground, background) + 0.05)
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "Small weekday and week-number labels must remain readable in \(scheme)")
+        }
+    }
+
+    @MainActor
+    func testErrorAndWarningMessagesHaveReadableContrast() throws {
+        for scheme in [ColorScheme.light, .dark] {
+            for style in [EquinoxBannerStyle.error, .warning] {
+                for presentation in [EquinoxBannerPresentation.card, .filled] {
+                    let content = EquinoxBanner(message: "Calendar error details", style: style, presentation: presentation)
+                        .frame(width: 320)
+                        .background(EquinoxDesign.ColorToken.surfaceWindow)
+                        .environment(\.colorScheme, scheme)
+                    let renderer = ImageRenderer(content: content)
+                    let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
+                    let background = try XCTUnwrap(bitmap.colorAt(x: bitmap.pixelsWide / 2, y: bitmap.pixelsHigh - 3)?.usingColorSpace(.sRGB))
+                    let backgroundLuminance = luminance(background)
+                    var strongestGlyphContrast = 1.0
+                    // Exclude the decorative icon, border and padding. Test the
+                    // interior of the rendered text rather than antialiased edges.
+                    for y in 8..<(bitmap.pixelsHigh - 8) {
+                        for x in 48..<280 {
+                            let pixel = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
+                            let foreground = luminance(pixel)
+                            let ratio = (max(foreground, backgroundLuminance) + 0.05)
+                                / (min(foreground, backgroundLuminance) + 0.05)
+                            strongestGlyphContrast = max(strongestGlyphContrast, ratio)
+                        }
+                    }
+                    XCTAssertGreaterThanOrEqual(strongestGlyphContrast, 4.5, "\(style), \(presentation), \(scheme)")
+                    try exportDesignPreview(content, name: "banner-\(style)-\(presentation)-\(scheme)", width: 320)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func luminance(_ color: NSColor) -> Double {
+        func linear(_ component: CGFloat) -> Double {
+            let value = Double(component)
+            return value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+        }
+        return linear(color.redComponent) * 0.2126
+            + linear(color.greenComponent) * 0.7152
+            + linear(color.blueComponent) * 0.0722
+    }
+
+    @MainActor
     func testSurfaceColorsAdaptToLightAndDarkAppearance() throws {
         let colors = [
             EquinoxDesign.ColorToken.surfacePrimary,
@@ -58,6 +118,10 @@ final class ComponentRenderingTests: XCTestCase {
     func testFrameworkResourcesAreAvailableOutsideApplicationBundle() throws {
         XCTAssertNotEqual(Bundle.equinox.bundleURL, Bundle.main.bundleURL)
         XCTAssertNotNil(Bundle.equinox.image(forResource: "AppLogo"))
+        let language = Bundle.preferredLocalizations(from: ["en", "ru"], forPreferences: Locale.preferredLanguages).first
+        XCTAssertEqual(String(localized: "New Event", bundle: .equinox),
+                       language == "ru" ? "Новое событие" : "New Event",
+                       "The graphics host must render the requested language, including framework strings")
         for name in ["AccentColor", "OnAccentForeground", "WeekendTint"] {
             XCTAssertNotNil(NSColor(named: name, bundle: .equinox))
         }

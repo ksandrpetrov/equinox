@@ -60,6 +60,12 @@ final class EventsCoordinator {
 
     private var snapshotGeneration = 0
 
+    private struct DeletionKey: Hashable {
+        let identifier: String
+        let occurrenceStartDate: Date
+    }
+    private var pendingDeletions: [DeletionKey: Task<String?, Never>] = [:]
+
     private var agendaVisibleFirst: CalendarDate?
     private var agendaVisibleLast: CalendarDate?
     private var visibleGridRange: (first: CalendarDate, last: CalendarDate)?
@@ -248,16 +254,27 @@ final class EventsCoordinator {
     }
 
     func deleteEvent(identifier: String, occurrenceStartDate: Date) async -> String? {
-        do {
-            try await calendarStore.deleteEvent(
-                identifier: identifier,
-                occurrenceStartDate: occurrenceStartDate
-            )
-            _ = await reloadCurrentEvents()
-            return nil
-        } catch {
-            return error.localizedDescription
+        let key = DeletionKey(identifier: identifier, occurrenceStartDate: occurrenceStartDate)
+        if let pending = pendingDeletions[key] {
+            return await pending.value
         }
+        // Agenda context-menu actions can repeat while the deleted row is still
+        // visible during reload. Share the complete operation, including its result.
+        let task = Task<String?, Never> {
+            do {
+                try await calendarStore.deleteEvent(
+                    identifier: identifier,
+                    occurrenceStartDate: occurrenceStartDate
+                )
+                _ = await reloadCurrentEvents()
+                return nil
+            } catch {
+                return error.localizedDescription
+            }
+        }
+        pendingDeletions[key] = task
+        defer { pendingDeletions.removeValue(forKey: key) }
+        return await task.value
     }
 
     func updateSelectedCalendar(identifier: String, selected: Bool) async {

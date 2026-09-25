@@ -164,7 +164,7 @@ struct EquinoxBanner: View {
                 .accessibilityHidden(true)
             Text(message)
                 .font(.footnote)
-                .foregroundStyle(foregroundColor)
+                .foregroundStyle(EquinoxDesign.ColorToken.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let actionTitle, let action {

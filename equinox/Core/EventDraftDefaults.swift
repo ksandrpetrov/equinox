@@ -3,6 +3,9 @@ import Foundation
 enum EventDraftDefaults {
     static func replacingDay(of date: Date, with day: CalendarDate, calendar: Calendar) -> Date {
         guard day.isValid else { return date }
+        // Rebuilding the same wall time can choose the other occurrence of a DST
+        // repeated hour. Selecting the current day must preserve the exact instant.
+        guard day != CalendarDate(date: date, calendar: calendar) else { return date }
         var components = calendar.dateComponents([.hour, .minute, .second], from: date)
         components.year = day.year
         components.month = day.monthIndex + 1

@@ -2,6 +2,20 @@ import XCTest
 @testable import EquinoxKit
 
 final class EventDraftDefaultsTests: XCTestCase {
+    func testSelectingCurrentDayPreservesBothOccurrencesOfRepeatedHour() throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")))
+        for timestamp in ["2026-11-01T08:30:00Z", "2026-11-01T09:30:00Z"] {
+            let original = try XCTUnwrap(ISO8601DateFormatter().date(from: timestamp))
+                .addingTimeInterval(0.25)
+            let sameDay = CalendarDate(date: original, calendar: calendar)
+            XCTAssertEqual(
+                EventDraftDefaults.replacingDay(of: original, with: sameDay, calendar: calendar),
+                original,
+                "Selecting the already selected day must not move the event to the first repeated hour"
+            )
+        }
+    }
+
     func testCalendarPickerPreservesWallTimeAcrossLeapDayAndDST() throws {
         let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")))
         let source = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 7, hour: 14, minute: 30)))

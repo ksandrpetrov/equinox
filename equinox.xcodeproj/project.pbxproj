@@ -1492,6 +1492,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				SKIP_INSTALL = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.graphics-host";
+				INFOPLIST_FILE = equinoxGraphicsHost/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1511,6 +1512,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				SKIP_INSTALL = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.equinox.graphics-host";
+				INFOPLIST_FILE = equinoxGraphicsHost/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -3,6 +3,55 @@ import XCTest
 
 @MainActor
 final class AppStateCalendarTests: XCTestCase {
+    func testRepeatedDeleteWhileReloadingDoesNotDeleteOccurrenceTwice() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let event = context.event(start: context.appState.events.todayDate.date(in: context.appState.calendar))
+        var resumeSnapshot: CheckedContinuation<Void, Never>?
+        var isFirstSnapshot = true
+        let reloadStarted = expectation(description: "Deletion succeeded and reload is pending")
+        context.store.readSnapshot = {
+            if isFirstSnapshot {
+                isFirstSnapshot = false
+                await withCheckedContinuation { resumeSnapshot = $0; reloadStarted.fulfill() }
+            }
+            return StubCalendarEventStore.snapshot(status: .authorized)
+        }
+        let first = Task {
+            await context.appState.deleteEvent(identifier: "event", occurrenceStartDate: event.startDate)
+        }
+        await fulfillment(of: [reloadStarted], timeout: 2)
+        // The stale agenda row remains visible while the calendar reloads. A second
+        // removal would now fail because the occurrence has already been deleted.
+        context.store.deleteError = .eventNotFound
+        let repeatedStarted = expectation(description: "Repeated deletion requested")
+        let repeated = Task {
+            repeatedStarted.fulfill()
+            return await context.appState.deleteEvent(identifier: "event", occurrenceStartDate: event.startDate)
+        }
+        await fulfillment(of: [repeatedStarted], timeout: 2)
+        XCTAssertEqual(context.store.deletedOccurrences.count, 1)
+
+        context.store.deleteError = nil
+        let nextOccurrence = event.startDate.addingTimeInterval(86400)
+        let otherStarted = expectation(description: "Another occurrence requested independently")
+        let other = Task {
+            otherStarted.fulfill()
+            return await context.appState.deleteEvent(identifier: "event", occurrenceStartDate: nextOccurrence)
+        }
+        await fulfillment(of: [otherStarted], timeout: 2)
+        XCTAssertEqual(context.store.deletedOccurrences.map(\.start), [event.startDate, nextOccurrence])
+        resumeSnapshot?.resume()
+        let firstError = await first.value
+        let repeatedError = await repeated.value
+        let otherError = await other.value
+        XCTAssertNil(firstError)
+        XCTAssertNil(repeatedError)
+        XCTAssertNil(otherError)
+        XCTAssertEqual(context.store.operations, ["delete", "refetch", "delete", "refetch"])
+    }
+
     func testSuccessfulCreateWithFailedReloadDoesNotRepeatMutationOnRetry() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
@@ -137,6 +186,25 @@ final class AppStateCalendarTests: XCTestCase {
         XCTAssertTrue(context.appState.panel.isEventDetailPresented)
         XCTAssertEqual(context.store.operations, ["delete"])
         XCTAssertFalse(context.appState.events.isFetchingEvents)
+    }
+
+    func testFailedDeletionCanBeRetriedAndOtherOccurrencesRemainIndependent() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let start = context.appState.events.todayDate.date(in: context.appState.calendar)
+        context.store.deleteError = .readOnlyCalendar
+        let failed = await context.appState.deleteEvent(identifier: "series", occurrenceStartDate: start)
+        XCTAssertEqual(failed, CalendarStoreError.readOnlyCalendar.localizedDescription)
+
+        context.store.deleteError = nil
+        let retried = await context.appState.deleteEvent(identifier: "series", occurrenceStartDate: start)
+        XCTAssertNil(retried)
+        let nextOccurrence = start.addingTimeInterval(86400)
+        let next = await context.appState.deleteEvent(identifier: "series", occurrenceStartDate: nextOccurrence)
+        XCTAssertNil(next)
+        XCTAssertEqual(context.store.deletedOccurrences.map(\.start), [start, start, nextOccurrence])
+        XCTAssertEqual(context.store.operations, ["delete", "delete", "refetch", "delete", "refetch"])
     }
 
     func testSuccessfulDeleteClosesOnlyTheSelectedOccurrence() async throws {

@@ -81,7 +81,7 @@ enum EquinoxDesign {
         static let interactionSubtle = Color.primary.opacity(0.04)
         static let pickerUnselected = Color.primary.opacity(0.03)
 
-        static var weekdayDimmed: Color { Color.secondary.opacity(EquinoxDesign.StateOpacity.weekdayDimmed) }
+        static var weekdayDimmed: Color { textPrimary.opacity(EquinoxDesign.StateOpacity.weekdayDimmed) }
 
         private static func surfaceColor(light: UInt32, dark: UInt32) -> Color {
             Color(nsColor: NSColor(name: nil) { appearance in
