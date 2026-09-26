@@ -163,6 +163,39 @@ codesign -d --entitlements - /path/to/equinox.xcarchive/Products/Applications/eq
 проверьте доступ к календарям и сохранение настроек при обновлении существующей
 установки. Подробнее: [App Sandbox](https://developer.apple.com/documentation/security/app-sandbox).
 
+#### Проверка подписи ресурсов перед TestFlight
+
+В Xcode 27 экспорт архива может сохранить development-подпись
+`Contents/Resources/KeyboardShortcuts_KeyboardShortcuts.bundle`, переподписав
+приложение и framework для Mac App Store. Локальная проверка `--deep --strict`
+при этом проходит, но App Store Connect отклоняет обработку с ошибкой 90284.
+
+Проверенный порядок для такого архива: работать с его отдельной копией,
+подписать этот resource bundle сертификатом распространения, выбранным для
+экспорта, затем восстановить внешнюю подпись приложения исходным сертификатом
+архива с сохранением entitlements. Исходники и `project.pbxproj` не меняются:
+
+```bash
+# APP — приложение внутри копии .xcarchive; обе identity берутся из Keychain.
+codesign --force --sign "$DISTRIBUTION_IDENTITY" \
+  --preserve-metadata=identifier,flags,runtime \
+  "$APP/Contents/Resources/KeyboardShortcuts_KeyboardShortcuts.bundle"
+codesign --force --sign "$ARCHIVE_IDENTITY" \
+  --preserve-metadata=identifier,entitlements,flags,runtime \
+  --generate-entitlement-der "$APP"
+codesign --verify --deep --strict "$APP"
+```
+
+Сначала экспортируйте пакет локально (`destination=export`) с тем же
+`signingCertificate`, распакуйте через `pkgutil --expand-full` и проверьте,
+что leaf-сертификаты приложения, EquinoxKit и resource bundle совпадают
+с сертификатом в `DeveloperCertificates` встроенного provisioning profile.
+Проверьте Sandbox, calendar entitlement и отсутствие `get-task-allow`.
+Только затем отправляйте подготовленную копию архива (`destination=upload`).
+Успешная отправка не подтверждает обработку: отдельно дождитесь статуса сборки
+в App Store Connect. Принципы подписи вложенных компонентов описаны в
+[документации Apple](https://developer.apple.com/documentation/xcode/creating-distribution-signed-code-for-the-mac/).
+
 ### Developer ID
 
 Ручной процесс через Xcode:
