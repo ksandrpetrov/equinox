@@ -27,13 +27,7 @@ struct SettingsSidebarLabel: View {
     let symbol: String
 
     var body: some View {
-        Label {
-            Text(title)
-                .foregroundStyle(EquinoxDesign.ColorToken.textPrimary)
-        } icon: {
-            Image(systemName: symbol)
-                .foregroundStyle(EquinoxDesign.ColorToken.textPrimary)
-        }
+        Label(title, systemImage: symbol)
     }
 }
 
