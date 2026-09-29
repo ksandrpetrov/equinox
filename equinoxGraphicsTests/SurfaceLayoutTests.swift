@@ -5,6 +5,46 @@ import XCTest
 
 @MainActor
 final class SurfaceLayoutTests: XCTestCase {
+    func testWritableCalendarFormAcrossSizesAndThemes() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let entries: [CalendarListEntry] = [.source("QA"), .calendar(SelectableCalendar(
+            id: "work", title: "Рабочий календарь команды — Release planning and product development",
+            sourceTitle: "QA", isSelected: true,
+            colorRed: 0.2, colorGreen: 0.5, colorBlue: 0.8, colorAlpha: 1,
+            allowsContentModifications: true
+        ))]
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, calendarEntries: entries) }
+        await context.finishInitialization()
+        context.appState.panel.isNewEventSheetPresented = true
+        for size in SizePreference.allCases {
+            context.appState.preferences.sizePreference = size.rawValue
+            let metrics = SizeMetrics.metrics(for: size)
+            for scheme in [ColorScheme.light, .dark] {
+                try await check(MainPanelView(appState: context.appState)
+                    .environment(\.colorScheme, scheme),
+                    width: metrics.panelWidth + metrics.sheetWidth, height: 850, scheme: scheme,
+                    name: "writable-form-\(size)-\(scheme)")
+            }
+        }
+    }
+
+    func testDeletionConfirmationFitsWithLongAndMultilineEventTitles() async throws {
+        for message in ["Team meeting", String(repeating: "Обсуждение запуска — Planning meeting. ", count: 100),
+                        Array(repeating: "A separate line in an imported event title", count: 80).joined(separator: "\n")] {
+            for scheme in [ColorScheme.light, .dark] {
+                try await check(ModalConfirmDialog(
+                    title: EventDeletionConfirmation.title(isRecurring: true),
+                    message: message,
+                    confirmTitle: String(localized: "Delete", bundle: .equinox, comment: ""),
+                    onConfirm: {}, onCancel: {}
+                ).environment(\.colorScheme, scheme),
+                    width: ModalDesign.confirmWidth, height: EquinoxDesign.panelDefaultHeight,
+                    scheme: scheme, name: "delete-confirmation-\(message.count)-\(scheme)")
+            }
+        }
+    }
+
     func testEventDrawerPreservesCalendarHeightAndWindowRightEdge() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }

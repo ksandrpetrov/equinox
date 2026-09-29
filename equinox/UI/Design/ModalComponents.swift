@@ -133,7 +133,10 @@ struct ModalConfirmDialog: View {
             Text(message)
                 .font(.body)
                 .foregroundStyle(.secondary)
+                .lineLimit(6)
                 .fixedSize(horizontal: false, vertical: true)
+                .help(message)
+                .accessibilityLabel(message)
 
             HStack {
                 Spacer()

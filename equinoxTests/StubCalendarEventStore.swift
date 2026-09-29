@@ -23,12 +23,14 @@ final class StubCalendarEventStore: CalendarEventStore {
     static func snapshot(
         status: CalendarAccessStatus,
         events: [CalendarDate: [DayEvent]] = [:],
+        calendarEntries: [CalendarListEntry] = [],
         hasSelectedCalendars: Bool = true,
         hasCompletedInitialLoad: Bool = true,
         lastFetchError: String? = nil
     ) -> CalendarStoreSnapshot {
         CalendarStoreSnapshot(
-            accessStatus: status, eventsByDate: status.isAuthorized ? events : [:], calendarEntries: [],
+            accessStatus: status, eventsByDate: status.isAuthorized ? events : [:],
+            calendarEntries: status.isAuthorized ? calendarEntries : [],
             defaultCalendarIdentifier: status.isAuthorized ? "work" : nil,
             hasSelectedCalendars: status.isAuthorized && hasSelectedCalendars, lastFetchError: lastFetchError,
             hasCompletedInitialLoad: status.isAuthorized && hasCompletedInitialLoad

@@ -1,8 +1,41 @@
+import AppKit
 import XCTest
 @testable import EquinoxKit
 
 @MainActor
 final class AppStateCalendarTests: XCTestCase {
+    func testDeepLinksNavigateAndPresentOnlyForSupportedURLs() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        let delegate = AppDelegate()
+        delegate.appState = state
+        var presentations = 0
+        state.onRequestPresentPanel = { presentations += 1 }
+
+        for value in ["1583-01-01", "2028-02-29", "3333-12-31"] {
+            delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "equinox://date/\(value)"))])
+            XCTAssertEqual(state.events.selectedDate, CalendarDateParsing.parseDayString(value))
+        }
+        XCTAssertEqual(presentations, 3)
+        let selected = state.events.selectedDate
+        let token = state.events.agendaScrollToken
+        for value in ["https://date/2026-09-29", "equinox://other/2026-09-29",
+                      "equinox://date/2026-09-29/extra", "equinox://date/2026-02-29",
+                      "equinox://date/1582-12-31", "equinox://date/3334-01-01",
+                      "equinox://date/not-a-date", "equinox://date"] {
+            delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: value))])
+            XCTAssertEqual(state.events.selectedDate, selected, value)
+            XCTAssertEqual(state.events.agendaScrollToken, token, value)
+        }
+        delegate.application(NSApplication.shared, open: [])
+        XCTAssertEqual(presentations, 3)
+        delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "equinox://date/now"))])
+        XCTAssertEqual(state.events.selectedDate, CalendarDate.today(calendar: state.calendar))
+        XCTAssertEqual(presentations, 4)
+    }
+
     func testRepeatedDeleteWhileReloadingDoesNotDeleteOccurrenceTwice() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
