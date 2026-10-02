@@ -2,6 +2,24 @@ import XCTest
 @testable import EquinoxKit
 
 final class CalendarDateTests: XCTestCase {
+    func testMonthBoundariesAndISOWeeksAgreeWithFoundationAcrossSupportedYears() throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(secondsFromGMT: 0)))
+        var iso = Calendar(identifier: .iso8601)
+        iso.timeZone = calendar.timeZone
+        for year in CalendarDate.minYear...CalendarDate.maxYear {
+            for month in 0..<12 {
+                for day in [1, CalendarDate.daysInMonth(year: year, monthIndex: month)] {
+                    let civil = CalendarDate(year: year, monthIndex: month, day: day)
+                    let instant = try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month + 1, day: day)))
+                    XCTAssertEqual(CalendarDate(date: instant, calendar: calendar), civil)
+                    XCTAssertEqual(civil.date(in: calendar), instant)
+                    XCTAssertEqual(CalendarDate.weekOfYear(year: year, monthIndex: month, day: day),
+                                   iso.component(.weekOfYear, from: instant), "\(year)-\(month + 1)-\(day)")
+                }
+            }
+        }
+    }
+
     func testEverySupportedDayRoundTripsThroughJulianArithmetic() {
         for julian in CalendarDate.minimumSupported.julian...CalendarDate.maximumSupported.julian {
             let date = CalendarDate(julian: julian)

@@ -2,6 +2,52 @@ import XCTest
 @testable import EquinoxKit
 
 final class AgendaSectionsTests: XCTestCase {
+    func testDenseEventMappingRetainsEveryOccurrenceAndEvictsOldDays() async throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(secondsFromGMT: 0)))
+        let day = CalendarDate(year: 2026, monthIndex: 9, day: 2)
+        let start = day.date(in: calendar)
+        let url = "https://zoom.us/j/123456789"
+        for count in [100, 1_000, 10_000] {
+            let sources = (0..<count).reversed().map { index in
+                makeSource(identifier: "event-\(index)", title: "Встреча 📅 \(index)",
+                           startDate: start.addingTimeInterval(Double(index % 60) * 60),
+                           endDate: start.addingTimeInterval(Double(index % 60) * 60 + 3600),
+                           location: url)
+            }
+            let counter = JoinResolutionCounter()
+            let clock = ContinuousClock()
+            let began = clock.now
+            let mapped = await DayEventBuilder.buildDayEvents(
+                from: sources, rangeStart: start, rangeEnd: start.addingTimeInterval(86400), calendar: calendar,
+                resolveNativeJoinURL: { url in await counter.resolve(url) }
+            )
+            let elapsed = began.duration(to: clock.now)
+            let events = try XCTUnwrap(mapped[start])
+            XCTAssertEqual(events.count, count)
+            XCTAssertEqual(Set(events.map(\.id)).count, count)
+            XCTAssertEqual(Set(events.compactMap(\.eventIdentifier)), Set(sources.compactMap { $0.fields.eventIdentifier }))
+            for (previous, next) in zip(events, events.dropFirst()) {
+                XCTAssertLessThanOrEqual(previous.slotStartDate, next.slotStartDate)
+            }
+            let calls = await counter.calls
+            XCTAssertEqual(calls, 1, "Repeated meetings must share native app resolution")
+
+            var cache = EventFetchCache()
+            let plan = try XCTUnwrap(cache.prepareFetchRange(first: day, last: day, refetch: false))
+            XCTAssertTrue(cache.commitFetch(mapped, plan: plan, calendar: calendar))
+            cache.applyCalendarFilter(selectedCalendarIDs: ["calendar-1"])
+            XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar)[day]?.count, count)
+            cache.retainEvents(inside: [(day.addingDays(1), day.addingDays(2))], calendar: calendar)
+            XCTAssertTrue(cache.eventsForDate.isEmpty)
+            XCTAssertTrue(cache.selectedCalendarEvents(calendar: calendar).isEmpty)
+            XCTAssertNotNil(cache.prepareFetchRange(first: day, last: day, refetch: false))
+            let evidence = XCTAttachment(string: "Mapped and sorted \(count) synthetic events: \(elapsed)")
+            evidence.name = "event-mapping-\(count)"
+            evidence.lifetime = .keepAlways
+            add(evidence)
+        }
+    }
+
     func testTopVisibleDateFollowsPinnedHeaderUntilNextDayReachesTop() {
         let day = CalendarDate(year: 2026, monthIndex: 10, day: 27)
         let next = day.addingDays(1)
