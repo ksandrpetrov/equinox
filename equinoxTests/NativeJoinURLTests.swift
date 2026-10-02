@@ -2,6 +2,15 @@ import XCTest
 @testable import EquinoxKit
 
 final class NativeJoinURLTests: XCTestCase {
+    func testZoomRewritePreservesEncodedQueryBytes() throws {
+        // '+' and '%2B' can have different meanings to a form-style query parser.
+        // Rewriting the destination must not decode and re-encode opaque tokens.
+        let query = "pwd=a%2Bb%2F%3D&uname=QA+User&tk=%2526%26x%3Dy&flag&empty="
+        let web = try XCTUnwrap(URL(string: "https://zoom.us/j/123?\(query)&conf%6Eo=999"))
+        let native = try XCTUnwrap(NativeJoinURL.nativeURLString(from: web))
+        XCTAssertEqual(URLComponents(string: native)?.percentEncodedQuery, "confno=123&\(query)")
+    }
+
     func testChimeRewriteDoesNotDropPathComponents() throws {
         for path in ["/1234567890/extra", "/team%2Fmeeting"] {
             let web = try XCTUnwrap(URL(string: "https://chime.aws\(path)"))

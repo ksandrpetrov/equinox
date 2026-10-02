@@ -1,7 +1,99 @@
 import XCTest
 @testable import EquinoxKit
 
+private actor JoinResolutionRecorder {
+    private(set) var urls: [URL] = []
+    func record(_ url: URL) { urls.append(url) }
+}
+
 final class EventLayoutTests: XCTestCase {
+    func testDenseDayEventBuilderPreservesTenThousandEvents() async throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "UTC")))
+        let first = CalendarDate(year: 2026, monthIndex: 9, day: 2).date(in: calendar)
+        // Reverse input forces sorting; repeated start times exercise the identity tie-breaker.
+        let sources = (0..<10_000).reversed().map { index in
+            let start = first.addingTimeInterval(Double(index % 240) * 300)
+            return source(identifier: "event-\(index)", start: start, end: start.addingTimeInterval(3600))
+        }
+        let built = await DayEventBuilder.buildDayEvents(
+            from: sources, rangeStart: first, rangeEnd: first.addingTimeInterval(86400), calendar: calendar,
+            resolveNativeJoinURL: { _ in XCTFail("Events without links must not query native apps"); return nil }
+        )
+        XCTAssertEqual(built.count, 1)
+        let events = try XCTUnwrap(built[first])
+        XCTAssertEqual(events.count, sources.count)
+        XCTAssertEqual(Set(events.map(\.id)).count, sources.count)
+        XCTAssertTrue(zip(events, events.dropFirst()).allSatisfy { $0.startDate <= $1.startDate })
+    }
+
+    func testDayEventBuilderKeepsEveryOccurrenceAndStableOrderAcrossDST() async throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Havana")))
+        let day = CalendarDate(year: 2026, monthIndex: 2, day: 8)
+        let first = day.date(in: calendar)
+        let last = day.addingDays(3).date(in: calendar)
+        let sources = [
+            source(identifier: "series", start: first.addingTimeInterval(7200), end: first.addingTimeInterval(10800)),
+            source(identifier: "all-day", start: day.addingDays(-1).date(in: calendar), end: last, isAllDay: true),
+            source(identifier: "series", start: first.addingTimeInterval(3600), end: first.addingTimeInterval(5400)),
+        ]
+        let built = await DayEventBuilder.buildDayEvents(
+            from: sources, rangeStart: first, rangeEnd: last, calendar: calendar, resolveNativeJoinURL: { _ in nil }
+        )
+        let reversed = await DayEventBuilder.buildDayEvents(
+            from: sources.reversed(), rangeStart: first, rangeEnd: last, calendar: calendar, resolveNativeJoinURL: { _ in nil }
+        )
+        XCTAssertEqual(built, reversed, "EventKit result order must not affect presentation")
+        XCTAssertEqual(built.count, 3)
+        XCTAssertEqual(built.values.flatMap { $0 }.count, 5)
+        XCTAssertEqual(Set(built.values.flatMap { $0 }.map(\.id)).count, 5)
+        let firstDay = try XCTUnwrap(built[first])
+        XCTAssertEqual(firstDay.map(\.eventIdentifier), ["all-day", "series", "series"])
+        XCTAssertLessThan(firstDay[1].startDate, firstDay[2].startDate)
+        XCTAssertEqual(firstDay[0].startDate, day.addingDays(-1).date(in: calendar))
+        XCTAssertEqual(firstDay[0].slotStartDate, first)
+        XCTAssertEqual(firstDay[0].slotEndDate, day.addingDays(1).date(in: calendar))
+    }
+
+    func testDayEventBuilderResolvesRepeatedJoinURLOnceAndIgnoresClippedEvents() async throws {
+        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "UTC")))
+        let first = CalendarDate(year: 2026, monthIndex: 9, day: 2).date(in: calendar)
+        let web = try XCTUnwrap(URL(string: "https://zoom.us/j/123?pwd=a%2Bb"))
+        let native = try XCTUnwrap(URL(string: "zoommtg://zoom.us/join?confno=123&pwd=a%2Bb"))
+        let recorder = JoinResolutionRecorder()
+        let notes = "Keep this paragraph.\n\(web.absoluteString)"
+        var sources = (0..<3).map { index in
+            source(identifier: "event-\(index)", start: first.addingTimeInterval(Double(index) * 3600),
+                   end: first.addingTimeInterval(Double(index + 1) * 3600), notes: notes)
+        }
+        sources.append(source(identifier: "outside", start: first.addingTimeInterval(-7200),
+                              end: first, notes: "https://zoom.us/j/999"))
+        let built = await DayEventBuilder.buildDayEvents(
+            from: sources, rangeStart: first, rangeEnd: first.addingTimeInterval(86400), calendar: calendar,
+            resolveNativeJoinURL: { url in await recorder.record(url); return native }
+        )
+        let resolved = await recorder.urls
+        XCTAssertEqual(resolved, [web])
+        let events = try XCTUnwrap(built[first])
+        XCTAssertEqual(events.count, 3)
+        XCTAssertTrue(events.allSatisfy { $0.joinURL == native && $0.notes == notes })
+        XCTAssertTrue(events.allSatisfy { $0.calendarIdentifier == "work" && $0.calendarColorRed == 0.2 })
+    }
+
+    private func source(
+        identifier: String, start: Date, end: Date, isAllDay: Bool = false, notes: String? = nil
+    ) -> DayEventSource {
+        DayEventSource(
+            fields: EventKitEventFields(
+                eventIdentifier: identifier, calendarItemIdentifier: identifier, title: "QA \(identifier)",
+                location: nil, notes: notes, hasNotes: notes != nil, url: nil,
+                startDate: start, endDate: end, isAllDay: isAllDay,
+                calendarIdentifier: "work", calendarTitle: "Work", isRecurring: identifier == "series",
+                allowsContentModifications: true, participationRawValue: nil
+            ),
+            calendarColorRed: 0.2, calendarColorGreen: 0.5, calendarColorBlue: 0.8, calendarColorAlpha: 1
+        )
+    }
+
     func testAllDayDisplayEndAcceptsInclusiveAndExclusiveEventKitDates() throws {
         for zone in ["UTC", "America/Los_Angeles", "Europe/Moscow"] {
             let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: zone)))

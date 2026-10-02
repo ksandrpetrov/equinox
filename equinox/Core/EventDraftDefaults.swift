@@ -34,10 +34,12 @@ enum EventDraftDefaults {
         let startDay = calendar.startOfDay(for: start)
         let inclusiveEndDay = calendar.startOfDay(for: end)
         guard inclusiveEndDay >= startDay,
-              let exclusiveEnd = calendar.date(byAdding: .day, value: 1, to: inclusiveEndDay) else {
+              let endDay = calendar.dateInterval(of: .day, for: end) else {
             return nil
         }
-        return (startDay, exclusiveEnd)
+        // Some days start at 01:00 after a midnight DST jump. Adding a day
+        // preserves that hour and would include part of the following day.
+        return (startDay, endDay.end)
     }
 
     static func absoluteURL(from value: String) -> URL? {
@@ -56,10 +58,10 @@ enum EventDraftDefaults {
         let eventStartDay = calendar.startOfDay(for: eventStart)
         let selectedEndDay = calendar.startOfDay(for: selectedEnd)
         guard selectedEndDay >= eventStartDay,
-              let followingDay = calendar.date(byAdding: .day, value: 1, to: selectedEndDay) else {
+              let endDay = calendar.dateInterval(of: .day, for: selectedEnd) else {
             return nil
         }
-        return followingDay.addingTimeInterval(-1)
+        return endDay.end.addingTimeInterval(-1)
     }
 
     static func defaultStartAndEnd(

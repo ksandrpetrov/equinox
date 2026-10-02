@@ -2,6 +2,27 @@ import XCTest
 @testable import EquinoxKit
 
 final class DateFormattersTests: XCTestCase {
+    func testConcurrentFormattingAndCacheInvalidationKeepStableResults() async {
+        let date = Date(timeIntervalSince1970: 1_791_000_000)
+        let expected = EquinoxFormatters.shortTime(date)
+        let results = await withTaskGroup(of: Bool.self, returning: [Bool].self) { group in
+            for worker in 0..<8 {
+                group.addTask {
+                    for iteration in 0..<100 {
+                        if (worker + iteration) % 7 == 0 { EquinoxFormatters.invalidateCache() }
+                        guard EquinoxFormatters.shortTime(date) == expected else { return false }
+                    }
+                    return true
+                }
+            }
+            var results: [Bool] = []
+            for await result in group { results.append(result) }
+            return results
+        }
+        XCTAssertEqual(results.count, 8)
+        XCTAssertTrue(results.allSatisfy { $0 })
+    }
+
     func testSameDayEventShowsItsDateOnlyOnce() {
         let calendar = Calendar.equinoxGregorian()
         let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: 28, hour: 11))!

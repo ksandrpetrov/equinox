@@ -60,9 +60,13 @@ enum NativeJoinURL {
         var queryItems = [URLQueryItem(name: "confno", value: pathParts[1])]
         // The web path identifies the meeting. Do not let a query parameter add
         // a second, possibly conflicting native meeting ID; preserve other fields.
-        let sourceItems = URLComponents(url: webURL, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        queryItems.append(contentsOf: sourceItems.filter { $0.name.lowercased() != "confno" })
-        components.queryItems = queryItems
+        // Keep the original percent encoding: decoding %2B and writing '+' can
+        // turn an opaque password/token character into a space in the client.
+        let sourceItems = URLComponents(url: webURL, resolvingAgainstBaseURL: false)?.percentEncodedQueryItems ?? []
+        queryItems.append(contentsOf: sourceItems.filter {
+            $0.name.removingPercentEncoding?.lowercased() != "confno"
+        })
+        components.percentEncodedQueryItems = queryItems
         return components.url?.absoluteString
     }
 }

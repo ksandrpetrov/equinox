@@ -180,6 +180,36 @@ final class PanelPresentationStateTests: XCTestCase {
         XCTAssertNil(delegate.appState)
     }
 
+    func testDeepLinkRejectsMalformedInputWithoutNavigationOrPresentation() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let delegate = AppDelegate()
+        delegate.appState = context.appState
+        let original = context.appState.events.selectedDate
+        var presentations = 0
+        context.appState.onRequestPresentPanel = { presentations += 1 }
+        for value in [
+            "https://date/2026-10-02", "equinox://other/2026-10-02", "equinox://date/2026-02-30",
+            "equinox://date/1582-12-31", "equinox://date/3334-01-01", "equinox://date/2026-10-02/extra",
+            "equinox://date/2026-10-02%00", "equinox://date/２０２６-10-02", "equinox://date/",
+        ] {
+            delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: value))])
+            XCTAssertEqual(context.appState.events.selectedDate, original, value)
+            XCTAssertEqual(presentations, 0, value)
+        }
+        for (value, expected) in [
+            ("equinox://date/1583-01-01", CalendarDate.minimumSupported),
+            ("EQUINOX://date/3333-12-31", CalendarDate.maximumSupported),
+            ("equinox://date/now", CalendarDate.today(calendar: context.appState.calendar)),
+        ] {
+            let before = presentations
+            delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: value))])
+            XCTAssertEqual(context.appState.events.selectedDate, expected)
+            XCTAssertEqual(presentations, before + 1)
+        }
+    }
+
     func testModalSheetPresentedWhenNewEventSheetOpen() {
         let panel = PanelPresentationState()
         panel.isNewEventSheetPresented = true

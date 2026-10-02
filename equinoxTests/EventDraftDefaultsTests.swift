@@ -2,6 +2,36 @@ import XCTest
 @testable import EquinoxKit
 
 final class EventDraftDefaultsTests: XCTestCase {
+    func testAllDayAndRecurrenceEndStayOnSelectedDayAfterMidnightDSTJump() throws {
+        // These civil days start at 01:00. Adding one day preserves that hour,
+        // whereas an exclusive all-day end must be the next day's actual start.
+        for (zone, year, month, day) in [
+            ("America/Sao_Paulo", 2018, 11, 4),
+            ("America/Santiago", 2026, 9, 6),
+            ("America/Havana", 2026, 3, 8),
+        ] {
+            let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: zone)))
+            let selected = try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12)))
+            let interval = try XCTUnwrap(calendar.dateInterval(of: .day, for: selected))
+            XCTAssertEqual(calendar.component(.hour, from: interval.start), 1, zone)
+            let dates = try XCTUnwrap(EventDraftDefaults.normalizedDates(
+                calendar: calendar, start: selected, end: selected, isAllDay: true
+            ))
+            XCTAssertEqual(dates.start, interval.start, zone)
+            XCTAssertEqual(dates.end, interval.end, zone)
+            let slots = layoutEventDaySlots(
+                event: EventLayoutInput(startDate: dates.start, endDate: dates.end, isAllDay: true),
+                rangeStart: interval.start, rangeEnd: interval.end.addingTimeInterval(86400), calendar: calendar
+            )
+            XCTAssertEqual(slots.count, 1, "An all-day event must not spill into tomorrow: \(zone)")
+            let recurrenceEnd = try XCTUnwrap(EventDraftDefaults.normalizedRecurrenceEnd(
+                calendar: calendar, eventStart: selected, selectedEnd: selected
+            ))
+            XCTAssertEqual(recurrenceEnd, interval.end.addingTimeInterval(-1), zone)
+            XCTAssertTrue(calendar.isDate(recurrenceEnd, inSameDayAs: selected), zone)
+        }
+    }
+
     func testSelectingCurrentDayPreservesBothOccurrencesOfRepeatedHour() throws {
         let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")))
         for timestamp in ["2026-11-01T08:30:00Z", "2026-11-01T09:30:00Z"] {
