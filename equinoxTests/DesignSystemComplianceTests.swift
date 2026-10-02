@@ -131,6 +131,30 @@ final class DesignSystemComplianceTests: XCTestCase {
         )
     }
 
+    func testDistributionResourcesAreBundled() throws {
+        let manifestURL = try XCTUnwrap(Bundle.equinox.url(forResource: "PrivacyInfo", withExtension: "xcprivacy"))
+        let manifest = try XCTUnwrap(PropertyListSerialization.propertyList(
+            from: Data(contentsOf: manifestURL), format: nil) as? [String: Any])
+        XCTAssertEqual(manifest["NSPrivacyTracking"] as? Bool, false)
+        XCTAssertEqual((manifest["NSPrivacyCollectedDataTypes"] as? [Any])?.count, 0)
+        let entries = try XCTUnwrap(manifest["NSPrivacyAccessedAPITypes"] as? [[String: Any]])
+        let reasons = Dictionary(uniqueKeysWithValues: try entries.map { entry in
+            (try XCTUnwrap(entry["NSPrivacyAccessedAPIType"] as? String),
+             try XCTUnwrap(entry["NSPrivacyAccessedAPITypeReasons"] as? [String]))
+        })
+        XCTAssertEqual(reasons["NSPrivacyAccessedAPICategoryUserDefaults"], ["CA92.1"])
+        XCTAssertEqual(reasons["NSPrivacyAccessedAPICategorySystemBootTime"], ["35F9.1"])
+        let licensesURL = try XCTUnwrap(Bundle.equinox.url(forResource: "Licenses", withExtension: "txt"))
+        let licenses = try String(contentsOf: licensesURL, encoding: .utf8)
+        let root = try repoRoot()
+        let projectLicense = try String(contentsOf: root.appendingPathComponent("LICENSE.txt"), encoding: .utf8)
+        XCTAssertTrue(licenses.contains(projectLicense))
+        XCTAssertTrue(licenses.contains("Sindre Sorhus"))
+        XCTAssertTrue(licenses.contains("KeyboardShortcuts 3.0.1"))
+        XCTAssertEqual(EquinoxDocumentation.privacyPolicy.scheme, "https")
+        XCTAssertEqual(EquinoxDocumentation.support.scheme, "https")
+    }
+
     func testRussianAppearanceAndErrorStringsAreLocalized() throws {
         let bundle = Bundle.equinox
         let locale = Locale(identifier: "ru")
@@ -139,6 +163,9 @@ final class DesignSystemComplianceTests: XCTestCase {
         }
 
         XCTAssertEqual(localized("Calendar rows"), "Строки календаря")
+        XCTAssertEqual(localized("Privacy Policy"), "Политика конфиденциальности")
+        XCTAssertEqual(localized("Support"), "Поддержка")
+        XCTAssertEqual(localized("Licenses"), "Лицензии")
         XCTAssertEqual(localized("Dismiss"), "Закрыть")
         XCTAssertEqual(localized("Go to Today"), "Перейти к сегодняшнему дню")
         XCTAssertEqual(localized("Global Shortcut"), "Глобальная горячая клавиша")

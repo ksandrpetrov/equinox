@@ -54,12 +54,25 @@ for configuration in "${configurations[@]}"; do
             exit 1
         fi
         xcrun xcresulttool get test-results summary --path "$result.xcresult" > "$result-summary.json"
-        python3 - "$result-summary.json" <<'PY'
-import json, sys
+        python3 - "$result-summary.json" "$result.log" <<'PY'
+import json, re, sys
 summary = json.load(open(sys.argv[1]))
 print(f"{summary['passedTests']} passed, {summary['failedTests']} failed, {summary['skippedTests']} skipped")
 if summary['totalTestCount'] == 0 or summary['failedTests'] or summary['skippedTests']:
     sys.exit('Expected a nonempty run with no failed or skipped tests')
+if summary.get('runtimeWarnings'):
+    sys.exit(f"Runtime warnings: {summary['runtimeWarnings']}")
+# SwiftUI layout diagnostics can appear only in the console, with an empty
+# xcresult runtimeWarnings array. Do not report these runs as clean.
+diagnostics = re.findall(
+    r'^.*(?:Bound preference .* tried to update multiple times per frame|'
+    r'onChange\(of: .*\) action tried to update multiple times per frame|'
+    r'Picker: the selection .* is invalid and does not have an associated tag|'
+    r'Modifying state during view update|Publishing changes from within view updates).*$',
+    open(sys.argv[2]).read(), re.MULTILINE
+)
+if diagnostics:
+    sys.exit('SwiftUI state/layout diagnostics:\n' + '\n'.join(diagnostics))
 PY
         xcrun xccov view --report --json "$result.xcresult" > "$result-coverage.json"
     done

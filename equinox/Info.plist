@@ -46,7 +46,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Equinox shows events from your calendars.</string>
+	<string>Equinox reads your calendars to show events and lets you create and delete events when you choose.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026</string>
 	<key>NSPrincipalClass</key>

@@ -22,8 +22,8 @@ enum NativeJoinURL {
             return components.url?.absoluteString
         case "chime":
             guard webURL.host()?.lowercased() == "chime.aws" else { return nil }
-            let pin = webURL.path.split(separator: "/").first.map(String.init) ?? ""
-            guard !pin.isEmpty else { return nil }
+            let pathParts = webURL.path.split(separator: "/")
+            guard pathParts.count == 1, let pin = pathParts.first.map(String.init) else { return nil }
             var components = URLComponents()
             components.scheme = "chime"
             components.host = "meeting"
@@ -46,9 +46,10 @@ enum NativeJoinURL {
             return nil
         }
         let pathParts = webURL.path.split(separator: "/").map(String.init)
-        guard pathParts.count >= 2,
+        guard pathParts.count == 2,
               ["j", "s", "w"].contains(pathParts[0].lowercased()),
-              !pathParts[1].isEmpty else {
+              !pathParts[1].isEmpty,
+              pathParts[1].utf8.allSatisfy({ (48...57).contains($0) }) else {
             return nil
         }
 
@@ -57,7 +58,10 @@ enum NativeJoinURL {
         components.host = "zoom.us"
         components.path = "/join"
         var queryItems = [URLQueryItem(name: "confno", value: pathParts[1])]
-        queryItems.append(contentsOf: URLComponents(url: webURL, resolvingAgainstBaseURL: false)?.queryItems ?? [])
+        // The web path identifies the meeting. Do not let a query parameter add
+        // a second, possibly conflicting native meeting ID; preserve other fields.
+        let sourceItems = URLComponents(url: webURL, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        queryItems.append(contentsOf: sourceItems.filter { $0.name.lowercased() != "confno" })
         components.queryItems = queryItems
         return components.url?.absoluteString
     }

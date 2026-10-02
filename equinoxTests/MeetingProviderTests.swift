@@ -2,6 +2,23 @@ import XCTest
 @testable import EquinoxKit
 
 final class MeetingProviderTests: XCTestCase {
+    func testMeetingActionPathsDoNotMatchLongerUnrelatedNames() throws {
+        for value in ["zoommtg://zoom.us/joinSomethingElse?confno=1",
+                      "https://facetime.apple.com/joinSomethingElse",
+                      "https://gotomeeting.com/joinSomethingElse"] {
+            let url = try XCTUnwrap(URL(string: value))
+            XCTAssertNil(MeetingProviderRegistry.match(for: url), value)
+            XCTAssertNil(NativeJoinURL.nativeURLString(from: url), value)
+        }
+        for value in ["zoommtg://zoom.us/join?confno=1",
+                      "https://facetime.apple.com/join#v=1",
+                      "https://gotomeeting.com/join/123",
+                      "https://v.ringcentral.com/join/123?pw=secret",
+                      "https://meetings.ringcentral.com/j/123"] {
+            XCTAssertNotNil(MeetingProviderRegistry.match(for: try XCTUnwrap(URL(string: value))), value)
+        }
+    }
+
     func testShortTeamsLinksKeepOriginalWebURLAndPasscode() throws {
         let url = try XCTUnwrap(URL(string: "https://teams.microsoft.com/meet/1234567890123?p=a%2Bb%2F%3D&context=example"))
         XCTAssertEqual(MeetingProviderRegistry.match(for: url)?.id, "teams")

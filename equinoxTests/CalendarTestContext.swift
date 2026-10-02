@@ -31,12 +31,13 @@ final class CalendarTestContext {
         title: String = "Test meeting",
         isAllDay: Bool = false,
         location: String? = nil,
+        notes: String? = nil,
         participationStatus: EventParticipationStatus? = nil
     ) -> DayEvent {
         let end = isAllDay ? appState.calendar.date(byAdding: .day, value: 1, to: start)! : start.addingTimeInterval(3600)
         return DayEvent(
             id: "event-\(start.timeIntervalSinceReferenceDate)", eventIdentifier: "event",
-            calendarItemIdentifier: "series", title: title, location: location, notes: nil, url: nil,
+            calendarItemIdentifier: "series", title: title, location: location, notes: notes, url: nil,
             startDate: start, endDate: end,
             slotStartDate: start, slotEndDate: end,
             isEventAllDay: isAllDay, isSlotAllDay: isAllDay, joinURL: isAllDay ? nil : URL(string: "https://zoom.us/j/123"),

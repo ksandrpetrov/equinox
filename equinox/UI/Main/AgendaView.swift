@@ -136,15 +136,28 @@ struct AgendaView: View {
                     .coordinateSpace(name: scrollViewport)
                     .scrollIndicators(.hidden)
                     .scrollPosition(id: $scrollCoordinator.scrolledTarget, anchor: agendaScrollAnchor)
-                    .onPreferenceChange(AgendaSectionFramesKey.self) { frames in
-                        let measuredHeight = frames.values.map(\.height).max() ?? 0
-                        if measuredHeight > 0, sectionHeaderHeight != measuredHeight {
-                            sectionHeaderHeight = measuredHeight
-                        }
-                        scrollCoordinator.updateVisibleDate(
-                            AgendaSections.topVisibleDate(headerOffsets: frames.mapValues { Double($0.minY) }),
-                            events: appState.events
+                    .overlayPreferenceValue(AgendaSectionFramesKey.self) { frames in
+                        let observation = AgendaViewportObservation(
+                            visibleDate: AgendaSections.topVisibleDate(headerOffsets: frames.mapValues { Double($0.minY) }),
+                            headerHeight: frames.values.map(\.height).max() ?? 0
                         )
+                        Color.clear
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                            .task(id: observation) { @MainActor in
+                                // Applying geometry can change the scroll anchor and selection.
+                                // Leave the layout pass first; newer frames cancel stale work.
+                                await Task.yield()
+                                guard !Task.isCancelled else { return }
+                                let measuredHeight = observation.headerHeight
+                                if measuredHeight > 0, sectionHeaderHeight != measuredHeight {
+                                    sectionHeaderHeight = measuredHeight
+                                }
+                                scrollCoordinator.updateVisibleDate(
+                                    observation.visibleDate,
+                                    events: appState.events
+                                )
+                            }
                     }
                     .onChange(of: scrollCoordinator.scrolledTarget) { _, target in
                         scrollCoordinator.handleAgendaScroll(to: target, anchor: appState.events.todayDate, events: appState.events)
@@ -374,6 +387,11 @@ struct AgendaView: View {
         appState.panel.newEventInitialDate = date
         appState.panel.isNewEventSheetPresented = true
     }
+}
+
+private struct AgendaViewportObservation: Equatable {
+    let visibleDate: CalendarDate?
+    let headerHeight: CGFloat
 }
 
 struct AgendaSectionFramesKey: PreferenceKey {

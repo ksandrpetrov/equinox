@@ -8,6 +8,9 @@
 
 
 /* Begin PBXBuildFile section */
+		A92000000000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A92000000000000000000004; };
+		A92000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A92000000000000000000004; };
+		A92000000000000000000003 /* Licenses.txt in Resources */ = {isa = PBXBuildFile; fileRef = A92000000000000000000005; };
 		921181C722E0192A00591FDA /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 921181C622E0192A00591FDA /* Colors.xcassets */; };
 		922B6BBE1A87EDBD00DEA9CD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 922B6BC01A87EDBD00DEA9CD /* Localizable.strings */; };
 		922B6BC41A87EDBE00DEA9CD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 922B6BC61A87EDBE00DEA9CD /* InfoPlist.strings */; };
@@ -213,6 +216,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A92000000000000000000004 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = equinox/PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT; };
+		A92000000000000000000005 /* Licenses.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = equinox/Licenses.txt; sourceTree = SOURCE_ROOT; };
 		0C5EE2ACAC644A99A18E671E /* UI/Main/AgendaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/AgendaView.swift; sourceTree = "<group>"; };
 		11DD337E520F4A5C98A656EE /* UI/Main/MainPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Main/MainPanelView.swift; sourceTree = "<group>"; };
 		1EB99437FBBD4DB3A9F8C907 /* UI/Events/EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Events/EventDetailView.swift; sourceTree = "<group>"; };
@@ -740,6 +745,8 @@
 		9242A55F1A82A136005AA4B3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				A92000000000000000000004 /* PrivacyInfo.xcprivacy */,
+				A92000000000000000000005 /* Licenses.txt */,
 				922B6BC61A87EDBE00DEA9CD /* InfoPlist.strings */,
 				922B6BC01A87EDBD00DEA9CD /* Localizable.strings */,
 				A77E00012F5A123400000002 /* Localizable.stringsdict */,
@@ -950,6 +957,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92000000000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 				921181C722E0192A00591FDA /* Colors.xcassets in Resources */,
 				9242A5671A82A136005AA4B3 /* Images.xcassets in Resources */,
 				922B6BC41A87EDBE00DEA9CD /* InfoPlist.strings in Resources */,
@@ -962,6 +970,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A92000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */,
+				A92000000000000000000003 /* Licenses.txt in Resources */,
 				2E2D4D26611EC17FEAB1BF6A,
 				F9DE258537940687197B40A1,
 				95D493E5739F371FA3B641AD,

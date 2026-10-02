@@ -123,7 +123,7 @@ struct PanelStateOverlay: View {
     private var permissionMessage: String {
         switch appState.events.calendarAccessStatus {
         case .notDetermined:
-            String(localized: "Equinox needs access to your calendars to show events.", bundle: .equinox, comment: "Permission banner body")
+            String(localized: "Equinox reads your calendars to show events and lets you create and delete events when you choose.", bundle: .equinox, comment: "Permission banner body")
         case .denied:
             String(localized: "Calendar access is off. Enable Full Access in System Settings.", bundle: .equinox, comment: "Permission denied banner body")
         case .restricted:

@@ -24,7 +24,7 @@ struct MeetingProvider: Sendable, Equatable {
                       let actualHost = url.host()?.lowercased(),
                       actualHost == String(expectedHost) else { return false }
                 guard pieces.count == 2 else { return true }
-                return url.path.lowercased().hasPrefix("/" + pieces[1])
+                return matchesPath(url.path, pattern: "/" + pieces[1])
             }
         }
 
@@ -49,7 +49,14 @@ struct MeetingProvider: Sendable, Equatable {
         guard hostMatches else { return false }
 
         guard let pathPattern else { return true }
-        return url.path.lowercased().hasPrefix(pathPattern)
+        return matchesPath(url.path, pattern: pathPattern)
+    }
+
+    private static func matchesPath(_ path: String, pattern: String) -> Bool {
+        let path = path.lowercased()
+        return pattern.hasSuffix("/")
+            ? path.hasPrefix(pattern)
+            : path == pattern || path.hasPrefix(pattern + "/")
     }
 }
 
@@ -121,7 +128,7 @@ enum MeetingProviderRegistry {
         MeetingProvider(
             id: "other",
             detectionSubstrings: [
-                "gotomeeting.com/join", "ringcentral.com/j",
+                "gotomeeting.com/join", "ringcentral.com/j", "ringcentral.com/join/",
                 "bigbluebutton.org/gl", "https://bigbluebutton.", "https://bbb.",
                 "https://meet.jit.si/", "indigo.collocall.de", "public.senfcall.de",
                 "workplace.com/meet",

@@ -5,6 +5,167 @@ import XCTest
 
 @MainActor
 final class SurfaceLayoutTests: XCTestCase {
+    /// Store assets use the shipping views and an isolated calendar store, never personal events.
+    /// Run with Xcode's -testLanguage/-testRegion; scripts/capture-app-store.sh exports both locales.
+    func testStoreListingScreenshots() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let state = context.appState
+        let isRussian = Bundle.equinox.preferredLocalizations.first == "ru"
+        let language = isRussian ? "ru" : "en"
+        func copy(_ russian: String, _ english: String) -> String { isRussian ? russian : english }
+        let day = CalendarDate(year: 2026, monthIndex: 8, day: 29)
+        let base = day.date(in: Calendar.equinoxGregorian(timeZone: .current))
+        let calendarTitle = copy("Работа", "Work")
+        func event(_ offset: Int, _ hour: Int, _ title: String, meeting: Bool = false) -> DayEvent {
+            let start = base.addingTimeInterval(Double(offset * 24 + hour) * 3600)
+            let end = start.addingTimeInterval(3600)
+            let identifier = "store-demo-\(offset)-\(hour)"
+            let meetingURL = meeting ? URL(string: "https://meet.google.com/abc-defg-hij") : nil
+            return DayEvent(
+                id: identifier, eventIdentifier: identifier, calendarItemIdentifier: identifier,
+                title: title, location: meeting ? "Google Meet" : nil,
+                notes: meeting ? copy("Обсудить идеи и планы на неделю.", "Discuss ideas and plans for the week.") : nil,
+                url: meetingURL, startDate: start, endDate: end, slotStartDate: start, slotEndDate: end,
+                isEventAllDay: false, isSlotAllDay: false, joinURL: meetingURL,
+                calendarIdentifier: "work", calendarTitle: calendarTitle,
+                calendarColorRed: 0.28, calendarColorGreen: 0.48, calendarColorBlue: 0.84,
+                calendarColorAlpha: 1, isRecurring: false, allowsContentModifications: true,
+                participationStatus: meeting ? .accepted : nil
+            )
+        }
+        let meeting = event(0, 14, copy("Встреча команды", "Team meeting"), meeting: true)
+        let events: [CalendarDate: [DayEvent]] = [
+            day: [meeting, event(0, 16, copy("Планирование проекта", "Project planning"))],
+            day.addingDays(1): [event(1, 10, copy("Утренний фокус", "Morning focus")),
+                                event(1, 15, copy("Обсуждение дизайна", "Design review"), meeting: true)]
+        ]
+        let entries: [CalendarListEntry] = [.source(copy("Мои календари", "My calendars")),
+            .calendar(SelectableCalendar(id: "work", title: calendarTitle,
+                sourceTitle: copy("Мои календари", "My calendars"), isSelected: true,
+                colorRed: 0.28, colorGreen: 0.48, colorBlue: 0.84, colorAlpha: 1,
+                allowsContentModifications: true))]
+        context.store.readSnapshot = {
+            StubCalendarEventStore.snapshot(status: .authorized, events: events, calendarEntries: entries)
+        }
+        await context.finishInitialization()
+        state.preferences.sizePreference = SizePreference.large.rawValue
+        state.preferences.backgroundStyle = BackgroundStyle.solid.rawValue
+        state.preferences.showLocation = true
+        state.preferences.showWeeks = true
+        state.preferences.hasSeenShortcutTip = true
+        state.preferences.weekStartWeekday = 1
+        state.preferences.agendaHeightRatio = 0.5
+        state.selectDate(day)
+        state.events.todayDate = day
+        state.events.currentTime = base.addingTimeInterval(13 * 3600)
+        state.panel.isPanelVisible = true
+        let metrics = SizeMetrics.metrics(for: .large)
+        XCTAssertTrue(state.events.hasCalendars)
+        XCTAssertEqual(state.events.eventsByDate[day]?.count, 2)
+
+        try await captureStoreScreenshot(MainPanelView(appState: state)
+            .frame(width: metrics.panelWidth).fixedSize(horizontal: false, vertical: true),
+            title: copy("Месяц и встречи\nпод рукой", "Your month.\nYour next meeting."),
+            subtitle: copy("Календарь и ближайшие события — в строке меню Mac.",
+                           "Your calendar and upcoming events, in the Mac menu bar."),
+            scheme: .light, language: language, name: "01-calendar")
+
+        state.panel.selectedEvent = meeting
+        state.panel.isEventDetailPresented = true
+        try await captureStoreScreenshot(MainPanelView(appState: state)
+            .frame(width: metrics.panelWidth + metrics.sheetWidth).fixedSize(horizontal: false, vertical: true),
+            title: copy("Все детали.\nОдна панель.", "Every detail.\nOne panel."),
+            subtitle: copy("Время, место и ссылка на встречу рядом с календарём.",
+                           "Time, location, and a meeting link beside your calendar."),
+            scheme: .light, language: language, name: "02-event")
+        state.dismissEventDrawer()
+        try await captureStoreScreenshot(MainPanelView(appState: state)
+            .frame(width: metrics.panelWidth).fixedSize(horizontal: false, vertical: true),
+            title: copy("Светлая\nили тёмная", "Light.\nOr dark."),
+            subtitle: copy("Выберите тему, фон и удобный размер панели.",
+                           "Choose your theme, background, and preferred panel size."),
+            scheme: .dark, language: language, name: "03-appearance")
+        XCTAssertTrue(context.store.operations.isEmpty, "Capturing assets must not mutate calendar data")
+    }
+
+    private func captureStoreScreenshot<Content: View>(
+        _ content: Content, title: String, subtitle: String,
+        scheme: ColorScheme, language: String, name: String
+    ) async throws {
+        let dark = scheme == .dark
+        let captionColor = dark ? Color.white : Color(red: 0.12, green: 0.16, blue: 0.22)
+        let canvas = VStack(alignment: .leading, spacing: 24) {
+            HStack(spacing: 12) {
+                Image("AppLogo", bundle: .equinox).resizable().frame(width: 36, height: 36)
+                Text(verbatim: "Equinox Calendar").font(.system(size: 20, weight: .semibold))
+                Spacer()
+                Text(verbatim: "macOS").font(.system(size: 16, weight: .medium)).opacity(0.55)
+            }
+            .foregroundStyle(captionColor)
+            HStack(spacing: 40) {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text(verbatim: title).font(.system(size: 44, weight: .semibold)).tracking(-1.4)
+                    Text(verbatim: subtitle).font(.system(size: 21)).lineSpacing(6).opacity(0.7)
+                }
+                .frame(width: 340, alignment: .leading)
+                .foregroundStyle(captionColor)
+                content
+                    .clipShape(RoundedRectangle(cornerRadius: EquinoxDesign.panelCornerRadius))
+                    .shadow(color: .black.opacity(dark ? 0.25 : 0.12), radius: 24, y: 12)
+                    .frame(maxWidth: .infinity)
+            }
+            .frame(maxHeight: .infinity)
+        }
+        .padding(.horizontal, 64).padding(.vertical, 44)
+        .frame(width: 1440, height: 900)
+        .background(dark ? Color(red: 0.09, green: 0.12, blue: 0.17)
+                         : Color(red: 0.93, green: 0.95, blue: 0.97))
+        .environment(\.colorScheme, scheme)
+        .transaction { $0.disablesAnimations = true }
+        let view = NSHostingView(rootView: canvas)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1440, height: 900),
+                              styleMask: [.borderless], backing: .buffered, defer: true)
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        window.contentView = view
+        defer { window.contentView = nil }
+        view.frame = NSRect(x: 0, y: 0, width: 1440, height: 900)
+        view.layoutSubtreeIfNeeded()
+        try await Task.sleep(for: .milliseconds(400))
+        view.layoutSubtreeIfNeeded()
+        XCTAssertLessThanOrEqual(view.fittingSize.width, 1440)
+        XCTAssertLessThanOrEqual(view.fittingSize.height, 900)
+        let rendered = try XCTUnwrap(view.bitmapImageRepForCachingDisplay(in: view.bounds))
+        view.cacheDisplay(in: view.bounds, to: rendered)
+        // AppKit needs its native bitmap format for capture. Flatten alpha only after rendering.
+        let rgb = try XCTUnwrap(CGContext(data: nil, width: 2880, height: 1800,
+            bitsPerComponent: 8, bytesPerRow: 0,
+            space: try XCTUnwrap(CGColorSpace(name: CGColorSpace.sRGB)),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue))
+        rgb.setFillColor(CGColor(gray: dark ? 0.1 : 0.95, alpha: 1))
+        rgb.fill(CGRect(x: 0, y: 0, width: 2880, height: 1800))
+        rgb.draw(try XCTUnwrap(rendered.cgImage), in: CGRect(x: 0, y: 0, width: 2880, height: 1800))
+        let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(rgb.makeImage()))
+        var minimumBrightness: CGFloat = 1
+        var maximumBrightness: CGFloat = 0
+        for y in stride(from: 0, to: bitmap.pixelsHigh, by: bitmap.pixelsHigh / 64) {
+            for x in stride(from: 0, to: bitmap.pixelsWide, by: bitmap.pixelsWide / 64) {
+                let color = try XCTUnwrap(bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
+                let brightness = (color.redComponent + color.greenComponent + color.blueComponent) / 3
+                minimumBrightness = min(minimumBrightness, brightness)
+                maximumBrightness = max(maximumBrightness, brightness)
+            }
+        }
+        XCTAssertGreaterThan(maximumBrightness - minimumBrightness, 0.3, "Blank or uniform screenshot: \(name)")
+        let png = try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
+        XCTAssertFalse(bitmap.hasAlpha)
+        XCTAssertGreaterThan(png.count, 50_000, "A store screenshot must contain the rendered interface")
+        let attachment = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
+        attachment.name = "store-\(language)-\(name)"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testWritableCalendarFormAcrossSizesAndThemes() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
@@ -25,6 +186,70 @@ final class SurfaceLayoutTests: XCTestCase {
                     .environment(\.colorScheme, scheme),
                     width: metrics.panelWidth + metrics.sheetWidth, height: 850, scheme: scheme,
                     name: "writable-form-\(size)-\(scheme)")
+            }
+        }
+    }
+
+    func testWritableCalendarReplacementWhileFormRemainsOpen() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        state.panel.isNewEventSheetPresented = true
+        state.preferences.sizePreference = SizePreference.medium.rawValue
+        let metrics = SizeMetrics.metrics(for: .medium)
+        let width = metrics.panelWidth + metrics.sheetWidth
+        let view = NSHostingView(rootView: MainPanelView(appState: state))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: 850),
+                              styleMask: [.borderless], backing: .buffered, defer: true)
+        window.contentView = view
+        defer { window.contentView = nil }
+        for identifiers in [["work"], ["work", "personal"], ["personal"], [], ["work"]] {
+            let entries = identifiers.map { id in
+                CalendarListEntry.calendar(SelectableCalendar(
+                    id: id, title: id, sourceTitle: "QA", isSelected: true,
+                    colorRed: 0.2, colorGreen: 0.5, colorBlue: 0.8, colorAlpha: 1,
+                    allowsContentModifications: true
+                ))
+            }
+            context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, calendarEntries: entries) }
+            await state.events.syncFromCalendarStore()
+            view.layoutSubtreeIfNeeded()
+            try await Task.sleep(for: .milliseconds(50))
+            view.layoutSubtreeIfNeeded()
+            XCTAssertTrue(state.panel.isNewEventSheetPresented)
+            XCTAssertLessThanOrEqual(view.fittingSize.width, width + 1)
+            XCTAssertLessThanOrEqual(view.fittingSize.height, 851)
+        }
+        // scripts/test.sh also rejects SwiftUI's invalid-picker-selection diagnostic.
+    }
+
+    func testDenseAgendaAndLongNotesFitTheEventDrawer() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let state = context.appState
+        let day = state.events.todayDate
+        let start = day.date(in: state.calendar).addingTimeInterval(9 * 3600)
+        let detail = context.event(start: start, title: String(repeating: "Длинное название 👩🏽‍💻 — Planning. ", count: 80),
+                                   notes: String(repeating: "Заметки 👩🏽‍💻 e\u{301} / Notes\n", count: 1500))
+        let events = [detail] + (1..<1000).map { context.event(start: start.addingTimeInterval(Double($0))) }
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: events]) }
+        await context.finishInitialization()
+        state.selectDate(day)
+        let metrics = SizeMetrics.metrics(for: .small)
+        state.preferences.sizePreference = SizePreference.small.rawValue
+        try await check(MainPanelView(appState: state), width: metrics.panelWidth, height: 850,
+                        scheme: .light, name: "dense-agenda-1000")
+        state.panel.selectedEvent = detail
+        state.panel.isEventDetailPresented = true
+        for size in SizePreference.allCases {
+            state.preferences.sizePreference = size.rawValue
+            let metrics = SizeMetrics.metrics(for: size)
+            for scheme in [ColorScheme.light, .dark] {
+                try await check(MainPanelView(appState: state).environment(\.colorScheme, scheme),
+                                width: metrics.panelWidth + metrics.sheetWidth, height: 850,
+                                scheme: scheme, name: "dense-long-notes-\(size)-\(scheme)")
+                XCTAssertTrue(state.panel.isEventDetailPresented)
             }
         }
     }
@@ -203,8 +428,8 @@ final class SurfaceLayoutTests: XCTestCase {
         let geometry = AgendaGeometryProbe()
         let metrics = SizeMetrics.metrics(for: .medium)
         let view = NSHostingView(rootView: AgendaView(appState: state, metrics: metrics, height: 280)
-            .onPreferenceChange(AgendaSectionFramesKey.self) { frames in
-                Task { @MainActor in geometry.frames = frames }
+            .overlayPreferenceValue(AgendaSectionFramesKey.self) { frames in
+                AgendaGeometryRecorder(frames: frames, probe: geometry).allowsHitTesting(false)
             })
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: metrics.panelWidth, height: 320),
                               styleMask: [.borderless], backing: .buffered, defer: false)
@@ -372,6 +597,17 @@ final class SurfaceLayoutTests: XCTestCase {
 @MainActor
 private final class AgendaGeometryProbe {
     var frames: [CalendarDate: CGRect] = [:]
+}
+
+private struct AgendaGeometryRecorder: NSViewRepresentable {
+    let frames: [CalendarDate: CGRect]
+    let probe: AgendaGeometryProbe
+
+    func makeNSView(context: Context) -> NSView { NSView() }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        probe.frames = frames
+    }
 }
 
 @MainActor

@@ -2,6 +2,37 @@ import XCTest
 @testable import EquinoxKit
 
 final class NativeJoinURLTests: XCTestCase {
+    func testChimeRewriteDoesNotDropPathComponents() throws {
+        for path in ["/1234567890/extra", "/team%2Fmeeting"] {
+            let web = try XCTUnwrap(URL(string: "https://chime.aws\(path)"))
+            XCTAssertNil(NativeJoinURL.nativeURLString(from: web), path)
+            XCTAssertNil(NativeJoinURL.nativeScheme(for: web), path)
+        }
+        for pin in ["1234567890", "team-personalized-meeting"] {
+            let web = try XCTUnwrap(URL(string: "https://chime.aws/\(pin)"))
+            XCTAssertEqual(NativeJoinURL.nativeURLString(from: web), "chime://meeting?pin=\(pin)")
+        }
+    }
+
+    func testZoomRewriteHasOneMeetingIdentifierFromPath() throws {
+        for query in ["confno=999", "confno=123&confno=999", "CONFNO=999", "conf%6Eo=999"] {
+            let web = try XCTUnwrap(URL(string: "https://zoom.us/j/123?\(query)&pwd=a%2Bb%2F%3D&tk=registration"))
+            let native = try XCTUnwrap(NativeJoinURL.nativeURLString(from: web))
+            let items = try XCTUnwrap(URLComponents(string: native)?.queryItems)
+            XCTAssertEqual(items.filter { $0.name.lowercased() == "confno" }.map(\.value), ["123"])
+            XCTAssertEqual(items.first { $0.name == "pwd" }?.value, "a+b/=")
+            XCTAssertEqual(items.first { $0.name == "tk" }?.value, "registration")
+        }
+    }
+
+    func testUnrecognizedZoomPathsKeepTheWebURL() throws {
+        for path in ["/j/123/extra", "/j/not-a-meeting-id", "/j/123%2F456"] {
+            let web = try XCTUnwrap(URL(string: "https://zoom.us\(path)?pwd=secret"))
+            XCTAssertNil(NativeJoinURL.nativeURLString(from: web), path)
+            XCTAssertNil(NativeJoinURL.nativeScheme(for: web), path)
+        }
+    }
+
     func testWebOnlyMeetingDoesNotQueryInstalledApplications() async throws {
         let url = try XCTUnwrap(URL(string: "https://meet.google.com/abc-defg-hij"))
         let native = await NativeJoinURLResolver.resolveNativeJoinURL(from: url, isAppInstalled: { _ in

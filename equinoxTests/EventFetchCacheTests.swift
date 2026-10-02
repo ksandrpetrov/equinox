@@ -4,6 +4,68 @@ import XCTest
 final class EventFetchCacheTests: XCTestCase {
     private let calendar = Calendar(identifier: .gregorian)
 
+    func testMixedFetchInvalidationEvictionAndFilteringMatchReferenceState() throws {
+        let first = CalendarDate(year: 2026, monthIndex: 0, day: 1)
+        let days = (0..<60).map { first.addingDays($0) }
+        var cache = EventFetchCache()
+        var loaded = Set<CalendarDate>()
+        var expected: [CalendarDate: [DayEvent]] = [:]
+        var seed: UInt64 = 0xE901
+        func next(_ bound: Int) -> Int {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return Int(seed >> 32) % bound
+        }
+
+        for iteration in 0..<300 {
+            let lower = next(50)
+            let upper = lower + next(10)
+            let range = Array(days[lower...upper])
+            switch next(5) {
+            case 0:
+                // An external change invalidates coverage, retaining the visible snapshot.
+                let obsolete = try XCTUnwrap(cache.prepareFetchRange(first: days[lower], last: days[upper], refetch: true))
+                cache.invalidate()
+                loaded.removeAll()
+                XCTAssertFalse(cache.commitFetch([:], plan: obsolete, calendar: calendar))
+            case 1:
+                cache.clearEvents()
+                loaded.removeAll()
+                expected.removeAll()
+            case 2:
+                cache.retainEvents(inside: [(days[lower], days[upper]), (days[0], days[1])], calendar: calendar)
+                let retained = Set(range + Array(days[0...1]))
+                loaded.formIntersection(retained)
+                expected = expected.filter { retained.contains($0.key) }
+            default:
+                let force = next(2) == 0
+                let plan = cache.prepareFetchRange(first: days[lower], last: days[upper], refetch: force)
+                XCTAssertEqual(plan == nil, !force && range.allSatisfy { loaded.contains($0) })
+                if let plan {
+                    var incoming: [Date: [DayEvent]] = [:]
+                    for day in days where day >= plan.fetchStart && day <= plan.fetchEnd {
+                        // Empty days also replace previously cached events.
+                        let events = next(3) == 0 ? [] : [makeEvent(calendarID: next(2) == 0 ? "work" : "personal", on: day)]
+                        if events.isEmpty { expected.removeValue(forKey: day) }
+                        else { incoming[day.date(in: calendar)] = events; expected[day] = events }
+                        loaded.insert(day)
+                    }
+                    XCTAssertTrue(cache.commitFetch(incoming, plan: plan, calendar: calendar))
+                }
+            }
+            let selected: Set<String> = next(2) == 0 ? ["work"] : ["work", "personal"]
+            cache.applyCalendarFilter(selectedCalendarIDs: selected)
+            let visible = expected.compactMapValues { events -> [DayEvent]? in
+                let filtered = events.filter { selected.contains($0.calendarIdentifier) }
+                return filtered.isEmpty ? nil : filtered
+            }
+            XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar), visible, "Iteration \(iteration)")
+            for day in days {
+                XCTAssertEqual(cache.prepareFetchRange(first: day, last: day, refetch: false) == nil,
+                               loaded.contains(day), "Coverage at iteration \(iteration), day \(day)")
+            }
+        }
+    }
+
     private func makeEvent(calendarID: String, on date: CalendarDate) -> DayEvent {
         let dayStart = date.date(in: calendar)
         return DayEvent(

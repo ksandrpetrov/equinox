@@ -143,9 +143,13 @@ struct NewEventSheet: View {
             }
 
             Section(String(localized: "Calendar", bundle: .equinox, comment: "")) {
-                if hasModifiableCalendars {
-                    Picker(String(localized: "Calendar", bundle: .equinox, comment: ""), selection: $selectedCalendarIdentifier) {
-                        ForEach(modifiableCalendars) { calendar in
+                let calendars = modifiableCalendars
+                if !calendars.isEmpty {
+                    Picker(String(localized: "Calendar", bundle: .equinox, comment: ""), selection: Binding(
+                        get: { resolvedCalendarIdentifier(in: calendars) },
+                        set: { selectedCalendarIdentifier = $0 }
+                    )) {
+                        ForEach(calendars) { calendar in
                             HStack {
                                 Circle()
                                     .fill(calendar.swiftUIColor)
@@ -246,17 +250,25 @@ struct NewEventSheet: View {
         supportedDates.upperBound.addingTimeInterval(isAllDay ? 0 : 1)
     }
 
-    private func reconcileSelectedCalendar() {
-        selectedCalendarIdentifier = EventDraftDefaults.preferredCalendarIdentifier(
+    // A snapshot can remove the selected calendar before onChange runs. Resolve
+    // against the picker's own options, including while an old picker disappears.
+    private func resolvedCalendarIdentifier(in calendars: [SelectableCalendar]) -> String {
+        EventDraftDefaults.preferredCalendarIdentifier(
             currentIdentifier: selectedCalendarIdentifier,
             defaultIdentifier: appState.events.defaultCalendarIdentifierForNewEvents,
-            availableIdentifiers: modifiableCalendarIdentifiers
+            availableIdentifiers: calendars.map(\.id)
         )
+    }
+
+    private func reconcileSelectedCalendar() {
+        selectedCalendarIdentifier = resolvedCalendarIdentifier(in: modifiableCalendars)
     }
 
     private func save() {
         guard !isSaving else { return }
-        guard let calendar = modifiableCalendars.first(where: { $0.id == selectedCalendarIdentifier }) else {
+        let calendars = modifiableCalendars
+        let calendarIdentifier = resolvedCalendarIdentifier(in: calendars)
+        guard let calendar = calendars.first(where: { $0.id == calendarIdentifier }) else {
             saveError = String(localized: "The calendar could not be found.", bundle: .equinox, comment: "Create event error")
             return
         }

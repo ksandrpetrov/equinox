@@ -19,11 +19,11 @@ struct PrivacySettingsTab: View {
         SettingsDetailScaffold(title: String(localized: "Privacy", bundle: .equinox, comment: "Privacy prefs tab label")) {
             if SettingsSearchFilter.matches(
                 searchText: searchText,
-                keywords: "Privacy", "Calendar Access", "Request Access", "Open System Settings"
+                keywords: "Privacy", "Privacy Policy", "Calendar Access", "Request Access", "Open System Settings"
             ) {
                 SettingsSection(
                     String(localized: "Calendar Access", bundle: .equinox, comment: "Privacy section"),
-                    subtitle: String(localized: "Equinox reads events from your system calendars.", bundle: .equinox, comment: "")
+                    subtitle: String(localized: "Equinox reads your calendars to show events and lets you create and delete events when you choose.", bundle: .equinox, comment: "")
                 ) {
                     LabeledContent {
                         HStack(spacing: EquinoxDesign.spacingXS) {
@@ -56,6 +56,9 @@ struct PrivacySettingsTab: View {
                     .padding(.vertical, SettingsDesign.rowVerticalPadding)
 
                     SettingsDivider()
+                    Link(String(localized: "Privacy Policy", bundle: .equinox, comment: "Privacy policy link"),
+                         destination: EquinoxDocumentation.privacyPolicy)
+                        .padding(.vertical, SettingsDesign.rowVerticalPadding)
                     SettingsFooter(text: accessGuidance(for: appState.events.calendarAccessStatus))
                         .padding(.vertical, SettingsDesign.rowVerticalPadding)
                 }

@@ -1,0 +1,115 @@
+{
+  "appId": "6806746414",
+  "version": "1.0",
+  "build": "1.0.0 (6)",
+  "category": "Utilities",
+  "price": 0,
+  "release": "automatic after approval",
+  "privacyPolicyURL": "https://github.com/ksandrpetrov/equinox/blob/main/PRIVACY.md",
+  "localizations": {
+    "ru": [
+      {
+        "label": "Рекламный текст",
+        "type": "textarea",
+        "value": "Календарь и ближайшие события в строке меню Mac. Создавайте события, открывайте ссылки на встречи и настраивайте панель под себя."
+      },
+      {
+        "label": "Описание",
+        "type": "textarea",
+        "value": "Equinox Calendar — компактный календарь для строки меню Mac. Откройте месяц, посмотрите расписание и перейдите к ближайшей встрече, не отвлекаясь от работы.\n\nКАЛЕНДАРЬ ПОД РУКОЙ\n• Месячная сетка и список событий выбранного и ближайших дней.\n• Быстрый переход между месяцами и возврат к сегодняшнему дню.\n• Выбор отображаемых календарей, номера недель и отметки событий.\n• Панель можно закрепить, чтобы она оставалась на экране.\n\nСОБЫТИЯ И ВСТРЕЧИ\n• Создавайте события с датой, временем, местом, заметками, повтором и напоминанием.\n• Просматривайте детали и свой статус участия.\n• Удаляйте события из доступных для записи календарей с подтверждением.\n• Открывайте ссылки на онлайн-встречи, включая Zoom, Microsoft Teams и Google Meet.\n\nПОД ВАШ СТИЛЬ РАБОТЫ\n• Три размера панели, светлая и тёмная темы, стеклянный или непрозрачный фон.\n• Настраиваемая дата в строке меню и индикатор ближайшей встречи.\n• Глобальная горячая клавиша и необязательный запуск при входе.\n• Русский и английский языки.\n\nEquinox работает с календарями, настроенными в macOS. Для просмотра, создания и удаления событий требуется полный доступ к календарям. Без разрешения доступна навигация по месяцу. Редактирование существующих событий в приложении не поддерживается.\n\nБез регистрации, рекламы и встроенных покупок. Содержимое календарей и настройки не передаются разработчику. Синхронизацией календарных аккаунтов занимается macOS.\n\nТребуется Mac с Apple Silicon и macOS 26 или новее."
+      },
+      {
+        "label": "Ключевые слова",
+        "type": "text",
+        "value": "календарь,расписание,события,встречи,строка меню,планировщик,дата,месяц,agenda"
+      },
+      {
+        "label": "URL-адрес службы поддержки",
+        "type": "text",
+        "value": "https://github.com/ksandrpetrov/equinox/blob/main/SUPPORT.md"
+      },
+      {
+        "label": "Маркетинг (URL)",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "label": "Версия",
+        "type": "text",
+        "value": "1.0"
+      },
+      {
+        "label": "Авторские права",
+        "type": "text",
+        "value": "2026 Aleksandr Petrov"
+      },
+      {
+        "label": "Примечания",
+        "type": "textarea",
+        "value": "Equinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later. After launch, click the Equinox icon in the menu bar. There is normally no Dock icon; Settings and Quit are available from the panel menu. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS. Without access, month navigation remains available and the app explains how to grant access. To test creation, use a writable system calendar and New Event (Command-N). Open that event to view details and delete it with confirmation. Existing events cannot be edited; participation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback. The meeting provider may require its own account. Launch at login is optional and enabled by the user in General settings. Privacy Policy is in Privacy and About; Support and bundled third-party licenses are in About. Calendar contents and settings are not sent to a developer-operated service."
+      }
+    ],
+    "en_US": [
+      {
+        "label": "Рекламный текст",
+        "type": "textarea",
+        "value": "Your calendar and upcoming events, right in the Mac menu bar. Create events, open meeting links, and make the panel your own."
+      },
+      {
+        "label": "Описание",
+        "type": "textarea",
+        "value": "Equinox Calendar puts your month and upcoming events in the Mac menu bar. Check your schedule and open your next meeting without leaving your workflow.\n\nYOUR CALENDAR AT A GLANCE\n• Browse a month grid and events for the selected and upcoming days.\n• Move between months and jump back to today.\n• Choose which calendars to display, with week numbers and event markers.\n• Pin the panel to keep it on screen.\n\nEVENTS AND MEETINGS\n• Create events with a date, time, location, notes, recurrence, and reminder.\n• View event details and your participation status.\n• Delete events from writable calendars with confirmation.\n• Open online meeting links, including Zoom, Microsoft Teams, and Google Meet.\n\nMAKE IT YOUR OWN\n• Three panel sizes, light and dark themes, and glass or solid backgrounds.\n• A customizable menu bar date and an upcoming meeting indicator.\n• A global keyboard shortcut and optional launch at login.\n• English and Russian interfaces.\n\nEquinox works with calendars configured in macOS. Calendar Full Access is required to view, create, and delete events. Month navigation remains available without permission. Editing existing events is not supported in the app.\n\nNo Equinox account, ads, or in-app purchases. Calendar contents and settings are not sent to the developer. macOS manages synchronization with your calendar accounts.\n\nRequires a Mac with Apple Silicon and macOS 26 or later."
+      },
+      {
+        "label": "Ключевые слова",
+        "type": "text",
+        "value": "calendar,menu bar,agenda,schedule,events,meetings,date,month,planner,productivity"
+      },
+      {
+        "label": "URL-адрес службы поддержки",
+        "type": "text",
+        "value": "https://github.com/ksandrpetrov/equinox/blob/main/SUPPORT.md"
+      },
+      {
+        "label": "Маркетинг (URL)",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "label": "Версия",
+        "type": "text",
+        "value": "1.0"
+      },
+      {
+        "label": "Авторские права",
+        "type": "text",
+        "value": "2026 Aleksandr Petrov"
+      },
+      {
+        "label": "Примечания",
+        "type": "textarea",
+        "value": "Equinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later. After launch, click the Equinox icon in the menu bar. There is normally no Dock icon; Settings and Quit are available from the panel menu. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS. Without access, month navigation remains available and the app explains how to grant access. To test creation, use a writable system calendar and New Event (Command-N). Open that event to view details and delete it with confirmation. Existing events cannot be edited; participation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback. The meeting provider may require its own account. Launch at login is optional and enabled by the user in General settings. Privacy Policy is in Privacy and About; Support and bundled third-party licenses are in About. Calendar contents and settings are not sent to a developer-operated service."
+      }
+    ]
+  },
+  "versionFormSaved": true,
+  "submissionStatus": "Waiting for Review",
+  "reviewContactSource": "Cassini App Review contact, reused with owner authorization; contact values are not stored here",
+  "submittedAt": "2026-09-29T13:38:00+03:00",
+  "submissionId": "f75f9af9-2220-4f32-8868-5f6c73300258",
+  "submissionURL": "https://appstoreconnect.apple.com/apps/6806746414/distribution/reviewsubmissions/details/f75f9af9-2220-4f32-8868-5f6c73300258",
+  "screenshots": {
+    "ru": [
+      "screenshots/ru/01-calendar.png",
+      "screenshots/ru/02-event.png",
+      "screenshots/ru/03-appearance.png"
+    ],
+    "en": [
+      "screenshots/en/01-calendar.png",
+      "screenshots/en/02-event.png",
+      "screenshots/en/03-appearance.png"
+    ]
+  },
+  "screenshotCaptureEvidence": "build/AppStoreListing/run-NRBCKU",
+  "submissionEvidence": "build/TestFlight/2026-09-29-app-store/submitted-for-review.png"
+}

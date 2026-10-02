@@ -90,8 +90,10 @@ macOS. Тесты календарных сценариев используют
 ```
 
 Логи, `.xcresult`, JSON-сводки и покрытие сохраняются в отдельной папке каждого
-запуска под `build/Tests/results/`. Нулевое число тестов, ошибка или пропуск
-завершают команду с ошибкой. Покрытие отражает исполненные строки, а не полноту
+запуска под `build/Tests/results/`. Нулевое число тестов, ошибка, пропуск,
+runtime warnings в `.xcresult` или известные диагностики SwiftUI о некорректном
+Picker/изменении состояния во время компоновки завершают команду с ошибкой.
+Покрытие отражает исполненные строки, а не полноту
 бизнес-сценариев; рендеры не заменяют живую проверку EventKit и взаимодействий.
 
 Пути можно переопределить переменными `EQUINOX_TEST_DERIVED_DATA` и
@@ -143,10 +145,29 @@ swift scripts/regenerate-design-assets.swift
 
 ### Mac App Store
 
+Актуальная проверка, материалы App Review и незавершённые release-проверки —
+[APP-STORE-READINESS.md](APP-STORE-READINESS.md). Перед отправкой опубликуйте
+[PRIVACY.md](PRIVACY.md) и [SUPPORT.md](SUPPORT.md) в `main` и проверьте публичные URL.
+`PrivacyInfo.xcprivacy` включён в ресурсы приложения и EquinoxKit. Полные MIT-лицензии
+в `equinox/Licenses.txt` доступны из About; при обновлении KeyboardShortcuts сверяйте
+этот текст с лицензией закреплённой версии пакета.
+
 App Sandbox включён для target `equinox` в Debug и Release. Файл
 `equinox/equinox.entitlements` содержит `com.apple.security.app-sandbox = true`
 и `com.apple.security.personal-information.calendars = true` для доступа к EventKit.
 Разрешение пользователя на полный доступ к календарям по-прежнему требуется.
+
+Скриншоты карточки на русском и английском воспроизводятся командой:
+
+```bash
+./scripts/capture-app-store.sh
+```
+
+Она запускает Release-тест `testStoreListingScreenshots` в существующем graphics host
+с изолированным хранилищем и вымышленными событиями. Результат — RGB PNG без alpha,
+2880×1800, в `docs/app-store/screenshots/{ru,en}/`; журналы и `.xcresult` находятся
+в `build/AppStoreListing/`. Перед загрузкой просмотрите все шесть кадров: автоматическая
+проверка размеров и непустого рендера не заменяет проверку текста и компоновки.
 
 После изменения entitlements создайте новый архив через **Product → Archive**
 и в Organizer выберите **Distribute App → App Store Connect**. Уже созданный

@@ -89,3 +89,7 @@ scripts/        — вспомогательные скрипты сборки �
 equinox вырос из [Itsycal](https://github.com/sfsam/Itsycal) — menu bar календаря Sanjay Madan. От оригинала осталась лицензия; код полностью переписан на Swift 6 / SwiftUI.
 
 Проект распространяется по лицензии MIT, © 2016 Sanjay Madan. Полный текст — в [LICENSE.txt](LICENSE.txt).
+
+## Поддержка и конфиденциальность
+
+[Поддержка](SUPPORT.md) · [Политика конфиденциальности](PRIVACY.md) · [Готовность к Mac App Store](APP-STORE-READINESS.md)

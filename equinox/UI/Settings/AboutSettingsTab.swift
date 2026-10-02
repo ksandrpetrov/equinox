@@ -2,12 +2,13 @@ import SwiftUI
 
 struct AboutSettingsTab: View {
     var searchText: String = ""
+    @State private var showsLicenses = false
 
     var body: some View {
         Group {
             if SettingsSearchFilter.matches(
                 searchText: searchText,
-                keywords: "About", "Equinox", "Version", "MIT License", "View on GitHub"
+                keywords: "About", "Equinox", "Version", "MIT License", "View on GitHub", "Support", "Privacy Policy", "Licenses"
             ) {
                 aboutContent
             } else {
@@ -20,6 +21,35 @@ struct AboutSettingsTab: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle(String(localized: "About", bundle: .equinox, comment: "About prefs tab label"))
+        .sheet(isPresented: $showsLicenses) { licensesContent }
+    }
+
+    private var licensesContent: some View {
+        VStack(alignment: .leading, spacing: EquinoxDesign.spacingMD) {
+            Text(String(localized: "Licenses", bundle: .equinox, comment: "License viewer title"))
+                .font(.headline)
+            ScrollView {
+                Text(licenseText)
+                    .font(.body)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Button(String(localized: "Done", bundle: .equinox, comment: "Close license viewer")) {
+                showsLicenses = false
+            }
+            .keyboardShortcut(.defaultAction)
+        }
+        .padding(EquinoxDesign.spacingLG)
+        .frame(width: SettingsDesign.windowMinWidth - SettingsDesign.sidebarWidth,
+               height: SettingsDesign.windowMinHeight)
+    }
+
+    private var licenseText: String {
+        guard let url = Bundle.equinox.url(forResource: "Licenses", withExtension: "txt"),
+              let text = try? String(contentsOf: url, encoding: .utf8) else {
+            return String(localized: "Licenses could not be loaded.", bundle: .equinox, comment: "License resource error")
+        }
+        return text
     }
 
     private var aboutContent: some View {
@@ -51,6 +81,18 @@ struct AboutSettingsTab: View {
             )
             .font(.footnote)
             .foregroundStyle(EquinoxDesign.ColorToken.semanticBlue)
+
+            HStack(spacing: EquinoxDesign.spacingMD) {
+                Link(String(localized: "Privacy Policy", bundle: .equinox, comment: "Privacy policy link"),
+                     destination: EquinoxDocumentation.privacyPolicy)
+                Link(String(localized: "Support", bundle: .equinox, comment: "Support link"),
+                     destination: EquinoxDocumentation.support)
+                Button(String(localized: "Licenses", bundle: .equinox, comment: "Open license viewer")) {
+                    showsLicenses = true
+                }
+                .buttonStyle(.link)
+            }
+            .font(.footnote)
 
             Spacer()
         }
