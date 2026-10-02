@@ -5,12 +5,20 @@ final class EventFetchCacheTests: XCTestCase {
     private let calendar = Calendar(identifier: .gregorian)
 
     func testMixedFetchInvalidationEvictionAndFilteringMatchReferenceState() throws {
-        let first = CalendarDate(year: 2026, monthIndex: 0, day: 1)
+        for first in [CalendarDate.minimumSupported, CalendarDate(year: 2026, monthIndex: 0, day: 1),
+                      CalendarDate.maximumSupported.addingDays(-59)] {
+            for seed: UInt64 in [0xE901, 0xD57, 0xBAD5EED, 0xC0FFEE] {
+                try checkMixedOperations(first: first, initialSeed: seed)
+            }
+        }
+    }
+
+    private func checkMixedOperations(first: CalendarDate, initialSeed: UInt64) throws {
         let days = (0..<60).map { first.addingDays($0) }
         var cache = EventFetchCache()
         var loaded = Set<CalendarDate>()
         var expected: [CalendarDate: [DayEvent]] = [:]
-        var seed: UInt64 = 0xE901
+        var seed = initialSeed
         func next(_ bound: Int) -> Int {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return Int(seed >> 32) % bound
@@ -58,7 +66,8 @@ final class EventFetchCacheTests: XCTestCase {
                 let filtered = events.filter { selected.contains($0.calendarIdentifier) }
                 return filtered.isEmpty ? nil : filtered
             }
-            XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar), visible, "Iteration \(iteration)")
+            XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar), visible,
+                           "Seed \(initialSeed), first \(first), iteration \(iteration)")
             for day in days {
                 XCTAssertEqual(cache.prepareFetchRange(first: day, last: day, refetch: false) == nil,
                                loaded.contains(day), "Coverage at iteration \(iteration), day \(day)")

@@ -5,6 +5,116 @@ import XCTest
 
 @MainActor
 final class SurfaceLayoutTests: XCTestCase {
+    func testDenseHostedAgendaReleasesViewsAndApplicationState() async throws {
+        var released: [@MainActor () -> Bool] = []
+        for count in [100, 1_000, 10_000] {
+            for repetition in 0..<3 {
+                released.append(try await hostDenseAgenda(count: count, repetition: repetition))
+            }
+        }
+        // SwiftUI cancels view tasks and relinquishes its graph on subsequent turns.
+        for _ in 0..<30 {
+            if released.allSatisfy({ $0() }) { break }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        XCTAssertTrue(released.allSatisfy { $0() }, "Closed hosted surfaces must release their view and AppState")
+    }
+
+    private func hostDenseAgenda(count: Int, repetition: Int) async throws -> @MainActor () -> Bool {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        let state = context.appState
+        let day = state.events.todayDate
+        let start = day.date(in: state.calendar)
+        let events = (0..<count).map { index in
+            context.event(start: start.addingTimeInterval(Double(index)), title: "QA \(index) — длинное название 📅")
+        }
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: events]) }
+        await context.finishInitialization()
+        let view = NSHostingView(rootView: MainPanelView(appState: state))
+        let width = SizeMetrics.metrics(for: .medium).panelWidth
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: 750),
+                              styleMask: [.borderless], backing: .buffered, defer: true)
+        window.contentView = view
+        let clock = ContinuousClock()
+        let began = clock.now
+        view.layoutSubtreeIfNeeded()
+        await Task.yield()
+        view.layoutSubtreeIfNeeded()
+        let elapsed = began.duration(to: clock.now)
+        XCTAssertEqual(state.events.events(for: day).count, count)
+        XCTAssertLessThanOrEqual(view.fittingSize.width, width + 1)
+        XCTAssertTrue(view.fittingSize.height.isFinite)
+        let evidence = XCTAttachment(string: "Hosted \(count) events, repetition \(repetition): initial layout \(elapsed)")
+        evidence.name = "hosted-load-\(count)-\(repetition)"
+        evidence.lifetime = .keepAlways
+        add(evidence)
+        window.contentView = nil
+        return { [weak view, weak state] in view == nil && state == nil }
+    }
+
+    func testDelayedDeletionDoesNotDismissReplacementDrawer() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        let day = state.events.todayDate
+        let event = context.event(start: day.date(in: state.calendar))
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: [event]]) }
+        state.panel.selectedEvent = event
+        state.panel.isEventDetailPresented = true
+        let metrics = SizeMetrics.metrics(for: .medium)
+        let view = NSHostingView(rootView: AnyView(EventDetailView(appState: state, event: event, metrics: metrics)))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: metrics.sheetWidth, height: 750),
+                              styleMask: [.borderless], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentView = view
+        defer { window.orderOut(nil); window.contentView = nil }
+        window.orderFront(nil)
+        view.layoutSubtreeIfNeeded()
+        try await Task.sleep(for: .milliseconds(100))
+        let point = NSPoint(x: EquinoxDesign.panelPadding + EquinoxDesign.spacingMD,
+                           y: EquinoxDesign.panelPadding + EquinoxDesign.spacingMD)
+        let mouseUp = try XCTUnwrap(NSEvent.mouseEvent(with: .leftMouseUp, location: point, modifierFlags: [],
+            timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil,
+            eventNumber: 1, clickCount: 1, pressure: 0))
+        let mouseDown = try XCTUnwrap(NSEvent.mouseEvent(with: .leftMouseDown, location: point, modifierFlags: [],
+            timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil,
+            eventNumber: 0, clickCount: 1, pressure: 1))
+        NSApp.postEvent(mouseUp, atStart: true)
+        window.sendEvent(mouseDown)
+        try await Task.sleep(for: .milliseconds(200))
+        let sheet = try XCTUnwrap(window.attachedSheet)
+        let confirm = try XCTUnwrap(NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [],
+            timestamp: 0, windowNumber: sheet.windowNumber, context: nil,
+            characters: "\r", charactersIgnoringModifiers: "\r", isARepeat: false, keyCode: 36))
+        let suspended = expectation(description: "Deletion awaiting store")
+        var release: CheckedContinuation<Void, Never>?
+        defer { release?.resume() }
+        context.store.onDelete = { _, _ in
+            await withCheckedContinuation { release = $0; suspended.fulfill() }
+        }
+        XCTAssertTrue(sheet.performKeyEquivalent(with: confirm))
+        await fulfillment(of: [suspended], timeout: 2)
+        // A store change can remove the event before its own deletion finishes.
+        // Once that drawer disappears, the user can start a new event.
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized) }
+        await state.refreshCalendarAccessStatus()
+        XCTAssertFalse(state.panel.isEventDetailPresented)
+        state.panel.newEventInitialDate = day
+        state.panel.isNewEventSheetPresented = true
+        view.rootView = AnyView(NewEventSheet(appState: state, metrics: metrics))
+        view.layoutSubtreeIfNeeded()
+        let refreshed = expectation(description: "Deletion reload applied")
+        state.events.onEventsSnapshotChanged = { refreshed.fulfill() }
+        release?.resume()
+        release = nil
+        await fulfillment(of: [refreshed], timeout: 2)
+        try await Task.sleep(for: .milliseconds(100))
+        XCTAssertTrue(state.panel.isNewEventSheetPresented, "An old deletion must not close a new draft")
+        XCTAssertEqual(state.panel.newEventInitialDate, day)
+    }
+
     /// Store assets use the shipping views and an isolated calendar store, never personal events.
     /// Run with Xcode's -testLanguage/-testRegion; scripts/capture-app-store.sh exports both locales.
     func testStoreListingScreenshots() async throws {
@@ -624,6 +734,8 @@ final class SurfaceLayoutTests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
+
+
 }
 
 @MainActor

@@ -7,6 +7,47 @@ private actor JoinResolutionRecorder {
 }
 
 final class EventLayoutTests: XCTestCase {
+    func testSlotsRespectDayIntervalsAtEveryKnownTimeZoneTransition() throws {
+        let formatter = ISO8601DateFormatter()
+        let first = try XCTUnwrap(formatter.date(from: "2025-01-01T00:00:00Z"))
+        let last = try XCTUnwrap(formatter.date(from: "2028-01-01T00:00:00Z"))
+        var checked = 0
+        for identifier in TimeZone.knownTimeZoneIdentifiers {
+            let zone = try XCTUnwrap(TimeZone(identifier: identifier))
+            let calendar = Calendar.equinoxGregorian(timeZone: zone)
+            var cursor = first
+            while let transition = zone.nextDaylightSavingTimeTransition(after: cursor), transition < last {
+                XCTAssertGreaterThan(transition, cursor, identifier)
+                guard transition > cursor else { break }
+                cursor = transition.addingTimeInterval(1)
+                let lower = transition.addingTimeInterval(-36 * 3600)
+                let upper = transition.addingTimeInterval(60 * 3600)
+                let slots = layoutEventDaySlots(
+                    event: EventLayoutInput(startDate: lower, endDate: upper, isAllDay: false),
+                    rangeStart: lower, rangeEnd: upper, calendar: calendar
+                )
+                XCTAssertEqual(slots.first?.startDate, lower, identifier)
+                XCTAssertEqual(slots.last?.endDate, upper, identifier)
+                XCTAssertEqual(Set(slots.map(\.dayStart)).count, slots.count, identifier)
+                XCTAssertEqual(slots.reduce(0) { $0 + $1.endDate.timeIntervalSince($1.startDate) },
+                               upper.timeIntervalSince(lower), accuracy: 0.001, identifier)
+                for (index, slot) in slots.enumerated() {
+                    let interval = try XCTUnwrap(calendar.dateInterval(of: .day, for: slot.startDate))
+                    XCTAssertEqual(slot.dayStart, interval.start, identifier)
+                    XCTAssertLessThanOrEqual(slot.endDate, interval.end, identifier)
+                    XCTAssertEqual(slot.displaysAsAllDay, slot.startDate == interval.start && slot.endDate == interval.end)
+                    if index > 0 { XCTAssertEqual(slot.startDate, slots[index - 1].endDate, identifier) }
+                }
+                checked += 1
+            }
+        }
+        XCTAssertGreaterThan(checked, 100, "The transition corpus must not silently become empty")
+        let evidence = XCTAttachment(string: "Validated \(checked) transitions across all known time zones, 2025–2027")
+        evidence.name = "time-zone-transition-corpus"
+        evidence.lifetime = .keepAlways
+        add(evidence)
+    }
+
     func testDenseDayEventBuilderPreservesTenThousandEvents() async throws {
         let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "UTC")))
         let first = CalendarDate(year: 2026, monthIndex: 9, day: 2).date(in: calendar)

@@ -143,16 +143,13 @@ struct EventDetailView: View {
         }
         isDeleting = true
         Task {
-            if let error = await appState.deleteEvent(
+            actionError = await appState.deleteEvent(
                 identifier: id,
                 occurrenceStartDate: event.startDate
-            ) {
-                actionError = error
-                isDeleting = false
-            } else {
-                isDeleting = false
-                appState.dismissEventDrawer()
-            }
+            )
+            // The facade closes only this occurrence. A store update may already
+            // have replaced its drawer while the deletion or reload was pending.
+            isDeleting = false
         }
     }
 }

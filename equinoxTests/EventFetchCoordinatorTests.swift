@@ -3,6 +3,64 @@ import XCTest
 
 @MainActor
 final class EventFetchCoordinatorTests: XCTestCase {
+    func testCancelledCallerDoesNotCancelSharedRefreshOrLeaveLoadingActive() async {
+        let store = StubCalendarEventStore()
+        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let day = CalendarDate(year: 2026, monthIndex: 9, day: 2)
+        let suspended = expectation(description: "Active fetch suspended")
+        var release: CheckedContinuation<Void, Never>?
+        var requests = 0
+        store.onFetch = { _, _, _ in
+            requests += 1
+            if requests == 1 {
+                await withCheckedContinuation { release = $0; suspended.fulfill() }
+            }
+            return true
+        }
+        var loading = false
+        var snapshots = 0
+        coordinator.onPresentationUpdate = { _, fetching in loading = fetching }
+        coordinator.onSyncComplete = { _ in snapshots += 1 }
+        let cancelled = Task { await coordinator.fetch(range: (day, day)) }
+        await fulfillment(of: [suspended], timeout: 2)
+        cancelled.cancel()
+        let pendingStarted = expectation(description: "Refresh enqueued")
+        let refresh = Task {
+            pendingStarted.fulfill()
+            return await coordinator.fetch(range: (day, day.addingDays(7)), refetch: true)
+        }
+        await fulfillment(of: [pendingStarted], timeout: 2)
+        XCTAssertTrue(loading)
+        release?.resume()
+        let refreshSucceeded = await refresh.value
+        _ = await cancelled.value
+        XCTAssertTrue(refreshSucceeded)
+        XCTAssertFalse(loading)
+        XCTAssertEqual(requests, 2)
+        XCTAssertEqual(snapshots, 2)
+        XCTAssertEqual(store.refetchedRanges.last?.last, day.addingDays(7))
+    }
+
+    func testWorkEnqueuedDuringSnapshotSynchronizationIsDrained() async {
+        let store = StubCalendarEventStore()
+        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let day = CalendarDate.minimumSupported
+        let synchronized = expectation(description: "Both snapshots synchronized")
+        synchronized.expectedFulfillmentCount = 2
+        var syncs = 0
+        coordinator.onSyncComplete = { _ in
+            syncs += 1
+            if syncs == 1 { coordinator.scheduleFetch(range: (day, day.addingDays(5)), refetch: true) }
+            synchronized.fulfill()
+        }
+        let result = await coordinator.fetch(range: (day, day))
+        XCTAssertTrue(result)
+        await fulfillment(of: [synchronized], timeout: 2)
+        XCTAssertEqual(store.fetchedRanges.count, 1)
+        XCTAssertEqual(store.refetchedRanges.count, 1)
+        coordinator.onSyncComplete = nil
+    }
+
     func testRapidNavigationFetchesOnlyFinalRange() async {
         let store = StubCalendarEventStore()
         let coordinator = EventFetchCoordinator(calendarStore: store)

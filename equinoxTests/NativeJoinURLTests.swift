@@ -2,6 +2,22 @@ import XCTest
 @testable import EquinoxKit
 
 final class NativeJoinURLTests: XCTestCase {
+    func testEmptyOrEncodedPathSeparatorsCannotBeReinterpretedAsMeetingIDs() throws {
+        for value in ["https://zoom.us/j//123", "https://zoom.us/j/%2F123", "https://zoom.us/j/123%2F",
+                      "https://chime.aws//123", "https://chime.aws/%2F123", "https://chime.aws/123%2F"] {
+            let web = try XCTUnwrap(URL(string: value))
+            XCTAssertNil(NativeJoinURL.nativeURLString(from: web), value)
+            XCTAssertNil(NativeJoinURL.nativeScheme(for: web), value)
+        }
+        // An ordinary trailing slash and encoded digits keep their existing meaning.
+        for value in ["https://zoom.us/j/123/", "https://zoom.us/j/%31%32%33"] {
+            let web = try XCTUnwrap(URL(string: value))
+            XCTAssertEqual(NativeJoinURL.nativeURLString(from: web), "zoommtg://zoom.us/join?confno=123")
+        }
+        XCTAssertEqual(NativeJoinURL.nativeURLString(from: try XCTUnwrap(URL(string: "https://chime.aws/team/"))),
+                       "chime://meeting?pin=team")
+    }
+
     func testZoomRewritePreservesEncodedQueryBytes() throws {
         // '+' and '%2B' can have different meanings to a form-style query parser.
         // Rewriting the destination must not decode and re-encode opaque tokens.

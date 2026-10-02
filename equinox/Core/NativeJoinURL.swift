@@ -22,8 +22,8 @@ enum NativeJoinURL {
             return components.url?.absoluteString
         case "chime":
             guard webURL.host()?.lowercased() == "chime.aws" else { return nil }
-            let pathParts = webURL.path.split(separator: "/")
-            guard pathParts.count == 1, let pin = pathParts.first.map(String.init) else { return nil }
+            guard let pathParts = meetingPathComponents(from: webURL),
+                  pathParts.count == 1, let pin = pathParts.first else { return nil }
             var components = URLComponents()
             components.scheme = "chime"
             components.host = "meeting"
@@ -45,8 +45,7 @@ enum NativeJoinURL {
                 host == "zoomgov.com" || host.hasSuffix(".zoomgov.com") else {
             return nil
         }
-        let pathParts = webURL.path.split(separator: "/").map(String.init)
-        guard pathParts.count == 2,
+        guard let pathParts = meetingPathComponents(from: webURL), pathParts.count == 2,
               ["j", "s", "w"].contains(pathParts[0].lowercased()),
               !pathParts[1].isEmpty,
               pathParts[1].utf8.allSatisfy({ (48...57).contains($0) }) else {
@@ -68,5 +67,21 @@ enum NativeJoinURL {
         })
         components.percentEncodedQueryItems = queryItems
         return components.url?.absoluteString
+    }
+
+    private static func meetingPathComponents(from url: URL) -> [String]? {
+        guard var path = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath,
+              path.hasPrefix("/") else { return nil }
+        path.removeFirst()
+        if path.hasSuffix("/") { path.removeLast() }
+        var components: [String] = []
+        // Split before decoding: an encoded slash belongs to the identifier and
+        // must not disappear along with empty components when forming a native URL.
+        for encoded in path.split(separator: "/", omittingEmptySubsequences: false) {
+            guard let decoded = String(encoded).removingPercentEncoding,
+                  !decoded.isEmpty, !decoded.contains("/") else { return nil }
+            components.append(decoded)
+        }
+        return components
     }
 }

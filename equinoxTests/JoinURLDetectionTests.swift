@@ -2,6 +2,40 @@ import XCTest
 @testable import EquinoxKit
 
 final class JoinURLDetectionTests: XCTestCase {
+    func testProviderAuthorityCannotBeSmuggledThroughCredentialsPathQueryOrFragment() throws {
+        for meeting in ["zoom.us/j/123", "teams.microsoft.com/l/meetup-join/abc", "chime.aws/123",
+                        "meet.google.com/abc-defg-hij", "facetime.apple.com/join/abc", "vk.com/call/abc"] {
+            let parts = meeting.split(separator: "/", maxSplits: 1)
+            let host = String(parts[0])
+            let path = "/" + parts[1]
+            for value in ["https://\(host).attacker.test\(path)", "https://\(host)@attacker.test\(path)",
+                          "https://attacker.test/\(meeting)", "https://attacker.test/?next=https://\(meeting)",
+                          "https://attacker.test/#https://\(meeting)"] {
+                let url = try XCTUnwrap(URL(string: value))
+                XCTAssertNil(MeetingProviderRegistry.match(for: url), value)
+                XCTAssertNil(NativeJoinURL.nativeURLString(from: url), value)
+                XCTAssertNil(JoinURLDetection.detectJoinURL(in: "📅 Join: \(value)"), value)
+            }
+        }
+    }
+
+    func testConcurrentDetectionAndUnicodeNoteCleanupStayIndependent() async {
+        await withTaskGroup(of: Void.self) { group in
+            for task in 0..<8 {
+                group.addTask {
+                    for index in 0..<100 {
+                        let link = "https://zoom.us/j/\(task * 100 + index)?pwd=a%2Bb%2F%3D"
+                        let notes = "👨‍👩‍👧‍👦 План e\u{301}\n\n  \(link)\n  Не удалять \(task):\(index)"
+                        let detected = JoinURLDetection.detectJoinURL(in: notes)
+                        XCTAssertEqual(detected?.absoluteString, link)
+                        XCTAssertEqual(JoinURLDetection.notesForDisplay(notes: notes, excludingJoinURL: detected),
+                                       "👨‍👩‍👧‍👦 План e\u{301}\n\n  Не удалять \(task):\(index)")
+                    }
+                }
+            }
+        }
+    }
+
     func testDetectZoomInLocation() {
         let url = JoinURLDetection.detectJoinURL(
             location: "Join at https://zoom.us/j/123456789",

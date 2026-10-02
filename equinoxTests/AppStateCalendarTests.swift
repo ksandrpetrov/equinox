@@ -4,6 +4,102 @@ import XCTest
 
 @MainActor
 final class AppStateCalendarTests: XCTestCase {
+    func testPendingDeletionSharesFailureAndCanRetryWithoutClosingAnotherOccurrence() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        let day = state.events.todayDate
+        let original = context.event(start: day.date(in: state.calendar))
+        let other = context.event(start: original.startDate.addingTimeInterval(3600), title: "Other occurrence")
+        let suspended = expectation(description: "Delete suspended before commit")
+        var release: CheckedContinuation<Void, Never>?
+        context.store.onDelete = { _, _ in
+            await withCheckedContinuation { release = $0; suspended.fulfill() }
+            throw CalendarStoreError.readOnlyCalendar
+        }
+        let first = Task { await state.deleteEvent(identifier: "event", occurrenceStartDate: original.startDate) }
+        await fulfillment(of: [suspended], timeout: 2)
+        let repeatedStarted = expectation(description: "Duplicate deletion enqueued")
+        let repeated = Task {
+            repeatedStarted.fulfill()
+            return await state.deleteEvent(identifier: "event", occurrenceStartDate: original.startDate)
+        }
+        await fulfillment(of: [repeatedStarted], timeout: 2)
+        state.panel.selectedEvent = other
+        state.panel.isEventDetailPresented = true
+        release?.resume()
+        let firstError = await first.value
+        let repeatedError = await repeated.value
+        XCTAssertEqual(firstError, CalendarStoreError.readOnlyCalendar.localizedDescription)
+        XCTAssertEqual(repeatedError, firstError)
+        XCTAssertEqual(context.store.deletedOccurrences.count, 1)
+        XCTAssertTrue(context.store.refetchedRanges.isEmpty)
+        XCTAssertEqual(state.panel.selectedEvent, other)
+        XCTAssertTrue(state.panel.isEventDetailPresented)
+
+        context.store.onDelete = nil
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: [other]]) }
+        let retryError = await state.deleteEvent(identifier: "event", occurrenceStartDate: original.startDate)
+        XCTAssertNil(retryError)
+        XCTAssertEqual(context.store.deletedOccurrences.count, 2)
+        XCTAssertEqual(state.panel.selectedEvent, other)
+        XCTAssertTrue(state.panel.isEventDetailPresented)
+    }
+
+    func testFailedDelayedCreatePreservesNewSelectionAndDraftForRetry() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        let start = state.events.todayDate.date(in: state.calendar)
+        let draft = NewEventDraft(title: "📅 Draft", location: "Room", notes: "Keep notes", isAllDay: false,
+                                  startDate: start, endDate: start.addingTimeInterval(3600), calendarIdentifier: "work")
+        let suspended = expectation(description: "Save suspended before commit")
+        var release: CheckedContinuation<Void, Never>?
+        context.store.onCreate = { _ in
+            await withCheckedContinuation { release = $0; suspended.fulfill() }
+            throw CalendarStoreError.calendarAccessRequired
+        }
+        let save = Task { await state.createEvent(from: draft) }
+        await fulfillment(of: [suspended], timeout: 2)
+        let next = state.events.selectedDate.addingDays(1)
+        state.selectDate(next)
+        release?.resume()
+        let error = await save.value
+        XCTAssertEqual(error, CalendarStoreError.calendarAccessRequired.localizedDescription)
+        XCTAssertEqual(state.events.selectedDate, next)
+        XCTAssertTrue(context.store.refetchedRanges.isEmpty)
+        context.store.onCreate = nil
+        let retryError = await state.createEvent(from: draft)
+        XCTAssertNil(retryError)
+        XCTAssertEqual(context.store.createdDrafts, [draft, draft])
+        XCTAssertEqual(state.events.selectedDate, CalendarDate(date: start, calendar: state.calendar))
+    }
+
+    func testApplicationStateAndCoordinatorsReleaseAfterFetchAndPendingNavigation() async throws {
+        let suite = "equinox.lifetime.tests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = StubCalendarEventStore()
+        let preferences = PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter())
+        var state: AppState? = AppState(calendar: .equinoxGregorian(), calendarStore: store,
+                                      preferences: preferences, resetShortcuts: {}, disableLaunchAtLogin: {})
+        await state?.waitForInitialization()
+        await state?.events.resetCalendarSelection()
+        state?.goToNextMonth()
+        weak var weakState = state
+        weak var weakEvents = state?.events
+        state = nil
+        XCTAssertNil(weakState)
+        XCTAssertNil(weakEvents)
+        let fetches = store.fetchedRanges.count
+        store.externalChangeHandler?()
+        preferences.showsAgenda.toggle()
+        try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay + .milliseconds(30))
+        XCTAssertEqual(store.fetchedRanges.count, fetches, "Callbacks must not resurrect a released owner")
+    }
+
     func testDeepLinksNavigateAndPresentOnlyForSupportedURLs() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }

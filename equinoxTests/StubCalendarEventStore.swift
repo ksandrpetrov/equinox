@@ -8,6 +8,10 @@ final class StubCalendarEventStore: CalendarEventStore {
     var readSnapshot: @MainActor () async -> CalendarStoreSnapshot = { snapshot(status: .authorized) }
     var createError: CalendarStoreError?
     var deleteError: CalendarStoreError?
+    var createdDrafts: [NewEventDraft] = []
+    var onCreate: (@MainActor (NewEventDraft) async throws -> Void)?
+    var onDelete: (@MainActor (String, Date) async throws -> Void)?
+    var onFetch: (@MainActor (CalendarDate, CalendarDate, Bool) async -> Bool)?
     var deletedOccurrences: [(identifier: String, start: Date)] = []
     var accessRequestCount = 0
     var accessGranted = true
@@ -47,11 +51,13 @@ final class StubCalendarEventStore: CalendarEventStore {
     }
     func fetchEvents(first: CalendarDate, last: CalendarDate, refetch: Bool) async -> Bool {
         fetchedRanges.append((first, last))
+        if let onFetch { return await onFetch(first, last, refetch) }
         return fetchResult
     }
     func refetchAll(first: CalendarDate, last: CalendarDate) async -> Bool {
         operations.append("refetch")
         refetchedRanges.append((first, last))
+        if let onFetch { return await onFetch(first, last, true) }
         return refetchResult
     }
     func invalidateTimeContext() async {
@@ -60,11 +66,14 @@ final class StubCalendarEventStore: CalendarEventStore {
     }
     func createEvent(from draft: NewEventDraft) async throws {
         operations.append("create")
+        createdDrafts.append(draft)
+        try await onCreate?(draft)
         if let createError { throw createError }
     }
     func deleteEvent(identifier: String, occurrenceStartDate: Date) async throws {
         operations.append("delete")
         deletedOccurrences.append((identifier, occurrenceStartDate))
+        try await onDelete?(identifier, occurrenceStartDate)
         if let deleteError { throw deleteError }
     }
     func updateSelectedCalendar(identifier: String, selected: Bool) async {
