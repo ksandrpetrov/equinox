@@ -88,6 +88,23 @@ final class JoinURLDetectionTests: XCTestCase {
         )
     }
 
+    func testNotesKeepParagraphsWhenMeetingLinkComesFromAnotherField() throws {
+        let join = try XCTUnwrap(URL(string: "https://zoom.us/j/123"))
+        let notes = "Agenda\n\n  1. Introduction\n  2. Discussion\n\nBring notes"
+        XCTAssertEqual(JoinURLDetection.notesForDisplay(notes: notes, excludingJoinURL: join), notes)
+    }
+
+    func testRemovingMeetingLinePreservesUnrelatedParagraphsAndIndentation() throws {
+        let join = try XCTUnwrap(URL(string: "https://zoom.us/j/123"))
+        for newline in ["\n", "\r\n"] {
+            let notes = ["📅 Agenda", "", "  \(join.absoluteString)  ", "  1. Introduction", "",
+                         "  2. Discussion", "", "See you there"].joined(separator: newline)
+            let expected = ["📅 Agenda", "", "  1. Introduction", "", "  2. Discussion", "",
+                            "See you there"].joined(separator: newline)
+            XCTAssertEqual(JoinURLDetection.notesForDisplay(notes: notes, excludingJoinURL: join), expected)
+        }
+    }
+
     func testNotesRemovalPreservesOtherLinksWithTheSamePrefix() throws {
         let join = try XCTUnwrap(URL(string: "https://zoom.us/j/123"))
         let otherLinks = [

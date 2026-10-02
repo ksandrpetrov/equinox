@@ -407,6 +407,38 @@ final class SurfaceLayoutTests: XCTestCase {
         }
     }
 
+    func testFirstAgendaPresentationKeepsDistantSelectionFetchBounded() async throws {
+        for selected in [CalendarDate.minimumSupported,
+                         CalendarDate(year: 2060, monthIndex: 5, day: 15),
+                         CalendarDate.maximumSupported] {
+            let context = try CalendarTestContext()
+            defer { context.cleanUp() }
+            await context.finishInitialization()
+            let state = context.appState
+            state.panel.isPanelVisible = true
+            state.selectDate(selected)
+            let metrics = SizeMetrics.metrics(for: .medium)
+            let view = NSHostingView(rootView: AgendaView(appState: state, metrics: metrics, height: 280))
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: metrics.panelWidth, height: 320),
+                                  styleMask: [.borderless], backing: .buffered, defer: false)
+            window.contentView = view
+            defer { window.orderOut(nil); window.contentView = nil }
+            window.orderFront(nil)
+            view.layoutSubtreeIfNeeded()
+            try await Task.sleep(for: .milliseconds(350))
+
+            let ranges = context.store.fetchedRanges + context.store.refetchedRanges
+            XCTAssertFalse(ranges.isEmpty)
+            for range in ranges {
+                XCTAssertLessThanOrEqual(range.first, selected)
+                XCTAssertGreaterThanOrEqual(range.last, selected)
+                XCTAssertLessThan(range.last.compare(range.first), 200,
+                                  "Opening an empty agenda must not fetch all years between today and \(selected)")
+            }
+            XCTAssertEqual(state.events.selectedDate, selected)
+        }
+    }
+
     func testTodayPlacesDayHeaderAtTopOfAgenda() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }

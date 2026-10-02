@@ -175,6 +175,7 @@ struct AgendaView: View {
         }
         .onAppear {
             scrollCoordinator.bootstrapRangeIfNeeded(anchor: appState.events.todayDate)
+            scrollCoordinator.ensureDateInRange(appState.events.selectedDate, anchor: appState.events.todayDate)
             scrollCoordinator.commitAgendaToCoordinator(appState.events, anchor: appState.events.todayDate)
             if contentState == .content {
                 scrollCoordinator.scrollToFocus(events: appState.events)

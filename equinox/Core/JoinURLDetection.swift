@@ -51,14 +51,16 @@ extension JoinURLDetection {
         for match in matches.reversed() {
             guard let url = match.url, candidates.contains(url),
                   let range = Range(match.range, in: text) else { continue }
-            text.removeSubrange(range)
+            let lineRange = text.lineRange(for: range)
+            // Remove a URL-only line with its newline, but preserve paragraphs and
+            // indentation elsewhere (including notes whose meeting URL is in location).
+            if text[lineRange].trimmingCharacters(in: .whitespacesAndNewlines) == text[range] {
+                text.removeSubrange(lineRange)
+            } else {
+                text.removeSubrange(range)
+            }
         }
-        text = text
-            .components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-            .joined(separator: "\n")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        text = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
         return text.isEmpty ? nil : text
     }
