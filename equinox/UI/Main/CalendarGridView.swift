@@ -181,12 +181,12 @@ struct CalendarGridView: View {
             switch press.key {
             case .leftArrow:
                 appState.selectDate(
-                    current.addingMonthsPreservingDay(-monthStep, calendar: appState.calendar)
+                    current.addingMonthsPreservingDay(-monthStep)
                 )
                 return .handled
             case .rightArrow:
                 appState.selectDate(
-                    current.addingMonthsPreservingDay(monthStep, calendar: appState.calendar)
+                    current.addingMonthsPreservingDay(monthStep)
                 )
                 return .handled
             default:

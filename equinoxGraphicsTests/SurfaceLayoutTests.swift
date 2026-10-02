@@ -523,7 +523,7 @@ final class SurfaceLayoutTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(25))
         }
         try await Task.sleep(for: .milliseconds(300))
-        XCTAssertEqual(state.events.selectedDate, start.addingMonthsPreservingDay(24, calendar: state.calendar))
+        XCTAssertEqual(state.events.selectedDate, start.addingMonthsPreservingDay(24))
         XCTAssertLessThanOrEqual(context.store.fetchedRanges.count - fetchesBeforeNavigation, 2,
                                  "A burst must load the final month, not fetch and redraw all 24 intermediate agendas")
         let timing = "Month navigation frames (seconds): \(frameDurations); total: \(frameDurations.reduce(0, +)); worst: \(frameDurations.max() ?? 0)"

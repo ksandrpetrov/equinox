@@ -23,7 +23,7 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
     }
 
     func testSelectDateInDifferentMonthUpdatesMonthDate() {
-        let target = navigation.selectedDate.addingMonthsPreservingDay(1, calendar: calendar)
+        let target = navigation.selectedDate.addingMonthsPreservingDay(1)
         navigation.selectDate(target)
         XCTAssertEqual(navigation.selectedDate, target)
         XCTAssertEqual(navigation.monthDate.day, 1)
@@ -67,6 +67,24 @@ final class CalendarNavigationCoordinatorTests: XCTestCase {
         navigation.selectDate(CalendarDate(year: 2026, monthIndex: 0, day: 31))
         navigation.goToNextMonth()
         XCTAssertEqual(navigation.selectedDate, CalendarDate(year: 2026, monthIndex: 1, day: 28))
+    }
+
+    func testMonthButtonsPreserveSelectionThroughSkippedLocalDay() throws {
+        let apia = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "Pacific/Apia")))
+        let navigation = CalendarNavigationCoordinator(calendar: apia, preferences: preferences)
+        let november30 = CalendarDate(year: 2011, monthIndex: 10, day: 30)
+        let december30 = CalendarDate(year: 2011, monthIndex: 11, day: 30)
+        let january30 = CalendarDate(year: 2012, monthIndex: 0, day: 30)
+        navigation.selectDate(november30)
+        navigation.goToNextMonth()
+        XCTAssertEqual(navigation.selectedDate, december30)
+        XCTAssertTrue(navigation.visibleGridDates.contains(december30))
+        navigation.goToNextMonth()
+        XCTAssertEqual(navigation.selectedDate, january30)
+        navigation.goToPreviousMonth()
+        XCTAssertEqual(navigation.selectedDate, december30)
+        navigation.goToPreviousMonth()
+        XCTAssertEqual(navigation.selectedDate, november30)
     }
 
     func testNavigationDoesNotLeaveSupportedDateRange() {

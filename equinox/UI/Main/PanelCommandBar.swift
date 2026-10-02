@@ -208,10 +208,7 @@ struct PanelCommandBar: View {
     }
 
     private func navigateByMonths(_ delta: Int) {
-        let target = appState.events.selectedDate.addingMonthsPreservingDay(
-            delta,
-            calendar: appState.calendar
-        )
+        let target = appState.events.selectedDate.addingMonthsPreservingDay(delta)
         appState.selectDate(target)
     }
 

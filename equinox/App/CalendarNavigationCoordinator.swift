@@ -68,12 +68,12 @@ final class CalendarNavigationCoordinator {
 
     func goToPreviousMonth() {
         guard canGoToPreviousMonth else { return }
-        selectDate(selectedDate.addingMonthsPreservingDay(-1, calendar: calendar))
+        selectDate(selectedDate.addingMonthsPreservingDay(-1))
     }
 
     func goToNextMonth() {
         guard canGoToNextMonth else { return }
-        selectDate(selectedDate.addingMonthsPreservingDay(1, calendar: calendar))
+        selectDate(selectedDate.addingMonthsPreservingDay(1))
     }
 
     func selectDate(_ date: CalendarDate) {

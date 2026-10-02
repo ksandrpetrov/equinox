@@ -86,16 +86,15 @@ struct CalendarDate: Equatable, Hashable, Sendable {
     }
 
     /// Shifts by calendar months while keeping the day-of-month, clamping to the target month's length.
-    func addingMonthsPreservingDay(_ months: Int, calendar: Calendar) -> CalendarDate {
-        var components = DateComponents()
-        components.year = year
-        components.month = monthIndex + 1
-        components.day = day
-        guard let baseDate = calendar.date(from: components),
-              let shifted = calendar.date(byAdding: .month, value: months, to: baseDate) else {
-            return addingMonths(months)
-        }
-        return CalendarDate(date: shifted, calendar: calendar)
+    func addingMonthsPreservingDay(_ months: Int) -> CalendarDate {
+        // Civil dates in the grid exist independently of time-zone transitions.
+        // Converting through Date would normalize skipped days (Apia 2011-12-30).
+        let month = addingMonths(months)
+        return CalendarDate(
+            year: month.year,
+            monthIndex: month.monthIndex,
+            day: min(day, Self.daysInMonth(year: month.year, monthIndex: month.monthIndex))
+        )
     }
 
     func compare(_ other: CalendarDate) -> Int {

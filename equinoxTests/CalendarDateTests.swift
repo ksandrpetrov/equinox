@@ -73,16 +73,44 @@ final class CalendarDateTests: XCTestCase {
 
     func testAddMonthsPreservingDay() {
         let jan31 = CalendarDate(year: 2024, monthIndex: 0, day: 31)
-        let feb = jan31.addingMonthsPreservingDay(1, calendar: Calendar(identifier: .gregorian))
+        let feb = jan31.addingMonthsPreservingDay(1)
         XCTAssertEqual(feb.year, 2024)
         XCTAssertEqual(feb.monthIndex, 1)
         XCTAssertEqual(feb.day, 29)
 
         let jun14 = CalendarDate(year: 2026, monthIndex: 5, day: 14)
-        let may14 = jun14.addingMonthsPreservingDay(-1, calendar: Calendar(identifier: .gregorian))
+        let may14 = jun14.addingMonthsPreservingDay(-1)
         XCTAssertEqual(may14.year, 2026)
         XCTAssertEqual(may14.monthIndex, 4)
         XCTAssertEqual(may14.day, 14)
+    }
+
+    func testMonthNavigationPreservesCivilDatesAcrossSkippedLocalDay() {
+        let november30 = CalendarDate(year: 2011, monthIndex: 10, day: 30)
+        let december30 = CalendarDate(year: 2011, monthIndex: 11, day: 30)
+        let january30 = CalendarDate(year: 2012, monthIndex: 0, day: 30)
+
+        // The grid includes December 30 even though Apia skipped that local day.
+        // Month navigation is civil-date arithmetic, not conversion to an instant.
+        XCTAssertEqual(november30.addingMonthsPreservingDay(1), december30)
+        XCTAssertEqual(january30.addingMonthsPreservingDay(-1), december30)
+        XCTAssertEqual(december30.addingMonthsPreservingDay(1), january30)
+        XCTAssertEqual(december30.addingMonthsPreservingDay(-1), november30)
+        XCTAssertEqual(december30.addingMonthsPreservingDay(0), december30)
+    }
+
+    func testMonthShiftsClampLeapDaysAcrossCenturiesAndSupportedBoundaries() {
+        let cases: [(CalendarDate, Int, CalendarDate)] = [
+            (.init(year: 2000, monthIndex: 1, day: 29), 12, .init(year: 2001, monthIndex: 1, day: 28)),
+            (.init(year: 2000, monthIndex: 1, day: 29), -1200, .init(year: 1900, monthIndex: 1, day: 28)),
+            (.init(year: 2000, monthIndex: 1, day: 29), -4800, .init(year: 1600, monthIndex: 1, day: 29)),
+            (.init(year: 2026, monthIndex: 0, day: 31), 3, .init(year: 2026, monthIndex: 3, day: 30)),
+            (.minimumSupported, 1, .init(year: 1583, monthIndex: 1, day: 1)),
+            (.maximumSupported, -1, .init(year: 3333, monthIndex: 10, day: 30)),
+        ]
+        for (source, months, expected) in cases {
+            XCTAssertEqual(source.addingMonthsPreservingDay(months), expected)
+        }
     }
 
     func testWeekOfYear() {
