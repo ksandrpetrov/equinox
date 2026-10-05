@@ -270,10 +270,36 @@ final class PanelPresentationStateTests: XCTestCase {
             String(localized: "Equinox calendar", bundle: .equinox, comment: "Menu bar status item accessibility label")
         )
         let expectedHelp = String(
-            localized: "Show or hide the Equinox panel from anywhere",
+            localized: "Click to show or hide Equinox. Right-click for Preferences and Quit.",
             bundle: .equinox, comment: "Menu bar status item accessibility help and tooltip"
         )
         XCTAssertEqual(button.accessibilityHelp(), expectedHelp)
         XCTAssertEqual(button.toolTip, expectedHelp)
+    }
+
+    func testStatusMenuOffersQuitWithoutOpeningTheCalendarPanel() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let controller = StatusItemController(appState: context.appState)
+        let menu = controller.makeStatusMenu()
+        menu.update()
+
+        let quit = try XCTUnwrap(menu.item(withTitle:
+            String(localized: "Quit Equinox", bundle: .equinox, comment: "")))
+        XCTAssertTrue(quit.isEnabled)
+        XCTAssertEqual(quit.action, #selector(NSApplication.terminate(_:)))
+        XCTAssertTrue(quit.target === NSApp)
+        XCTAssertEqual(quit.keyEquivalent, "q")
+        XCTAssertEqual(quit.keyEquivalentModifierMask, .command)
+        XCTAssertFalse(context.appState.panel.isPanelVisible)
+
+        let preferences = try XCTUnwrap(menu.item(withTitle:
+            String(localized: "Preferences", bundle: .equinox, comment: "")))
+        XCTAssertTrue(preferences.isEnabled)
+        XCTAssertTrue(preferences.target === controller)
+        XCTAssertTrue(controller.responds(to: try XCTUnwrap(preferences.action)))
+        XCTAssertEqual(preferences.keyEquivalent, ",")
+        XCTAssertEqual(preferences.keyEquivalentModifierMask, .command)
     }
 }

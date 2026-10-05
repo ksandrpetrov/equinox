@@ -32,7 +32,7 @@ struct ShortcutsSettingsTab: View {
                     SettingsDivider()
                     shortcutRow(String(localized: "Pin Equinox", bundle: .equinox, comment: ""), "P")
                     SettingsDivider()
-                    shortcutRow(String(localized: "Preferences…", bundle: .equinox, comment: ""), "⌘,")
+                    shortcutRow(String(localized: "Preferences", bundle: .equinox, comment: ""), "⌘,")
                     SettingsDivider()
                     shortcutRow(String(localized: "Go to Today", bundle: .equinox, comment: "Shortcut cheat sheet"), "T")
                 }
@@ -54,7 +54,7 @@ struct ShortcutsSettingsTab: View {
     private var showsPanelShortcutsSection: Bool {
         SettingsSearchFilter.matches(
             searchText: searchText,
-            keywords: "Panel Shortcuts", "New Event", "Pin Equinox", "Preferences…", "Go to Today"
+            keywords: "Panel Shortcuts", "New Event", "Pin Equinox", "Preferences", "Go to Today"
         )
     }
 

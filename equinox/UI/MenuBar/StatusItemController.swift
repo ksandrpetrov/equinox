@@ -89,7 +89,7 @@ final class StatusItemController: NSObject {
         statusItem.autosaveName = "equinoxStatusItem"
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked)
-        statusItem.button?.sendAction(on: [.leftMouseUp])
+        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         if let button = statusItem.button {
             Self.configureAccessibility(for: button)
         }
@@ -114,7 +114,7 @@ final class StatusItemController: NSObject {
 
     static func configureAccessibility(for button: NSButton) {
         let help = String(
-            localized: "Show or hide the Equinox panel from anywhere",
+            localized: "Click to show or hide Equinox. Right-click for Preferences and Quit.",
             bundle: .equinox, comment: "Menu bar status item accessibility help and tooltip"
         )
         button.setAccessibilityLabel(
@@ -125,7 +125,43 @@ final class StatusItemController: NSObject {
     }
 
     @objc private func statusItemClicked() {
+        if let event = NSApp.currentEvent,
+           event.type == .rightMouseUp
+            || (event.type == .leftMouseUp && event.modifierFlags.contains(.control)) {
+            showStatusMenu()
+            return
+        }
         togglePanel()
+    }
+
+    private func showStatusMenu() {
+        guard let button = statusItem.button else { return }
+        statusItem.menu = makeStatusMenu()
+        // Keep the normal left-click action once native menu tracking finishes.
+        defer { statusItem.menu = nil }
+        button.performClick(nil)
+    }
+
+    func makeStatusMenu() -> NSMenu {
+        let menu = NSMenu()
+        let preferences = NSMenuItem(
+            title: String(localized: "Preferences", bundle: .equinox, comment: ""),
+            action: #selector(openSettings), keyEquivalent: ","
+        )
+        preferences.target = self
+        menu.addItem(preferences)
+        menu.addItem(.separator())
+        let quit = NSMenuItem(
+            title: String(localized: "Quit Equinox", bundle: .equinox, comment: ""),
+            action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"
+        )
+        quit.target = NSApp
+        menu.addItem(quit)
+        return menu
+    }
+
+    @objc private func openSettings() {
+        SettingsActivationHandler.openSettings(appState: appState)
     }
 
     private var isPanelActuallyVisible: Bool {
@@ -321,7 +357,7 @@ final class StatusItemController: NSObject {
         shortcutEventsTask = Task { [weak self] in
             for await event in KeyboardShortcuts.events(for: .togglePanel) where event == .keyUp {
                 await MainActor.run { [weak self] in
-                    self?.statusItemClicked()
+                    self?.togglePanel()
                 }
             }
         }

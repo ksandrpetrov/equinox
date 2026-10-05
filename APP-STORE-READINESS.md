@@ -1,14 +1,78 @@
-# Mac App Store readiness — 2026-09-29
+# Mac App Store readiness — 2026-10-04
 
 ## Итог
 
 Исправлены найденные пробелы в privacy-декларациях, описании доступа и лицензиях.
-Сборка 1.0.0 (6) подписана для App Store, загружена и успешно обработана Apple.
+Сборка 1.0.0 (7) подписана для App Store, загружена и успешно обработана Apple.
 Политика конфиденциальности, поддержка и App Privacy опубликованы.
-Версия магазина 1.0 со сборкой 1.0.0 (6) отправлена на App Review 29 сентября 2026 в 13:38 MSK.
-Статус Apple: **Ожидание проверки**. Включён автоматический выпуск после одобрения.
+Версия магазина 1.0 со сборкой 1.0.0 (7) повторно отправлена на App Review
+**4 октября 2026 в 08:05 MSK**. Текущий статус: **Waiting for Review**.
+Предыдущая сборка (6) отклонена 3 октября по Guideline 4: ревьюер не нашёл пункт
+Quit. Проверка проходила на MacBook Air (15-inch, M3, 2024); исправление описано ниже.
+Включён автоматический выпуск после одобрения.
 [Подтверждение в App Store Connect](https://appstoreconnect.apple.com/apps/6806746414/distribution/reviewsubmissions/details/f75f9af9-2220-4f32-8868-5f6c73300258).
 Проверка App Store Connect и решение App Review не заменяются локальными тестами.
+
+## Исправление замечания App Review — 2026-10-04
+
+Пункт `Quit Equinox` уже находился в меню «…» календарной панели. Добавлено нативное
+меню у значка строки меню: правый клик или Control-клик открывает `Preferences`
+и `Quit Equinox` (⌘Q). Выход доступен без открытия календаря, загрузки событий
+или выдачи Calendar access. Подсказка значка объясняет правый клик на EN/RU.
+Завершение использует `NSApplication.terminate`, включая существующий teardown.
+По просьбе владельца убрано многоточие после «Настройки» в обоих меню
+и справке по горячим клавишам; используется существующая строка `Preferences`.
+
+Левый клик и глобальная горячая клавиша продолжают переключать панель;
+после закрытия меню обработка левого клика восстанавливается. Сценарии pin/popover,
+отображения событий и прежний пункт выхода в «…» сохраняются.
+
+В `PanelPresentationStateTests` добавлена проверка доступного пункта Quit при
+закрытой панели, штатного target/action и ⌘Q; обновлена проверка подсказки.
+Исходное сообщение Apple и снимок страницы: `build/AppReview/2026-10-04/`.
+
+Проверки исправления:
+
+- `./scripts/test.sh`: 408 unit + 22 graphics в Debug и столько же в Release;
+  860 выполнений, 0 ошибок, пропусков и runtime warnings.
+  Результаты: `build/Tests/results/run-IY22IT/`.
+- После удаления многоточия повторный Release unit-прогон: 408 passed,
+  0 failed/skipped; `build/Tests/results/run-eiQTPe/`.
+  Приложение пересобрано через `./run.sh`; подпись «Настройки» без многоточия
+  подтверждена в живом меню «…». Журнал: `build/AppReview/2026-10-04/release-final.log`.
+- `./run.sh`: Release успешно собран и запущен;
+  журнал `build/AppReview/2026-10-04/release-run.log`.
+- `codesign --verify --deep --strict`, `plutil -lint` русской локализации
+  и `git diff --check` прошли.
+- В живом Release выбран «Завершить работу Equinox» из меню «…»; отсутствие
+  процесса после выхода подтверждено. Повторный `./run.sh` восстановил
+  закреплённую панель. Журнал: `build/AppReview/2026-10-04/release-after-quit.log`.
+- Новое меню проверено XCTest на доступность команд и их target/action.
+  Сам правый/Control-клик по системному значку в живом приложении не подтверждён:
+  Computer Use предоставляет окно панели, но не доступ к значку строки меню.
+
+Подготовлена Release-сборка **1.0.0 (7)**; номер передан через
+`CURRENT_PROJECT_VERSION=7` при архивировании. Signing в проекте и
+`Local.xcconfig` не менялись. После локального экспорта пакет распакован и проверен:
+подписи приложения, EquinoxKit и KeyboardShortcuts resource bundle совпадают
+с сертификатом в provisioning profile; Sandbox и calendar entitlement включены,
+`get-task-allow` отсутствует. Проверены arm64, версия/номер сборки, оба privacy
+manifests, обновлённая русская локализация и подсказка в исполняемом файле.
+
+Загрузка успешно завершена **4 октября в 07:58:08 MSK**. App Store Connect
+подтвердил **Complete** для загрузки и **Ready to Submit** для сборки (7).
+ID сборки: `3763cd09-4b7a-446b-9f65-fdd970b21667`.
+В форме версии 1.0 сборка (6) заменена на (7); сохранены обновлённые Notes for Review
+с пояснением исправления Guideline 4. Выполнены Update Review и Resubmit to App Review.
+**В 08:05 MSK Apple подтвердила Waiting for Review** для сборки 1.0.0 (7).
+Submission ID сохранился: `f75f9af9-2220-4f32-8868-5f6c73300258`.
+Подтверждение: `build/TestFlight/2026-10-04-app-review/submitted-for-review.png`.
+Автоматический выпуск после одобрения сохранён; отдельное сообщение Reply to App Review
+не отправлялось — инструкция по выходу включена в Notes for Review новой заявки.
+Архивы: `build/Archives/equinox-app-review-2026-10-04*.xcarchive`.
+Пакет, параметры экспорта, проверка подписей, журналы и release manifest:
+`build/TestFlight/2026-10-04-app-review/`. Снимок исходного diff:
+`build/AppReview/2026-10-04/source.patch`.
 
 ## Находки и исправления
 
@@ -60,7 +124,8 @@ KeyboardShortcuts использует публичный RegisterEventHotKey и
 
 ## Ограничения и оставшиеся проверки
 
-- Окончательное решение App Review ожидается; успешная валидация карточки не гарантирует одобрение.
+- Сборка (7) ожидает повторного App Review после отказа сборки (6) по Guideline 4.
+  Успешная обработка пакета и локальная проверка не означают одобрение Apple.
 - Полный ручной UI-чеклист AGENTS.md §6 и живой цикл EventKit fetch/create/delete не подтверждены из-за недоступности окна для Computer Use. Автоматические тесты и рендеры не отмечены как ручные проверки. Реальные события не менялись.
 
 Публикация документов завершена: PRIVACY.md и SUPPORT.md в GitHub `main`, коммит `eb8ebc6`.
@@ -76,11 +141,16 @@ KeyboardShortcuts использует публичный RegisterEventHotKey и
 - App Privacy: по текущим потокам приложения — **Data Not Collected**, tracking отсутствует. Локальная обработка календаря не является сбором разработчиком по определению Apple. Добровольные публичные обращения в GitHub описаны отдельно; при добавлении новых сервисов ответы пересмотреть.
 - Export compliance: текущее ITSAppUsesNonExemptEncryption=false; собственная криптография не обнаружена, ссылки открываются внешними приложениями. App Store Connect принял выбранную сборку при валидации и отправке; дополнительных обязательных вопросов о шифровании не было.
 
-### Notes for Review (English)
+### Notes for Review (English, отправлены со сборкой 7)
+
+Build 1.0.0 (7) addresses Guideline 4 by adding a native menu with Quit Equinox directly to the menu bar icon.
 
 Equinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later.
-After launch, click the Equinox icon in the menu bar. There is normally no Dock icon;
-Settings and Quit are available from the panel menu. No Equinox account or purchase is required.
+After launch, click the Equinox icon in the menu bar to open the calendar panel.
+To quit, right-click (or Control-click) the Equinox menu bar icon and choose
+"Quit Equinox". The same menu provides Preferences. Alternatively, open the calendar
+panel, click its ellipsis (…) menu, and choose "Quit Equinox". Quit does not require
+Calendar permission. There is normally no Dock icon. No Equinox account or purchase is required.
 
 Allow Calendar Full Access to display events from calendars configured in macOS.
 Without access, month navigation remains available and the app explains how to grant access.

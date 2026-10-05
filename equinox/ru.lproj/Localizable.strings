@@ -71,7 +71,6 @@
 "Pin Equinox   P" = "Закрепить Equinox   P";
 /* Settings window title */
 "Preferences" = "Настройки";
-"Preferences…" = "Настройки…";
 "Previous month" = "Предыдущий месяц";
 "Previous year" = "Предыдущий год";
 "Next year" = "Следующий год";
@@ -123,6 +122,7 @@
 "Choose which calendars appear in Equinox" = "Выберите, какие календари показывать в Equinox";
 "Global Shortcut" = "Глобальная горячая клавиша";
 "Show or hide the Equinox panel from anywhere" = "Открывайте и скрывайте панель Equinox из любого приложения";
+"Click to show or hide Equinox. Right-click for Preferences and Quit." = "Нажмите, чтобы открыть или скрыть Equinox. Правый клик — настройки и завершение работы.";
 "Panel Shortcuts" = "Горячие клавиши панели";
 "Go to Today" = "Перейти к сегодняшнему дню";
 "Search %@" = "Поиск: %@";

@@ -1,7 +1,7 @@
 {
   "appId": "6806746414",
   "version": "1.0",
-  "build": "1.0.0 (6)",
+  "build": "1.0.0 (7)",
   "category": "Utilities",
   "price": 0,
   "release": "automatic after approval",
@@ -46,7 +46,7 @@
       {
         "label": "Примечания",
         "type": "textarea",
-        "value": "Equinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later. After launch, click the Equinox icon in the menu bar. There is normally no Dock icon; Settings and Quit are available from the panel menu. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS. Without access, month navigation remains available and the app explains how to grant access. To test creation, use a writable system calendar and New Event (Command-N). Open that event to view details and delete it with confirmation. Existing events cannot be edited; participation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback. The meeting provider may require its own account. Launch at login is optional and enabled by the user in General settings. Privacy Policy is in Privacy and About; Support and bundled third-party licenses are in About. Calendar contents and settings are not sent to a developer-operated service."
+        "value": "Build 1.0.0 (7) addresses Guideline 4 by adding a native menu with Quit Equinox directly to the menu bar icon.\n\nEquinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later.\nAfter launch, click the Equinox icon in the menu bar to open the calendar panel.\nTo quit, right-click (or Control-click) the Equinox menu bar icon and choose\n\"Quit Equinox\". The same menu provides Preferences. Alternatively, open the calendar\npanel, click its ellipsis (…) menu, and choose \"Quit Equinox\". Quit does not require\nCalendar permission. There is normally no Dock icon. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS.\nWithout access, month navigation remains available and the app explains how to grant access.\nTo test creation, use a writable system calendar and the New Event action (Command-N).\nOpen that event to view details and delete it with confirmation. Existing events cannot be edited;\nparticipation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback.\nThe meeting provider may require its own account. Launch at login is optional and enabled\nby the user in General settings. Privacy Policy is in Privacy and About; Support and\nbundled third-party licenses are in About. Calendar contents and settings are not sent\nto a developer-operated service."
       }
     ],
     "en_US": [
@@ -88,14 +88,14 @@
       {
         "label": "Примечания",
         "type": "textarea",
-        "value": "Equinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later. After launch, click the Equinox icon in the menu bar. There is normally no Dock icon; Settings and Quit are available from the panel menu. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS. Without access, month navigation remains available and the app explains how to grant access. To test creation, use a writable system calendar and New Event (Command-N). Open that event to view details and delete it with confirmation. Existing events cannot be edited; participation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback. The meeting provider may require its own account. Launch at login is optional and enabled by the user in General settings. Privacy Policy is in Privacy and About; Support and bundled third-party licenses are in About. Calendar contents and settings are not sent to a developer-operated service."
+        "value": "Build 1.0.0 (7) addresses Guideline 4 by adding a native menu with Quit Equinox directly to the menu bar icon.\n\nEquinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later.\nAfter launch, click the Equinox icon in the menu bar to open the calendar panel.\nTo quit, right-click (or Control-click) the Equinox menu bar icon and choose\n\"Quit Equinox\". The same menu provides Preferences. Alternatively, open the calendar\npanel, click its ellipsis (…) menu, and choose \"Quit Equinox\". Quit does not require\nCalendar permission. There is normally no Dock icon. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS.\nWithout access, month navigation remains available and the app explains how to grant access.\nTo test creation, use a writable system calendar and the New Event action (Command-N).\nOpen that event to view details and delete it with confirmation. Existing events cannot be edited;\nparticipation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback.\nThe meeting provider may require its own account. Launch at login is optional and enabled\nby the user in General settings. Privacy Policy is in Privacy and About; Support and\nbundled third-party licenses are in About. Calendar contents and settings are not sent\nto a developer-operated service."
       }
     ]
   },
   "versionFormSaved": true,
   "submissionStatus": "Waiting for Review",
   "reviewContactSource": "Cassini App Review contact, reused with owner authorization; contact values are not stored here",
-  "submittedAt": "2026-09-29T13:38:00+03:00",
+  "submittedAt": "2026-10-04T08:05:00+03:00",
   "submissionId": "f75f9af9-2220-4f32-8868-5f6c73300258",
   "submissionURL": "https://appstoreconnect.apple.com/apps/6806746414/distribution/reviewsubmissions/details/f75f9af9-2220-4f32-8868-5f6c73300258",
   "screenshots": {
@@ -111,5 +111,5 @@
     ]
   },
   "screenshotCaptureEvidence": "build/AppStoreListing/run-NRBCKU",
-  "submissionEvidence": "build/TestFlight/2026-09-29-app-store/submitted-for-review.png"
+  "submissionEvidence": "build/TestFlight/2026-10-04-app-review/submitted-for-review.png"
 }

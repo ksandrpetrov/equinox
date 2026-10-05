@@ -110,7 +110,7 @@ struct PanelCommandBar: View {
                         isOn: showsAgendaBinding
                     )
                     Divider()
-                    Button(String(localized: "Preferences…", bundle: .equinox, comment: "")) {
+                    Button(String(localized: "Preferences", bundle: .equinox, comment: "")) {
                         SettingsActivationHandler.openSettings(appState: appState)
                     }
                     .keyboardShortcut(",", modifiers: .command)
