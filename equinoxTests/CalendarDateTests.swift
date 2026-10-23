@@ -8,13 +8,24 @@ final class CalendarDateTests: XCTestCase {
         iso.timeZone = calendar.timeZone
         for year in CalendarDate.minYear...CalendarDate.maxYear {
             for month in 0..<12 {
-                for day in [1, CalendarDate.daysInMonth(year: year, monthIndex: month)] {
+                let first = try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month + 1, day: 1)))
+                let expectedDays = try XCTUnwrap(calendar.range(of: .day, in: .month, for: first)).count
+                let actualDays = CalendarDate.daysInMonth(year: year, monthIndex: month)
+                guard actualDays == expectedDays else {
+                    XCTFail("\(year)-\(month + 1): month length \(actualDays), expected \(expectedDays) from Foundation")
+                    return
+                }
+                for day in [1, expectedDays] {
                     let civil = CalendarDate(year: year, monthIndex: month, day: day)
-                    let instant = try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month + 1, day: day)))
-                    XCTAssertEqual(CalendarDate(date: instant, calendar: calendar), civil)
-                    XCTAssertEqual(civil.date(in: calendar), instant)
-                    XCTAssertEqual(CalendarDate.weekOfYear(year: year, monthIndex: month, day: day),
-                                   iso.component(.weekOfYear, from: instant), "\(year)-\(month + 1)-\(day)")
+                    let instant = try XCTUnwrap(day == 1 ? first : calendar.date(from: DateComponents(year: year, month: month + 1, day: day)))
+                    let fromInstant = CalendarDate(date: instant, calendar: calendar)
+                    let roundTrip = civil.date(in: calendar)
+                    let week = CalendarDate.weekOfYear(year: year, monthIndex: month, day: day)
+                    let expectedWeek = iso.component(.weekOfYear, from: instant)
+                    guard fromInstant == civil, roundTrip == instant, week == expectedWeek else {
+                        XCTFail("\(year)-\(month + 1)-\(day): civil \(fromInstant), instant \(roundTrip) (expected \(instant)), ISO week \(week) (expected \(expectedWeek))")
+                        return
+                    }
                 }
             }
         }
@@ -66,11 +77,6 @@ final class CalendarDateTests: XCTestCase {
                 boundary
             )
         }
-    }
-
-    func testLeapYearFebruary() {
-        XCTAssertEqual(CalendarDate.daysInMonth(year: 2024, monthIndex: 1), 29)
-        XCTAssertEqual(CalendarDate.daysInMonth(year: 2023, monthIndex: 1), 28)
     }
 
     func testAddDaysCrossMonth() {

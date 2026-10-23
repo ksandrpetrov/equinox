@@ -1,0 +1,117 @@
+{
+  "appId": "6806746414",
+  "category": "Utilities",
+  "price": 0,
+  "release": "automatic after approval",
+  "privacyPolicyURL": "https://github.com/ksandrpetrov/equinox/blob/main/PRIVACY.md",
+  "version": "1.0.1",
+  "build": "1.0.1 (8)",
+  "localizations": {
+    "ru": [
+      {
+        "label": "Рекламный текст",
+        "type": "textarea",
+        "value": "Календарь и ближайшие события в строке меню Mac. Создавайте события, открывайте ссылки на встречи и настраивайте панель под себя."
+      },
+      {
+        "label": "Описание",
+        "type": "textarea",
+        "value": "Equinox Calendar — компактный календарь для строки меню Mac. Откройте месяц, посмотрите расписание и перейдите к ближайшей встрече, не отвлекаясь от работы.\n\nКАЛЕНДАРЬ ПОД РУКОЙ\n• Месячная сетка и список событий выбранного и ближайших дней.\n• Быстрый переход между месяцами и возврат к сегодняшнему дню.\n• Выбор отображаемых календарей, номера недель и отметки событий.\n• Панель можно закрепить, чтобы она оставалась на экране.\n\nСОБЫТИЯ И ВСТРЕЧИ\n• Создавайте события с датой, временем, местом, заметками, повтором и напоминанием.\n• Просматривайте детали и свой статус участия.\n• Удаляйте события из доступных для записи календарей с подтверждением.\n• Открывайте ссылки на онлайн-встречи, включая Zoom, Microsoft Teams и Google Meet.\n\nПОД ВАШ СТИЛЬ РАБОТЫ\n• Три размера панели, светлая и тёмная темы, стеклянный или непрозрачный фон.\n• Настраиваемая дата в строке меню и индикатор ближайшей встречи.\n• Глобальная горячая клавиша и необязательный запуск при входе.\n• Русский и английский языки.\n\nEquinox работает с календарями, настроенными в macOS. Для просмотра, создания и удаления событий требуется полный доступ к календарям. Без разрешения доступна навигация по месяцу. Редактирование существующих событий в приложении не поддерживается.\n\nБез регистрации, рекламы и встроенных покупок. Содержимое календарей и настройки не передаются разработчику. Синхронизацией календарных аккаунтов занимается macOS.\n\nТребуется Mac с Apple Silicon и macOS 26 или новее."
+      },
+      {
+        "label": "Ключевые слова",
+        "type": "text",
+        "value": "календарь,расписание,события,встречи,строка меню,планировщик,дата,месяц,agenda"
+      },
+      {
+        "label": "URL-адрес службы поддержки",
+        "type": "text",
+        "value": "https://github.com/ksandrpetrov/equinox/blob/main/SUPPORT.md"
+      },
+      {
+        "label": "Маркетинг (URL)",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "label": "Версия",
+        "type": "text",
+        "value": "1.0.1"
+      },
+      {
+        "label": "Авторские права",
+        "type": "text",
+        "value": "2026 Aleksandr Petrov"
+      },
+      {
+        "label": "Примечания",
+        "type": "textarea",
+        "value": "Build 1.0.1 (8) fixes an issue where an open event panel prevented the calendar window from being hidden. The menu bar icon and global shortcut now hide the window while preserving the draft. An unpinned window also hides when clicking outside or switching apps. A delete confirmation sheet still blocks hiding until dismissed.\n\nEquinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later.\nAfter launch, click the Equinox icon in the menu bar to open the calendar panel.\nTo quit, right-click (or Control-click) the Equinox menu bar icon and choose\n\"Quit Equinox\". The same menu provides Preferences. Alternatively, open the calendar\npanel, click its ellipsis (…) menu, and choose \"Quit Equinox\". Quit does not require\nCalendar permission. There is normally no Dock icon. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS.\nWithout access, month navigation remains available and the app explains how to grant access.\nTo test creation, use a writable system calendar and the New Event action (Command-N).\nOpen that event to view details and delete it with confirmation. Existing events cannot be edited;\nparticipation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback.\nThe meeting provider may require its own account. Launch at login is optional and enabled\nby the user in General settings. Privacy Policy is in Privacy and About; Support and\nbundled third-party licenses are in About. Calendar contents and settings are not sent\nto a developer-operated service."
+      },
+      {
+        "label": "Что нового в этой версии",
+        "type": "textarea",
+        "value": "Исправлена ошибка, из-за которой окно календаря иногда не скрывалось при открытой боковой панели события. При повторном открытии введённые данные сохраняются."
+      }
+    ],
+    "en_US": [
+      {
+        "label": "Рекламный текст",
+        "type": "textarea",
+        "value": "Your calendar and upcoming events, right in the Mac menu bar. Create events, open meeting links, and make the panel your own."
+      },
+      {
+        "label": "Описание",
+        "type": "textarea",
+        "value": "Equinox Calendar puts your month and upcoming events in the Mac menu bar. Check your schedule and open your next meeting without leaving your workflow.\n\nYOUR CALENDAR AT A GLANCE\n• Browse a month grid and events for the selected and upcoming days.\n• Move between months and jump back to today.\n• Choose which calendars to display, with week numbers and event markers.\n• Pin the panel to keep it on screen.\n\nEVENTS AND MEETINGS\n• Create events with a date, time, location, notes, recurrence, and reminder.\n• View event details and your participation status.\n• Delete events from writable calendars with confirmation.\n• Open online meeting links, including Zoom, Microsoft Teams, and Google Meet.\n\nMAKE IT YOUR OWN\n• Three panel sizes, light and dark themes, and glass or solid backgrounds.\n• A customizable menu bar date and an upcoming meeting indicator.\n• A global keyboard shortcut and optional launch at login.\n• English and Russian interfaces.\n\nEquinox works with calendars configured in macOS. Calendar Full Access is required to view, create, and delete events. Month navigation remains available without permission. Editing existing events is not supported in the app.\n\nNo Equinox account, ads, or in-app purchases. Calendar contents and settings are not sent to the developer. macOS manages synchronization with your calendar accounts.\n\nRequires a Mac with Apple Silicon and macOS 26 or later."
+      },
+      {
+        "label": "Ключевые слова",
+        "type": "text",
+        "value": "calendar,menu bar,agenda,schedule,events,meetings,date,month,planner,productivity"
+      },
+      {
+        "label": "URL-адрес службы поддержки",
+        "type": "text",
+        "value": "https://github.com/ksandrpetrov/equinox/blob/main/SUPPORT.md"
+      },
+      {
+        "label": "Маркетинг (URL)",
+        "type": "text",
+        "value": ""
+      },
+      {
+        "label": "Версия",
+        "type": "text",
+        "value": "1.0.1"
+      },
+      {
+        "label": "Авторские права",
+        "type": "text",
+        "value": "2026 Aleksandr Petrov"
+      },
+      {
+        "label": "Примечания",
+        "type": "textarea",
+        "value": "Build 1.0.1 (8) fixes an issue where an open event panel prevented the calendar window from being hidden. The menu bar icon and global shortcut now hide the window while preserving the draft. An unpinned window also hides when clicking outside or switching apps. A delete confirmation sheet still blocks hiding until dismissed.\n\nEquinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later.\nAfter launch, click the Equinox icon in the menu bar to open the calendar panel.\nTo quit, right-click (or Control-click) the Equinox menu bar icon and choose\n\"Quit Equinox\". The same menu provides Preferences. Alternatively, open the calendar\npanel, click its ellipsis (…) menu, and choose \"Quit Equinox\". Quit does not require\nCalendar permission. There is normally no Dock icon. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS.\nWithout access, month navigation remains available and the app explains how to grant access.\nTo test creation, use a writable system calendar and the New Event action (Command-N).\nOpen that event to view details and delete it with confirmation. Existing events cannot be edited;\nparticipation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback.\nThe meeting provider may require its own account. Launch at login is optional and enabled\nby the user in General settings. Privacy Policy is in Privacy and About; Support and\nbundled third-party licenses are in About. Calendar contents and settings are not sent\nto a developer-operated service."
+      },
+      {
+        "label": "Что нового в этой версии",
+        "type": "textarea",
+        "value": "Fixed an issue that could prevent the calendar window from hiding while the event panel was open. Your draft is kept when you reopen the window."
+      }
+    ]
+  },
+  "uploadStatus": "Succeeded",
+  "uploadedAt": "2026-10-08T21:08:49+03:00",
+  "processingStatus": "Complete",
+  "testFlightBuildStatus": "Ready to Submit",
+  "buildId": "82e56a25-2d37-4cb1-9123-d159b1fd48c0",
+  "processingEvidence": "build/TestFlight/2026-10-08-panel-dismiss/build8-processed.jpg",
+  "submissionStatus": "Waiting for Review",
+  "submittedAt": "2026-10-08T21:12:00+03:00",
+  "submissionId": "962163f2-bc7c-448d-a0fa-37038e8d936f",
+  "submissionURL": "https://appstoreconnect.apple.com/apps/6806746414/distribution/reviewsubmissions/details/962163f2-bc7c-448d-a0fa-37038e8d936f",
+  "submissionEvidence": "build/TestFlight/2026-10-08-panel-dismiss/waiting-for-review.jpg",
+  "phasedRelease": false
+}

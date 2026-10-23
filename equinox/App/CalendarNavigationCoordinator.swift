@@ -5,6 +5,7 @@ import Foundation
 final class CalendarNavigationCoordinator {
     let calendar: Calendar
     private let preferences: PreferencesStore
+    private let now: () -> Date
 
     var monthDate: CalendarDate
     var selectedDate: CalendarDate
@@ -28,10 +29,11 @@ final class CalendarNavigationCoordinator {
         monthDate.year < CalendarDate.maxYear || monthDate.monthIndex < 11
     }
 
-    init(calendar: Calendar, preferences: PreferencesStore) {
+    init(calendar: Calendar, preferences: PreferencesStore, now: @escaping () -> Date = Date.init) {
         self.calendar = calendar
         self.preferences = preferences
-        let today = CalendarDate.today(calendar: calendar)
+        self.now = now
+        let today = CalendarDate(date: now(), calendar: calendar)
         monthDate = today
         selectedDate = today
         todayDate = today
@@ -53,7 +55,7 @@ final class CalendarNavigationCoordinator {
     }
 
     func goToToday(isInitialVisibleRange: Bool) {
-        let newToday = CalendarDate.today(calendar: calendar)
+        let newToday = CalendarDate(date: now(), calendar: calendar)
         let monthChanged = newToday.monthIndex != monthDate.monthIndex || newToday.year != monthDate.year
 
         todayDate = newToday
@@ -87,7 +89,7 @@ final class CalendarNavigationCoordinator {
     }
 
     func refreshTodayIfNeeded() {
-        let today = CalendarDate.today(calendar: calendar)
+        let today = CalendarDate(date: now(), calendar: calendar)
         if today != todayDate {
             todayDate = today
         }

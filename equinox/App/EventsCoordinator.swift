@@ -6,6 +6,7 @@ final class EventsCoordinator {
     let calendar: Calendar
     private let calendarStore: any CalendarEventStore
     private let preferences: PreferencesStore
+    private let now: () -> Date
     private let fetchCoordinator: EventFetchCoordinator
     private let navigation: CalendarNavigationCoordinator
 
@@ -33,7 +34,7 @@ final class EventsCoordinator {
     var eventsByDate: [CalendarDate: [DayEvent]] = [:]
     var calendarEntries: [CalendarListEntry] = []
     var defaultCalendarIdentifierForNewEvents: String?
-    var currentTime = Date()
+    var currentTime: Date
 
     var shouldShowMeetingIndicator = false
     var isFetchingEvents = false
@@ -74,13 +75,19 @@ final class EventsCoordinator {
     init(
         calendar: Calendar,
         calendarStore: any CalendarEventStore,
-        preferences: PreferencesStore
+        preferences: PreferencesStore,
+        now: @escaping () -> Date = Date.init,
+        navigationDelay: @escaping @MainActor () async throws -> Void = {
+            try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+        }
     ) {
         self.calendar = calendar
         self.calendarStore = calendarStore
         self.preferences = preferences
-        self.fetchCoordinator = EventFetchCoordinator(calendarStore: calendarStore)
-        self.navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences)
+        self.now = now
+        self.currentTime = now()
+        self.fetchCoordinator = EventFetchCoordinator(calendarStore: calendarStore, navigationDelay: navigationDelay)
+        self.navigation = CalendarNavigationCoordinator(calendar: calendar, preferences: preferences, now: now)
 
         navigation.onVisibleGridRangeChanged = { [weak self] first, last in
             self?.reanchorAgendaRangeForCurrentSelectionIfNeeded()
@@ -212,17 +219,17 @@ final class EventsCoordinator {
         eventsByDate[date] ?? []
     }
 
-    func updateMeetingIndicator(now: Date = Date()) {
+    func updateMeetingIndicator(now: Date? = nil) {
         shouldShowMeetingIndicator = MeetingIndicator.shouldShow(
             eventsByDate: eventsByDate,
-            now: now,
+            now: now ?? self.now(),
             calendar: calendar
         )
         onMeetingIndicatorChanged()
     }
 
     func refreshTodayAndMeetingIndicator() {
-        currentTime = Date()
+        currentTime = now()
         let previousToday = navigation.todayDate
         navigation.refreshTodayIfNeeded()
         if navigation.todayDate != previousToday {
@@ -232,7 +239,7 @@ final class EventsCoordinator {
     }
 
     func refreshAfterSignificantTimeChange() {
-        currentTime = Date()
+        currentTime = now()
         navigation.refreshTodayIfNeeded()
         Task {
             await calendarStore.invalidateTimeContext()

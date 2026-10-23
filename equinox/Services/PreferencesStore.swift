@@ -150,11 +150,11 @@ final class PreferencesStore {
     }
 
     @MainActor
-    func applyTheme() {
+    func applyTheme(to application: NSApplication? = NSApp) {
         switch ThemePreference(rawValue: themePreference) ?? .system {
-        case .light: NSApp.appearance = NSAppearance(named: .aqua)
-        case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
-        case .system: NSApp.appearance = nil
+        case .light: application?.appearance = NSAppearance(named: .aqua)
+        case .dark: application?.appearance = NSAppearance(named: .darkAqua)
+        case .system: application?.appearance = nil
         }
     }
 

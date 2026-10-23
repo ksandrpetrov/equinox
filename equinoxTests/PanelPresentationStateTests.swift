@@ -9,23 +9,68 @@ final class PanelPresentationStateTests: XCTestCase {
     private var statusFrame = NSRect(x: 800, y: 900, width: 40, height: 24)
     private var isModalPresented = false
 
+    func testPinActionsPersistStateAndNotifyOnlyChanges() async throws {
+        let context = try CalendarTestContext()
+        defer { context.cleanUp() }
+        await context.finishInitialization()
+        let state = context.appState
+        var observedStates: [Bool] = []
+        state.panel.onPinStateChanged = { observedStates.append(state.isPinned) }
+        defer { state.panel.onPinStateChanged = nil }
+
+        XCTAssertFalse(state.isPinned)
+        state.setPinned(false)
+        XCTAssertEqual(observedStates, [])
+        state.togglePinnedState()
+        XCTAssertTrue(state.isPinned)
+        XCTAssertTrue(context.defaults.bool(forKey: kPanelPinned))
+        state.togglePinnedState()
+        XCTAssertFalse(state.isPinned)
+        XCTAssertFalse(context.defaults.bool(forKey: kPanelPinned))
+        XCTAssertEqual(observedStates, [true, false])
+
+        state.setPinned(true)
+        state.setPinned(true)
+        XCTAssertTrue(state.isPinned)
+        XCTAssertTrue(context.defaults.bool(forKey: kPanelPinned))
+        XCTAssertEqual(observedStates, [true, false, true])
+        state.setPinned(false)
+        XCTAssertFalse(context.defaults.bool(forKey: kPanelPinned))
+        XCTAssertEqual(observedStates, [true, false, true, false])
+    }
+
     func testReopeningPanelPreservesMonthDayAndAgendaPosition() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
         await context.finishInitialization()
         let state = context.appState
+        let initialDate = state.events.selectedDate
+        let initialMonth = CalendarDate(year: initialDate.year, monthIndex: initialDate.monthIndex, day: 1)
         state.goToNextMonth()
+        // Finish the initial navigation fetch before closing and reopening.
+        await state.events.resetCalendarSelection()
         let selectedDate = state.events.selectedDate
         let monthDate = state.events.monthDate
         let scrollToken = state.events.agendaScrollToken
+        XCTAssertEqual(selectedDate, initialDate.addingMonthsPreservingDay(1))
+        let previousRefetchCount = context.store.refetchedRanges.count
+        let refreshed = expectation(description: "Reopened panel applied a fresh snapshot")
+        state.events.onEventsSnapshotChanged = { refreshed.fulfill() }
+        defer { state.events.onEventsSnapshotChanged = {} }
 
         state.panel.isPanelVisible = false
         state.panel.isPanelVisible = true
         state.panelDidOpen()
+        await fulfillment(of: [refreshed], timeout: 2)
 
+        XCTAssertEqual(context.store.refetchedRanges.count, previousRefetchCount + 1)
         XCTAssertEqual(state.events.selectedDate, selectedDate)
         XCTAssertEqual(state.events.monthDate, monthDate)
         XCTAssertEqual(state.events.agendaScrollToken, scrollToken)
+        state.goToPreviousMonth()
+        XCTAssertEqual(state.events.selectedDate, initialDate)
+        XCTAssertEqual(state.events.monthDate, initialMonth)
+        state.goToNextMonth()
         state.goToToday()
         XCTAssertEqual(state.events.selectedDate, state.events.todayDate)
     }
@@ -66,6 +111,48 @@ final class PanelPresentationStateTests: XCTestCase {
         monitor.handleMouseDown(window: nil, screenLocation: NSPoint(x: 820, y: 912))
         XCTAssertFalse(isPanelVisible)
         XCTAssertEqual(outsideClicks, 1, "The old status item position is an outside click after moving")
+
+        for (isPinned, isVisible) in [(true, true), (false, false), (true, false)] {
+            monitor.handleMouseDown(window: nil, screenLocation: NSPoint(x: statusFrame.midX, y: statusFrame.midY))
+            XCTAssertTrue(monitor.isStatusItemClickInProgress)
+            monitor.updateMonitoring(
+                isPinned: isPinned, isPanelVisible: isVisible,
+                isModalSheetPresented: { false }, isEquinoxWindow: { _ in false },
+                statusItemFrame: { self.statusFrame }, onOutsideClick: { outsideClicks += 1 }
+            )
+            XCTAssertFalse(monitor.isStatusItemClickInProgress, "Disabling monitoring clears an unfinished status click")
+        }
+        monitor.handleMouseDown(window: nil, screenLocation: NSPoint(x: statusFrame.midX, y: statusFrame.midY))
+        XCTAssertTrue(monitor.isStatusItemClickInProgress)
+        monitor.teardown()
+        XCTAssertFalse(monitor.isStatusItemClickInProgress)
+    }
+
+    func testDismissObserverInstallsOnceAndCanRestartAfterTeardown() async {
+        let monitor = PanelDismissMonitor()
+        defer { monitor.teardown() }
+        var initialCalls = 0
+        var restartedCalls = 0
+        let initial = expectation(description: "Initial resign-active notification delivered")
+        monitor.install {
+            initialCalls += 1
+            if initialCalls == 1 { initial.fulfill() }
+        }
+        monitor.install { XCTFail("Repeated installation must preserve the original subscription") }
+        NotificationCenter.default.post(name: NSApplication.didResignActiveNotification, object: nil)
+        await fulfillment(of: [initial], timeout: 2)
+        XCTAssertEqual(initialCalls, 1)
+
+        monitor.teardown()
+        let restarted = expectation(description: "Subscription works after teardown and installation")
+        monitor.install {
+            restartedCalls += 1
+            if restartedCalls == 1 { restarted.fulfill() }
+        }
+        NotificationCenter.default.post(name: NSApplication.didResignActiveNotification, object: nil)
+        await fulfillment(of: [restarted], timeout: 2)
+        XCTAssertEqual(initialCalls, 1)
+        XCTAssertEqual(restartedCalls, 1)
     }
 
     func testDismissMonitorPreservesPanelAndModalInteractions() {
@@ -152,12 +239,22 @@ final class PanelPresentationStateTests: XCTestCase {
         defer { controller.stopObservingSystemChanges() }
         let oldFormatter = EquinoxFormatters.formatter(key: "test.locale-observer") { $0.dateFormat = "HH" }
         let refreshed = expectation(description: "Presentation refreshed after locale change")
-        context.appState.events.onMeetingIndicatorChanged = { refreshed.fulfill() }
+        var refreshCount = 0
+        context.appState.events.onMeetingIndicatorChanged = {
+            refreshCount += 1
+            if refreshCount == 1 {
+                refreshed.fulfill()
+            } else {
+                XCTFail("A locale change must update presentation only once")
+            }
+        }
+        defer { context.appState.events.onMeetingIndicatorChanged = {} }
 
         await postFromBackground(NSLocale.currentLocaleDidChangeNotification, center: center)
         await fulfillment(of: [refreshed], timeout: 2)
 
         let newFormatter = EquinoxFormatters.formatter(key: "test.locale-observer") { $0.dateFormat = "hh" }
+        XCTAssertEqual(refreshCount, 1)
         XCTAssertFalse(oldFormatter === newFormatter)
         XCTAssertEqual(newFormatter.dateFormat, "hh")
         XCTAssertEqual(context.store.accessRequestCount, 0)
@@ -178,36 +275,6 @@ final class PanelPresentationStateTests: XCTestCase {
         let delegate = AppDelegate()
         delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "equinox://date/2026-06-14"))])
         XCTAssertNil(delegate.appState)
-    }
-
-    func testDeepLinkRejectsMalformedInputWithoutNavigationOrPresentation() async throws {
-        let context = try CalendarTestContext()
-        defer { context.cleanUp() }
-        await context.finishInitialization()
-        let delegate = AppDelegate()
-        delegate.appState = context.appState
-        let original = context.appState.events.selectedDate
-        var presentations = 0
-        context.appState.onRequestPresentPanel = { presentations += 1 }
-        for value in [
-            "https://date/2026-10-02", "equinox://other/2026-10-02", "equinox://date/2026-02-30",
-            "equinox://date/1582-12-31", "equinox://date/3334-01-01", "equinox://date/2026-10-02/extra",
-            "equinox://date/2026-10-02%00", "equinox://date/２０２６-10-02", "equinox://date/",
-        ] {
-            delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: value))])
-            XCTAssertEqual(context.appState.events.selectedDate, original, value)
-            XCTAssertEqual(presentations, 0, value)
-        }
-        for (value, expected) in [
-            ("equinox://date/1583-01-01", CalendarDate.minimumSupported),
-            ("EQUINOX://date/3333-12-31", CalendarDate.maximumSupported),
-            ("equinox://date/now", CalendarDate.today(calendar: context.appState.calendar)),
-        ] {
-            let before = presentations
-            delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: value))])
-            XCTAssertEqual(context.appState.events.selectedDate, expected)
-            XCTAssertEqual(presentations, before + 1)
-        }
     }
 
     func testModalSheetPresentedWhenNewEventSheetOpen() {
@@ -278,6 +345,8 @@ final class PanelPresentationStateTests: XCTestCase {
     }
 
     func testStatusMenuOffersQuitWithoutOpeningTheCalendarPanel() async throws {
+        // Menu validation needs an application even when this test runs first.
+        _ = NSApplication.shared
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
         await context.finishInitialization()

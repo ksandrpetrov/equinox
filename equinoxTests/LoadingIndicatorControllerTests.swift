@@ -6,12 +6,17 @@ final class LoadingIndicatorControllerTests: XCTestCase {
     func testFastFetchDoesNotFlashEvenIfCancelledCallbackArrives() {
         let clock = ManualSchedule()
         let controller = clock.controller()
+        var updates: [(Bool, Bool)] = []
+        controller.onUpdate = { updates.append(($0, $1)) }
         controller.beginFetch()
         controller.endFetch()
+        XCTAssertEqual(clock.pendingActionCount, 0, "A completed fast fetch must cancel its delayed work")
         clock.fireCancelledActions()
         clock.advance(by: 1)
         XCTAssertFalse(controller.shouldShowLoadingIndicator)
         XCTAssertFalse(controller.isFetchingEvents)
+        XCTAssertEqual(updates.map(\.0), [false, false])
+        XCTAssertEqual(updates.map(\.1), [true, false], "The owner must receive completion even when no spinner appeared")
     }
 
     func testShowDeadlineAndMinimumVisibility() {
@@ -102,6 +107,7 @@ private final class ManualSchedule {
     }
     private var now: TimeInterval = 0
     private var actions: [Action] = []
+    var pendingActionCount: Int { actions.filter { !$0.cancelled }.count }
 
     func controller() -> LoadingIndicatorController {
         LoadingIndicatorController(now: { self.now }, schedule: { delay, run in

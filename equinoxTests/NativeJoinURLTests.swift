@@ -67,61 +67,41 @@ final class NativeJoinURLTests: XCTestCase {
         XCTAssertNil(native)
     }
 
-    func testZoomWebToNativeString() {
-        let web = URL(string: "https://zoom.us/j/123456789")!
-        let native = NativeJoinURL.nativeURLString(from: web)
-        XCTAssertTrue(native?.hasPrefix("zoommtg://") == true)
-        XCTAssertTrue(native?.contains("join?confno=123456789") == true)
+    func testNativeResolutionRequiresInstalledApplicationAndChecksOriginalURL() async throws {
+        let web = try XCTUnwrap(URL(string: "https://zoom.us/j/123?pwd=secret"))
+        for installed in [false, true] {
+            let checked = expectation(description: "Installation checked: \(installed)")
+            let native = await NativeJoinURLResolver.resolveNativeJoinURL(from: web, isAppInstalled: { url in
+                XCTAssertEqual(url, web)
+                checked.fulfill()
+                return installed
+            })
+            await fulfillment(of: [checked], timeout: 2)
+            XCTAssertEqual(native?.absoluteString, installed ? "zoommtg://zoom.us/join?confno=123&pwd=secret" : nil)
+        }
     }
 
-    func testTeamsWebToNativeString() {
-        let web = URL(string: "https://teams.microsoft.com/l/meetup-join/abc")!
-        let native = NativeJoinURL.nativeURLString(from: web)
-        XCTAssertEqual(native, "msteams://teams.microsoft.com/l/meetup-join/abc")
-    }
-
-    func testChimeWebToNativeString() {
-        let web = URL(string: "https://chime.aws/meeting123")!
-        let native = NativeJoinURL.nativeURLString(from: web)
-        XCTAssertEqual(native, "chime://meeting?pin=meeting123")
+    func testSupportedWebURLsProduceExactNativeLinksAndSchemes() throws {
+        let cases: [(String, String, String)] = [
+            ("https://zoom.us/j/1", "zoommtg://zoom.us/join?confno=1", "zoommtg://"),
+            ("https://zoom.us/j/123456789", "zoommtg://zoom.us/join?confno=123456789", "zoommtg://"),
+            ("https://zoomgov.com/j/987654321", "zoommtg://zoom.us/join?confno=987654321", "zoommtg://"),
+            ("https://zoom.us/s/111", "zoommtg://zoom.us/join?confno=111", "zoommtg://"),
+            ("https://zoom.us/w/222", "zoommtg://zoom.us/join?confno=222", "zoommtg://"),
+            ("https://zoom.us/j/123?pwd=abc", "zoommtg://zoom.us/join?confno=123&pwd=abc", "zoommtg://"),
+            ("https://teams.microsoft.com/l/meetup-join/abc", "msteams://teams.microsoft.com/l/meetup-join/abc", "msteams://"),
+            ("https://chime.aws/meeting123", "chime://meeting?pin=meeting123", "chime://"),
+        ]
+        for (input, expectedURL, expectedScheme) in cases {
+            let web = try XCTUnwrap(URL(string: input))
+            XCTAssertEqual(NativeJoinURL.nativeURLString(from: web), expectedURL, input)
+            XCTAssertEqual(NativeJoinURL.nativeScheme(for: web), expectedScheme, input)
+        }
     }
 
     func testUnsupportedURLReturnsNil() {
         let web = URL(string: "https://example.com/meeting")!
         XCTAssertNil(NativeJoinURL.nativeURLString(from: web))
-    }
-
-    func testNativeSchemeForZoom() {
-        let web = URL(string: "https://zoom.us/j/1")!
-        XCTAssertEqual(NativeJoinURL.nativeScheme(for: web), "zoommtg://")
-    }
-
-    func testZoomGovWebToNativeString() {
-        let web = URL(string: "https://zoomgov.com/j/987654321")!
-        let native = NativeJoinURL.nativeURLString(from: web)
-        XCTAssertTrue(native?.hasPrefix("zoommtg://") == true)
-        XCTAssertTrue(native?.contains("join?confno=987654321") == true)
-    }
-
-    func testZoomStartAndWebinarPathsRewriteToJoinConfno() {
-        let start = URL(string: "https://zoom.us/s/111")!
-        let webinar = URL(string: "https://zoom.us/w/222")!
-        XCTAssertTrue(NativeJoinURL.nativeURLString(from: start)?.contains("join?confno=111") == true)
-        XCTAssertTrue(NativeJoinURL.nativeURLString(from: webinar)?.contains("join?confno=222") == true)
-    }
-
-    func testZoomQueryParamsUseAmpersandInNativeLink() {
-        let web = URL(string: "https://zoom.us/j/123?pwd=abc")!
-        let native = NativeJoinURL.nativeURLString(from: web)
-        XCTAssertTrue(native?.contains("join?confno=123&pwd=abc") == true)
-        XCTAssertFalse(native?.contains("join?confno=123?pwd") == true)
-    }
-
-    func testNativeSchemeForTeamsAndChime() {
-        let teams = URL(string: "https://teams.microsoft.com/l/meetup-join/abc")!
-        let chime = URL(string: "https://chime.aws/meeting123")!
-        XCTAssertEqual(NativeJoinURL.nativeScheme(for: teams), "msteams://")
-        XCTAssertEqual(NativeJoinURL.nativeScheme(for: chime), "chime://")
     }
 
     func testGoogleMeetAndWebexDoNotRewriteToNative() {
@@ -132,9 +112,9 @@ final class NativeJoinURLTests: XCTestCase {
         XCTAssertNil(NativeJoinURL.nativeScheme(for: meet))
     }
 
-    func testNotesForDisplayStripsNativeZoomVariant() {
+    func testNotesForDisplayStripsNativeZoomVariant() throws {
         let joinURL = URL(string: "https://zoom.us/j/123456789")!
-        let native = NativeJoinURL.nativeURLString(from: joinURL)!
+        let native = try XCTUnwrap(NativeJoinURL.nativeURLString(from: joinURL))
         let notes = "Dial-in\n\(native)\nSee you there"
         let display = JoinURLPresentation.notesForDisplay(notes: notes, excludingJoinURL: joinURL)
         XCTAssertEqual(display, "Dial-in\nSee you there")

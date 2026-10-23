@@ -44,12 +44,49 @@ final class DateFormattersTests: XCTestCase {
         XCTAssertTrue(text.contains(date.string(from: end)))
     }
 
-    func testLocaleNotificationCanInvalidateFormattersWithoutChangingLocaleIdentifier() {
-        let first = EquinoxFormatters.formatter(key: "test.locale-overrides") { $0.dateFormat = "HH" }
+    func testExplicitInvalidationReleasesCachedFormatterAndReconfiguresIt() {
         EquinoxFormatters.invalidateCache()
+        defer { EquinoxFormatters.invalidateCache() }
+        weak var first: DateFormatter?
+        autoreleasepool {
+            let formatter = EquinoxFormatters.formatter(key: "test.locale-overrides") { $0.dateFormat = "HH" }
+            first = formatter
+            EquinoxFormatters.invalidateCache()
+        }
+        XCTAssertNil(first, "Invalidation must release cached formatters before the next lookup")
         let second = EquinoxFormatters.formatter(key: "test.locale-overrides") { $0.dateFormat = "hh" }
-        XCTAssertFalse(first === second)
         XCTAssertEqual(second.dateFormat, "hh")
+    }
+
+    func testCacheRefreshesWhenEitherLocaleOrTimeZoneChangesAndReusesUnchangedContext() {
+        EquinoxFormatters.invalidateCache()
+        defer { EquinoxFormatters.invalidateCache() }
+        let english = Locale(identifier: "en_US_POSIX")
+        let russian = Locale(identifier: "ru_RU")
+        let utc = TimeZone(secondsFromGMT: 0)!
+        let plusThree = TimeZone(secondsFromGMT: 3 * 3600)!
+        let contexts = [
+            (english, utc, "00:00"),
+            (russian, utc, "00:00"),
+            (russian, plusThree, "03:00"),
+            (russian, utc, "00:00"),
+            (english, utc, "00:00"),
+        ]
+        var previous: DateFormatter?
+        for (locale, timeZone, expectedTime) in contexts {
+            let formatter = EquinoxFormatters.formatter(key: "test.context", locale: locale, timeZone: timeZone) {
+                $0.dateFormat = "HH:mm"
+            }
+            XCTAssertFalse(formatter === previous, "A changed context must rebuild the cached formatter")
+            XCTAssertEqual(formatter.locale.identifier, locale.identifier)
+            XCTAssertEqual(formatter.timeZone.identifier, timeZone.identifier)
+            XCTAssertEqual(formatter.string(from: Date(timeIntervalSince1970: 0)), expectedTime)
+            let reused = EquinoxFormatters.formatter(key: "test.context", locale: locale, timeZone: timeZone) { _ in
+                XCTFail("An unchanged context must reuse the formatter without reconfiguring it")
+            }
+            XCTAssertTrue(formatter === reused)
+            previous = formatter
+        }
     }
 
     func testRelativeTimeNeverShowsZeroMinutes() {

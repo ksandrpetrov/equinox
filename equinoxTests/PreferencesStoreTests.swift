@@ -3,6 +3,16 @@ import XCTest
 
 @MainActor
 final class PreferencesStoreTests: XCTestCase {
+    func testThemeCanBeAppliedBeforeAnApplicationExists() {
+        withIsolatedDefaults { defaults in
+            for theme in ThemePreference.allCases {
+                defaults.set(theme.rawValue, forKey: kThemePreference)
+                let preferences = PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter())
+                XCTAssertNoThrow(preferences.applyTheme(to: nil))
+            }
+        }
+    }
+
     func testShowEventDotsKeyIsLegacyLiteral() {
         XCTAssertEqual(kShowEventDots, "kShowEventDots")
     }
@@ -12,6 +22,7 @@ final class PreferencesStoreTests: XCTestCase {
 
         let persistedKeys: [(String, String)] = [
             ("isPanelPinned", kPanelPinned),
+            ("isPinnedPanelVisible", kPinnedPanelVisible),
             ("showsAgenda", kShowAgenda),
             ("weekStartWeekday", kWeekStartDOW),
             ("highlightedWeekdays", kHighlightedDOWs),
@@ -71,7 +82,7 @@ final class PreferencesStoreTests: XCTestCase {
         }
     }
 
-    func testPropertyChangesPersistToInjectedDefaults() {
+    func testPropertyChangesPersistAcrossRelaunch() {
         withIsolatedDefaults { defaults in
             let store = PreferencesStore(defaults: defaults)
 
@@ -82,6 +93,11 @@ final class PreferencesStoreTests: XCTestCase {
             XCTAssertTrue(defaults.bool(forKey: kShowLocation))
             XCTAssertEqual(defaults.integer(forKey: kCalendarNumRows), 9)
             XCTAssertEqual(defaults.string(forKey: kClockFormat), "HH:mm")
+
+            let reloaded = PreferencesStore(defaults: defaults)
+            XCTAssertTrue(reloaded.showLocation)
+            XCTAssertEqual(reloaded.calendarRowCount, 9)
+            XCTAssertEqual(reloaded.clockFormat, "HH:mm")
         }
     }
 
@@ -124,6 +140,29 @@ final class PreferencesStoreTests: XCTestCase {
         withIsolatedDefaults { defaults in
             defaults.set(7, forKey: kShowAgenda)
             XCTAssertTrue(PreferencesStore(defaults: defaults).showsAgenda)
+        }
+    }
+
+    func testHighlightedWeekdaysFollowCalendarColumnsAfterChangingWeekStart() {
+        withIsolatedDefaults { defaults in
+            let store = PreferencesStore(defaults: defaults)
+            // Sunday is bit 0; the same Saturday/Sunday selection must move
+            // with the displayed week, including a Saturday-first calendar.
+            let cases: [(mask: Int, weekStart: Int, columns: Set<Int>)] = [
+                (0, 0, []), (127, 1, Set(0..<7)),
+                (65, 0, [0, 6]), (65, 1, [5, 6]), (65, 6, [0, 1]),
+                (10, 1, [0, 2]), // Monday and Wednesday, Monday first.
+            ]
+            for testCase in cases {
+                store.highlightedWeekdays = testCase.mask
+                for column in 0..<7 {
+                    XCTAssertEqual(
+                        store.isWeekdayHighlighted(column, weekStartWeekday: testCase.weekStart),
+                        testCase.columns.contains(column),
+                        "mask=\(testCase.mask), weekStart=\(testCase.weekStart), column=\(column)"
+                    )
+                }
+            }
         }
     }
 

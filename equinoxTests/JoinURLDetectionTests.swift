@@ -42,8 +42,7 @@ final class JoinURLDetectionTests: XCTestCase {
             url: nil,
             notes: nil
         )
-        XCTAssertNotNil(url)
-        XCTAssertTrue(url?.absoluteString.contains("zoom.us") == true)
+        XCTAssertEqual(url?.absoluteString, "https://zoom.us/j/123456789")
     }
 
     func testDetectTeamsInNotes() {
@@ -52,8 +51,7 @@ final class JoinURLDetectionTests: XCTestCase {
             url: nil,
             notes: "Link: https://teams.microsoft.com/l/meetup-join/abc"
         )
-        XCTAssertNotNil(url)
-        XCTAssertTrue(url?.absoluteString.contains("teams.microsoft.com") == true)
+        XCTAssertEqual(url?.absoluteString, "https://teams.microsoft.com/l/meetup-join/abc")
     }
 
     func testNoMatchReturnsNil() {
@@ -76,7 +74,7 @@ final class JoinURLDetectionTests: XCTestCase {
             url: nil,
             notes: "https://zoom.us/j/999"
         )
-        XCTAssertTrue(url?.absoluteString.contains("meet.google.com") == true)
+        XCTAssertEqual(url?.absoluteString, "https://meet.google.com/abc-defg-hij")
     }
 
     func testDetectChimeInLocation() {
@@ -85,7 +83,7 @@ final class JoinURLDetectionTests: XCTestCase {
             url: nil,
             notes: nil
         )
-        XCTAssertTrue(url?.absoluteString.contains("chime.aws") == true)
+        XCTAssertEqual(url?.absoluteString, "https://chime.aws/abc123")
     }
 
     func testURLFieldPriorityAfterLocation() {
@@ -94,17 +92,12 @@ final class JoinURLDetectionTests: XCTestCase {
             url: "https://zoom.us/j/555",
             notes: "https://teams.microsoft.com/l/meetup-join/x"
         )
-        XCTAssertTrue(url?.absoluteString.contains("zoom.us") == true)
+        XCTAssertEqual(url?.absoluteString, "https://zoom.us/j/555")
     }
 
     func testMeetingDisplayNameZoom() {
         let url = URL(string: "https://zoom.us/j/123")!
         XCTAssertEqual(JoinURLPresentation.meetingDisplayName(for: url), "Zoom")
-    }
-
-    func testMeetingDisplayNameVK() {
-        let url = URL(string: "https://vk.com/call/join/abc")!
-        XCTAssertEqual(JoinURLPresentation.meetingDisplayName(for: url), "VK Calls")
     }
 
     func testNotesForDisplayStripsJoinURL() {
@@ -208,7 +201,7 @@ final class JoinURLDetectionTests: XCTestCase {
             url: nil,
             notes: nil
         )
-        XCTAssertTrue(url?.absoluteString.contains("zoomgov.com") == true)
+        XCTAssertEqual(url?.absoluteString, "https://zoomgov.com/j/987654321")
     }
 
     func testDetectGoogleMeetInURLField() {
@@ -217,29 +210,29 @@ final class JoinURLDetectionTests: XCTestCase {
             url: "https://meet.google.com/xyz-abcd-efg",
             notes: nil
         )
-        XCTAssertTrue(url?.absoluteString.contains("meet.google.com") == true)
+        XCTAssertEqual(url?.absoluteString, "https://meet.google.com/xyz-abcd-efg")
     }
 
     func testDetectWebexFaceTimeAndHangouts() {
         let webex = JoinURLDetection.detectJoinURL(location: "https://webex.com/join/room", url: nil, notes: nil)
         let facetime = JoinURLDetection.detectJoinURL(location: "https://facetime.apple.com/join/abc", url: nil, notes: nil)
         let hangouts = JoinURLDetection.detectJoinURL(location: nil, url: "https://hangouts.google.com/call/abc", notes: nil)
-        XCTAssertTrue(webex?.absoluteString.contains("webex.com") == true)
-        XCTAssertTrue(facetime?.absoluteString.contains("facetime.apple.com") == true)
-        XCTAssertTrue(hangouts?.absoluteString.contains("hangouts.google.com") == true)
+        XCTAssertEqual(webex?.absoluteString, "https://webex.com/join/room")
+        XCTAssertEqual(facetime?.absoluteString, "https://facetime.apple.com/join/abc")
+        XCTAssertEqual(hangouts?.absoluteString, "https://hangouts.google.com/call/abc")
     }
 
     func testDetectNativeMeetingSchemeInText() {
         let zoom = JoinURLDetection.detectJoinURL(in: "Open zoommtg://zoom.us/join?confno=123")
         let teams = JoinURLDetection.detectJoinURL(in: "Dial msteams://teams.microsoft.com/l/meetup-join/x")
-        XCTAssertNotNil(zoom)
-        XCTAssertNotNil(teams)
+        XCTAssertEqual(zoom?.absoluteString, "zoommtg://zoom.us/join?confno=123")
+        XCTAssertEqual(teams?.absoluteString, "msteams://teams.microsoft.com/l/meetup-join/x")
     }
 
     func testDetectJoinURLInTextReturnsFirstMeetingLink() {
         let text = "Backup: https://example.com\nPrimary: https://zoom.us/j/111\nAlt: https://teams.microsoft.com/l/meetup-join/y"
         let url = JoinURLDetection.detectJoinURL(in: text)
-        XCTAssertTrue(url?.absoluteString.contains("zoom.us") == true)
+        XCTAssertEqual(url?.absoluteString, "https://zoom.us/j/111")
     }
 
     func testNotesForDisplayStripsTeamsNativeVariant() {
@@ -276,21 +269,21 @@ final class JoinURLDetectionTests: XCTestCase {
                 url: nil,
                 notes: "Join: \(link)"
             )
-            XCTAssertNotNil(url, link)
-            XCTAssertEqual(MeetingProviderRegistry.match(for: url!)?.id, expectedID, link)
+            XCTAssertEqual(url?.absoluteString, link)
+            XCTAssertEqual(url.flatMap { MeetingProviderRegistry.match(for: $0) }?.id, expectedID, link)
         }
     }
 
     func testYouCanBookZoomLinkMatchesZoomProvider() {
         let link = "https://youcanbook.me/zoom/alex"
         let url = JoinURLDetection.detectJoinURL(location: nil, url: nil, notes: "Book: \(link)")
-        XCTAssertEqual(MeetingProviderRegistry.match(for: url!)?.id, "zoom")
+        XCTAssertEqual(url.flatMap { MeetingProviderRegistry.match(for: $0) }?.id, "zoom")
     }
 
     func testDetectJoinURLInTextIsCaseInsensitive() {
         let url = JoinURLDetection.detectJoinURL(in: "Dial in: HTTPS://ZOOM.US/J/123456789")
         XCTAssertNotNil(url)
-        XCTAssertEqual(MeetingProviderRegistry.match(for: url!)?.id, "zoom")
+        XCTAssertEqual(url.flatMap { MeetingProviderRegistry.match(for: $0) }?.id, "zoom")
     }
 
     func testAllRegistryDetectionSubstringsAreDetectableInText() {

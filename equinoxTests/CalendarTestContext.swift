@@ -7,13 +7,16 @@ final class CalendarTestContext {
     let defaults: UserDefaults
     let store = StubCalendarEventStore()
     let appState: AppState
+    let now: Date
 
-    init() throws {
+    init(now: Date = Date(timeIntervalSince1970: 1_789_214_400)) throws {
+        self.now = now // Default: 2026-09-12 12:00 UTC
         defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
         appState = AppState(
             calendar: calendar, calendarStore: store,
             preferences: PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter()),
+            now: { now },
             resetShortcuts: {}, disableLaunchAtLogin: {}
         )
     }
@@ -45,5 +48,35 @@ final class CalendarTestContext {
             calendarColorRed: 0.2, calendarColorGreen: 0.5, calendarColorBlue: 0.8, calendarColorAlpha: 1,
             isRecurring: true, allowsContentModifications: true, participationStatus: participationStatus
         )
+    }
+}
+
+/// Suspends navigation until the test releases it, including cancelled callers.
+/// Returning normally after cancellation exercises the caller's cancellation guard.
+@MainActor
+final class ManualNavigationDelay {
+    let suspended: XCTestExpectation
+    let completed: XCTestExpectation
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+
+    init(requests: Int = 1) {
+        suspended = XCTestExpectation(description: "Navigation delays suspended")
+        completed = XCTestExpectation(description: "Navigation delays resumed")
+        suspended.expectedFulfillmentCount = requests
+        completed.expectedFulfillmentCount = requests
+    }
+
+    func wait() async throws {
+        await withCheckedContinuation { continuation in
+            continuations.append(continuation)
+            suspended.fulfill()
+        }
+        completed.fulfill()
+    }
+
+    func resumeAll() {
+        let pending = continuations
+        continuations.removeAll()
+        pending.forEach { $0.resume() }
     }
 }

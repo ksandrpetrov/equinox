@@ -1,13 +1,17 @@
+import EventKit
 import XCTest
 @testable import EquinoxKit
 
 final class EventParticipationTests: XCTestCase {
-    func testFromEventKitRawValueRoundTrip() {
-        for status in EventParticipationStatus.allCases {
-            XCTAssertEqual(
-                EventParticipationStatus.fromEventKitRawValue(status.rawValue),
-                status
-            )
+    func testDomainStatusesMatchEventKitRatherThanTheirOwnRawValues() {
+        let cases: [(EKParticipantStatus, EventParticipationStatus)] = [
+            (.unknown, .unknown), (.pending, .pending), (.accepted, .accepted),
+            (.declined, .declined), (.tentative, .tentative), (.delegated, .delegated),
+            (.completed, .completed), (.inProcess, .inProcess)
+        ]
+        for (eventKit, expected) in cases {
+            XCTAssertEqual(EventParticipationStatus.fromEventKitRawValue(eventKit.rawValue), expected)
+            XCTAssertEqual(EventParticipationMapping.status(eventKitRawValue: eventKit.rawValue), expected)
         }
     }
 

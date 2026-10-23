@@ -1,3 +1,4 @@
+import CoreGraphics
 import XCTest
 @testable import EquinoxKit
 
@@ -9,12 +10,19 @@ final class ColorHexTests: XCTestCase {
         XCTAssertEqual(ColorHex.rgbaToHex(red: 1, green: 0.5, blue: 0), "#FF8000")
     }
 
-    func testHexFromCGColor() {
-        let color = CGColor(
-            colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-            components: [0, 0, 1, 1]
-        )!
-        XCTAssertEqual(ColorHex.hex(from: color), "#0000FF")
+    func testHexFromCGColor() throws {
+        let cases: [(CFString, [CGFloat], String)] = [
+            (CGColorSpace.sRGB, [0, 0, 1, 1], "#0000FF"),
+            // Converting extended sRGB unnecessarily can lose precision at a
+            // half-byte boundary: the original red channel rounds to 5, not 4.
+            (CGColorSpace.extendedSRGB, [4.5 / 255, 0.2, 0.3, 0.4], "#05334D"),
+            (CGColorSpace.extendedSRGB, [-0.2, 1.4, 0.5, 0.4], "#00FF80"),
+        ]
+        for (spaceName, components, expected) in cases {
+            let space = try XCTUnwrap(CGColorSpace(name: spaceName))
+            let color = try XCTUnwrap(CGColor(colorSpace: space, components: components))
+            XCTAssertEqual(ColorHex.hex(from: color), expected, "\(spaceName): \(components)")
+        }
     }
 
     func testGrayscaleColorPreservesAlphaAndUsesEqualChannels() throws {

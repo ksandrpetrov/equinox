@@ -2,16 +2,19 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class PanelWindowController {
+final class PanelWindowController: NSObject, NSWindowDelegate {
     private let appState: AppState
     private var panel: NSPanel?
     private var hostingController: NSHostingController<MainPanelView>?
     private weak var currentStatusItem: NSStatusItem?
     private var layoutUpdateWorkItem: DispatchWorkItem?
+    private var followsStatusItem = true
+    private var isApplyingGeometry = false
     var onDismissRequested: (() -> Void)?
 
     init(appState: AppState) {
         self.appState = appState
+        super.init()
         appState.layout.onPanelSizeInvalidated = { [weak self] in
             self?.scheduleLayoutUpdate()
         }
@@ -20,6 +23,10 @@ final class PanelWindowController {
     var window: NSPanel? { panel }
 
     var isVisible: Bool { panel?.isVisible == true }
+
+    // Event drawers are part of the panel and can be hidden with it. Only a
+    // native sheet (such as delete confirmation) must keep the panel visible.
+    var hasAttachedSheet: Bool { panel?.attachedSheet != nil }
 
     static func shouldHandleCancelOperation(
         isVisible: Bool,
@@ -41,6 +48,7 @@ final class PanelWindowController {
 
         let needsPositioning = !panel.isVisible
         if needsPositioning {
+            followsStatusItem = true
             applyGeometry(statusItem: statusItem, resize: false, reposition: true)
         } else {
             applyGeometry(statusItem: statusItem, resize: true, reposition: false)
@@ -55,7 +63,7 @@ final class PanelWindowController {
             appState.panelDidOpen()
             DispatchQueue.main.async { [weak self, weak statusItem] in
                 guard let self, let statusItem, self.isVisible else { return }
-                self.applyGeometry(statusItem: statusItem, resize: true, reposition: true)
+                self.applyGeometry(statusItem: statusItem, resize: true, reposition: self.followsStatusItem)
             }
         }
     }
@@ -80,7 +88,9 @@ final class PanelWindowController {
         currentStatusItem = statusItem
         guard let panel, panel.isVisible else { return }
         updatePanelAgendaMaxHeight(statusItem: statusItem)
-        applyGeometry(statusItem: statusItem, resize: true, reposition: !appState.isPinned)
+        // At login the menu bar can keep moving items after the panel appears.
+        // Pinning keeps it open; only a manual move detaches it from the icon.
+        applyGeometry(statusItem: statusItem, resize: true, reposition: followsStatusItem)
     }
 
     func retainFocusAfterModalDismiss(isPinned: Bool) {
@@ -91,9 +101,16 @@ final class PanelWindowController {
 
     func applyPinState(isPinned: Bool, statusItem: NSStatusItem) {
         currentStatusItem = statusItem
+        if !isPinned { followsStatusItem = true }
         guard let panel, panel.isVisible else { return }
         configurePanelMode(panel, isPinned: isPinned)
         applyGeometry(statusItem: statusItem, reposition: !isPinned)
+    }
+
+    func windowWillMove(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              window === panel, appState.isPinned, !isApplyingGeometry else { return }
+        followsStatusItem = false
     }
 
     func isEquinoxCalendarWindow(_ window: NSWindow, statusItem: NSStatusItem) -> Bool {
@@ -132,6 +149,7 @@ final class PanelWindowController {
         panel.isOpaque = false
         panel.hasShadow = true
         panel.hidesOnDeactivate = false
+        panel.delegate = self
         panel.onCancelOperation = { [weak self] in
             self?.handleCancelOperation() ?? false
         }
@@ -199,6 +217,8 @@ final class PanelWindowController {
         clampPanelFrame(&frame, statusItem: statusItem)
         let animate = panel.isVisible && panel.frame.width != frame.width
             && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        isApplyingGeometry = true
+        defer { isApplyingGeometry = false }
         panel.setFrame(frame, display: panel.isVisible, animate: animate)
     }
 

@@ -104,50 +104,45 @@ final class EventDraftDefaultsTests: XCTestCase {
         return cal
     }
 
-    func testDefaultStartAndEndSpanOneHour() {
+    func testDefaultStartAndEndSpanOneHour() throws {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(secondsFromGMT: 0)!
         let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
-        let (start, end) = EventDraftDefaults.defaultStartAndEnd(calendar: cal, initialDate: initial)
+        let (start, end) = EventDraftDefaults.defaultStartAndEnd(calendar: cal, initialDate: initial, now: Date(timeIntervalSince1970: 1_789_214_400))
         XCTAssertEqual(cal.dateComponents([.minute], from: start, to: end).minute, 60)
         XCTAssertEqual(cal.component(.day, from: start), 21)
+        XCTAssertTrue([0, 30].contains(cal.component(.minute, from: start)))
+        XCTAssertEqual(cal.component(.second, from: start), 0)
     }
 
-    func testRecurrenceDraftMapsPickerIndices() {
+    func testRecurrenceDraftMapsPickerIndices() throws {
         let endDate = Date(timeIntervalSince1970: 0)
         XCTAssertNil(EventDraftDefaults.recurrenceDraft(fromIndex: 0, endDateIndex: 0, endDate: endDate))
         XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 1, endDateIndex: 0, endDate: endDate)?.frequency, .daily)
+        XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 2, endDateIndex: 0, endDate: endDate)?.frequency, .weekly)
+        XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 4, endDateIndex: 0, endDate: endDate)?.frequency, .monthly)
         XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 3, endDateIndex: 0, endDate: endDate)?.frequency, .biweekly)
         XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 5, endDateIndex: 0, endDate: endDate)?.frequency, .yearly)
     }
 
-    func testRecurrenceDraftIncludesEndDateWhenSelected() {
+    func testRecurrenceDraftIncludesEndDateWhenSelected() throws {
         let endDate = Date(timeIntervalSince1970: 100)
         let draft = EventDraftDefaults.recurrenceDraft(fromIndex: 2, endDateIndex: 1, endDate: endDate)
         XCTAssertEqual(draft?.endDate, endDate)
     }
 
-    func testAlertOffsetReturnsNilForNone() {
-        XCTAssertNil(EventDraftDefaults.alertOffset(forPickerIndex: 0))
+    func testAlertPickerMapsEveryOptionAndRejectsOutOfRangeIndices() throws {
+        let cases: [(Int, TimeInterval?)] = [
+            (-1, nil), (0, nil), (1, 0), (2, -300), (3, -600), (4, -900),
+            (5, -1800), (6, -3600), (7, -7200), (8, -86400), (9, -172800),
+            (10, nil), (99, nil)
+        ]
+        for (index, expected) in cases {
+            XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: index), expected, "Picker index \(index)")
+        }
     }
 
-    func testAlertOffsetReturnsZeroForAtTimeOfEvent() {
-        XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 1), 0)
-    }
-
-    func testAlertOffsetReturnsNegativeOffsets() {
-        XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 2), -300)
-        XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 5), -1800)
-    }
-
-    func testDefaultStartRoundsToHalfHourBoundary() {
-        let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
-        let (start, _) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: initial)
-        XCTAssertTrue([0, 30].contains(calendar.component(.minute, from: start)))
-        XCTAssertEqual(calendar.component(.second, from: start), 0)
-    }
-
-    func testDefaultStartRoundsUpInsteadOfIntoThePast() {
+    func testDefaultStartRoundsUpInsteadOfIntoThePast() throws {
         let now = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10, minute: 1))!
         let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
 
@@ -163,7 +158,7 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(end.timeIntervalSince(start), 60 * 60)
     }
 
-    func testDefaultStartKeepsExactHalfHourBoundary() {
+    func testDefaultStartKeepsExactHalfHourBoundary() throws {
         let now = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10, minute: 30))!
         let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
 
@@ -176,7 +171,7 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(start, now)
     }
 
-    func testDefaultStartRollsLateTodayIntoTomorrow() {
+    func testDefaultStartRollsLateTodayIntoTomorrow() throws {
         let now = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 23, minute: 50))!
         let initial = CalendarDate(year: 2026, monthIndex: 5, day: 21)
 
@@ -192,7 +187,7 @@ final class EventDraftDefaultsTests: XCTestCase {
         )
     }
 
-    func testChangingStartPreservesPositiveDuration() {
+    func testChangingStartPreservesPositiveDuration() throws {
         let previousStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 9))!
         let previousEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10, minute: 30))!
         let newStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 13))!
@@ -207,7 +202,7 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(newEnd.timeIntervalSince(newStart), 90 * 60)
     }
 
-    func testChangingStartFallsBackToOneHourForInvalidDuration() {
+    func testChangingStartFallsBackToOneHourForInvalidDuration() throws {
         let previousStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 10))!
         let previousEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 9))!
         let newStart = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 13))!
@@ -222,78 +217,64 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(newEnd.timeIntervalSince(newStart), 60 * 60)
     }
 
-    func testRecurrenceDraftMapsMonthlyPickerIndex() {
-        let endDate = Date(timeIntervalSince1970: 0)
-        XCTAssertEqual(EventDraftDefaults.recurrenceDraft(fromIndex: 4, endDateIndex: 0, endDate: endDate)?.frequency, .monthly)
-    }
-
-    func testRecurrenceDraftOmitsEndDateWhenNotSelected() {
+    func testRecurrenceDraftOmitsEndDateWhenNotSelected() throws {
         let endDate = Date(timeIntervalSince1970: 100)
         let draft = EventDraftDefaults.recurrenceDraft(fromIndex: 2, endDateIndex: 0, endDate: endDate)
         XCTAssertNil(draft?.endDate)
     }
 
-    func testAlertOffsetReturnsNilForOutOfRangeIndex() {
-        XCTAssertNil(EventDraftDefaults.alertOffset(forPickerIndex: -1))
-        XCTAssertNil(EventDraftDefaults.alertOffset(forPickerIndex: 99))
-    }
-
-    func testDefaultStartAndEndWithoutInitialDateSpansOneHour() {
-        let (start, end) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: nil)
+    func testDefaultStartAndEndWithoutInitialDateSpansOneHour() throws {
+        let (start, end) = EventDraftDefaults.defaultStartAndEnd(calendar: calendar, initialDate: nil, now: Date(timeIntervalSince1970: 1_789_214_400))
         XCTAssertEqual(calendar.dateComponents([.minute], from: start, to: end).minute, 60)
         XCTAssertTrue([0, 30].contains(calendar.component(.minute, from: start)))
     }
 
-    func testAlertOffsetTwoDaysBefore() {
-        XCTAssertEqual(EventDraftDefaults.alertOffset(forPickerIndex: 9), -172_800)
-    }
-
-    func testSingleDayAllDayDatesUseMidnightAndExclusiveEnd() {
+    func testSingleDayAllDayDatesUseMidnightAndExclusiveEnd() throws {
         let start = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 14))!
         let end = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 15))!
 
-        let normalized = EventDraftDefaults.normalizedDates(
+        let normalized = try XCTUnwrap(EventDraftDefaults.normalizedDates(
             calendar: calendar,
             start: start,
             end: end,
             isAllDay: true
-        )
+        ))
 
-        XCTAssertEqual(calendar.dateComponents([.hour], from: normalized!.start).hour, 0)
-        XCTAssertEqual(calendar.dateComponents([.day], from: normalized!.start, to: normalized!.end).day, 1)
+        XCTAssertEqual(calendar.dateComponents([.hour], from: normalized.start).hour, 0)
+        XCTAssertEqual(calendar.dateComponents([.day], from: normalized.start, to: normalized.end).day, 1)
     }
 
-    func testAllDayNormalizationIsCalendarAwareAcrossDST() {
+    func testAllDayNormalizationIsCalendarAwareAcrossDST() throws {
         var losAngeles = Calendar(identifier: .gregorian)
         losAngeles.timeZone = TimeZone(identifier: "America/Los_Angeles")!
         let date = losAngeles.date(from: DateComponents(year: 2025, month: 3, day: 9, hour: 12))!
 
-        let normalized = EventDraftDefaults.normalizedDates(
+        let normalized = try XCTUnwrap(EventDraftDefaults.normalizedDates(
             calendar: losAngeles,
             start: date,
             end: date,
             isAllDay: true
-        )!
+        ))
 
         XCTAssertEqual(losAngeles.component(.day, from: normalized.start), 9)
         XCTAssertEqual(losAngeles.component(.day, from: normalized.end), 10)
         XCTAssertEqual(normalized.end.timeIntervalSince(normalized.start), 23 * 60 * 60)
     }
 
-    func testAllDayEndBeforeStartIsRejected() {
+    func testAllDayEndBeforeStartIsRejected() throws {
         let start = calendar.date(from: DateComponents(year: 2026, month: 6, day: 22))!
         let end = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21))!
         XCTAssertNil(EventDraftDefaults.normalizedDates(calendar: calendar, start: start, end: end, isAllDay: true))
     }
 
-    func testEventURLMustBeAbsolute() {
+    func testEventURLMustBeAbsolute() throws {
         XCTAssertNil(EventDraftDefaults.absoluteURL(from: "zoom.us/j/123"))
         XCTAssertNil(EventDraftDefaults.absoluteURL(from: "https:///missing-host"))
         XCTAssertEqual(EventDraftDefaults.absoluteURL(from: "https://zoom.us/j/123")?.host(), "zoom.us")
         XCTAssertEqual(EventDraftDefaults.absoluteURL(from: "tel:+123")?.scheme, "tel")
     }
 
-    func testHTTPURLsRequireANonemptyHost() {
+    func testHTTPURLsRequireANonemptyHost() throws {
         for value in ["https://:80/a", "http://:443/a", "https://user@:80/a", "https:///a"] {
             XCTAssertNil(EventDraftDefaults.absoluteURL(from: value), value)
         }
@@ -390,21 +371,21 @@ final class EventDraftDefaultsTests: XCTestCase {
         XCTAssertEqual(calendar.dateComponents([.day], from: normalized.start, to: normalized.end).day, 2)
     }
 
-    func testRecurrenceEndCoversTheSelectedCalendarDay() {
+    func testRecurrenceEndCoversTheSelectedCalendarDay() throws {
         let start = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 18))!
         let selectedEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21, hour: 8))!
-        let normalized = EventDraftDefaults.normalizedRecurrenceEnd(
+        let normalized = try XCTUnwrap(EventDraftDefaults.normalizedRecurrenceEnd(
             calendar: calendar,
             eventStart: start,
             selectedEnd: selectedEnd
-        )!
+        ))
 
         XCTAssertEqual(calendar.component(.day, from: normalized), 21)
         XCTAssertEqual(calendar.component(.hour, from: normalized), 23)
         XCTAssertGreaterThan(normalized, start)
     }
 
-    func testRecurrenceEndBeforeEventDayIsRejected() {
+    func testRecurrenceEndBeforeEventDayIsRejected() throws {
         let start = calendar.date(from: DateComponents(year: 2026, month: 6, day: 22))!
         let selectedEnd = calendar.date(from: DateComponents(year: 2026, month: 6, day: 21))!
         XCTAssertNil(
@@ -416,7 +397,7 @@ final class EventDraftDefaultsTests: XCTestCase {
         )
     }
 
-    func testPreferredCalendarKeepsCurrentSelection() {
+    func testPreferredCalendarKeepsCurrentSelection() throws {
         XCTAssertEqual(
             EventDraftDefaults.preferredCalendarIdentifier(
                 currentIdentifier: "work",
@@ -427,7 +408,7 @@ final class EventDraftDefaultsTests: XCTestCase {
         )
     }
 
-    func testPreferredCalendarUsesSystemDefaultThenFirstFallback() {
+    func testPreferredCalendarUsesSystemDefaultThenFirstFallback() throws {
         XCTAssertEqual(
             EventDraftDefaults.preferredCalendarIdentifier(
                 currentIdentifier: "missing",

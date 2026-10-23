@@ -3,16 +3,6 @@ import XCTest
 @testable import EquinoxKit
 
 final class CalendarAccessMappingTests: XCTestCase {
-    func testCalendarAccessStatusFromWriteOnlyIsDenied() {
-        XCTAssertEqual(CalendarAccessStatus.from(EKAuthorizationStatus.writeOnly), .denied)
-    }
-
-    func testGuiMappingForFullAccess() {
-        let kind = CalendarAccessMapping.AccessKind.fullAccess
-        XCTAssertEqual(CalendarAccessMapping.guiStatus(for: kind), .authorized)
-        XCTAssertEqual(CalendarAccessStatus.from(EKAuthorizationStatus.fullAccess), .authorized)
-    }
-
     func testGuiStatusForAllAccessKinds() {
         XCTAssertEqual(CalendarAccessMapping.guiStatus(for: CalendarAccessMapping.AccessKind.fullAccess), .authorized)
         XCTAssertEqual(CalendarAccessMapping.guiStatus(for: CalendarAccessMapping.AccessKind.writeOnly), .denied)
@@ -23,10 +13,14 @@ final class CalendarAccessMappingTests: XCTestCase {
     }
 
     func testAccessKindMapsEventKitStatuses() {
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.fullAccess), .fullAccess)
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.denied), .denied)
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.notDetermined), .notDetermined)
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.restricted), .restricted)
-        XCTAssertEqual(CalendarAccessMapping.accessKind(for: EKAuthorizationStatus.writeOnly), .writeOnly)
+        let cases: [(EKAuthorizationStatus, CalendarAccessMapping.AccessKind, CalendarAccessStatus)] = [
+            (.fullAccess, .fullAccess, .authorized), (.denied, .denied, .denied),
+            (.notDetermined, .notDetermined, .notDetermined), (.restricted, .restricted, .restricted),
+            (.writeOnly, .writeOnly, .denied),
+        ]
+        for (status, kind, expected) in cases {
+            XCTAssertEqual(CalendarAccessMapping.accessKind(for: status), kind, "\(status)")
+            XCTAssertEqual(CalendarAccessStatus.from(status), expected, "\(status)")
+        }
     }
 }

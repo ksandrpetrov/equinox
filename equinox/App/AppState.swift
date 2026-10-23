@@ -152,6 +152,10 @@ final class AppState {
         calendar: Calendar,
         calendarStore: any CalendarEventStore,
         preferences: PreferencesStore,
+        now: @escaping () -> Date = Date.init,
+        navigationDelay: @escaping @MainActor () async throws -> Void = {
+            try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+        },
         resetShortcuts: @escaping () -> Void = { KeyboardShortcuts.reset(.togglePanel) },
         disableLaunchAtLogin: @escaping () throws -> Void = { try LaunchAtLogin.setEnabled(false) }
     ) {
@@ -162,7 +166,9 @@ final class AppState {
         events = EventsCoordinator(
             calendar: calendar,
             calendarStore: calendarStore,
-            preferences: preferences
+            preferences: preferences,
+            now: now,
+            navigationDelay: navigationDelay
         )
 
         events.isPanelVisible = { [weak self] in

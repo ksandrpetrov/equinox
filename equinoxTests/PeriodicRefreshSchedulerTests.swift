@@ -36,35 +36,50 @@ final class PeriodicRefreshSchedulerTests: XCTestCase {
         }, now: { now }, onTick: {})
         scheduler.start()
         now = now.addingTimeInterval(20)
-        callbacks[0]()
+        try XCTUnwrap(callbacks.first)()
         scheduler.stop()
         XCTAssertEqual(intervals, [15, 55])
     }
 
-    func testStoppedSchedulerIgnoresAlreadyQueuedTick() {
+    func testStoppedSchedulerIgnoresAlreadyQueuedTick() throws {
         var callbacks: [@MainActor () -> Void] = []
+        var timers: [Timer] = []
         var ticks = 0
         let scheduler = PeriodicRefreshScheduler(schedule: { _, callback in
             callbacks.append(callback)
-            return Timer(timeInterval: 60, repeats: false) { _ in }
+            let timer = Timer(timeInterval: 60, repeats: false) { _ in }
+            timers.append(timer)
+            return timer
         }, onTick: { ticks += 1 })
+        defer { scheduler.stop() }
         scheduler.start()
         scheduler.start()
         XCTAssertEqual(callbacks.count, 1)
+        let oldTick = try XCTUnwrap(callbacks.first)
+        let oldTimer = try XCTUnwrap(timers.first)
+        XCTAssertTrue(oldTimer.isValid)
         scheduler.stop()
-        callbacks[0]()
+        XCTAssertFalse(oldTimer.isValid, "Stopping must release the native timer as well as ignore its callback")
+        oldTick()
         XCTAssertEqual(ticks, 0)
         XCTAssertEqual(callbacks.count, 1)
         scheduler.start()
-        callbacks[0]()
+        let currentTimer = try XCTUnwrap(timers.last)
+        XCTAssertTrue(currentTimer.isValid)
+        oldTick()
         XCTAssertEqual(ticks, 0, "A tick from the previous run must not affect the restarted timer")
-        callbacks[1]()
+        try XCTUnwrap(callbacks.dropFirst().first)()
         XCTAssertEqual(ticks, 1)
         XCTAssertEqual(callbacks.count, 3)
+        XCTAssertFalse(currentTimer.isValid, "Rescheduling invalidates the previous timer")
+        let nextTimer = try XCTUnwrap(timers.last)
+        XCTAssertTrue(nextTimer.isValid)
+        XCTAssertFalse(nextTimer === currentTimer)
         scheduler.stop()
+        XCTAssertFalse(nextTimer.isValid)
     }
 
-    func testStoppingInsideTickDoesNotScheduleAnotherTimer() {
+    func testStoppingInsideTickDoesNotScheduleAnotherTimer() throws {
         var callbacks: [@MainActor () -> Void] = []
         var scheduler: PeriodicRefreshScheduler?
         scheduler = PeriodicRefreshScheduler(schedule: { _, callback in
@@ -72,7 +87,7 @@ final class PeriodicRefreshSchedulerTests: XCTestCase {
             return Timer(timeInterval: 60, repeats: false) { _ in }
         }, onTick: { scheduler?.stop() })
         scheduler?.start()
-        callbacks[0]()
+        try XCTUnwrap(callbacks.first)()
         XCTAssertEqual(callbacks.count, 1)
         scheduler = nil
     }

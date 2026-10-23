@@ -46,11 +46,17 @@ final class EventFetchCoordinator {
     private var isDrainingQueue = false
     private var hasPreparedCalendarAccess = false
     private var pendingNavigation: Task<Void, Never>?
+    private let navigationDelay: @MainActor () async throws -> Void
 
     var onPresentationUpdate: ((_ shouldShowLoadingIndicator: Bool, _ isFetchingEvents: Bool) -> Void)?
     var onSyncComplete: ((_ successfulFetch: Bool) async -> Void)?
 
-    convenience init(calendarStore: any CalendarEventStore) {
+    convenience init(
+        calendarStore: any CalendarEventStore,
+        navigationDelay: @escaping @MainActor () async throws -> Void = {
+            try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+        }
+    ) {
         self.init(
             requestCalendarAccess: {
                 await calendarStore.requestCalendarAccessIfNeeded()
@@ -60,18 +66,23 @@ final class EventFetchCoordinator {
             },
             refetchEvents: { first, last in
                 await calendarStore.refetchAll(first: first, last: last)
-            }
+            },
+            navigationDelay: navigationDelay
         )
     }
 
     init(
         requestCalendarAccess: @escaping AccessOperation,
         fetchEvents: @escaping FetchOperation,
-        refetchEvents: @escaping FetchOperation
+        refetchEvents: @escaping FetchOperation,
+        navigationDelay: @escaping @MainActor () async throws -> Void = {
+            try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+        }
     ) {
         self.requestCalendarAccess = requestCalendarAccess
         self.fetchEvents = fetchEvents
         self.refetchEvents = refetchEvents
+        self.navigationDelay = navigationDelay
         loadingIndicator.onUpdate = { [weak self] shouldShow, isFetching in
             self?.onPresentationUpdate?(shouldShow, isFetching)
         }
@@ -79,12 +90,14 @@ final class EventFetchCoordinator {
 
     func scheduleNavigationFetch(range: (first: CalendarDate, last: CalendarDate)) {
         pendingNavigation?.cancel()
+        let delay = navigationDelay
         pendingNavigation = Task { [weak self] in
             do {
-                try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+                try await delay()
             } catch {
                 return
             }
+            guard !Task.isCancelled else { return }
             self?.scheduleFetch(range: range)
         }
     }

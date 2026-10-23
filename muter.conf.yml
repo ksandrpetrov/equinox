@@ -1,0 +1,17 @@
+# Discovery only. scripts/test-audit.py applies one mutation at a time in a snapshot.
+executable: /usr/bin/xcodebuild
+arguments:
+- -project
+- equinox.xcodeproj
+- -scheme
+- equinoxTests
+- -destination
+- platform=macOS,arch=arm64
+- test
+exclude:
+- equinoxTests/
+- equinoxGraphicsTests/
+- equinoxGraphicsHost/
+- scripts/
+- build/
+testSuiteTimeout: 180

@@ -32,6 +32,18 @@ final class AgendaScrollCoordinator {
     private var topVisibleDate: CalendarDate?
     private var programmaticScrollGeneration = 0
     private var pendingFocus: Task<Void, Never>?
+    private let now: () -> Date
+    private let navigationDelay: @MainActor () async throws -> Void
+
+    init(
+        now: @escaping () -> Date = Date.init,
+        navigationDelay: @escaping @MainActor () async throws -> Void = {
+            try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+        }
+    ) {
+        self.now = now
+        self.navigationDelay = navigationDelay
+    }
 
     func displayRange(anchor: CalendarDate) -> (first: CalendarDate, last: CalendarDate) {
         if let rangeFirst, let rangeLast {
@@ -91,12 +103,14 @@ final class AgendaScrollCoordinator {
 
     func scheduleScrollToFocus(events: AgendaScrollContext) {
         pendingFocus?.cancel()
+        let delay = navigationDelay
         pendingFocus = Task { [weak self] in
             do {
-                try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay)
+                try await delay()
             } catch {
                 return
             }
+            guard !Task.isCancelled else { return }
             self?.scrollToFocus(events: events)
         }
     }
@@ -163,7 +177,7 @@ final class AgendaScrollCoordinator {
         let selected = events.selectedDate
         let today = events.todayDate
         if !events.agendaFocusesDayStart, selected == today,
-           let eventID = AgendaFocus.focusEventID(in: events.events(for: today)) {
+           let eventID = AgendaFocus.focusEventID(in: events.events(for: today), now: now()) {
             return .event(id: eventID)
         }
         return .day(julian: selected.julian)

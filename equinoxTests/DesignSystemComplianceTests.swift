@@ -21,6 +21,10 @@ final class DesignSystemComplianceTests: XCTestCase {
     }
 
     func testFeatureViewsWrapHoverAnimationWithReduceMotion() throws {
+        for animation in [EquinoxDesign.hoverAnimation, EquinoxDesign.expandAnimation] {
+            XCTAssertNil(EquinoxDesign.animation(animation, reduceMotion: true))
+            XCTAssertEqual(EquinoxDesign.animation(animation, reduceMotion: false), animation)
+        }
         let violations = try swiftUIFiles(excludingDesign: true)
             .flatMap { path -> [(String, Int, String)] in
                 let lines = try lines(at: path)
@@ -37,6 +41,27 @@ final class DesignSystemComplianceTests: XCTestCase {
             "Use EquinoxDesign.animation(_:reduceMotion:) for hover animations:\n"
                 + violations.map { "\($0.0):\($0.1) \($0.2)" }.joined(separator: "\n")
         )
+    }
+
+    func testAccessibleToggleValuesPreserveTheOnAndOffMeaning() {
+        XCTAssertEqual(EquinoxAccessibility.onOffValue(true), String(localized: "On", bundle: .equinox))
+        XCTAssertEqual(EquinoxAccessibility.onOffValue(false), String(localized: "Off", bundle: .equinox))
+        XCTAssertNotEqual(EquinoxAccessibility.onOffValue(true), EquinoxAccessibility.onOffValue(false))
+    }
+
+    func testSettingsSearchMatchesPartialKeywordsAndLongQueries() {
+        let cases: [(query: String, expected: Bool)] = [
+            ("", true), (" \t\n", true), (" CALEND ", true),
+            ("Calendar rows", true), ("THEME", true),
+            ("Show calendar rows", true), ("unrelated setting", false),
+        ]
+        for testCase in cases {
+            XCTAssertEqual(SettingsSearchFilter.matches(searchText: testCase.query, keywords: "Theme", "Calendar rows"),
+                           testCase.expected, testCase.query)
+        }
+        let localizedRows = Bundle.equinox.localizedString(forKey: "Calendar rows", value: nil, table: nil)
+        XCTAssertTrue(SettingsSearchFilter.matches(searchText: localizedRows, keywords: "Calendar rows"))
+        XCTAssertFalse(SettingsSearchFilter.matches(searchText: "Calendar"), "No keywords cannot match a nonempty query")
     }
 
     func testFeatureViewsAvoidSecondaryOpacityLiterals() throws {

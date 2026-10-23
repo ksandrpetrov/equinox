@@ -63,6 +63,14 @@ struct EventDrawerScaffold<Content: View>: View {
                     .lineLimit(2)
                     .frame(minHeight: metrics.toolbarButtonSize)
                 Spacer(minLength: 0)
+                PanelIconButton(
+                    symbol: "xmark",
+                    help: String(localized: "Close event panel", bundle: .equinox, comment: "Close only the event drawer, keeping the calendar open"),
+                    buttonSize: metrics.toolbarButtonSize,
+                    action: onCancel
+                )
+                .disabled(isBusy)
+                .keyboardShortcut(isCancelShortcutEnabled ? .cancelAction : nil)
             }
             .padding(EquinoxDesign.panelPadding)
             Divider()
@@ -108,7 +116,6 @@ struct EventDrawerScaffold<Content: View>: View {
             }
             .buttonStyle(.plain)
             .disabled(isBusy)
-            .keyboardShortcut(isCancelShortcutEnabled ? .cancelAction : nil)
             .accessibilityLabel(String(localized: "Collapse event panel", bundle: .equinox, comment: "Close the event drawer"))
             .help(String(localized: "Collapse event panel", bundle: .equinox, comment: "Close the event drawer"))
             .offset(x: metrics.toolbarButtonSize / 2)

@@ -18,6 +18,7 @@ final class EventFetchCacheTests: XCTestCase {
         var cache = EventFetchCache()
         var loaded = Set<CalendarDate>()
         var expected: [CalendarDate: [DayEvent]] = [:]
+        var visible: [CalendarDate: [DayEvent]] = [:]
         var seed = initialSeed
         func next(_ bound: Int) -> Int {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
@@ -44,6 +45,12 @@ final class EventFetchCacheTests: XCTestCase {
                 let retained = Set(range + Array(days[0...1]))
                 loaded.formIntersection(retained)
                 expected = expected.filter { retained.contains($0.key) }
+                visible = visible.filter { retained.contains($0.key) }
+                let retainedSnapshot = cache.selectedCalendarEvents(calendar: calendar)
+                guard retainedSnapshot == visible else {
+                    XCTFail("Retained selected snapshot mismatch before refiltering: seed \(initialSeed), first \(first), iteration \(iteration)")
+                    return
+                }
             default:
                 let force = next(2) == 0
                 let plan = cache.prepareFetchRange(first: days[lower], last: days[upper], refetch: force)
@@ -62,15 +69,20 @@ final class EventFetchCacheTests: XCTestCase {
             }
             let selected: Set<String> = next(2) == 0 ? ["work"] : ["work", "personal"]
             cache.applyCalendarFilter(selectedCalendarIDs: selected)
-            let visible = expected.compactMapValues { events -> [DayEvent]? in
+            visible = expected.compactMapValues { events -> [DayEvent]? in
                 let filtered = events.filter { selected.contains($0.calendarIdentifier) }
                 return filtered.isEmpty ? nil : filtered
             }
-            XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar), visible,
-                           "Seed \(initialSeed), first \(first), iteration \(iteration)")
-            for day in days {
-                XCTAssertEqual(cache.prepareFetchRange(first: day, last: day, refetch: false) == nil,
-                               loaded.contains(day), "Coverage at iteration \(iteration), day \(day)")
+            let actual = cache.selectedCalendarEvents(calendar: calendar)
+            guard actual == visible else {
+                XCTFail("Visible cache mismatch: seed \(initialSeed), first \(first), iteration \(iteration); actual \(actual), expected \(visible)")
+                return
+            }
+            let coverage = days.map { cache.prepareFetchRange(first: $0, last: $0, refetch: false) == nil }
+            let expectedCoverage = days.map { loaded.contains($0) }
+            guard coverage == expectedCoverage else {
+                XCTFail("Coverage mismatch: seed \(initialSeed), first \(first), iteration \(iteration); actual \(coverage), expected \(expectedCoverage)")
+                return
             }
         }
     }
@@ -104,18 +116,18 @@ final class EventFetchCacheTests: XCTestCase {
         )
     }
 
-    func testPrepareFetchRangeReturnsNilWhenAlreadyFetched() {
+    func testPrepareFetchRangeReturnsNilWhenAlreadyFetched() throws {
         var cache = EventFetchCache()
         let first = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let last = CalendarDate(year: 2026, monthIndex: 5, day: 7)
 
         let plan = cache.prepareFetchRange(first: first, last: last, refetch: false)
         XCTAssertNotNil(plan)
-        cache.commitFetch([:], plan: plan!, calendar: calendar)
+        cache.commitFetch([:], plan: try XCTUnwrap(plan), calendar: calendar)
         XCTAssertNil(cache.prepareFetchRange(first: first, last: last, refetch: false))
     }
 
-    func testUncommittedFetchRangeRemainsEligibleForRetry() {
+    func testUncommittedFetchRangeRemainsEligibleForRetry() throws {
         let cache = EventFetchCache()
         let first = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let last = CalendarDate(year: 2026, monthIndex: 5, day: 7)
@@ -124,24 +136,24 @@ final class EventFetchCacheTests: XCTestCase {
         XCTAssertNotNil(cache.prepareFetchRange(first: first, last: last, refetch: false))
     }
 
-    func testPrepareRefetchKeepsLastSuccessfulSnapshotUntilCommit() {
+    func testPrepareRefetchKeepsLastSuccessfulSnapshotUntilCommit() throws {
         var cache = EventFetchCache()
         let first = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let last = CalendarDate(year: 2026, monthIndex: 5, day: 7)
         let dayStart = first.date(in: calendar)
         let oldEvent = makeEvent(calendarID: "old", on: first)
 
-        let initialPlan = cache.prepareFetchRange(first: first, last: last, refetch: false)!
+        let initialPlan = try XCTUnwrap(cache.prepareFetchRange(first: first, last: last, refetch: false))
         cache.commitFetch([dayStart: [oldEvent]], plan: initialPlan, calendar: calendar)
 
-        let refetchPlan = cache.prepareFetchRange(first: first, last: last, refetch: true)!
+        let refetchPlan = try XCTUnwrap(cache.prepareFetchRange(first: first, last: last, refetch: true))
         XCTAssertEqual(cache.eventsForDate[dayStart]?.map(\.calendarIdentifier), ["old"])
 
         cache.commitFetch([:], plan: refetchPlan, calendar: calendar)
         XCTAssertNil(cache.eventsForDate[dayStart])
     }
 
-    func testPrepareFetchRangeExtendsPartiallyFetchedRange() {
+    func testPrepareFetchRangeExtendsPartiallyFetchedRange() throws {
         var cache = EventFetchCache()
         let weekStart = CalendarDate(year: 2026, monthIndex: 5, day: 1)
         let weekMid = CalendarDate(year: 2026, monthIndex: 5, day: 3)
@@ -150,33 +162,33 @@ final class EventFetchCacheTests: XCTestCase {
         let firstFetch = cache.prepareFetchRange(first: weekStart, last: weekMid, refetch: false)
         XCTAssertEqual(firstFetch?.fetchStart, weekStart)
         XCTAssertEqual(firstFetch?.fetchEnd, weekMid)
-        cache.commitFetch([:], plan: firstFetch!, calendar: calendar)
+        cache.commitFetch([:], plan: try XCTUnwrap(firstFetch), calendar: calendar)
 
         let secondFetch = cache.prepareFetchRange(first: weekStart, last: weekEnd, refetch: false)
         XCTAssertEqual(secondFetch?.fetchStart, weekMid.addingDays(1))
         XCTAssertEqual(secondFetch?.fetchEnd, weekEnd)
     }
 
-    func testMergeEventsOverwritesExistingDates() {
+    func testMergeEventsOverwritesExistingDates() throws {
         var cache = EventFetchCache()
         let date = CalendarDate(year: 2026, monthIndex: 5, day: 10)
         let dayStart = date.date(in: calendar)
         let oldEvent = makeEvent(calendarID: "old", on: date)
         let newEvent = makeEvent(calendarID: "new", on: date)
 
-        let initialPlan = cache.prepareFetchRange(first: date, last: date, refetch: false)!
+        let initialPlan = try XCTUnwrap(cache.prepareFetchRange(first: date, last: date, refetch: false))
         cache.commitFetch([dayStart: [oldEvent]], plan: initialPlan, calendar: calendar)
-        let refetchPlan = cache.prepareFetchRange(first: date, last: date, refetch: true)!
+        let refetchPlan = try XCTUnwrap(cache.prepareFetchRange(first: date, last: date, refetch: true))
         cache.commitFetch([dayStart: [newEvent]], plan: refetchPlan, calendar: calendar)
 
         XCTAssertEqual(cache.eventsForDate[dayStart]?.map(\.calendarIdentifier), ["new"])
     }
 
-    func testRefetchPreservesCachedEventsOutsideRequestedRange() {
+    func testRefetchPreservesCachedEventsOutsideRequestedRange() throws {
         var cache = EventFetchCache()
         let first = CalendarDate(year: 2026, monthIndex: 5, day: 10)
         let distant = CalendarDate(year: 2027, monthIndex: 5, day: 10)
-        let initialPlan = cache.prepareFetchRange(first: first, last: distant, refetch: false)!
+        let initialPlan = try XCTUnwrap(cache.prepareFetchRange(first: first, last: distant, refetch: false))
         cache.commitFetch(
             [
                 first.date(in: calendar): [makeEvent(calendarID: "first", on: first)],
@@ -186,44 +198,47 @@ final class EventFetchCacheTests: XCTestCase {
             calendar: calendar
         )
 
-        let refetchPlan = cache.prepareFetchRange(first: distant, last: distant, refetch: true)!
+        let refetchPlan = try XCTUnwrap(cache.prepareFetchRange(first: distant, last: distant, refetch: true))
         cache.commitFetch([:], plan: refetchPlan, calendar: calendar)
 
         XCTAssertNotNil(cache.eventsForDate[first.date(in: calendar)])
         XCTAssertNil(cache.eventsForDate[distant.date(in: calendar)])
     }
 
-    func testRetainEventsKeepsPrimaryAndTodayRangesOnly() {
+    func testRetainEventsKeepsPrimaryAndTodayRangesOnly() throws {
         var cache = EventFetchCache()
         let today = CalendarDate(year: 2026, monthIndex: 5, day: 10)
         let primary = CalendarDate(year: 2027, monthIndex: 5, day: 10)
         let stale = CalendarDate(year: 2025, monthIndex: 5, day: 10)
-        let plan = cache.prepareFetchRange(first: stale, last: primary, refetch: false)!
-        cache.commitFetch(
-            [today, primary, stale].reduce(into: [Date: [DayEvent]]()) { result, date in
-                result[date.date(in: calendar)] = [makeEvent(calendarID: "\(date.julian)", on: date)]
-            },
-            plan: plan,
-            calendar: calendar
-        )
+        let days = [stale, today.addingDays(-1), today, today.addingDays(1), today.addingDays(2),
+                    primary.addingDays(-1), primary, primary.addingDays(1), primary.addingDays(2), primary.addingDays(3)]
+        let events = Dictionary(uniqueKeysWithValues: days.map { day in
+            (day.date(in: calendar), [makeEvent(calendarID: "work", on: day), makeEvent(calendarID: "personal", on: day)])
+        })
+        let plan = try XCTUnwrap(cache.prepareFetchRange(first: stale, last: primary.addingDays(3), refetch: false))
+        cache.commitFetch(events, plan: plan, calendar: calendar)
+        cache.applyCalendarFilter(selectedCalendarIDs: ["work"])
 
         cache.retainEvents(
-            inside: [(first: primary, last: primary), (first: today, last: today)],
+            inside: [(first: primary, last: primary.addingDays(2)), (first: today, last: today.addingDays(1))],
             calendar: calendar
         )
 
-        XCTAssertNotNil(cache.eventsForDate[today.date(in: calendar)])
-        XCTAssertNotNil(cache.eventsForDate[primary.date(in: calendar)])
-        XCTAssertNil(cache.eventsForDate[stale.date(in: calendar)])
-        XCTAssertNil(cache.prepareFetchRange(first: today, last: today, refetch: false))
-        XCTAssertNotNil(cache.prepareFetchRange(first: stale, last: stale, refetch: false))
+        let retained = Set([today, today.addingDays(1), primary, primary.addingDays(1), primary.addingDays(2)])
+        XCTAssertEqual(cache.eventsForDate, events.filter { retained.contains(CalendarDate(date: $0.key, calendar: calendar)) })
+        XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar),
+                       Dictionary(uniqueKeysWithValues: retained.map { ($0, [makeEvent(calendarID: "work", on: $0)]) }))
+        for day in days {
+            XCTAssertEqual(cache.prepareFetchRange(first: day, last: day, refetch: false) == nil,
+                           retained.contains(day), "Fetched coverage must match retained days: \(day)")
+        }
     }
 
-    func testApplyCalendarFilterKeepsOnlySelectedCalendars() {
+    func testApplyCalendarFilterKeepsOnlySelectedCalendars() throws {
         var cache = EventFetchCache()
         let date = CalendarDate(year: 2026, monthIndex: 5, day: 10)
         let dayStart = date.date(in: calendar)
-        let plan = cache.prepareFetchRange(first: date, last: date, refetch: false)!
+        let plan = try XCTUnwrap(cache.prepareFetchRange(first: date, last: date, refetch: false))
         cache.commitFetch([
             dayStart: [
                 makeEvent(calendarID: "work", on: date),
@@ -236,11 +251,11 @@ final class EventFetchCacheTests: XCTestCase {
         XCTAssertEqual(cache.selectedCalendarEvents(calendar: calendar)[date]?.map(\.calendarIdentifier), ["work"])
     }
 
-    func testSelectedCalendarEventsMapsDateKeysToCalendarDate() {
+    func testSelectedCalendarEventsMapsDateKeysToCalendarDate() throws {
         var cache = EventFetchCache()
         let date = CalendarDate(year: 2026, monthIndex: 5, day: 15)
         let dayStart = date.date(in: calendar)
-        let plan = cache.prepareFetchRange(first: date, last: date, refetch: false)!
+        let plan = try XCTUnwrap(cache.prepareFetchRange(first: date, last: date, refetch: false))
         cache.commitFetch(
             [dayStart: [makeEvent(calendarID: "work", on: date)]],
             plan: plan,
@@ -252,7 +267,7 @@ final class EventFetchCacheTests: XCTestCase {
         XCTAssertEqual(result.keys.sorted { $0.julian < $1.julian }, [date])
     }
 
-    func testClearEventsAlsoClearsStaleFetchError() {
+    func testClearEventsAlsoClearsStaleFetchError() throws {
         var cache = EventFetchCache()
         cache.lastFetchError = "stale"
 
@@ -297,7 +312,7 @@ final class EventFetchCacheTests: XCTestCase {
         XCTAssertEqual(cache.prepareFetchRange(first: first, last: last, refetch: false)?.fetchStart, first.addingDays(1))
     }
 
-    func testInvalidRangesAreRejected() {
+    func testInvalidRangesAreRejected() throws {
         let cache = EventFetchCache()
         let date = CalendarDate.minimumSupported
         for refetch in [false, true] {

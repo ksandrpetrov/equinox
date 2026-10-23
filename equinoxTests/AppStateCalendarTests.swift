@@ -83,11 +83,14 @@ final class AppStateCalendarTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = StubCalendarEventStore()
         let preferences = PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter())
+        let delay = ManualNavigationDelay()
+        defer { delay.resumeAll() }
         var state: AppState? = AppState(calendar: .equinoxGregorian(), calendarStore: store,
-                                      preferences: preferences, resetShortcuts: {}, disableLaunchAtLogin: {})
+                                      preferences: preferences, navigationDelay: delay.wait, resetShortcuts: {}, disableLaunchAtLogin: {})
         await state?.waitForInitialization()
         await state?.events.resetCalendarSelection()
         state?.goToNextMonth()
+        await fulfillment(of: [delay.suspended], timeout: 2)
         weak var weakState = state
         weak var weakEvents = state?.events
         state = nil
@@ -96,7 +99,8 @@ final class AppStateCalendarTests: XCTestCase {
         let fetches = store.fetchedRanges.count
         store.externalChangeHandler?()
         preferences.showsAgenda.toggle()
-        try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay + .milliseconds(30))
+        delay.resumeAll()
+        await fulfillment(of: [delay.completed], timeout: 2)
         XCTAssertEqual(store.fetchedRanges.count, fetches, "Callbacks must not resurrect a released owner")
     }
 
@@ -120,16 +124,22 @@ final class AppStateCalendarTests: XCTestCase {
         for value in ["https://date/2026-09-29", "equinox://other/2026-09-29",
                       "equinox://date/2026-09-29/extra", "equinox://date/2026-02-29",
                       "equinox://date/1582-12-31", "equinox://date/3334-01-01",
-                      "equinox://date/not-a-date", "equinox://date"] {
+                      "equinox://date/not-a-date", "equinox://date", "equinox://date/",
+                      "equinox://date/2026-02-30", "equinox://date/2026-10-02%00",
+                      "equinox://date/２０２６-10-02"] {
             delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: value))])
             XCTAssertEqual(state.events.selectedDate, selected, value)
             XCTAssertEqual(state.events.agendaScrollToken, token, value)
         }
         delegate.application(NSApplication.shared, open: [])
         XCTAssertEqual(presentations, 3)
+        let beforeNowLink = CalendarDate.today(calendar: state.calendar)
         delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "equinox://date/now"))])
-        XCTAssertEqual(state.events.selectedDate, CalendarDate.today(calendar: state.calendar))
+        XCTAssertTrue([beforeNowLink, CalendarDate.today(calendar: state.calendar)].contains(state.events.selectedDate))
         XCTAssertEqual(presentations, 4)
+        delegate.application(NSApplication.shared, open: [try XCTUnwrap(URL(string: "EQUINOX://date/3333-12-31"))])
+        XCTAssertEqual(state.events.selectedDate, .maximumSupported)
+        XCTAssertEqual(presentations, 5)
     }
 
     func testRepeatedDeleteWhileReloadingDoesNotDeleteOccurrenceTwice() async throws {
@@ -267,7 +277,7 @@ final class AppStateCalendarTests: XCTestCase {
         XCTAssertFalse(context.appState.panel.isEventDetailPresented)
     }
 
-    func testInitializationUsesInjectedStoreAndPreferencesWithoutRequestingAccess() async throws {
+    func testInitializationDefersAccessUntilExplicitRequestLoadsSnapshot() async throws {
         let context = try CalendarTestContext()
         defer { context.cleanUp() }
         await context.finishInitialization()
@@ -277,6 +287,25 @@ final class AppStateCalendarTests: XCTestCase {
         XCTAssertTrue(context.defaults.bool(forKey: kShowDaysWithNoEventsInAgenda))
         XCTAssertEqual(context.store.accessRequestCount, 0)
         XCTAssertTrue(context.store.operations.isEmpty)
+
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .notDetermined) }
+        await context.appState.refreshCalendarAccessStatus()
+        XCTAssertEqual(context.appState.events.calendarAccessStatus, .notDetermined)
+        XCTAssertEqual(context.store.accessRequestCount, 0)
+        let day = context.appState.events.todayDate
+        let event = context.event(start: day.date(in: context.appState.calendar))
+        context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: [event]]) }
+        let synchronized = expectation(description: "Explicit access request applied the new snapshot")
+        context.appState.events.onEventsSnapshotChanged = { synchronized.fulfill() }
+        defer { context.appState.events.onEventsSnapshotChanged = {} }
+
+        context.appState.requestCalendarAccessIfNeeded()
+        await fulfillment(of: [synchronized], timeout: 2)
+
+        XCTAssertEqual(context.store.accessRequestCount, 1)
+        XCTAssertEqual(context.store.operations, ["refetch"])
+        XCTAssertEqual(context.appState.events.calendarAccessStatus, .authorized)
+        XCTAssertEqual(context.appState.events.events(for: day), [event])
     }
 
     func testFailedCreateKeepsSelectedDayAndDoesNotReload() async throws {
@@ -371,7 +400,7 @@ final class AppStateCalendarTests: XCTestCase {
         defer { context.cleanUp() }
         await context.finishInitialization()
         let day = context.appState.events.todayDate
-        let event = context.event(start: Date().addingTimeInterval(60))
+        let event = context.event(start: context.now.addingTimeInterval(60))
         context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: [event]]) }
         await context.appState.refreshCalendarAccessStatus()
         XCTAssertTrue(context.appState.events.shouldShowMeetingIndicator)
@@ -439,11 +468,21 @@ final class AppStateCalendarTests: XCTestCase {
         let updated = context.event(start: event.startDate, title: "Updated meeting")
         context.store.readSnapshot = { StubCalendarEventStore.snapshot(status: .authorized, events: [day: [updated]]) }
         let refreshed = expectation(description: "External change synchronized")
-        context.appState.events.onMeetingIndicatorChanged = { refreshed.fulfill() }
+        var refreshCount = 0
+        context.appState.events.onMeetingIndicatorChanged = {
+            refreshCount += 1
+            if refreshCount == 1 {
+                refreshed.fulfill()
+            } else {
+                XCTFail("One external change must synchronize presentation only once")
+            }
+        }
+        defer { context.appState.events.onMeetingIndicatorChanged = {} }
 
         context.store.externalChangeHandler?()
         await fulfillment(of: [refreshed], timeout: 2)
 
+        XCTAssertEqual(refreshCount, 1)
         XCTAssertEqual(context.appState.panel.selectedEvent, updated)
         XCTAssertTrue(context.appState.panel.isEventDetailPresented)
         XCTAssertEqual(context.store.operations, ["refetch"])

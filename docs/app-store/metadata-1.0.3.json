@@ -1,0 +1,15 @@
+{
+  "appId": "6806746414",
+  "version": "1.0.3",
+  "build": "1.0.3 (10)",
+  "releaseNotes": {
+    "ru": "Исправлено положение закреплённого календаря при запуске. Повторное открытие календаря возвращает к сегодняшнему дню, сохраняя открытую форму события. Улучшены открытие настроек и стабильность приложения.",
+    "en-US": "Fixed the position of the pinned calendar at startup. Reopening the calendar returns to today while preserving an open event form. Improved the settings window and app stability."
+  },
+  "reviewNotes": "This maintenance update fixes pinned calendar positioning during startup and the initial layout of the settings window. Reopening the calendar returns to today unless an event drawer is open; an open draft is preserved.\n\nEquinox is a macOS menu bar calendar. Click its menu bar icon to open the calendar. Right-click or Control-click the icon to access Preferences and Quit Equinox (Command-Q). The calendar panel also has a menu with Preferences and Quit.\n\nCalendar access is optional and requested through macOS. With Full Access, the app displays calendars and events and lets the user create and delete events in writable calendars. Editing existing events is not supported. Meeting links open the corresponding installed meeting client when available, with a browser fallback. Launch at login is optional. There are no accounts, purchases, subscriptions, analytics, or developer-operated servers.",
+  "release": "automatic after approval",
+  "phasedRelease": false,
+  "uploadStatus": "Not uploaded",
+  "submissionStatus": "Not submitted",
+  "validationReport": "docs/qa/2026-10-22-tests-audit.md"
+}

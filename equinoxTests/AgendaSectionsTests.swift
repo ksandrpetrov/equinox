@@ -6,31 +6,37 @@ final class AgendaSectionsTests: XCTestCase {
         let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(secondsFromGMT: 0)))
         let day = CalendarDate(year: 2026, monthIndex: 9, day: 2)
         let start = day.date(in: calendar)
-        let url = "https://zoom.us/j/123456789"
+        let web = try XCTUnwrap(URL(string: "https://zoom.us/j/123456789"))
         for count in [100, 1_000, 10_000] {
             let sources = (0..<count).reversed().map { index in
                 makeSource(identifier: "event-\(index)", title: "Встреча 📅 \(index)",
-                           startDate: start.addingTimeInterval(Double(index % 60) * 60),
-                           endDate: start.addingTimeInterval(Double(index % 60) * 60 + 3600),
-                           location: url)
+                           startDate: start.addingTimeInterval(Double(index % 240) * 300),
+                           endDate: start.addingTimeInterval(Double(index % 240) * 300 + 3600),
+                           location: index.isMultiple(of: 2) ? web.absoluteString : nil)
             }
+            let outside = makeSource(identifier: "outside", title: "Outside", startDate: start.addingTimeInterval(-86400),
+                                     endDate: start.addingTimeInterval(-3600), location: "https://zoom.us/j/999")
             let counter = JoinResolutionCounter()
             let clock = ContinuousClock()
             let began = clock.now
             let mapped = await DayEventBuilder.buildDayEvents(
-                from: sources, rangeStart: start, rangeEnd: start.addingTimeInterval(86400), calendar: calendar,
+                from: sources + [outside], rangeStart: start, rangeEnd: start.addingTimeInterval(86400), calendar: calendar,
                 resolveNativeJoinURL: { url in await counter.resolve(url) }
             )
             let elapsed = began.duration(to: clock.now)
+            XCTAssertEqual(mapped.count, 1)
             let events = try XCTUnwrap(mapped[start])
             XCTAssertEqual(events.count, count)
             XCTAssertEqual(Set(events.map(\.id)).count, count)
             XCTAssertEqual(Set(events.compactMap(\.eventIdentifier)), Set(sources.compactMap { $0.fields.eventIdentifier }))
-            for (previous, next) in zip(events, events.dropFirst()) {
-                XCTAssertLessThanOrEqual(previous.slotStartDate, next.slotStartDate)
-            }
-            let calls = await counter.calls
-            XCTAssertEqual(calls, 1, "Repeated meetings must share native app resolution")
+            XCTAssertTrue(zip(events, events.dropFirst()).allSatisfy {
+                $0.slotStartDate <= $1.slotStartDate
+            }, "Visible slots must remain sorted at load \(count)")
+            let resolved = await counter.urls
+            XCTAssertEqual(resolved, [web], "Resolve a shared URL once; skip events without links or outside the range")
+            let expectedLinkedIDs = Set(sources.filter { $0.fields.location != nil }.compactMap { $0.fields.eventIdentifier })
+            XCTAssertEqual(Set(events.filter { $0.joinURL != nil }.compactMap(\.eventIdentifier)), expectedLinkedIDs)
+            XCTAssertEqual(Set(events.compactMap(\.joinURL)), [web], "An unavailable native app must preserve the web URL")
 
             var cache = EventFetchCache()
             let plan = try XCTUnwrap(cache.prepareFetchRange(first: day, last: day, refetch: false))
@@ -63,6 +69,11 @@ final class AgendaSectionsTests: XCTestCase {
         let next = day.addingDays(1)
         XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: -250, next: -40]), next)
         XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 15, next: 90]), day)
+        // Geometry updates can arrive out of date order. Choose by the actual
+        // offset; dates break ties only, regardless of Dictionary iteration order.
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: -10, next: -100]), day)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 90, next: 15]), next)
+        XCTAssertEqual(AgendaSections.topVisibleDate(headerOffsets: [day: 15, next: 15]), day)
         XCTAssertNil(AgendaSections.topVisibleDate(headerOffsets: [:]))
         XCTAssertNil(AgendaSections.topVisibleDate(headerOffsets: [day: .nan, next: .infinity]))
     }
@@ -231,26 +242,6 @@ final class AgendaSectionsTests: XCTestCase {
         }
     }
 
-    func testRecurringMeetingResolvesSharedURLOnceAndSkipsOutOfRangeSources() async {
-        let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
-        let date = CalendarDate(year: 2026, monthIndex: 5, day: 10).date(in: calendar)
-        let url = "https://zoom.us/j/123456789"
-        let counter = JoinResolutionCounter()
-        let sources = (0..<100).map { index in
-            makeSource(identifier: "event-\(index)", title: "Meeting", startDate: date,
-                       endDate: date.addingTimeInterval(3600), location: url)
-        } + [makeSource(identifier: "outside", title: "Outside", startDate: date.addingTimeInterval(-86400),
-                        endDate: date.addingTimeInterval(-3600), location: "https://zoom.us/j/999")]
-        let events = await DayEventBuilder.buildDayEvents(
-            from: sources, rangeStart: date, rangeEnd: date.addingTimeInterval(86400), calendar: calendar,
-            resolveNativeJoinURL: { url in await counter.resolve(url) }
-        )
-        let calls = await counter.calls
-        XCTAssertEqual(calls, 1)
-        XCTAssertEqual(events.values.flatMap { $0 }.count, 100)
-        XCTAssertTrue(events.values.flatMap { $0 }.allSatisfy { $0.joinURL?.absoluteString == url })
-    }
-
     func testShortTeamsMeetingKeepsWebJoinActionThroughEventMapping() async throws {
         let calendar = Calendar.equinoxGregorian(timeZone: TimeZone(secondsFromGMT: 0)!)
         let date = CalendarDate(year: 2026, monthIndex: 8, day: 12).date(in: calendar)
@@ -385,9 +376,9 @@ final class AgendaSectionsTests: XCTestCase {
 }
 
 private actor JoinResolutionCounter {
-    private(set) var calls = 0
+    private(set) var urls: [URL] = []
     func resolve(_ url: URL) -> URL? {
-        calls += 1
+        urls.append(url)
         return nil
     }
 }

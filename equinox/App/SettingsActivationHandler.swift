@@ -39,7 +39,10 @@ enum SettingsActivationHandler {
 
         let root = SettingsView(initialTab: initialTab)
             .environment(\.appState, appState)
-        let window = NSWindow(contentViewController: NSHostingController(rootView: root))
+        let controller = NSHostingController(rootView: root)
+        // Give the toolbar a valid width when AppKit attaches the hosted content.
+        controller.view.setFrameSize(NSSize(width: SettingsDesign.windowMinWidth, height: SettingsDesign.windowMinHeight))
+        let window = NSWindow(contentViewController: controller)
         window.identifier = NSUserInterfaceItemIdentifier(windowIdentifier)
         window.title = String(localized: "Preferences", bundle: .equinox, comment: "Settings window title")
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]

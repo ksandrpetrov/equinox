@@ -20,10 +20,11 @@ enum EquinoxFormatters {
 
     static func formatter(
         key: String,
+        locale: Locale = .autoupdatingCurrent,
+        timeZone: TimeZone = .autoupdatingCurrent,
         configure: (DateFormatter) -> Void
     ) -> DateFormatter {
-        let localeID = appLocale.identifier
-        let timeZone = TimeZone.autoupdatingCurrent
+        let localeID = locale.identifier
         cacheLock.lock()
         defer { cacheLock.unlock() }
 
@@ -38,7 +39,7 @@ enum EquinoxFormatters {
         }
 
         let formatter = makeFormatter(
-            locale: appLocale,
+            locale: locale,
             timeZone: timeZone,
             configure: configure
         )

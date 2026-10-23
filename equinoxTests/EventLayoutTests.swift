@@ -48,25 +48,6 @@ final class EventLayoutTests: XCTestCase {
         add(evidence)
     }
 
-    func testDenseDayEventBuilderPreservesTenThousandEvents() async throws {
-        let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "UTC")))
-        let first = CalendarDate(year: 2026, monthIndex: 9, day: 2).date(in: calendar)
-        // Reverse input forces sorting; repeated start times exercise the identity tie-breaker.
-        let sources = (0..<10_000).reversed().map { index in
-            let start = first.addingTimeInterval(Double(index % 240) * 300)
-            return source(identifier: "event-\(index)", start: start, end: start.addingTimeInterval(3600))
-        }
-        let built = await DayEventBuilder.buildDayEvents(
-            from: sources, rangeStart: first, rangeEnd: first.addingTimeInterval(86400), calendar: calendar,
-            resolveNativeJoinURL: { _ in XCTFail("Events without links must not query native apps"); return nil }
-        )
-        XCTAssertEqual(built.count, 1)
-        let events = try XCTUnwrap(built[first])
-        XCTAssertEqual(events.count, sources.count)
-        XCTAssertEqual(Set(events.map(\.id)).count, sources.count)
-        XCTAssertTrue(zip(events, events.dropFirst()).allSatisfy { $0.startDate <= $1.startDate })
-    }
-
     func testDayEventBuilderKeepsEveryOccurrenceAndStableOrderAcrossDST() async throws {
         let calendar = Calendar.equinoxGregorian(timeZone: try XCTUnwrap(TimeZone(identifier: "America/Havana")))
         let day = CalendarDate(year: 2026, monthIndex: 2, day: 8)
@@ -89,6 +70,7 @@ final class EventLayoutTests: XCTestCase {
         XCTAssertEqual(Set(built.values.flatMap { $0 }.map(\.id)).count, 5)
         let firstDay = try XCTUnwrap(built[first])
         XCTAssertEqual(firstDay.map(\.eventIdentifier), ["all-day", "series", "series"])
+        guard firstDay.count == 3 else { return }
         XCTAssertLessThan(firstDay[1].startDate, firstDay[2].startDate)
         XCTAssertEqual(firstDay[0].startDate, day.addingDays(-1).date(in: calendar))
         XCTAssertEqual(firstDay[0].slotStartDate, first)
@@ -213,16 +195,31 @@ final class EventLayoutTests: XCTestCase {
         )
 
         XCTAssertEqual(slots.count, 1)
+        guard slots.count == 1 else { return }
         XCTAssertFalse(slots[0].displaysAsAllDay)
         XCTAssertEqual(slots[0].startDate, start)
         XCTAssertEqual(slots[0].endDate, end)
     }
 
-    func testAllDayEventsSortBeforeTimedEvents() {
-        let allDay = sortKey(isEventAllDay: true, isSlotAllDay: true, calendarTitle: "B", startDate: .distantPast)
-        let timed = sortKey(isEventAllDay: false, isSlotAllDay: false, calendarTitle: "A", startDate: .distantPast)
-        XCTAssertTrue(precedesInDisplayOrder(allDay, timed))
-        XCTAssertFalse(precedesInDisplayOrder(timed, allDay))
+    func testAllDayEventsAndFullDaySlotsSortBeforePartialSlots() {
+        let start = Date(timeIntervalSince1970: 100)
+        // Reverse both text and start-time order so neither can accidentally
+        // satisfy the event/slot priority contract.
+        let ordered = [
+            sortKey(isEventAllDay: true, isSlotAllDay: true, calendarTitle: "Zulu",
+                    startDate: start.addingTimeInterval(200), id: "all-day-event"),
+            sortKey(isSlotAllDay: true, calendarTitle: "Middle",
+                    startDate: start.addingTimeInterval(100), id: "full-day-slot"),
+            sortKey(calendarTitle: "Alpha", startDate: start, id: "partial-slot"),
+        ]
+        for (index, earlier) in ordered.enumerated() {
+            XCTAssertFalse(precedesInDisplayOrder(earlier, earlier), earlier.stableIdentifier)
+            for later in ordered.dropFirst(index + 1) {
+                let context = "\(earlier.stableIdentifier) before \(later.stableIdentifier)"
+                XCTAssertTrue(precedesInDisplayOrder(earlier, later), context)
+                XCTAssertFalse(precedesInDisplayOrder(later, earlier), context)
+            }
+        }
     }
 
     func testTimedEventsSortByStartDate() {
@@ -300,6 +297,7 @@ final class EventLayoutTests: XCTestCase {
         )
 
         XCTAssertEqual(slots.count, 1)
+        guard slots.count == 1 else { return }
         XCTAssertTrue(slots[0].displaysAsAllDay)
         XCTAssertEqual(slots[0].startDate, start)
         XCTAssertEqual(slots[0].endDate, end)
@@ -320,6 +318,7 @@ final class EventLayoutTests: XCTestCase {
 
         XCTAssertEqual(end.timeIntervalSince(start), 23 * 60 * 60)
         XCTAssertEqual(slots.count, 1)
+        guard slots.count == 1 else { return }
         XCTAssertTrue(slots[0].displaysAsAllDay)
         XCTAssertEqual(slots[0].startDate, start)
         XCTAssertEqual(slots[0].endDate, end)

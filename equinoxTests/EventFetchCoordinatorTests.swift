@@ -63,7 +63,9 @@ final class EventFetchCoordinatorTests: XCTestCase {
 
     func testRapidNavigationFetchesOnlyFinalRange() async {
         let store = StubCalendarEventStore()
-        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let delay = ManualNavigationDelay(requests: 24)
+        defer { delay.resumeAll() }
+        let coordinator = EventFetchCoordinator(calendarStore: store, navigationDelay: delay.wait)
         let fetched = expectation(description: "Final navigation range fetched")
         coordinator.onSyncComplete = { _ in fetched.fulfill() }
         let start = CalendarDate(year: 2026, monthIndex: 0, day: 1)
@@ -72,19 +74,25 @@ final class EventFetchCoordinatorTests: XCTestCase {
             coordinator.scheduleNavigationFetch(range: (first, first.addingDays(41)))
         }
         XCTAssertTrue(store.fetchedRanges.isEmpty)
-        await fulfillment(of: [fetched], timeout: 2)
+        await fulfillment(of: [delay.suspended], timeout: 2)
+        delay.resumeAll()
+        await fulfillment(of: [delay.completed, fetched], timeout: 2)
         XCTAssertEqual(store.fetchedRanges.count, 1)
         XCTAssertEqual(store.fetchedRanges.first?.first, start.addingMonths(24))
     }
 
     func testExplicitRefreshSupersedesDelayedNavigation() async throws {
         let store = StubCalendarEventStore()
-        let coordinator = EventFetchCoordinator(calendarStore: store)
+        let delay = ManualNavigationDelay()
+        defer { delay.resumeAll() }
+        let coordinator = EventFetchCoordinator(calendarStore: store, navigationDelay: delay.wait)
         let day = CalendarDate(year: 2026, monthIndex: 0, day: 1)
         coordinator.scheduleNavigationFetch(range: (day, day.addingDays(30)))
+        await fulfillment(of: [delay.suspended], timeout: 2)
         let succeeded = await coordinator.fetch(range: (day, day.addingDays(60)), refetch: true)
         XCTAssertTrue(succeeded)
-        try await Task.sleep(for: AgendaFocus.navigationCoalescingDelay + .milliseconds(50))
+        delay.resumeAll()
+        await fulfillment(of: [delay.completed], timeout: 2)
         XCTAssertTrue(store.fetchedRanges.isEmpty)
         XCTAssertEqual(store.refetchedRanges.count, 1)
         XCTAssertEqual(store.refetchedRanges.first?.last, day.addingDays(60))
@@ -130,39 +138,53 @@ final class EventFetchCoordinatorTests: XCTestCase {
     }
 
     func testSupersededPendingRequestDoesNotReportSuccessfulFetch() async {
-        let day = CalendarDate(year: 2026, monthIndex: 0, day: 1)
-        var release: CheckedContinuation<Void, Never>?
-        var fetchCalls = 0
-        let firstSuspended = expectation(description: "First fetch suspended")
-        let secondFetched = expectation(description: "Second fetch completed")
-        let coordinator = EventFetchCoordinator(
-            requestCalendarAccess: { true },
-            fetchEvents: { _, _ in
-                fetchCalls += 1
-                if fetchCalls == 1 {
-                    await withCheckedContinuation { release = $0; firstSuspended.fulfill() }
-                }
-                if fetchCalls == 2 { secondFetched.fulfill() }
-                return true
-            },
-            refetchEvents: { _, _ in true }
-        )
-        let active = Task { await coordinator.fetch(range: (day, day)) }
-        await fulfillment(of: [firstSuspended], timeout: 2)
-        let pendingStarted = expectation(description: "Pending request enqueued")
-        let pending = Task {
-            pendingStarted.fulfill()
-            return await coordinator.fetch(range: (day.addingDays(1), day.addingDays(2)))
+        for distant in [CalendarDate.minimumSupported, CalendarDate.maximumSupported] {
+            let day = CalendarDate(year: 2026, monthIndex: 0, day: 1)
+            var release: CheckedContinuation<Void, Never>?
+            var fetchCalls = 0
+            let firstSuspended = expectation(description: "First fetch suspended")
+            let activeCompleted = expectation(description: "Active request completed")
+            let pendingCompleted = expectation(description: "Superseded request completed before active fetch")
+            let secondFetched = expectation(description: "Second fetch completed")
+            let coordinator = EventFetchCoordinator(
+                requestCalendarAccess: { true },
+                fetchEvents: { _, _ in
+                    fetchCalls += 1
+                    if fetchCalls == 1 {
+                        await withCheckedContinuation { release = $0; firstSuspended.fulfill() }
+                    }
+                    if fetchCalls == 2 { secondFetched.fulfill() }
+                    return true
+                },
+                refetchEvents: { _, _ in true }
+            )
+            var activeSucceeded: Bool?
+            let active = Task {
+                activeSucceeded = await coordinator.fetch(range: (day, day))
+                activeCompleted.fulfill()
+            }
+            await fulfillment(of: [firstSuspended], timeout: 2)
+            let pendingStarted = expectation(description: "Pending request enqueued")
+            var supersededSucceeded: Bool?
+            let pending = Task {
+                pendingStarted.fulfill()
+                supersededSucceeded = await coordinator.fetch(range: (day.addingDays(1), day.addingDays(2)))
+                pendingCompleted.fulfill()
+            }
+            defer {
+                release?.resume()
+                active.cancel()
+                pending.cancel()
+            }
+            await fulfillment(of: [pendingStarted], timeout: 2)
+            coordinator.scheduleFetch(range: (distant, distant))
+            await fulfillment(of: [pendingCompleted], timeout: 2)
+            XCTAssertEqual(supersededSucceeded, false)
+            release?.resume()
+            release = nil
+            await fulfillment(of: [activeCompleted, secondFetched], timeout: 2)
+            XCTAssertEqual(activeSucceeded, true)
         }
-        await fulfillment(of: [pendingStarted], timeout: 2)
-        let distant = CalendarDate.maximumSupported
-        coordinator.scheduleFetch(range: (distant, distant))
-        let supersededSucceeded = await pending.value
-        XCTAssertFalse(supersededSucceeded)
-        release?.resume()
-        let activeSucceeded = await active.value
-        XCTAssertTrue(activeSucceeded)
-        await fulfillment(of: [secondFetched], timeout: 2)
     }
 
     func testSerializesFetchesCoalescesPendingRangesAndKeepsLateDataVisible() async {
@@ -183,8 +205,11 @@ final class EventFetchCoordinatorTests: XCTestCase {
         var cachedDates = Set<CalendarDate>()
         var syncedSnapshots: [Set<CalendarDate>] = []
         var releaseFirstFetch: CheckedContinuation<Void, Never>?
+        var fetchCalls = 0
         let firstSuspended = expectation(description: "First fetch suspended")
         let allSynced = expectation(description: "Both snapshots synchronized")
+        let allCompleted = expectation(description: "All callers receive the fetch result")
+        allCompleted.expectedFulfillmentCount = 3
 
         let coordinator = EventFetchCoordinator(
             requestCalendarAccess: {
@@ -192,10 +217,13 @@ final class EventFetchCoordinatorTests: XCTestCase {
                 return true
             },
             fetchEvents: { first, last in
+                fetchCalls += 1
                 operations.append("fetch:\(first.julian)-\(last.julian)")
-                await withCheckedContinuation { continuation in
-                    releaseFirstFetch = continuation
-                    firstSuspended.fulfill()
+                if fetchCalls == 1 {
+                    await withCheckedContinuation { continuation in
+                        releaseFirstFetch = continuation
+                        firstSuspended.fulfill()
+                    }
                 }
                 cachedDates.insert(firstRange.first)
                 return true
@@ -212,13 +240,33 @@ final class EventFetchCoordinatorTests: XCTestCase {
             if syncedSnapshots.count == 2 { allSynced.fulfill() }
         }
 
+        var results: [Bool?] = [nil, nil, nil]
         let firstTask = Task {
-            await coordinator.fetch(range: firstRange)
+            results[0] = await coordinator.fetch(range: firstRange)
+            allCompleted.fulfill()
         }
         await fulfillment(of: [firstSuspended], timeout: 2)
 
-        coordinator.scheduleFetch(range: secondRange)
-        coordinator.scheduleFetch(range: thirdRange, refetch: true)
+        let secondStarted = expectation(description: "Second range enqueued")
+        let secondTask = Task {
+            secondStarted.fulfill()
+            results[1] = await coordinator.fetch(range: secondRange)
+            allCompleted.fulfill()
+        }
+        await fulfillment(of: [secondStarted], timeout: 2)
+        let thirdStarted = expectation(description: "Third range enqueued")
+        let thirdTask = Task {
+            thirdStarted.fulfill()
+            results[2] = await coordinator.fetch(range: thirdRange, refetch: true, preparesCalendarAccess: true)
+            allCompleted.fulfill()
+        }
+        defer {
+            releaseFirstFetch?.resume()
+            firstTask.cancel()
+            secondTask.cancel()
+            thirdTask.cancel()
+        }
+        await fulfillment(of: [thirdStarted], timeout: 2)
 
         XCTAssertEqual(
             operations,
@@ -227,14 +275,15 @@ final class EventFetchCoordinatorTests: XCTestCase {
         )
 
         releaseFirstFetch?.resume()
-        let firstSucceeded = await firstTask.value
-        XCTAssertTrue(firstSucceeded)
-        await fulfillment(of: [allSynced], timeout: 2)
+        releaseFirstFetch = nil
+        await fulfillment(of: [allSynced, allCompleted], timeout: 2)
+        XCTAssertEqual(results, [true, true, true])
 
         XCTAssertEqual(
-            operations.last,
-            "refetch:\(thirdRange.first.julian)-\(thirdRange.last.julian)",
-            "pending ranges must be unioned and upgraded to refetch"
+            operations,
+            ["access", "fetch:\(firstRange.first.julian)-\(firstRange.last.julian)",
+             "access", "refetch:\(thirdRange.first.julian)-\(thirdRange.last.julian)"],
+            "Pending ranges must be unioned and upgraded to refetch and access preparation"
         )
         XCTAssertEqual(syncedSnapshots.count, 2)
         XCTAssertTrue(
@@ -285,10 +334,19 @@ final class EventFetchCoordinatorTests: XCTestCase {
             refetchEvents: { _, _ in operations += 1; return true }
         )
         let day = CalendarDate.minimumSupported
-        for range in [(day.addingDays(1), day), (day.addingDays(-1), day)] {
-            let success = await coordinator.fetch(range: range)
-            XCTAssertFalse(success)
+        let ranges = [(day.addingDays(1), day), (day.addingDays(-1), day)]
+        let completed = expectation(description: "Invalid requests return without fetching")
+        completed.expectedFulfillmentCount = ranges.count
+        var results = [Bool?](repeating: nil, count: ranges.count)
+        let tasks = ranges.enumerated().map { index, range in
+            Task {
+                results[index] = await coordinator.fetch(range: range)
+                completed.fulfill()
+            }
         }
+        defer { tasks.forEach { $0.cancel() } }
+        await fulfillment(of: [completed], timeout: 2)
+        XCTAssertEqual(results, [false, false])
         XCTAssertEqual(operations, 0)
     }
 }

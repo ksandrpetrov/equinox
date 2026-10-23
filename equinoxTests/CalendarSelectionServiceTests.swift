@@ -30,20 +30,17 @@ final class CalendarSelectionServiceTests: XCTestCase {
         XCTAssertFalse(service.hasSelectedCalendars())
     }
 
-    func testCalendarSelectionStorageRoundTrip() {
-        CalendarSelectionStorage.saveSelectedIDs(["cal-a", "cal-b"], to: defaults)
-        XCTAssertTrue(CalendarSelectionStorage.hasStoredSelection(in: defaults))
-        XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), ["cal-a", "cal-b"])
-    }
-
-    func testExplicitEmptySelectionIsDifferentFromMissingPreference() {
-        CalendarSelectionStorage.saveSelectedIDs([], to: defaults)
-
-        XCTAssertTrue(CalendarSelectionStorage.hasStoredSelection(in: defaults))
-        XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), [])
-
-        CalendarSelectionStorage.clearSelection(from: defaults)
+    func testCalendarSelectionStorageRoundTripPreservesExplicitEmptySelection() {
         XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+        for ids in [[], ["cal-a", "cal-b"]] {
+            CalendarSelectionStorage.saveSelectedIDs(ids, to: defaults)
+            XCTAssertTrue(CalendarSelectionStorage.hasStoredSelection(in: defaults), "Stored \(ids)")
+            XCTAssertEqual(CalendarSelectionStorage.loadSelectedIDs(from: defaults), ids)
+
+            CalendarSelectionStorage.clearSelection(from: defaults)
+            XCTAssertFalse(CalendarSelectionStorage.hasStoredSelection(in: defaults))
+            XCTAssertTrue(CalendarSelectionStorage.loadSelectedIDs(from: defaults).isEmpty)
+        }
     }
 
     func testMalformedSelectionDoesNotBecomeExplicitSelectNone() {
@@ -110,9 +107,4 @@ final class CalendarSelectionServiceTests: XCTestCase {
         XCTAssertTrue(ids.isEmpty)
     }
 
-    func testCalendarSelectionStorageClearRemovesSelection() {
-        CalendarSelectionStorage.saveSelectedIDs(["cal-a"], to: defaults)
-        CalendarSelectionStorage.clearSelection(from: defaults)
-        XCTAssertTrue(CalendarSelectionStorage.loadSelectedIDs(from: defaults).isEmpty)
-    }
 }

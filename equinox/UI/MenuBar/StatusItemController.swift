@@ -172,10 +172,6 @@ final class StatusItemController: NSObject {
         statusItem.button?.window?.frame
     }
 
-    private var isPanelModalPresented: Bool {
-        appState.panel.isModalSheetPresented || panelController.window?.attachedSheet != nil
-    }
-
     func applyPinState() {
         panelController.applyPinState(isPinned: appState.isPinned, statusItem: statusItem)
         if !appState.isPinned, isPanelActuallyVisible {
@@ -187,12 +183,15 @@ final class StatusItemController: NSObject {
 
     private func togglePanel() {
         if isPanelActuallyVisible {
-            guard !isPanelModalPresented else {
+            guard !panelController.hasAttachedSheet else {
                 panelController.window?.makeKeyAndOrderFront(nil)
                 return
             }
             hidePanel()
         } else {
+            if !appState.panel.isModalSheetPresented {
+                appState.goToToday()
+            }
             showPanel()
         }
     }
@@ -373,7 +372,7 @@ final class StatusItemController: NSObject {
         dismissMonitor.updateMonitoring(
             isPinned: appState.isPinned,
             isPanelVisible: isPanelActuallyVisible,
-            isModalSheetPresented: { [weak self] in self?.isPanelModalPresented ?? false },
+            isModalSheetPresented: { [weak self] in self?.panelController.hasAttachedSheet ?? false },
             isEquinoxWindow: { [weak self] window in
                 guard let self else { return false }
                 return self.panelController.isEquinoxCalendarWindow(window, statusItem: self.statusItem)
@@ -397,8 +396,7 @@ final class StatusItemController: NSObject {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             guard !self.appState.isPinned, self.isPanelActuallyVisible else { return }
-            if self.panelController.window?.attachedSheet != nil { return }
-            if self.appState.panel.isModalSheetPresented { return }
+            if self.panelController.hasAttachedSheet { return }
             if self.dismissMonitor.isStatusItemClickInProgress { return }
             guard !NSApp.isActive else { return }
             self.hidePanel()

@@ -83,14 +83,24 @@ final class PanelAgendaLayoutTests: XCTestCase {
     }
 
     @MainActor
-    func testChangingScreenHeightInvalidatesPanelSizeOnce() {
+    func testPanelSizeInvalidatesOnChangesAndExplicitRequests() {
         let layout = PanelLayoutMetrics()
-        var invalidationCount = 0
-        layout.onPanelSizeInvalidated = { invalidationCount += 1 }
+        let initialHeight = layout.panelAgendaMaxHeight
+        let firstHeight = initialHeight + 1
+        let secondHeight = initialHeight + 2
+        var observedHeights: [CGFloat] = []
+        layout.onPanelSizeInvalidated = { observedHeights.append(layout.panelAgendaMaxHeight) }
+        defer { layout.onPanelSizeInvalidated = nil }
 
-        layout.panelAgendaMaxHeight = 180
-        layout.panelAgendaMaxHeight = 180
-
-        XCTAssertEqual(invalidationCount, 1)
+        layout.panelAgendaMaxHeight = initialHeight
+        XCTAssertEqual(observedHeights, [])
+        layout.panelAgendaMaxHeight = firstHeight
+        XCTAssertEqual(observedHeights, [firstHeight])
+        layout.panelAgendaMaxHeight = firstHeight
+        XCTAssertEqual(observedHeights, [firstHeight])
+        layout.panelAgendaMaxHeight = secondHeight
+        XCTAssertEqual(observedHeights, [firstHeight, secondHeight])
+        layout.invalidatePanelSize()
+        XCTAssertEqual(observedHeights, [firstHeight, secondHeight, secondHeight])
     }
 }

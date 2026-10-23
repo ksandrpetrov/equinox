@@ -54,30 +54,9 @@ final class MeetingProviderTests: XCTestCase {
         }
     }
 
-    func testFirstProviderWinsWhenMultiplePatternsCouldMatch() {
-        let zoom = URL(string: "https://zoom.us/j/1")!
-        XCTAssertEqual(MeetingProviderRegistry.match(for: zoom)?.id, "zoom")
-        XCTAssertNotEqual(MeetingProviderRegistry.match(for: zoom)?.id, "other")
-    }
-
-    func testProvidersWithoutNativeSchemeReturnNilNativeURL() {
-        let meet = URL(string: "https://meet.google.com/abc-defg-hij")!
-        XCTAssertNil(NativeJoinURL.nativeURLString(from: meet))
-        XCTAssertNil(NativeJoinURL.nativeScheme(for: meet))
-    }
-
     func testAllDetectionSubstringsAreNonEmpty() {
         XCTAssertFalse(MeetingProviderRegistry.allDetectionSubstrings.isEmpty)
         XCTAssertTrue(MeetingProviderRegistry.allDetectionSubstrings.allSatisfy { !$0.isEmpty })
-    }
-
-    func testDetectionSubstringsFeedJoinURLDetection() {
-        let url = JoinURLDetection.detectJoinURL(
-            location: "https://meet.jit.si/room",
-            url: nil,
-            notes: nil
-        )
-        XCTAssertNotNil(url)
     }
 
     func testPresentationUsesProviderLabelAndFallback() {
@@ -94,9 +73,16 @@ final class MeetingProviderTests: XCTestCase {
         XCTAssertEqual(JoinURLPresentation.meetingSystemImage(for: unknown), "video.fill")
     }
 
-    func testMatchesIsCaseInsensitive() {
-        let url = URL(string: "HTTPS://ZOOM.US/J/123456789")!
-        XCTAssertEqual(MeetingProviderRegistry.match(for: url)?.id, "zoom")
+    func testWebMatchingAcceptsOnlyHTTPAndHTTPSCaseInsensitively() throws {
+        for value in ["HTTP://ZOOM.US/J/123456789", "HTTPS://ZOOM.US/J/123456789"] {
+            let url = try XCTUnwrap(URL(string: value))
+            XCTAssertEqual(MeetingProviderRegistry.match(for: url)?.id, "zoom", value)
+        }
+        for value in ["ftp://zoom.us/j/123", "file://zoom.us/j/123",
+                      "custom://zoom.us/j/123", "//zoom.us/j/123"] {
+            let url = try XCTUnwrap(URL(string: value))
+            XCTAssertNil(MeetingProviderRegistry.match(for: url), value)
+        }
     }
 
     func testProviderMatchingRejectsDeceptiveHostsAndQueryParameters() {
@@ -153,14 +139,4 @@ final class MeetingProviderTests: XCTestCase {
         XCTAssertEqual(Set(ids).count, ids.count)
     }
 
-    func testSupportedNativeMeetingURLsExposeScheme() {
-        let cases: [(String, String)] = [
-            ("https://zoom.us/j/123", "zoommtg://"),
-            ("https://teams.microsoft.com/l/meetup-join/abc", "msteams://"),
-            ("https://chime.aws/abc", "chime://"),
-        ]
-        for (link, expectedScheme) in cases {
-            XCTAssertEqual(NativeJoinURL.nativeScheme(for: URL(string: link)!), expectedScheme)
-        }
-    }
 }

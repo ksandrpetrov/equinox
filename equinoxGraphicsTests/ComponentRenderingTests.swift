@@ -23,6 +23,10 @@ final class ComponentRenderingTests: XCTestCase {
     @MainActor
     func testErrorAndWarningMessagesHaveReadableContrast() throws {
         for scheme in [ColorScheme.light, .dark] {
+            let surfaceRenderer = ImageRenderer(content: EquinoxDesign.ColorToken.surfaceWindow
+                .frame(width: 8, height: 8).environment(\.colorScheme, scheme))
+            let surfaceBitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(surfaceRenderer.cgImage))
+            let surface = try XCTUnwrap(surfaceBitmap.colorAt(x: 4, y: 4)?.usingColorSpace(.sRGB))
             for style in [EquinoxBannerStyle.error, .warning] {
                 for presentation in [EquinoxBannerPresentation.card, .filled] {
                     let content = EquinoxBanner(message: "Calendar error details", style: style, presentation: presentation)
@@ -32,6 +36,18 @@ final class ComponentRenderingTests: XCTestCase {
                     let renderer = ImageRenderer(content: content)
                     let bitmap = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
                     let background = try XCTUnwrap(bitmap.colorAt(x: bitmap.pixelsWide / 2, y: bitmap.pixelsHigh - 3)?.usingColorSpace(.sRGB))
+                    switch presentation {
+                    case .filled:
+                        XCTAssertGreaterThan(background.redComponent - background.blueComponent, 0.04,
+                                             "Filled error/warning backgrounds must carry their warm semantic tint")
+                    case .card:
+                        XCTAssertLessThan(background.redComponent - background.blueComponent, 0.01,
+                                          "A neutral card must not acquire the filled warning tint")
+                        let surfaceDifference = abs(background.redComponent - surface.redComponent)
+                            + abs(background.greenComponent - surface.greenComponent)
+                            + abs(background.blueComponent - surface.blueComponent)
+                        XCTAssertGreaterThan(surfaceDifference, 0.03, "The card must remain distinct from its surrounding surface")
+                    }
                     let backgroundLuminance = luminance(background)
                     var strongestGlyphContrast = 1.0
                     // Exclude the decorative icon, border and padding. Test the
@@ -91,20 +107,76 @@ final class ComponentRenderingTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suite) }
         let prefs = PreferencesStore(defaults: defaults, notificationCenter: NotificationCenter())
         prefs.showMeetingIndicator = true
+        var plainImages: [Int: NSImage] = [:]
         for style in MenuBarIconStyle.allCases {
             prefs.menuBarIconType = style.rawValue
-            for meeting in [false, true] {
-                let image = try XCTUnwrap(MenuBarIconRenderer.iconImage(text: "12", prefs: prefs, shouldShowMeetingIndicator: meeting, scale: 2))
-                XCTAssertTrue(image.isTemplate)
-                XCTAssertGreaterThan(image.size.width, 0)
-                XCTAssertGreaterThan(image.size.height, 0)
-            }
+            prefs.showMeetingIndicator = true
+            let plain = try XCTUnwrap(MenuBarIconRenderer.iconImage(text: "12", prefs: prefs, shouldShowMeetingIndicator: false, scale: 2))
+            let meeting = try XCTUnwrap(MenuBarIconRenderer.iconImage(text: "12", prefs: prefs, shouldShowMeetingIndicator: true, scale: 2))
+            XCTAssertTrue(plain.isTemplate)
+            XCTAssertTrue(meeting.isTemplate)
+            XCTAssertGreaterThan(plain.size.width, 0)
+            XCTAssertGreaterThan(plain.size.height, 0)
+            XCTAssertGreaterThan(meeting.size.width, plain.size.width, "The meeting glyph must occupy space: \(style)")
+            XCTAssertNotEqual(meeting.tiffRepresentation, plain.tiffRepresentation)
+            prefs.showMeetingIndicator = false
+            let disabled = try XCTUnwrap(MenuBarIconRenderer.iconImage(text: "12", prefs: prefs, shouldShowMeetingIndicator: true, scale: 2))
+            XCTAssertEqual(disabled.size, plain.size)
+            XCTAssertEqual(disabled.tiffRepresentation, plain.tiffRepresentation, "The preference must hide the glyph")
+            plainImages[style.rawValue] = plain
         }
+        let classic = try XCTUnwrap(plainImages[MenuBarIconStyle.classic.rawValue])
+        let compact = try XCTUnwrap(plainImages[MenuBarIconStyle.compact.rawValue])
+        let minimal = try XCTUnwrap(plainImages[MenuBarIconStyle.minimal.rawValue])
+        XCTAssertGreaterThan(classic.size.height, compact.size.height, "The outlined badge reserves vertical padding")
+        XCTAssertGreaterThan(classic.size.width, compact.size.width, "The outline must have space around its text")
+        XCTAssertEqual(minimal.size.height, compact.size.height)
+        XCTAssertNotEqual(minimal.tiffRepresentation, compact.tiffRepresentation, "Filled and text-only styles must differ")
+        func inkCoverage(_ image: NSImage) throws -> Double {
+            let bitmap = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(image.tiffRepresentation)))
+            var alpha: Double = 0
+            for y in 0..<bitmap.pixelsHigh {
+                for x in 0..<bitmap.pixelsWide {
+                    alpha += Double(try XCTUnwrap(bitmap.colorAt(x: x, y: y)).alphaComponent)
+                }
+            }
+            return alpha / Double(bitmap.pixelsWide * bitmap.pixelsHigh)
+        }
+        let filledCoverage = try inkCoverage(minimal)
+        XCTAssertGreaterThan(filledCoverage, try inkCoverage(compact), "A filled badge carries more ink than text alone")
+        XCTAssertGreaterThan(filledCoverage, try inkCoverage(classic), "A filled badge carries more ink than its outline")
+
+        let today = CalendarDate(year: 2024, monthIndex: 1, day: 29)
+        var dateTexts: Set<String> = []
+        for (month, weekday) in [(false, false), (true, false), (false, true), (true, true)] {
+            prefs.showMonthInIcon = month
+            prefs.showDayOfWeekInIcon = weekday
+            let text = MenuBarIconRenderer.iconText(prefs: prefs, calendar: .equinoxGregorian(), today: today)
+            XCTAssertFalse(text.isEmpty)
+            if !month && !weekday { XCTAssertEqual(text, "29") }
+            dateTexts.insert(text)
+        }
+        XCTAssertEqual(dateTexts.count, 4, "Month and weekday preferences must each affect the displayed date independently")
         XCTAssertNotNil(MenuBarIconRenderer.meetingIndicatorImage(scale: 2))
         for scheme in [ColorScheme.light, .dark] {
             prefs.showMonthInIcon = true
             prefs.showDayOfWeekInIcon = true
             prefs.menuBarIconType = MenuBarIconStyle.classic.rawValue
+            let preview = try XCTUnwrap(MenuBarIconRenderer.previewImage(text: "12", prefs: prefs, colorScheme: scheme))
+            let pixels = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(preview.tiffRepresentation)))
+            var opaqueInk: [Double] = []
+            for y in 0..<pixels.pixelsHigh {
+                for x in 0..<pixels.pixelsWide {
+                    let color = try XCTUnwrap(pixels.colorAt(x: x, y: y)?.usingColorSpace(.sRGB))
+                    if color.alphaComponent > 0.99 { opaqueInk.append(luminance(color)) }
+                }
+            }
+            XCTAssertFalse(opaqueInk.isEmpty, "The preview must contain opaque glyph pixels")
+            if scheme == .dark {
+                XCTAssertGreaterThan(try XCTUnwrap(opaqueInk.min()), 0.9, "Dark previews need light ink")
+            } else {
+                XCTAssertLessThan(try XCTUnwrap(opaqueInk.max()), 0.1, "Light previews need dark ink")
+            }
             let picker = MenuBarIconPicker(prefs: prefs)
                 .padding(EquinoxDesign.spacingLG)
                 .frame(width: 500)
@@ -146,6 +218,14 @@ final class ComponentRenderingTests: XCTestCase {
         )
         for size in SizePreference.allCases {
             let metrics = SizeMetrics.metrics(for: size)
+            for showsLocation in [false, true] {
+                let row = AgendaEventCard(event: event, metrics: metrics, showLocation: showsLocation, now: start)
+                    .frame(width: metrics.panelWidth - EquinoxDesign.panelPadding * 2)
+                    .environment(\.locale, Locale(identifier: "ru_RU"))
+                let rowImage = try XCTUnwrap(ImageRenderer(content: row).nsImage)
+                XCTAssertLessThan(rowImage.size.height, metrics.agendaRowMinHeight * 2,
+                                  "A long title must not wrap the relative-time badge vertically")
+            }
             for scheme in [ColorScheme.light, .dark] {
                 let content = VStack(spacing: EquinoxDesign.spacingSM) {
                     HStack(spacing: EquinoxDesign.spacingXS) {
@@ -171,14 +251,6 @@ final class ComponentRenderingTests: XCTestCase {
                 .background(EquinoxDesign.ColorToken.surfaceWindow)
                 .environment(\.colorScheme, scheme)
                 .environment(\.locale, Locale(identifier: "ru_RU"))
-                for showsLocation in [false, true] {
-                    let row = AgendaEventCard(event: event, metrics: metrics, showLocation: showsLocation, now: start)
-                        .frame(width: metrics.panelWidth - EquinoxDesign.panelPadding * 2)
-                        .environment(\.locale, Locale(identifier: "ru_RU"))
-                    let rowImage = try XCTUnwrap(ImageRenderer(content: row).nsImage)
-                    XCTAssertLessThan(rowImage.size.height, metrics.agendaRowMinHeight * 2,
-                                      "A long title must not wrap the relative-time badge vertically")
-                }
                 try exportDesignPreview(content, name: "components-\(size.rawValue)-\(scheme)", width: metrics.panelWidth)
                 let details = VStack(alignment: .leading, spacing: EquinoxDesign.spacingLG) {
                     EventDetailHeroHeader(event: event)
@@ -206,13 +278,9 @@ final class ComponentRenderingTests: XCTestCase {
         XCTAssertGreaterThan(image.size.height, 0)
         let attachment = XCTAttachment(image: image)
         attachment.name = name
-        attachment.lifetime = .keepAlways
+        attachment.lifetime = .deleteOnSuccess
         add(attachment)
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("equinox-design-previews")
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(image.tiffRepresentation)))
-        try XCTUnwrap(bitmap.representation(using: .png, properties: [:]))
-            .write(to: folder.appendingPathComponent(name + ".png"))
+
     }
 
 }

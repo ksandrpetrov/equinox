@@ -68,17 +68,6 @@ final class AgendaContentStateTests: XCTestCase {
         )
     }
 
-    func testSuccessfulEmptyFetchShowsEmptyState() {
-        XCTAssertEqual(
-            AgendaContentState.resolve(
-                accessStatus: .authorized,
-                hasCompletedInitialLoad: true,
-                hasFetchError: false,
-                hasVisibleEvents: false
-            ),
-            .empty
-        )
-    }
 
     func testCachedContentRemainsVisibleDuringRefreshError() {
         XCTAssertEqual(

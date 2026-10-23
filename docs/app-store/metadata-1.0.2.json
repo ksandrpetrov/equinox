@@ -1,0 +1,26 @@
+{
+  "appId": "6806746414",
+  "version": "1.0.2",
+  "build": "1.0.2 (9)",
+  "releaseNotes": {
+    "ru": "В боковой панели события появилась кнопка закрытия. Она закрывает только панель, оставляя календарь открытым.",
+    "en-US": "Added a close button to the event side panel. It closes only the panel, keeping the calendar window open."
+  },
+  "reviewNotes": "Build 1.0.2 (9) adds a visible close (X) button in the header of the left event panel. It closes only event details or the new-event form, keeping the calendar window open in both pinned and unpinned modes. Escape keeps the same behavior. The close button is disabled while saving or deleting an event.\n\nEquinox is a free macOS menu bar calendar for Apple Silicon, requiring macOS 26 or later.\nAfter launch, click the Equinox icon in the menu bar to open the calendar panel.\nTo quit, right-click (or Control-click) the Equinox menu bar icon and choose\n\"Quit Equinox\". The same menu provides Preferences. Alternatively, open the calendar\npanel, click its ellipsis (…) menu, and choose \"Quit Equinox\". Quit does not require\nCalendar permission. There is normally no Dock icon. No Equinox account or purchase is required.\n\nAllow Calendar Full Access to display events from calendars configured in macOS.\nWithout access, month navigation remains available and the app explains how to grant access.\nTo test creation, use a writable system calendar and the New Event action (Command-N).\nOpen that event to view details and delete it with confirmation. Existing events cannot be edited;\nparticipation status is read-only. Read-only calendars do not permit deletion.\n\nMeeting links open the installed meeting client where supported, with a web fallback.\nThe meeting provider may require its own account. Launch at login is optional and enabled\nby the user in General settings. Privacy Policy is in Privacy and About; Support and\nbundled third-party licenses are in About. Calendar contents and settings are not sent\nto a developer-operated service.",
+  "releaseNotesSaved": true,
+  "submissionStatus": "Waiting for Review",
+  "uploadStatus": "Succeeded",
+  "uploadedAt": "2026-10-09T14:52:40+03:00",
+  "uploadLog": "build/TestFlight/2026-10-09-drawer-close/upload.log",
+  "release": "automatic after approval",
+  "phasedRelease": false,
+  "buildId": "3df1cd75-e2a3-44a1-b45d-bb04572034eb",
+  "processingStatus": "Complete",
+  "testFlightBuildStatus": "Ready to Submit",
+  "processingEvidence": "build/TestFlight/2026-10-09-drawer-close/build9-processed.png",
+  "submittedAt": "2026-10-09T14:56:00+03:00",
+  "submissionId": "c2df387b-efd1-4b52-bc81-62ada4b252af",
+  "submissionURL": "https://appstoreconnect.apple.com/apps/6806746414/distribution/reviewsubmissions/details/c2df387b-efd1-4b52-bc81-62ada4b252af",
+  "submissionEvidence": "build/TestFlight/2026-10-09-drawer-close/waiting-for-review.png",
+  "preservedExistingDescriptionsScreenshotsPromotionalTextAndReviewContacts": true
+}
