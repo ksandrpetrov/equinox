@@ -9,7 +9,16 @@
   "reviewNotes": "This maintenance update fixes pinned calendar positioning during startup and the initial layout of the settings window. Reopening the calendar returns to today unless an event drawer is open; an open draft is preserved.\n\nEquinox is a macOS menu bar calendar. Click its menu bar icon to open the calendar. Right-click or Control-click the icon to access Preferences and Quit Equinox (Command-Q). The calendar panel also has a menu with Preferences and Quit.\n\nCalendar access is optional and requested through macOS. With Full Access, the app displays calendars and events and lets the user create and delete events in writable calendars. Editing existing events is not supported. Meeting links open the corresponding installed meeting client when available, with a browser fallback. Launch at login is optional. There are no accounts, purchases, subscriptions, analytics, or developer-operated servers.",
   "release": "automatic after approval",
   "phasedRelease": false,
-  "uploadStatus": "Not uploaded",
+  "uploadStatus": "Blocked: Xcode account authentication",
   "submissionStatus": "Not submitted",
-  "validationReport": "docs/qa/2026-10-22-tests-audit.md"
+  "validationReport": "docs/qa/2026-10-22-tests-audit.md",
+  "uploadAttemptedAt": "2026-10-23T20:19:18+03:00",
+  "uploadLog": "build/TestFlight/2026-10-23-stability-hotfix/upload.log",
+  "releaseSettingsApplied": false,
+  "sourceCommit": "1b6a59cca994c0d85180e5a27fc01cfedba04652",
+  "package": "build/TestFlight/2026-10-23-stability-hotfix/VerifiedExport/equinox.pkg",
+  "packageSHA256": "aba291898b1f57ab3ee4faa2eb76caaeb6e68ed103ca31f8184028aa8754a38b",
+  "packageVerification": "build/TestFlight/2026-10-23-stability-hotfix/package-verification.json",
+  "archive": "build/Archives/equinox-1.0.3-10-2026-10-23.xcarchive",
+  "distributionArchive": "build/Archives/equinox-1.0.3-10-2026-10-23-distribution.xcarchive"
 }
