@@ -175,7 +175,14 @@ final class DesignSystemComplianceTests: XCTestCase {
         let projectLicense = try String(contentsOf: root.appendingPathComponent("LICENSE.txt"), encoding: .utf8)
         XCTAssertTrue(licenses.contains(projectLicense))
         XCTAssertTrue(licenses.contains("Sindre Sorhus"))
-        XCTAssertTrue(licenses.contains("KeyboardShortcuts 3.0.1"))
+        let resolvedURL = root.appendingPathComponent("equinox.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+        let resolved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: resolvedURL)) as? [String: Any])
+        let pins = try XCTUnwrap(resolved["pins"] as? [[String: Any]])
+        let shortcutPin = try XCTUnwrap(pins.first { $0["identity"] as? String == "keyboardshortcuts" })
+        let shortcutState = try XCTUnwrap(shortcutPin["state"] as? [String: Any])
+        let shortcutVersion = try XCTUnwrap(shortcutState["version"] as? String)
+        XCTAssertTrue(licenses.components(separatedBy: .newlines).contains("KeyboardShortcuts \(shortcutVersion)"),
+                      "Bundled license must name the resolved KeyboardShortcuts version")
         XCTAssertEqual(EquinoxDocumentation.privacyPolicy.scheme, "https")
         XCTAssertEqual(EquinoxDocumentation.support.scheme, "https")
     }

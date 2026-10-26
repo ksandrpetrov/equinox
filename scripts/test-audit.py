@@ -16,7 +16,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-MUTER_REVISION = '7f1f2584e0a27fc05c952a5c8cdd52b10cc9513f'
+MUTER_REVISION = '5c854098e61d1a093ef9c4e53a5ebc6de07b3a32'
 
 
 def write_json(path, value):
